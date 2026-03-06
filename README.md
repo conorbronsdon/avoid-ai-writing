@@ -2,11 +2,31 @@
 
 A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that audits and rewrites content to remove AI writing patterns ("AI-isms").
 
-Give it any text and it will identify every AI tell, rewrite the content to sound human, and explain what changed. Includes a second-pass audit to catch anything that survived the first rewrite.
+Paste any text, get back a clean version with every AI tell identified, fixed, and explained. A built-in second pass re-reads the rewrite to catch patterns that survived the first edit.
+
+## Before & After
+
+**Input:**
+> In today's rapidly evolving AI landscape, developers are embarking on a pivotal journey to leverage cutting-edge tools that streamline their workflows. Moreover, these robust solutions serve as a testament to the industry's commitment to fostering seamless experiences. Experts believe this represents a watershed moment for the field. The future looks bright — only time will tell how these game-changing innovations will reshape the paradigm.
+
+**Output:**
+> Developers are starting to use newer AI tools to simplify their work. These tools are reliable, and they're making development less painful. The shift matters because [cite specific impact or cut the claim]. [Cut: "The future looks bright" and "only time will tell" — say something specific or end the piece.]
+
+**What the skill flagged:** em dash, 3 copula substitutions (serves as, represents, fostering), 6 word replacements (landscape, embarking, leverage, cutting-edge, streamline, robust), significance inflation (watershed moment, pivotal), vague attribution (Experts believe), generic conclusion, formulaic opening (In today's rapidly evolving...), filler transition (Moreover).
+
+That's 16 AI tells in 4 sentences. Most human editors catch 3 or 4.
+
+## Why a skill, not just a prompt
+
+A one-shot "make this sound human" prompt catches the obvious stuff. This skill is different:
+
+- **Structured audit** — returns identified issues with quoted text, the rewrite, a change summary, and a second-pass audit in four discrete sections. You see exactly what changed and why.
+- **Two-pass detection** — the second pass re-reads the rewrite and catches patterns that survive the first edit (recycled transitions, lingering inflation, copula swaps that snuck through).
+- **38-entry replacement table** — not vibes-based. Every flagged word has a specific, plainer alternative. "Leverage" → "use." "Commence" → "start." No judgment calls needed.
+- **13 pattern categories** — covers formatting, sentence structure, word choice, structural tells, and conversational artifacts. See the full list below.
+- **Claude Code native** — installs as a skill with YAML frontmatter, works with slash commands, and integrates into your existing workflow.
 
 ## What it catches
-
-The skill checks for **13 categories** of AI writing patterns:
 
 | # | Category | Examples |
 |---|----------|----------|
