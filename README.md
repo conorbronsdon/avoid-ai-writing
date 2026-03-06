@@ -14,7 +14,7 @@ Paste any text, get back a clean version with every AI tell identified, fixed, a
 
 **What the skill flagged:** em dash, 3 copula substitutions (serves as, represents, fostering), 6 word replacements (landscape, embarking, leverage, cutting-edge, streamline, robust), significance inflation (watershed moment, pivotal), vague attribution (Experts believe), generic conclusion, formulaic opening (In today's rapidly evolving...), filler transition (Moreover).
 
-That's 16 AI tells in 4 sentences. Most human editors catch 3 or 4.
+That's 16 AI tells in 4 sentences.
 
 ## Why a skill, not just a prompt
 
