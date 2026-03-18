@@ -200,3 +200,5 @@ Re-read the rewritten version from section 2. Identify any remaining AI tells th
 The goal is writing that sounds like a person wrote it. Direct. Specific. The writing should demonstrate confidence, not assert it.
 
 If the original writing is already strong, say so and make only the necessary cuts. Don't over-edit for the sake of it.
+
+The replacement table provides defaults, not mandates. If a flagged word is clearly the right choice in context, preserve it.
