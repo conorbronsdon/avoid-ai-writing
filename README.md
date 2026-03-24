@@ -24,7 +24,7 @@ A one-shot "make this sound human" prompt catches the obvious stuff. This skill 
 - **Structured audit** — returns identified issues with quoted text, the rewrite, a change summary, and a second-pass audit in four discrete sections. You see exactly what changed and why.
 - **Two-pass detection** — the second pass re-reads the rewrite and catches patterns that survive the first edit: recycled transitions, lingering inflation, copula swaps that snuck through.
 - **103-entry word replacement table across 3 tiers** — not vibes-based. Every flagged word has a specific, plainer alternative. "Leverage" → "use." "Commence" → "start." Tier 1 words are always flagged, Tier 2 words flag when they cluster, Tier 3 words flag only at high density. This reduces false positives while catching real AI tells.
-- **30 pattern categories** — see the full list below, each with before/after examples. Includes rhythm/uniformity checks and a rewrite-vs-patch threshold.
+- **34 pattern categories** — see the full list below, each with before/after examples. Includes rhythm/uniformity checks and a rewrite-vs-patch threshold.
 - **Works with Claude Code and OpenClaw** — single `SKILL.md` with compatible frontmatter for both platforms.
 
 ## Installation & Usage
@@ -91,7 +91,7 @@ The skill returns four sections:
 3. **What changed** — summary of the major edits
 4. **Second-pass audit** — re-reads the rewrite and catches any surviving tells
 
-## 30 Patterns Detected
+## 34 Patterns Detected
 
 ### Content Patterns
 
