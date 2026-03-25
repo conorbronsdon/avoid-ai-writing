@@ -4,6 +4,43 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.1.0] — 2026-03-25
+
+### Added
+- 3 new Tier 1 words from Pangram AI detection research: `keen` (as intensifier), `symphony` (metaphor), `embrace` (metaphor)
+- 2 new template phrases: "Whether you're X or Y" (false-breadth), "I recently had the pleasure of" (review/social AI pattern)
+- "In summary" added to transition phrases (alongside existing "In conclusion" / "To summarize")
+- Structure-priority note in Rhythm section: structural regularity is the #1 signal AI detectors weight, above vocabulary
+- Over-polishing warning: aggressive editing can push writing toward AI statistical profiles by removing natural disfluency
+
+### Changed
+- Total vocabulary: 106 → 109 entries (60 Tier 1 + 38 Tier 2 + 11 Tier 3)
+- Template phrases: 2 → 4 entries
+
+### Source
+- Pangram Labs AI detection research (pangram.com) — decoder-only classifier trained on 28M human documents. Key insight: structural uniformity and pacing consistency are weighted higher than individual word choices.
+
+---
+
+## [3.0.0] — 2026-03-20
+
+### Added
+- Novelty inflation pattern (AI treats established concepts as speaker inventions)
+- False concession structure pattern
+- Rhetorical question openers pattern
+- Parenthetical hedging pattern
+- Numbered list inflation pattern
+- Severity tiers (P0/P1/P2) for prioritized auditing
+- Self-reference escape hatch (exempts quoted examples from flagging)
+- Context profiles with tolerance matrix (linkedin, blog, technical-blog, investor-email, docs, casual)
+- Auto-detection cues for context inference
+- Extended frontmatter: license, compatibility, author, tags, agentskills_spec
+
+### Changed
+- Pattern count: 30 → 35 categories
+
+---
+
 ## [2.2.0] — 2026-03-18
 
 ### Added
