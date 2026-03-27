@@ -1,7 +1,21 @@
+<div align="center">
+
 # avoid-ai-writing
 
-[![GitHub stars](https://img.shields.io/github/stars/conorbronsdon/avoid-ai-writing?style=social)](https://github.com/conorbronsdon/avoid-ai-writing/stargazers)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+Audit and rewrite content to remove AI writing patterns. A practical skill for any AI coding assistant.
+
+[![GitHub stars](https://img.shields.io/github/stars/conorbronsdon/avoid-ai-writing?style=flat-square)](https://github.com/conorbronsdon/avoid-ai-writing/stargazers)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
+[![npm version](https://img.shields.io/npm/v/avoid-ai-writing?style=flat-square)](https://www.npmjs.com/package/avoid-ai-writing)
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Conor_Bronsdon-blue?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/conorbronsdon/)
+[![Podcast](https://img.shields.io/badge/Podcast-Chain_of_Thought-purple?style=flat-square)](https://chainofthought.show)
+[![X](https://img.shields.io/badge/X-@ConorBronsworthy-black?style=flat-square&logo=x)](https://x.com/ConorBronsworthy)
+
+</div>
+
+---
+
 
 A portable writing skill for [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [OpenClaw](https://github.com/openclaw/openclaw), and any [agentskills.io](https://agentskills.io)-compatible agent. Audits and rewrites content to remove AI writing patterns ("AI-isms").
 
