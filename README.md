@@ -4,7 +4,7 @@
 
 Audit and rewrite content to remove AI writing patterns. A practical skill for any AI coding assistant.
 
-[![GitHub stars](https://img.shields.io/github/stars/conorbronsdon/avoid-ai-writing?style=flat-square)](https://github.com/conorbronsdon/avoid-ai-writing/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/conorbronsdon/avoid-ai-writing?style=social)](https://github.com/conorbronsdon/avoid-ai-writing/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Conor_Bronsdon-blue?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/conorbronsdon/)
