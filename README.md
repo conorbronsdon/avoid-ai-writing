@@ -6,11 +6,10 @@ Audit and rewrite content to remove AI writing patterns. A practical skill for a
 
 [![GitHub stars](https://img.shields.io/github/stars/conorbronsdon/avoid-ai-writing?style=flat-square)](https://github.com/conorbronsdon/avoid-ai-writing/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
-[![npm version](https://img.shields.io/npm/v/avoid-ai-writing?style=flat-square)](https://www.npmjs.com/package/avoid-ai-writing)
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Conor_Bronsdon-blue?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/conorbronsdon/)
 [![Podcast](https://img.shields.io/badge/Podcast-Chain_of_Thought-purple?style=flat-square)](https://chainofthought.show)
-[![X](https://img.shields.io/badge/X-@ConorBronsworthy-black?style=flat-square&logo=x)](https://x.com/ConorBronsworthy)
+[![X](https://img.shields.io/badge/X-@ConorBronsdon-black?style=flat-square&logo=x)](https://x.com/ConorBronsworthy)
 
 </div>
 
