@@ -37,6 +37,7 @@ A one-shot "make this sound human" prompt catches the obvious stuff. This skill 
 - **Two-pass detection** — the second pass re-reads the rewrite and catches patterns that survive the first edit: recycled transitions, lingering inflation, copula swaps that snuck through.
 - **109-entry word replacement table across 3 tiers** — not vibes-based. Every flagged word has a specific, plainer alternative. "Leverage" → "use." "Commence" → "start." Tier 1 words are always flagged, Tier 2 words flag when they cluster, Tier 3 words flag only at high density. This reduces false positives while catching real AI tells.
 - **36 pattern categories** — see the full list below, each with before/after examples. Includes rhythm/uniformity checks and a rewrite-vs-patch threshold.
+- **Detect mode** — flag patterns without rewriting. See which flags are real problems vs. judgment calls. Useful when patterns might be intentional or you're auditing content you don't want altered.
 - **Works with Claude Code and OpenClaw** — single `SKILL.md` with compatible frontmatter for both platforms.
 
 ## Installation & Usage
@@ -75,7 +76,7 @@ Then use `/clean-ai-writing <your text>` in Claude Code.
 
 ### OpenClaw
 
-**Option 1: [Install from ClawHub](ttps://clawhub.ai/conorbronsdon/avoid-ai-writing)**
+**Option 1: [Install from ClawHub](https://clawhub.ai/conorbronsdon/avoid-ai-writing)**
 
 ```bash
 clawhub install avoid-ai-writing
