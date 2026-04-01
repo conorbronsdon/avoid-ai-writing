@@ -4,6 +4,17 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.3.0] — 2026-04-01
+
+### Added
+- **"Worth [verb]ing" vague endorsement pattern**: `worth reading`, `worth paying attention to`, `worth a look`, `worth exploring`, `worth checking out`, `worth your time` — broadens existing "it's worth noting that" to the full family
+- **Reader-steering frames**: `Here's what's interesting`, `Here's what caught my eye`, `Here's what stood out` — added to both transition phrases and confidence calibration sections with context on when the pattern is a genuine problem vs. when data-backed usage is acceptable
+
+### Changed
+- Version bump to 3.3.0
+
+---
+
 ## [3.2.0] — 2026-03-31
 
 ### Added
