@@ -2,7 +2,7 @@
 
 # avoid-ai-writing
 
-Audit & rewrite content to remove AI writing patterns. A practical skill for any AI assistant. Supports detection-only mode.
+Audit & rewrite content to remove AI writing patterns. A practical skill for any AI agent. Supports detection-only mode.
 
 [![GitHub stars](https://img.shields.io/github/stars/conorbronsdon/avoid-ai-writing?style=social)](https://github.com/conorbronsdon/avoid-ai-writing/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
