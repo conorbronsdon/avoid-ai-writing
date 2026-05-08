@@ -1,0 +1,51 @@
+# Example workflow demonstrating the avoid-ai-writing action.
+#
+# To use this in your own repo:
+#   1. Get an API key from https://www.avoidaiwriting.com/developers
+#   2. Add it as a repo secret named AVOID_API_KEY
+#   3. Drop this file into .github/workflows/ in your repo
+#   4. Open a PR that touches a markdown file — the action will post
+#      a review comment with audit findings
+#
+# This file lives in docs/ (not .github/workflows/) so it stays a
+# reference template. The skill repo doesn't yet have an
+# AVOID_API_KEY secret set, so a live workflow here would fail on
+# every PR. Move this file to .github/workflows/ in your own repo
+# (or in this repo, once the secret is configured) to enable it.
+#
+# The action itself is at .github/actions/avoid-ai-writing/ in this
+# repo.
+
+name: Audit changed docs for AI writing patterns
+
+on:
+  pull_request:
+    paths:
+      - '**/*.md'
+
+# pull-requests: write is required so the action can post the summary
+# comment; contents: read is enough for git diff against the base.
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Need both base + head SHAs to compute the diff. Fetch
+          # depth 0 is the simplest way to guarantee both are present
+          # without juggling explicit git fetches.
+          fetch-depth: 0
+
+      # In a consumer repo this would be `uses: conorbronsdon/avoid-ai-writing/.github/actions/avoid-ai-writing@v3`
+      # — local path here so the example is self-validating in CI.
+      - uses: ./.github/actions/avoid-ai-writing
+        with:
+          api-key: ${{ secrets.AVOID_API_KEY }}
+          # Optional overrides:
+          # paths: 'docs/**/*.md,README.md'
+          # context: 'docs'
+          # max-files: '10'

@@ -115,6 +115,32 @@ In **detect mode**, the skill returns two sections:
 
 Trigger detect mode with: "detect," "flag only," "audit only," "just flag," "scan," or similar.
 
+### GitHub Action — audit docs PRs
+
+For repos that want AI-pattern audits to fire automatically on every PR touching markdown, this repo also ships a composite GitHub Action at [`.github/actions/avoid-ai-writing`](./.github/actions/avoid-ai-writing). It detects changed `*.md` files in the PR, runs each through the audit API, and posts a summary review comment.
+
+```yaml
+# .github/workflows/audit-docs.yml
+name: Audit changed docs
+on:
+  pull_request:
+    paths: ['**/*.md']
+permissions:
+  pull-requests: write
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: conorbronsdon/avoid-ai-writing/.github/actions/avoid-ai-writing@main
+        with:
+          api-key: ${{ secrets.AVOID_API_KEY }}
+```
+
+Get an API key at [avoidaiwriting.com/developers](https://www.avoidaiwriting.com/developers). The action skips files over 60KB or 5000 words, caps each run at 10 files, and exits 0 on all error paths so a flaky audit can't block a merge. See [`docs/example-workflow.yml`](./docs/example-workflow.yml) for the full reference workflow.
+
 ## 36 Patterns Detected
 
 ### Content Patterns

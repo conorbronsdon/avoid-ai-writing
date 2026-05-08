@@ -4,6 +4,21 @@ All notable changes to this project are documented here.
 
 ---
 
+## [Unreleased]
+
+### Added
+- **GitHub Action** at `.github/actions/avoid-ai-writing/` — composite action that audits changed `*.md` files in PRs and posts a summary review comment. Calls the audit API at avoidaiwriting.com; consumer repos add an `AVOID_API_KEY` secret and a one-step workflow. Skips files over the server caps, fails open so flaky network can't block merges. README has the full workflow snippet under "Installation & Usage".
+- **Example workflow** at `.github/workflows/example-audit.yml` showing the action used against this repo (self-validating reference).
+
+---
+
+## [3.3.1] — 2026-04-17
+
+### Added
+- **"Hit differently" added to Tier 1 word table + emotional flatline pattern** — extends the Tier 1 catalog to flag the AI-favorite "hits differently" framing alongside the existing emotional-flatline pattern.
+
+---
+
 ## [3.3.0] — 2026-04-01
 
 ### Added

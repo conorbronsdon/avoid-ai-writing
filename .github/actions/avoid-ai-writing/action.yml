@@ -1,0 +1,49 @@
+name: 'Avoid AI Writing'
+description: 'Audit changed markdown in a PR for AI writing patterns. Posts a summary review comment.'
+author: 'Conor Bronsdon'
+branding:
+  icon: 'edit-3'
+  color: 'orange'
+
+inputs:
+  api-key:
+    description: 'API key from avoidaiwriting.com/developers. Pass via secrets.'
+    required: true
+  paths:
+    description: 'Comma-separated globs of files to audit. Default audits all *.md changes in the PR.'
+    required: false
+    default: '*.md,**/*.md'
+  context:
+    description: 'Audit context. Valid: blog, technical, investor, social, docs, casual. Default: docs.'
+    required: false
+    default: 'docs'
+  max-files:
+    description: 'Cap on files to audit per run (each file = 1 API credit). Default: 10.'
+    required: false
+    default: '10'
+  api-url:
+    description: 'Override the audit endpoint. Only useful for self-hosted forks.'
+    required: false
+    default: 'https://www.avoidaiwriting.com/api/v1/audit'
+
+outputs:
+  files-audited:
+    description: 'Number of files actually audited (after filtering + cap).'
+    value: ${{ steps.audit.outputs.files-audited }}
+  files-flagged:
+    description: 'Number of files where the audit returned non-empty findings.'
+    value: ${{ steps.audit.outputs.files-flagged }}
+
+runs:
+  using: composite
+  steps:
+    - id: audit
+      shell: bash
+      env:
+        AVOID_API_KEY: ${{ inputs.api-key }}
+        AVOID_PATHS: ${{ inputs.paths }}
+        AVOID_CONTEXT: ${{ inputs.context }}
+        AVOID_MAX_FILES: ${{ inputs.max-files }}
+        AVOID_API_URL: ${{ inputs.api-url }}
+        GH_TOKEN: ${{ github.token }}
+      run: ${{ github.action_path }}/run.sh
