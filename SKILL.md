@@ -197,7 +197,7 @@ These are normal words. Only flag them when the text is saturated with them — 
 
 #### Tier 3 phrases — Flag at density or in clusters
 
-Multi-word boilerplate that's individually unobjectionable but stacks heavily in AI-generated content (crypto, web3, DePIN, AI/infra reviews are the worst offenders). Flag with the same logic as single-word Tier 3 — one use is fine, repetition is the tell — *plus* a cluster rule: three or more *distinct* phrases from this table in one piece is a strong signal even when each phrase only appears once, because that's the shape LLMs take when they vary their own boilerplate to seem less repetitive.
+Multi-word boilerplate that's individually unobjectionable but stacks heavily in AI-generated content (crypto, web3, DePIN, AI/infra reviews are the worst offenders). Flag at **2+ uses of the same phrase** (the per-phrase rule — lower threshold than single-word Tier 3 because a two-word match repeated twice is already stronger evidence than re-using "significant"), *plus* a **cluster rule**: three or more *distinct* phrases from this table in one piece is a strong signal even when each phrase only appears once — that's the shape LLMs take when they vary their own boilerplate to seem less repetitive.
 
 | Phrase | What to do |
 |---|---|
@@ -393,7 +393,7 @@ Not all AI-isms are equal. When doing a quick pass or triaging a large document,
 - Chatbot artifacts ("I hope this helps!", "Great question!")
 - Vague attributions without sources ("Experts believe")
 - Significance inflation on routine events
-- Hashtag stuffing (`linkedin` and `investor-email` profiles only — see context-profile table)
+- Hashtag stuffing on `linkedin` and `investor-email` posts (severity varies by profile — same rule, lower priority on `blog`/`technical-blog` where a launch post may legitimately stack tags; see the context-profile table below)
 
 ### P1 — Obvious AI smell (fix before publishing)
 - Word-list violations (delve, leverage, harness, robust, etc.)
