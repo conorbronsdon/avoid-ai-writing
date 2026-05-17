@@ -92,6 +92,18 @@ clawhub install avoid-ai-writing
 git clone https://github.com/conorbronsdon/avoid-ai-writing ~/.openclaw/skills/avoid-ai-writing
 ```
 
+### Cursor
+
+Drop the ported rule into your project's `.cursor/rules/`:
+
+```bash
+mkdir -p .cursor/rules
+curl -o .cursor/rules/avoid-ai-writing.mdc \
+  https://raw.githubusercontent.com/conorbronsdon/avoid-ai-writing/main/cursor-rules/avoid-ai-writing.mdc
+```
+
+See [`cursor-rules/README.md`](./cursor-rules/README.md) for activation globs and trigger phrases. Functionally identical to the Claude Code skill — same tier vocabulary, same context profiles, same modes.
+
 ### Triggering the skill
 
 Once installed, ask your assistant to clean up AI writing:
