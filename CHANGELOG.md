@@ -4,6 +4,25 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.4.0] — 2026-05-16
+
+### Added
+- **Tier 3 phrases** — multi-word boilerplate that's individually unobjectionable but stacks heavily in AI-generated crypto/web3/DePIN/AI-infra content: `emerging sector`, `the integration of`, `the intersection of`, `community-driven`, `long-term sustainability`, `user engagement`, `decentralized compute`, `sustainable reward emissions`, `tokenized incentive structures`, `designed for long-term`. Flagged by per-phrase density (≥2 repetitions) *or* cluster (≥3 distinct phrases in one piece — the LLM-varies-its-own-boilerplate shape).
+- **Generic future-narrative closers** — "May become one of the most important narratives of the next market cycle" template family. Modal + "become" + (one of) the most + (narrative / story / trend / theme / chapter / movement).
+- **Hedge-stacked predictions** — `could potentially`, `may eventually`, `might ultimately`. Modal + hedge adverb stack where each word cancels the next.
+- **"Real/actual" adjective inflation** — `real on-chain tokenomics`, `actual reward sustainability`, `genuine utility`, `true product-market fit`. The noun-modifier form distinct from the existing sentence-level hollow-intensifier rule.
+- **Hashtag stuffing** — trailing blocks of 6+ hashtags on short posts, especially when mixing one project tag with broad category tags (#AI #Crypto #Web3 #Innovation #FutureTech).
+- **Bullet lists of bare noun phrases** — 5+ consecutive bullets where each is a short adj+noun pair with no verb. Detector heuristic excludes genuine list content (verbs in items, ingredient lists, changelog entries).
+
+### Changed
+- **Emotional flatline** — extended to cover the bare section-header variant: "Interesting part of the project:" / "Interesting thing here:" — same role as "the most interesting part" but as a header opener.
+- Version bump to 3.4.0.
+
+### Reported by
+- A user of the avoid-ai-writing extension flagged two crypto-shill social posts (MineBench reviews) that the v3.3.x wordlist+regex detector scored as "Minimal AI signals" despite being obvious LLM output. Both posts avoided every Tier 1 vocabulary entry by substituting synonyms ("emerging sector," "scalable network contribution," "viability") and used structural shapes (hashtag block, bare-NP bullet lists, hedge stacks, future-narrative templates) the detector had no rule for. v3.4 adds rules for the structures, not just the words.
+
+---
+
 ## [3.3.0] — 2026-04-01
 
 ### Added
