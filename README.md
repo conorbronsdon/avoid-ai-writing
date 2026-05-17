@@ -39,8 +39,8 @@ A one-shot "make this sound human" prompt catches the obvious stuff. This skill 
 
 - **Structured audit** — returns identified issues with quoted text, the rewrite, a change summary, and a second-pass audit in four discrete sections. You see exactly what changed and why.
 - **Two-pass detection** — the second pass re-reads the rewrite and catches patterns that survive the first edit: recycled transitions, lingering inflation, copula swaps that snuck through.
-- **109-entry word replacement table across 3 tiers** — not vibes-based. Every flagged word has a specific, plainer alternative. "Leverage" → "use." "Commence" → "start." Tier 1 words are always flagged, Tier 2 words flag when they cluster, Tier 3 words flag only at high density. This reduces false positives while catching real AI tells.
-- **36 pattern categories** — see the full list below, each with before/after examples. Includes rhythm/uniformity checks and a rewrite-vs-patch threshold.
+- **109-entry word replacement table across 3 tiers + 10 Tier 3 phrases** — not vibes-based. Every flagged word has a specific, plainer alternative. "Leverage" → "use." "Commence" → "start." Tier 1 words always flag, Tier 2 words flag when they cluster, Tier 3 words flag only at high density. Tier 3 *phrases* (multi-word boilerplate like "the integration of," "decentralized compute") flag on per-phrase repetition or when 3+ distinct phrases stack in one piece — the LLM-self-varies-boilerplate shape.
+- **42 pattern categories** — see the full list below, each with before/after examples. Includes structural detection (hashtag stuffing, bare-NP bullet lists, hedge-stacked predictions), rhythm/uniformity checks, and a rewrite-vs-patch threshold.
 - **Detect mode** — flag patterns without rewriting. See which flags are real problems vs. judgment calls. Useful when patterns might be intentional or you're auditing content you don't want altered.
 - **Works with Claude Code and OpenClaw** — single `SKILL.md` with compatible frontmatter for both platforms.
 
@@ -115,7 +115,7 @@ In **detect mode**, the skill returns two sections:
 
 Trigger detect mode with: "detect," "flag only," "audit only," "just flag," "scan," or similar.
 
-## 36 Patterns Detected
+## 42 Patterns Detected
 
 ### Content Patterns
 
@@ -177,6 +177,19 @@ Trigger detect mode with: "detect," "flag only," "audit only," "just flag," "sca
 | 34 | **Rhythm and uniformity** | All sentences 15–25 words, all paragraphs same length | Mix short/long, fragments, questions |
 | 35 | **Over-polishing** | Every irregularity sanded away, perfectly uniform prose | Keep natural disfluency, varied rhythm |
 | 36 | **Rewrite-vs-patch threshold** | 5+ vocabulary flags + 3+ pattern categories + uniform rhythm | Advise full rewrite, not patching |
+
+### Structural Detection (v3.4)
+
+Added in v3.4 to catch LLM output that sidesteps the vocabulary tables by substituting synonyms but still leans on structural shapes detectors can identify. Crypto/web3/AI-infra content is where these patterns concentrate most heavily, but the rules generalize to any social-length post.
+
+| # | Pattern | Before | After |
+|---|---------|--------|-------|
+| 37 | **Tier 3 phrases (multi-word boilerplate)** | "the integration of," "decentralized compute," "community-driven," "long-term sustainability" stacked across a piece | Replace the repeated phrase with a specific claim, or vary genuinely. Flagged per-phrase at ≥2 hits, or as a cluster when ≥3 distinct phrases appear |
+| 38 | **Future-narrative closers** | "may become one of the most important narratives of the next market cycle" | Pick the falsifiable version. "X may exceed Y by 2027" is a prediction; the template form is not |
+| 39 | **Hedge-stacked predictions** | "could potentially create," "may eventually unlock" | Pick one. Each hedge cancels the next |
+| 40 | **"Real/actual" adjective inflation** | "real on-chain tokenomics," "actual reward sustainability" | Drop the empty intensifier and add the specific claim. Carve-out: "real on-chain settlement, *not* bridged IOUs" is honest contrastive writing — the AI tell is the unsaid contrast |
+| 41 | **Hashtag stuffing** | 15-tag trailing block: `#AI #Crypto #Web3 #Innovation #FutureTech…` | 2-3 specific tags max, or none. Empirical threshold: 6+ tags is near-universal in LLM social output, rare in thoughtful human posts |
+| 42 | **Bullet lists of bare noun phrases** | `* Stable mining efficiency / Reliable pool connectivity / Optimized RandomX performance / Low failed share rates / Effective hardware utilization / Consistent thermal stability` | Convert to prose, or rewrite each item as a full claim with a verb and a number. Carve-out: genuine list content (changelogs, parameter docs, ingredient lists) where bare NPs are correct |
 
 ## Full Example
 

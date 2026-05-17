@@ -8,7 +8,7 @@ A single-file writing skill (`SKILL.md`) that audits and rewrites content to rem
 
 ## Repository structure
 
-- `SKILL.md` — the skill itself (v3.2.0). This is the product. All rules, tiers, profiles, and output format live here.
+- `SKILL.md` — the skill itself (v3.4.0). This is the product. All rules, tiers, profiles, and output format live here.
 - `README.md` — public-facing docs, installation instructions, pattern reference table, full before/after example.
 - `CHANGELOG.md` — version history with what changed and why.
 
