@@ -252,10 +252,12 @@ These slot-fill constructions signal that a sentence was generated, not written.
 ### "Real/actual" adjective inflation
 - "Real on-chain tokenomics," "actual reward sustainability," "genuine utility," "true product-market fit." Using `real` / `actual` / `genuine` / `true` as an empty intensifier on an abstract noun implies the rest of the field is fake or superficial — without naming what makes this instance the real one. Common in crypto/AI/web3 content where the writer wants to signal sophistication.
 - Distinct from the existing "hollow intensifiers" rule (genuine / truly / quite frankly as sentence-level hedges). This is the noun-modifier form, where the intensifier latches onto an abstract noun to manufacture a contrast that goes unsaid.
-- Fix: drop the adjective and add the specific claim. "Reward sustainability" → "rewards funded from $X/mo in fees rather than emissions."
+- **Carve-out — named contrast:** if the sentence explicitly names what the fake/superficial version is, leave it. "Real on-chain settlement, not bridged IOUs" or "actual revenue from paying customers, not grants" is honest contrastive writing. The AI tell is the unsaid contrast.
+- Fix when no contrast is named: drop the adjective and add the specific claim. "Reward sustainability" → "rewards funded from $X/mo in fees rather than emissions."
 
 ### Hashtag stuffing
 - Long trailing hashtag blocks (6+ hashtags on a single short post) are near-universal in LLM-generated social content and rare in thoughtful human posts. The block usually mixes a project-specific tag with broad category tags (#AI #Crypto #Web3 #Innovation #FutureTech #Technology) — the categorical ones do nothing for discoverability and read as bot output.
+- **Why 6?** Empirical floor. LinkedIn and X organic engagement plateaus or declines past 3-5 tags; human posts that exceed 5 are usually launch posts trading reach for engagement, while LLM-generated posts default to 10-15. Six is the threshold where false positives on legitimate human use start dropping below false negatives on AI output. The detector treats 6+ as a hard flag; the spec treats 5+ as a soft tell worth a second look on `linkedin` and `investor-email` profiles.
 - Fix: 2-3 specific tags max, or none. If a hashtag wouldn't help a reader find related work, it's filler.
 
 ### Bullet lists of bare noun phrases
@@ -386,13 +388,14 @@ If the text has 5+ flagged vocabulary hits across multiple categories, 3+ distin
 
 Not all AI-isms are equal. When doing a quick pass or triaging a large document, prioritize by tier:
 
-### P0 � Credibility killers (fix immediately)
+### P0 — Credibility killers (fix immediately)
 - Cutoff disclaimers ("As of my last update")
 - Chatbot artifacts ("I hope this helps!", "Great question!")
 - Vague attributions without sources ("Experts believe")
 - Significance inflation on routine events
+- Hashtag stuffing (`linkedin` and `investor-email` profiles only — see context-profile table)
 
-### P1 � Obvious AI smell (fix before publishing)
+### P1 — Obvious AI smell (fix before publishing)
 - Word-list violations (delve, leverage, harness, robust, etc.)
 - Template phrases and slot-fill constructions
 - "Let's" transition openers
@@ -400,13 +403,20 @@ Not all AI-isms are equal. When doing a quick pass or triaging a large document,
 - Formulaic openings ("In the rapidly evolving world of...")
 - Bold overuse
 - Em dash frequency (above 1 per 1,000 words)
+- Generic future-narrative closers ("may become one of the most important narratives…")
+- Hedge-stacked predictions ("could potentially," "may eventually")
+- Real/actual adjective inflation ("real on-chain tokenomics")
+- Bullet lists of bare noun phrases (5+ short adj+noun items, no verbs)
+- Tier 3 phrase clustering (≥3 distinct boilerplate phrases in one piece)
 
-### P2 � Stylistic polish (fix when time allows)
+### P2 — Stylistic polish (fix when time allows)
 - Generic conclusions ("The future looks bright")
 - Compulsive rule of three
 - Uniform paragraph length
 - Copula avoidance (serves as, features, boasts)
 - Transition phrases (Moreover, Furthermore, Additionally)
+- Hashtag stuffing (`blog`/`technical-blog` profiles)
+- Tier 3 phrase repetition (single phrase ≥2× — fine in isolation, suspect in stacks)
 
 Use P0+P1 for quick passes. Full audit covers all three tiers.
 
@@ -451,6 +461,12 @@ Rules not listed in the table apply at full strength across all profiles.
 | Rhetorical questions | relaxed (1 as hook OK) | strict | strict | strict | strict | skip |
 | Transition phrases | skip (short-form) | strict | strict | strict | relaxed | skip |
 | Generic conclusions | skip | strict | strict | **extra strict** | skip | skip |
+| Hashtag stuffing | strict | strict | strict | **extra strict** | skip (no hashtags in docs) | skip |
+| Bullet-NP lists | strict | strict | relaxed (technical option lists OK) | strict | relaxed (parameter lists OK) | skip |
+| Tier 3 phrase clustering | strict | strict | strict | **extra strict** | relaxed | skip |
+| Future-narrative closers | strict | strict | strict | **extra strict** | skip | skip |
+| Hedge-stacked predictions | strict | strict | relaxed ("could" is hedged accuracy) | **extra strict** | relaxed | skip |
+| Real/actual inflation | strict | strict | strict | **extra strict** | relaxed | skip |
 
 **Technical-blog word table exceptions:** These terms have legitimate technical meaning and should not be flagged in technical context: `robust`, `comprehensive`, `seamless`, `ecosystem`, `leverage` (when discussing actual platform leverage/APIs), `facilitate`, `underpin`, `streamline`. Still flag: `delve`, `tapestry`, `beacon`, `embark`, `testament to`, `game-changer`, `harness`.
 

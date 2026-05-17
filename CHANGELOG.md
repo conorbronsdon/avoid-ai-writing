@@ -16,6 +16,10 @@ All notable changes to this project are documented here.
 
 ### Changed
 - **Emotional flatline** — extended to cover the bare section-header variant: "Interesting part of the project:" / "Interesting thing here:" — same role as "the most interesting part" but as a header opener.
+- **Severity tiers** — all six new categories wired into P0/P1/P2 ladder (hashtag stuffing varies by profile; the rest are P1, with phrase repetition at P2).
+- **Context profiles tolerance matrix** — added rows for all six new categories so the `linkedin` and `docs` profiles don't false-positive on legitimate use (e.g., bullet-NP lists relaxed on `technical-blog` and `docs` since technical option lists are correctly bare-NP).
+- **"6+" hashtag threshold** — added rationale paragraph explaining the empirical floor.
+- **"Real/actual" inflation** — added named-contrast carve-out so honest contrastive writing ("real on-chain settlement, not bridged IOUs") isn't flagged.
 - Version bump to 3.4.0.
 
 ### Reported by
