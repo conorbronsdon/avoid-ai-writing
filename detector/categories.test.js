@@ -31,12 +31,9 @@ function test(name, fn) {
 const typeKeys = Object.keys(AIDetector.TYPE_LABELS);
 const md = fs.readFileSync(path.join(__dirname, 'CATEGORIES.md'), 'utf8');
 
-// All backtick tokens anywhere in the doc, e.g. `tier1`.
-const mentioned = new Set();
-for (const m of md.matchAll(/`([a-z0-9][a-z0-9-]*)`/g)) mentioned.add(m[1]);
-
 // Type tokens claimed in the first column of any table row, excluding the
-// literal header token `type` and markdown separators.
+// literal header token `type` and markdown separators. A stray mention in
+// prose doesn't count — a type has to land in an actual mapping-table row.
 const tableTypes = new Set();
 for (const line of md.split('\n')) {
   if (!line.startsWith('|')) continue;
@@ -50,12 +47,12 @@ for (const line of md.split('\n')) {
 console.log('CATEGORIES.md anti-drift contract');
 console.log(`  (${typeKeys.length} detector types, ${tableTypes.size} documented in tables)`);
 
-test('every detector type is documented in CATEGORIES.md', () => {
-  const missing = typeKeys.filter((k) => !mentioned.has(k));
+test('every detector type is documented in a CATEGORIES.md table', () => {
+  const missing = typeKeys.filter((k) => !tableTypes.has(k));
   assert.deepEqual(
     missing,
     [],
-    `detector types missing from CATEGORIES.md: ${missing.join(', ')}`
+    `detector types missing from CATEGORIES.md tables: ${missing.join(', ')}`
   );
 });
 
