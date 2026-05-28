@@ -19,14 +19,14 @@ Edit `SKILL.md` directly. There's nothing to build or test. When making changes:
 - Bump the version in the SKILL.md frontmatter (`version: X.Y.Z`)
 - Add a dated entry to CHANGELOG.md
 - Update README.md if the change affects installation, usage, feature list, or pattern count
-- Keep the README pattern count table (currently "36 Patterns Detected") in sync with actual SKILL.md categories
+- The pattern count lives in **one** place — the README "46 pattern categories" bullet — and is derived from SKILL.md's detection `###` entries. Don't restate it elsewhere; CI (`scripts/check-pattern-count.sh`) fails the build if the README number drifts from SKILL.md, so just add the new `###` entry and bump the README bullet.
 
 ## Architecture of the skill
 
 The skill has three modes (`rewrite` default, `detect` flag-only, `edit` in-place) and processes text through this pipeline:
 
 1. **Context profile detection** — auto-detects or accepts a profile hint (linkedin, blog, technical-blog, investor-email, docs, casual) that adjusts rule strictness via the tolerance matrix
-2. **Pattern matching** — 36 categories across content, language, structure, communication, and meta patterns
+2. **Pattern matching** — detection categories across content, language, structure, communication, and meta patterns (see SKILL.md for the catalog; the count is in the README bullet)
 3. **Vocabulary flagging** — 3-tier system: Tier 1 (always flag), Tier 2 (flag in clusters), Tier 3 (flag at high density)
 4. **Severity classification** — P0 (credibility killers), P1 (obvious AI smell), P2 (stylistic polish)
 5. **Output** — rewrite mode: 4 sections including a second-pass audit; detect mode: 2 sections with problem vs. judgment-call assessment
