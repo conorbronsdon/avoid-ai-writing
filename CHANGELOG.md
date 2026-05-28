@@ -4,6 +4,22 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.7.0] — 2026-05-28
+
+### Added
+- **Hyphenated-pair overuse** — stacked compound modifiers ("a high-quality, well-architected, future-proof solution") and the attributive/predicate error (hyphenate "a high-quality report" but not "the report is high quality").
+- **Speculative gap-filling** — hedged speculation dressed as background ("maintains a low profile," "is believed to have," "likely began his career") that hides a knowledge gap rather than admitting it. Distinct from cutoff disclaimers.
+
+### Changed
+- **Formatting** — added **mixed straight/curly punctuation** (quote/apostrophe style mixed in one document — a paste-from-chat-UI tell).
+- **Confidence calibration phrases** — extended with **persuasive-authority tropes** ("the real question is," "at its core," "fundamentally," "make no mistake").
+- Version bump to 3.7.0.
+
+### Credit
+- Patterns adapted from `blader/humanizer` (P21, P26, P27) and Wikipedia's "Signs of AI writing," identified in the competitive research tracked in #22.
+
+---
+
 ## [3.6.0] — 2026-05-28
 
 ### Added
