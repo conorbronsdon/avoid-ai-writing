@@ -1,0 +1,40 @@
+name: plugin-skill-sync
+
+on:
+  pull_request:
+    paths:
+      - "SKILL.md"
+      - "plugins/**"
+      - ".claude-plugin/**"
+      - "scripts/sync-plugin-skill.sh"
+  push:
+    branches: [main]
+    paths:
+      - "SKILL.md"
+      - "plugins/**"
+      - ".claude-plugin/**"
+      - "scripts/sync-plugin-skill.sh"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate manifest JSON
+        run: |
+          python3 -m json.tool .claude-plugin/marketplace.json > /dev/null
+          python3 -m json.tool plugins/avoid-ai-writing/.claude-plugin/plugin.json > /dev/null
+
+      - name: Regenerate bundled skill + check version
+        run: bash scripts/sync-plugin-skill.sh
+
+      - name: Fail if the bundled skill drifted from SKILL.md
+        run: |
+          if ! git diff --quiet; then
+            echo "::error::plugins/avoid-ai-writing/skills/avoid-ai-writing/SKILL.md is out of sync with the root SKILL.md."
+            echo "Run 'bash scripts/sync-plugin-skill.sh' and commit the result."
+            git --no-pager diff --stat
+            exit 1
+          fi
+          echo "bundled skill is in sync"
