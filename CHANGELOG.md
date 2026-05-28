@@ -4,6 +4,22 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.5.0] — 2026-05-27
+
+### Added
+- **Infomercial engagement hooks** — punchy fragment-hooks that fake momentum around ordinary information: "The catch?", "The kicker?", "Here's the thing.", "Plot twist:", "The best part?". Distinct from rhetorical-question openers (which stall before a point) and chatbot artifacts (which perform helpfulness).
+- **Paragraph-reshuffle immunity** — a writer-side structure test: if you can swap two body paragraphs without breaking the piece, you've written a list of points, not an argument that builds.
+- **Treadmill effect / low information density** — a writer-side content test: each paragraph should contribute one new fact, claim, or turn rather than restate the premise in fresh words. The tell is that you could cut 40-60% and lose no information.
+
+### Changed
+- **Superficial -ing analyses** — extended to cover the declarative "meaning-telling" variant ("this represents a broader shift," "speaks to a larger trend") that glosses a mundane subject as profound without the -ing construction.
+- Version bump to 3.5.0.
+
+### Credit
+- Patterns adapted from [`Aboudjem/humanizer-skill`](https://github.com/Aboudjem/humanizer-skill) (P38, P40, P41, P43), identified during a competitive catalog audit.
+
+---
+
 ## [3.4.0] — 2026-05-16
 
 ### Added
