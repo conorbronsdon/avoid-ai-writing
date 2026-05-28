@@ -37,6 +37,15 @@ positives erode trust in every other rule. Before proposing a rule, ask who woul
 get flagged by mistake, and add carve-outs for the legitimate cases. A signal
 that fires on most normal prose is not worth adding.
 
+## Cite your sources
+
+If your rule rests on a factual claim about how AI or humans write — "ChatGPT
+emits curly quotes by default," "most writers rarely do X" — link a source for
+it. These claims get checked, and some turn out wrong or more nuanced than they
+first seem (smart quotes, for instance, are a typing-time default on macOS and in
+Word, not a publication-step artifact). A claim with a citation can be verified;
+an asserted one can't. Put the links in the PR description or inline in the rule.
+
 ## Run the tests
 
 ```bash
