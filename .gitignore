@@ -14,3 +14,6 @@ Desktop.ini
 # Environment
 .env
 .env.local
+
+# Local git worktrees (parallel Claude Code sessions)
+.worktrees/
