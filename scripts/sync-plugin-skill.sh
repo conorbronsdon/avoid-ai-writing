@@ -12,8 +12,8 @@ cp "$src" "$dest"
 
 # Keep plugin.json's version in lockstep with the SKILL.md frontmatter version.
 skill_version="$(sed -n 's/^version:[[:space:]]*//p' "$src" | head -n1)"
-plugin_version="$(sed -n 's/.*"version":[[:space:]]*"\([^"]*\)".*/\1/p' \
-  "$repo_root/plugins/avoid-ai-writing/.claude-plugin/plugin.json" | head -n1)"
+plugin_version="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["version"])' \
+  "$repo_root/plugins/avoid-ai-writing/.claude-plugin/plugin.json")"
 
 if [ "$skill_version" != "$plugin_version" ]; then
   echo "version mismatch: SKILL.md=$skill_version plugin.json=$plugin_version" >&2
