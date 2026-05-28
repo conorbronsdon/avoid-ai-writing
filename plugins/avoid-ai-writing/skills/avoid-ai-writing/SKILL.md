@@ -418,7 +418,7 @@ This is the first of four stylometric signals on the roadmap. The others (senten
 
 ### Treadmill effect / low information density (content test)
 - Another writer-side test: read each paragraph and ask "what's actually new here?" AI prose frequently restates the premise in fresh words instead of advancing it — lots of motion, no distance covered. The tell is that you could cut 40-60% and lose no information.
-- The fix: for each paragraph, name the one fact, claim, or turn it contributes. If there isn't one, cut it. If there is, lead with it and drop the throat-clearing. Density is the antidote — name specific things, advance the argument, stop circling. Adapted from `Aboudjem/humanizer-skill` P43.
+- The fix: for each paragraph, name the one fact, claim, or turn it contributes. If there isn't one, cut it. If there is, lead with it and drop the throat-clearing. Adapted from `Aboudjem/humanizer-skill` P43.
 
 ### When to rewrite from scratch vs. patch
 
