@@ -23,7 +23,7 @@ Edit `SKILL.md` directly. There's nothing to build or test. When making changes:
 
 ## Architecture of the skill
 
-The skill has two modes (`rewrite` default, `detect` flag-only) and processes text through this pipeline:
+The skill has three modes (`rewrite` default, `detect` flag-only, `edit` in-place) and processes text through this pipeline:
 
 1. **Context profile detection** — auto-detects or accepts a profile hint (linkedin, blog, technical-blog, investor-email, docs, casual) that adjusts rule strictness via the tolerance matrix
 2. **Pattern matching** — 36 categories across content, language, structure, communication, and meta patterns
