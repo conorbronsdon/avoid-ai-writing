@@ -4,6 +4,23 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.6.0] — 2026-05-28
+
+### Added
+- **Voice profiles** — an optional persona axis, independent of the audience context profiles. Five profiles (`casual`, `professional`, `technical`, `warm`, `blunt`), each a set of concrete targets (sentence length, contraction policy, hedging tolerance, jargon level, rhythm) drawn from writing-craft sources (Strunk, Provost, Ogilvy, Handley). Plus optional calibration to a user-supplied writing sample. Includes a composition rule: voice sets the target, context sets enforcement strictness, conflicts resolve toward the stricter.
+- **Edit mode** — a third mode alongside `rewrite` and `detect`. Edits a named file in place via the Edit tool with minimal, targeted changes, preserving already-human passages, then re-reads to verify. Returns an edits-made + verification report, not the full file.
+- **Iterate to convergence** — rewrite mode can repeat the audit→rewrite cycle until no patterns remain or N passes (capped at 2). Generalizes the existing built-in second pass.
+- **Invocation surface** — documented optional flags (`--mode`, `--voice`, `--context`, `--file`, `--iterate N`) alongside the existing natural-language triggers.
+
+### Changed
+- Frontmatter `description` updated to advertise the new modes and voice profiles.
+- Version bump to 3.6.0.
+
+### Notes
+- Designed from a competitive feature audit (Aboudjem/humanizer-skill, brandonwise/humanizer, blader/humanizer) plus detection-science and writing-craft research. The `--score` feature and four additional catalog patterns from that research are tracked separately (#21, #22).
+
+---
+
 ## [3.5.0] — 2026-05-27
 
 ### Added

@@ -1,7 +1,7 @@
 ---
 name: avoid-ai-writing
-description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Use this skill when asked to "remove AI-isms," "clean up AI writing," "edit writing for AI patterns," "audit writing for AI tells," or "make this sound less like AI." Supports a detection-only mode that flags patterns without rewriting.
-version: 3.5.0
+description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Use this skill when asked to "remove AI-isms," "clean up AI writing," "edit writing for AI patterns," "audit writing for AI tells," or "make this sound less like AI." Supports a detect-only mode, an edit-in-place mode for files, an optional voice profile (casual / professional / technical / warm / blunt), and an iterate-to-convergence pass.
+version: 3.6.0
 license: MIT
 compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, VS Code Copilot, Hermes Agent, OpenHands, etc.) or OpenClaw. No external tools or APIs required.
 metadata:
@@ -26,7 +26,7 @@ In short: signals, not proof. Worth acting on; not worth ruining someone's day o
 
 ## Modes
 
-This skill operates in one of two modes:
+This skill operates in one of three modes:
 
 **`rewrite`** (default) — Flag AI-isms and rewrite the text to fix them.
 
@@ -36,7 +36,13 @@ This skill operates in one of two modes:
 - You're auditing text you don't want altered (published content, someone else's writing, reference material)
 - You want a quick scan without waiting for a full rewrite
 
-Trigger detect mode when the user says "detect," "flag only," "audit only," "just flag," "scan," "what AI patterns are in this," or similar. Default to rewrite mode if not specified.
+**`edit`** — Edit a file in place rather than returning rewritten text. Use this when the writer points you at a file ("clean up `draft.md`", "fix the AI-isms in this file directly") and wants the file changed, not a copy to paste back. Make **minimal, targeted edits** with the Edit tool — change the flagged spans, not the whole document. **Preserve passages that are already human**: if a paragraph has no tells, leave it untouched. After editing, re-read the file and confirm the flagged patterns are resolved.
+
+Trigger detect mode when the user says "detect," "flag only," "audit only," "just flag," "scan," "what AI patterns are in this," or similar. Trigger edit mode when the user names a file and asks you to fix or clean it in place. Default to rewrite mode if not specified.
+
+**Invocation.** Natural language is enough ("rewrite this in a blunt voice for LinkedIn," "edit `post.md` in place," "scan this, don't rewrite"). Power users can also pass explicit options, which map to the sections below: `[--mode rewrite|detect|edit]`, `[--voice casual|professional|technical|warm|blunt]`, `[--context linkedin|blog|technical-blog|investor-email|docs|casual]`, `[--file PATH]`, `[--iterate N]` (max 2).
+
+**Iterate to convergence (optional).** Rewrite mode already runs one corrective second pass (see Output format). When the writer asks to "iterate," "keep going until it's clean," or passes `--iterate N`, repeat the audit→rewrite cycle until no patterns remain or **N passes** are reached. Cap **N at 2** — a rewrite plus one corrective pass catches almost everything, and each further pass costs a full regeneration for diminishing returns. Report how many passes it took ("converged in 2 passes").
 
 ---
 
@@ -50,6 +56,12 @@ In **detect** mode, your job is to:
 
 1. **Audit it**: identify every AI-ism present, citing the specific text
 2. **Assess it**: note which flags are clear problems vs. patterns that may be intentional or effective in context
+
+In **edit** mode, your job is to:
+
+1. **Read** the file the writer named
+2. **Edit in place**: apply minimal, targeted fixes to the flagged spans with the Edit tool, leaving already-human passages untouched
+3. **Verify**: re-read the file and confirm the flagged patterns are resolved; report what you changed
 
 ---
 
@@ -533,6 +545,28 @@ If auto-detection feels wrong, say which profile you're using and why. The user 
 ---
 
 
+## Voice profiles
+
+Context profiles (above) set *how strict* to be for an audience. Voice profiles set *how the prose should sound* — the persona. They're independent axes: you can write blunt for a blog or warm for docs. Voice is **optional** — if the writer doesn't name one, infer it from the input's existing register and don't impose a persona on text that already has one.
+
+Each profile is a set of concrete targets, not a vibe:
+
+**`casual`** — Contractions throughout; their absence reads stiff. Short sentences (aim for ≤14 words on average); fragments allowed. At least one first-person or concrete-anecdote touch. Near-zero jargon. Keep warm hedges ("honestly," "I think") but cut corporate ones ("it's worth noting"). *Blog posts, social, community.*
+
+**`professional`** — Active voice for most sentences. Vary sentence length; avoid three in a row within a few words of each other. One concrete claim per paragraph (a number, a name, a date), never "experts say." Make the ask explicit. Low tolerance for hedging. *LinkedIn, investor email, sponsor pitches.*
+
+**`technical`** — Prefer plain copulatives ("X is Y") over inflated substitutes ("serves as," "stands as a testament to"). One idea per sentence; imperative mood for instructions. Jargon is fine, but define it on first use. Tables and lists only where the content is genuinely list-shaped, not for decoration. *Docs, technical blog.*
+
+**`warm`** — Address the reader directly ("you") and acknowledge them at least once. Cut intensifiers ("very," "truly," "incredibly") in favor of stronger verbs. No performative-empathy openers ("I completely understand how you feel"). Medium sentences (15–20 words) for an unhurried cadence. *Mentorship, onboarding, thank-yous.*
+
+**`blunt`** — Lead with the claim; cut "It's important to note that" windups. Em-dashes are rare here; use periods for emphasis. No padding to hit a rule of three. Near-zero hedging; flag "may / could / potentially" stacks. Short declaratives, with the occasional long sentence for contrast. *Decision memos, thought leadership, hard feedback.*
+
+**Calibrate to a sample (optional).** If the writer gives you a sample of their own writing ("match my voice — here's a post"), analyze its sentence-length pattern, contraction rate, paragraph openings, and recurring word choices, then match those instead of a named profile. Don't "upgrade" their vocabulary: if they write "stuff" and "things," keep that register.
+
+**How voice composes with context.** Voice sets the target; context sets how hard to enforce it. Blunt voice on a `blog` context means an aggressive em-dash budget but only a gentle nudge on a stray smart quote; the same blunt voice on `investor-email` makes both hard edits. When a voice target and a context rule disagree, resolve toward the **stricter** of the two — a warm voice on `docs` still doesn't get decorative tables. Sensible default pairings: casual↔casual, professional↔linkedin/investor-email, technical↔docs/technical-blog.
+
+---
+
 ## Output format
 
 ### Rewrite mode (default)
@@ -560,6 +594,16 @@ A bulleted list of every AI-ism identified, with the offending text quoted. Grou
 
 **2. Assessment**
 For each flag, note whether it's a clear problem or a judgment call. Some AI-associated patterns are effective writing techniques — uniform paragraph length is a problem, but a well-placed "however" isn't. Call out which flags the writer should definitely fix vs. which ones are worth a second look but might be fine in context. If the text is clean, say so.
+
+### Edit mode
+
+After editing the file in place, return a short report — not the full file:
+
+**1. Edits made**
+A bulleted list of the changes, each with the file location and the before → after. Only the spans you touched.
+
+**2. Verification**
+Confirm you re-read the file and the flagged patterns are resolved. Note anything you deliberately left alone because it was already human or intentional.
 
 ---
 
