@@ -4,6 +4,21 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.8.0] — 2026-05-28
+
+### Added
+- **`--score`** — an optional `[Score: NN/100]` AI-tell density estimate. Blends a pattern score (density on a log scale + breadth + category spread, weight 0.7) with a uniformity score (sentence-length burstiness, type-token ratio above 100 words, paragraph uniformity, weight 0.3). Rubric adapted from `brandonwise/humanizer`'s calibrated composite.
+- **Score guardrails** baked in: uniformity alone never accuses (capped at 15 with zero pattern hits); a word-count/sentence-count reliability gate that labels short text low-confidence and directional; explicit false-positive disclaimers for non-native English, technical/reference prose, and list-structured text. The score is framed as a writing-quality signal, not proof of authorship.
+
+### Changed
+- Frontmatter `description` and invocation flags updated to include `--score`.
+- Version bump to 3.8.0.
+
+### Notes
+- Closes #21. The score deliberately weights cheap, robust structural/pattern signals and avoids claiming perplexity or intrinsic-dimension (which a Markdown skill cannot compute). Pairs every number with the per-pattern list.
+
+---
+
 ## [3.7.0] — 2026-05-28
 
 ### Added

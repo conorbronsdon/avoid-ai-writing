@@ -1,7 +1,7 @@
 ---
 name: avoid-ai-writing
-description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Use this skill when asked to "remove AI-isms," "clean up AI writing," "edit writing for AI patterns," "audit writing for AI tells," or "make this sound less like AI." Supports a detect-only mode, an edit-in-place mode for files, an optional voice profile (casual / professional / technical / warm / blunt), and an iterate-to-convergence pass.
-version: 3.7.0
+description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Use this skill when asked to "remove AI-isms," "clean up AI writing," "edit writing for AI patterns," "audit writing for AI tells," or "make this sound less like AI." Supports a detect-only mode, an edit-in-place mode for files, an optional voice profile (casual / professional / technical / warm / blunt), an iterate-to-convergence pass, and an optional 0-100 AI-tell density score.
+version: 3.8.0
 license: MIT
 compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, VS Code Copilot, Hermes Agent, OpenHands, etc.) or OpenClaw. No external tools or APIs required.
 metadata:
@@ -40,7 +40,7 @@ This skill operates in one of three modes:
 
 Trigger detect mode when the user says "detect," "flag only," "audit only," "just flag," "scan," "what AI patterns are in this," or similar. Trigger edit mode when the user names a file and asks you to fix or clean it in place. Default to rewrite mode if not specified.
 
-**Invocation.** Natural language is enough ("rewrite this in a blunt voice for LinkedIn," "edit `post.md` in place," "scan this, don't rewrite"). Power users can also pass explicit options, which map to the sections below: `[--mode rewrite|detect|edit]`, `[--voice casual|professional|technical|warm|blunt]`, `[--context linkedin|blog|technical-blog|investor-email|docs|casual]`, `[--file PATH]`, `[--iterate N]` (max 2).
+**Invocation.** Natural language is enough ("rewrite this in a blunt voice for LinkedIn," "edit `post.md` in place," "scan this, don't rewrite," "score this"). Power users can also pass explicit options, which map to the sections below: `[--mode rewrite|detect|edit]`, `[--voice casual|professional|technical|warm|blunt]`, `[--context linkedin|blog|technical-blog|investor-email|docs|casual]`, `[--file PATH]`, `[--iterate N]` (max 2), `[--score]`.
 
 **Iterate to convergence (optional).** Rewrite mode already runs one corrective second pass (see Output format) — that built-in pass *is* pass 2, so `--iterate` does not stack on top of it. When the writer asks to "iterate," "keep going until it's clean," or passes `--iterate N`, repeat the audit→rewrite cycle until no patterns remain or **N passes** are reached. Cap **N at 2**: a rewrite plus one corrective pass clears the flagged patterns, and a third pass costs a full regeneration while rarely finding more. Report how many passes it took ("converged in 2 passes").
 
@@ -612,6 +612,32 @@ A bulleted list of the changes, each with the file location and the before → a
 
 **2. Verification**
 Confirm you re-read the file and the flagged patterns are resolved. Note anything you deliberately left alone because it was already human or intentional.
+
+---
+
+## AI-tell score (optional)
+
+When the writer asks for a score ("score this," "how AI does this read," `--score`), prepend a `[Score: NN/100]` line to your output. The score estimates *AI-tell density* — how strongly the writing exhibits the patterns in this skill — **not** a probability that AI wrote it. It is a writing-quality signal, never proof of authorship (see "What this skill is and isn't"). Always pair the number with the specific patterns behind it; the per-pattern list is the useful part, the number is just a summary.
+
+**How to estimate it.** Blend two components:
+
+1. **Pattern score** (0–100, weight **0.7**) — how many flagged patterns appear and how densely:
+   - *Density*: weighted pattern hits per 100 words, on a log scale so a few hits move the needle and piling on has diminishing effect — roughly `min(log2(hits_per_100_words + 1) × 13, 65)`.
+   - *Breadth*: `+2` per distinct pattern, capped at `+20`.
+   - *Category spread*: `+3` per distinct category, capped at `+15`.
+2. **Uniformity score** (0–100, weight **0.3**) — structural regularity, only meaningful past ~100 words:
+   - Low sentence-length variation (low burstiness) → up to `+25`.
+   - Low type-token ratio (repetitive vocabulary), counted **only above 100 words** → up to `+20`.
+   - Uniform paragraph lengths → up to `+15`.
+
+`composite = round(pattern × 0.7 + uniformity × 0.3)`, clamped 0–100.
+
+**Guardrails — do not skip:**
+- **Uniformity alone never accuses.** If no patterns matched, cap the score at **15** no matter how regular the prose is. Clean, plain writing is not an AI tell.
+- **Reliability.** Below ~150 words, fewer than ~4 sentences, or only one pattern family present: label the score **low-confidence** and say it's directional. Short text can't support a real estimate.
+- **Known false-positive sources.** Call them out when relevant: non-native English, technical/reference/legal prose, and tightly list-structured text all trip these signals without being AI. The evidence is stark — detectors flag roughly 61% of non-native-English essays as AI (Liang et al., Stanford). Don't let a number override that context.
+
+**Bands:** 0–19 minimal · 20–44 light · 45–69 moderate · 70–100 heavy AI signal.
 
 ---
 
