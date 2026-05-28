@@ -235,6 +235,26 @@ Added in v3.4 to catch LLM output that sidesteps the vocabulary tables by substi
 
 That's 35+ AI tells.
 
+## Run the detector
+
+The skill ships a deterministic, zero-dependency detection engine in
+[`detector/`](./detector/) — the same 43-category engine the rules above
+describe, as runnable code. It works in Node (`>=18`) and the browser with no
+build step.
+
+```bash
+npm test          # run the detector's fixtures (no deps to install)
+```
+
+```js
+const AIDetector = require("./detector/patterns.js");
+const { score, label, issues } = AIDetector.analyzeText("Your text here…");
+```
+
+See [`detector/README.md`](./detector/README.md) for the full `analyzeText` API
+and [`detector/CATEGORIES.md`](./detector/CATEGORIES.md) for the rule ↔ category
+map that keeps `SKILL.md` and the engine in sync.
+
 ## $avoid token + web app
 
 The community created a Solana token around this project. You can burn $avoid tokens to run the audit skill through a web app:
