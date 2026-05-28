@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.7.2] — 2026-05-28
+
+### Changed
+- **Curly quotation marks** — recalibrated per review of #15. Reframed from a "strong" tell to a **weak, corroborating** signal meaningful mainly in plain-text contexts (code comments, commit messages, plaintext drafts), since Word/Google Docs/macOS/iOS auto-curl quotes by default. Curly apostrophes (U+2019) are no longer flagged on their own (they appear in every contraction). Fixes the German low-9 example. Keeps it consistent with the deterministic detector's co-occurrence logic (#16).
+
+---
+
 ## [3.7.1] — 2026-05-28
 
 ### Changed
