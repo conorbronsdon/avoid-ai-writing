@@ -19,6 +19,17 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.7.1] — 2026-05-28
+
+### Changed
+- **Curly quotation marks** — refined the 3.7.0 "mixed straight/curly punctuation" rule into a single Formatting rule: flag the unexplained presence of Unicode curly quotes (U+201C / U+201D / U+2018 / U+2019) in otherwise plain-ASCII text as a copy-paste-from-chat fingerprint, with carve-outs for deliberate publication typography and locale-correct punctuation (French guillemets, German low-9 quotes).
+- Version bump to 3.7.1.
+
+### Credit
+- Contributed by [@augustasas](https://github.com/augustasas) (#15).
+
+---
+
 ## [3.7.0] — 2026-05-28
 
 ### Added
