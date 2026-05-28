@@ -1,0 +1,12 @@
+{
+  "name": "avoid-ai-writing",
+  "description": "Audit & rewrite content to remove AI writing patterns (\"AI-isms\"). Supports detection-only mode.",
+  "version": "3.4.0",
+  "author": {
+    "name": "Conor Bronsdon"
+  },
+  "homepage": "https://github.com/conorbronsdon/avoid-ai-writing",
+  "repository": "https://github.com/conorbronsdon/avoid-ai-writing",
+  "license": "MIT",
+  "keywords": ["writing", "editing", "ai-detection", "humanize"]
+}

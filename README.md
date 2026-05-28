@@ -38,7 +38,7 @@ A one-shot "make this sound human" prompt catches the obvious stuff. This skill 
 - **109-entry word replacement table across 3 tiers + 10 Tier 3 phrases** — not vibes-based. Every flagged word has a specific, plainer alternative. "Leverage" → "use." "Commence" → "start." Tier 1 words always flag, Tier 2 words flag when they cluster, Tier 3 words flag only at high density. Tier 3 *phrases* (multi-word boilerplate like "the integration of," "decentralized compute") flag on per-phrase repetition or when 3+ distinct phrases stack in one piece — the LLM-self-varies-boilerplate shape.
 - **42 pattern categories** — see the full list below, each with before/after examples. Includes structural detection (hashtag stuffing, bare-NP bullet lists, hedge-stacked predictions), rhythm/uniformity checks, and a rewrite-vs-patch threshold.
 - **Detect mode** — flag patterns without rewriting. See which flags are real problems vs. judgment calls. Useful when patterns might be intentional or you're auditing content you don't want altered.
-- **Works with Claude Code and OpenClaw** — single `SKILL.md` with compatible frontmatter for both platforms.
+- **Works across platforms** — one `SKILL.md` runs in Claude Code, Cowork (as a plugin), OpenClaw, and Cursor (as a ported rule). See the install paths below.
 
 ## Installation & Usage
 
@@ -74,12 +74,20 @@ Read and follow the instructions in ~/.claude/skills/avoid-ai-writing/SKILL.md
 
 Then use `/clean-ai-writing <your text>` in Claude Code.
 
-### Claude Cowork
+### Claude Cowork — install as a plugin
 
-[Cowork](https://www.anthropic.com/cowork) discovers skills only from **installed plugins** — it doesn't scan `~/.claude/skills/`, so cloning there (the Claude Code step above) won't surface the skill in a Cowork session. Two paths work:
+[Cowork](https://www.anthropic.com/cowork) loads skills only from **installed plugins** — it doesn't scan `~/.claude/skills/`, so a bare clone (the Claude Code steps above) won't be discovered there. This repo doubles as a single-plugin [marketplace](https://code.claude.com/docs/en/plugin-marketplaces), so install it as a plugin instead:
 
-- **One-off (manual reference).** Copy `SKILL.md` into a folder connected to your Cowork session, then tell the agent to follow `./SKILL.md`. No auto-trigger.
-- **Auto-trigger (wrap as a plugin).** Package `SKILL.md` into a plugin using Cowork's built-in plugin-creation tool (the "Plugin Create" plugin). Once installed, the skill fires from phrases like "remove AI-isms," same as in Claude Code.
+```bash
+/plugin marketplace add conorbronsdon/avoid-ai-writing
+/plugin install avoid-ai-writing@conorbronsdon-skills
+```
+
+In the Cowork desktop app, do the same from **Customize → Plugins → Add marketplace from GitHub** (`conorbronsdon/avoid-ai-writing`), then install **avoid-ai-writing**. The skill auto-triggers from phrases like "remove AI-isms," and `/plugin marketplace update` pulls new releases.
+
+The same plugin install works in Claude Code if you'd rather have a versioned, updatable plugin than the file clone above.
+
+> Prefer not to install a plugin? Copy `SKILL.md` into a folder connected to your Cowork session and tell the agent to follow `./SKILL.md` — works as a one-off, no auto-trigger.
 
 ### OpenClaw
 
