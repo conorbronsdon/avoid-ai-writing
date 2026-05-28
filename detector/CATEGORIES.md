@@ -49,6 +49,14 @@ account for every entry on both sides.
 | `ai-placeholder` | Unfilled placeholder | Unfilled placeholders |
 | `ai-citation-markup` | Chatbot citation markup leak | Chatbot citation markup leaks |
 | `ai-utm-source` | AI-tool URL parameter | AI-tool URL parameters |
+| `smart-punct-signature` | Smart-punct signature | Formatting (curly quotation marks) — *partial* |
+
+> **Partial map:** `smart-punct-signature` fires only when curly quotes co-occur
+> with an em-dash, an Oxford comma, and clean typing (≥80 words) — never on curly
+> punctuation alone. The SKILL.md Formatting rule treats curly quotes as a weak,
+> corroborating signal in plain-text contexts and excludes apostrophes. The two
+> agree in spirit (curly punctuation is never conclusive on its own) but differ in
+> mechanism — so this is a partial map, not 1:1.
 
 ## B. Detector-only (stylometric / fingerprint — no skill prose)
 
@@ -57,7 +65,6 @@ not as a phrase a human editor would look up:
 
 | Detector `type` | Label | Why it's engine-only |
 |---|---|---|
-| `smart-punct-signature` | Smart-punct signature | Distribution of curly quotes / ellipsis chars |
 | `punct-distribution` | Punctuation distribution | Per-paragraph punctuation uniformity |
 | `fnword-trigram-entropy` | Grammar repetition | Function-word trigram entropy |
 | `cross-para-burstiness` | Cross-paragraph rhythm | Sentence-length variance across paragraphs |
