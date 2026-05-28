@@ -11,7 +11,13 @@ dest="$repo_root/plugins/avoid-ai-writing/skills/avoid-ai-writing/SKILL.md"
 cp "$src" "$dest"
 
 # Keep plugin.json's version in lockstep with the SKILL.md frontmatter version.
-skill_version="$(sed -n 's/^version:[[:space:]]*//p' "$src" | head -n1)"
+# Read the version only from the first YAML frontmatter block, and strip any CR
+# so a CRLF checkout can't forge a mismatch on visually-identical strings.
+skill_version="$(sed -n '/^---[[:space:]]*$/,/^---[[:space:]]*$/ s/^version:[[:space:]]*//p' "$src" | head -n1 | tr -d '\r')"
+if [ -z "$skill_version" ]; then
+  echo "could not parse 'version:' from SKILL.md frontmatter" >&2
+  exit 1
+fi
 plugin_version="$(
   python3 - "$repo_root/plugins/avoid-ai-writing/.claude-plugin/plugin.json" <<'PY'
 import json

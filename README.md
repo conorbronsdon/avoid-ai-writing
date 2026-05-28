@@ -81,9 +81,10 @@ Then use `/clean-ai-writing <your text>` in Claude Code.
 ```bash
 /plugin marketplace add conorbronsdon/avoid-ai-writing
 /plugin install avoid-ai-writing@conorbronsdon-skills
+/reload-plugins   # or restart the session, to activate the skill
 ```
 
-In the Cowork desktop app, do the same from **Customize → Plugins → Add marketplace from GitHub** (`conorbronsdon/avoid-ai-writing`), then install **avoid-ai-writing**. The skill auto-triggers from phrases like "remove AI-isms," and `/plugin marketplace update` pulls new releases.
+In the Cowork desktop app, do the same from **Customize → Plugins → Add marketplace from GitHub** (`conorbronsdon/avoid-ai-writing`), then install **avoid-ai-writing**. The skill auto-triggers from phrases like "remove AI-isms." New releases arrive when the plugin's version is bumped — run `/plugin marketplace update` to pull them.
 
 The same plugin install works in Claude Code if you'd rather have a versioned, updatable plugin than the file clone above.
 
