@@ -15,6 +15,6 @@
     "node": ">=18"
   },
   "scripts": {
-    "test": "node detector/patterns.test.js"
+    "test": "node detector/patterns.test.js && node detector/categories.test.js"
   }
 }

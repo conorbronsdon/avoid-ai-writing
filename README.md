@@ -131,6 +131,8 @@ Trigger detect mode with: "detect," "flag only," "audit only," "just flag," "sca
 
 ## 42 Patterns Detected
 
+> These 42 are the human-facing prose rules. The [detector engine](./detector/) implements **43 `type` categories** — a different count, because it splits the vocabulary tiers and adds stylometric/fingerprint signals (punctuation distribution, function-word entropy, bypass-trick detection) that work as math over a document rather than as a rule you'd look up. The two are mapped in [`detector/CATEGORIES.md`](./detector/CATEGORIES.md); don't "fix" one count to match the other.
+
 ### Content Patterns
 
 | # | Pattern | Before | After |

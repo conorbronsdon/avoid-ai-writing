@@ -11,6 +11,12 @@ skill has more `###` sections than that — the gap is **not** missing coverage,
 it's rules that are judgment calls a regex can't make. The three groups below
 account for every entry on both sides.
 
+Three counts coexist on purpose and should not be forced to match: the README's
+**42 patterns** are the human-facing prose catalog, the engine's **43 `type`s**
+split the vocabulary tiers and add stylometric signals, and SKILL.md's ~50
+`###` sections include meta-rules with no detectable form. The
+`categories.test.js` check enforces only the engine ↔ this-file mapping.
+
 ## A. Direct mapping (skill rule → detector `type`)
 
 | Detector `type` | Label | SKILL.md section |
