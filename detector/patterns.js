@@ -597,21 +597,29 @@ const AIDetector = (() => {
   // and from infomercial hooks (mid-flow teasers): this is the
   // demonstrative-anchored endorsement — "THIS one is worth your time:",
   // "do yourself a favor and read this", "thank me later" — that performs
-  // a recommendation without giving the reader a reason to click. The
-  // "this one" / "do yourself a favor" / "won't want to miss" anchors keep
-  // it off the bare endorsements a human writes ("the book is worth
-  // reading, but the middle drags").
+  // a recommendation without giving the reader a reason to click.
+  //
+  // Precision-first: each pattern carries an anchor so it stays off the
+  // literal-verb prose a human writes. The demonstrative object ("read
+  // THIS", not "read the runbook"), the trailing-terminal lookahead on
+  // "miss this" / "bookmark this" (the closing-line shape, not "miss this
+  // meeting" / "bookmark this page"), and the sentence-initial lookbehind
+  // on "thank me later" / "save this for later" (the imperative CTA, not
+  // "she will thank me later") all exist to suppress false positives on
+  // ordinary instructional/conversational text. Apostrophe classes admit
+  // the curly ' (U+2019) because LinkedIn / Word / macOS auto-curl it —
+  // the straight-only form would miss the canonical "you won't" closer.
   const SOCIAL_CTA_CLOSER = [
-    /\bthis\s+one'?s?\s+(?:is\s+)?(?:well\s+|totally\s+|absolutely\s+|definitely\s+|really\s+|truly\s+|easily\s+|more\s+than\s+)?worth\s+(?:your\s+time|the\s+read|a\s+read|every\s+(?:minute|second)|reading|watching|a\s+listen|a\s+watch|a\s+look|it)\b/gi,
-    /\bthis\s+one'?s?\s+(?:is\s+)?a\s+must-?(?:read|watch|listen|see)\b/gi,
-    /\b(?:highly|strongly|can'?t|cannot)\s+recommend\w*\s+(?:giving\s+)?(?:this|it)\s+(?:one\s+)?a\s+(?:read|listen|watch|look|go)\b/gi,
-    /\bdo\s+yourself\s+a\s+favou?r\s+and\s+(?:read|watch|listen|check|give)\b/gi,
-    /\byou\s+(?:really\s+)?(?:won'?t|do\s*n'?t|will\s+not|do\s+not)\s+want\s+to\s+miss\s+this\b/gi,
-    /\b(?:you\s+can\s+)?thank\s+me\s+later\b/gi,
-    /\bsave\s+this\s+(?:one\s+)?for\s+later\b/gi,
-    /\bbookmark\s+this(?:\s+(?:one|post|thread))?\b/gi,
-    /\bdo\s*n'?t\s+sleep\s+on\s+this\b/gi,
-    /\btrust\s+me,?\s+(?:on\s+this|you'?ll|this\s+one)\b/gi,
+    /\bthis\s+one['’]?s?\s+(?:is\s+)?(?:well\s+|totally\s+|absolutely\s+|definitely\s+|really\s+|truly\s+|easily\s+|more\s+than\s+)?worth\s+(?:your\s+time|the\s+read|a\s+read|every\s+(?:minute|second)|reading|watching|a\s+listen|a\s+watch|a\s+look|it)\b/gi,
+    /\bthis\s+one['’]?s?\s+(?:is\s+)?a\s+must[-\s]?(?:read|watch|listen|see)\b/gi,
+    /\b(?:highly|strongly|can['’]?t|cannot)\s+recommend\w*\s+(?:giving\s+)?(?:this|it)\s+(?:one\s+)?a\s+(?:read|listen|watch|look|go)\b/gi,
+    /\bdo\s+yourself\s+a\s+favou?r\s+and\s+(?:read|watch|check\s+out)\s+(?:this|it)\b/gi,
+    /\byou\s+(?:really\s+)?(?:won['’]?t|do\s*n['’]?t|will\s+not|do\s+not)\s+want\s+to\s+miss\s+this(?:\s+one)?(?=\s*(?:[:.!\n]|$))/gi,
+    /(?<=^|[,.!?:\n]\s{0,4})(?:you\s+can\s+)?thank\s+me\s+later\b/gim,
+    /(?<=^|[.!?:\n]\s{0,4})save\s+this\s+(?:one\s+)?for\s+later\b/gim,
+    /\bbookmark\s+this(?:\s+(?:one|post|thread))?(?=\s*(?:[:.!\n]|$))/gi,
+    /\bdo\s*n['’]?t\s+sleep\s+on\s+this\b/gi,
+    /\btrust\s+me,?\s+(?:on\s+this|you['’]?ll)\b/gi,
   ];
 
   // ═══ Helpers ═══════════════════════════════════════════════════════

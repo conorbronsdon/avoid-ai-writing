@@ -426,12 +426,21 @@ test('v2: social endorsement closer fires on LinkedIn-style share post', () => {
   assert.ok(types.has('social-cta-closer'), 'expected social-cta-closer flag');
 });
 
-test('v2: social endorsement closer catches the bare-CTA variants', () => {
+test('v2: social endorsement closer covers every regex branch', () => {
+  // One positive per branch so a typo in any single pattern fails loudly
+  // instead of shipping green. Each string is padded to clear the 10-word
+  // floor and sit amid normal prose, the shape analyzeText actually sees.
   const variants = [
-    'Do yourself a favor and read this when you get a chance today.',
-    'New episode dropped this morning. You won\'t want to miss this one.',
-    'Saved my whole afternoon of debugging. Thank me later, seriously.',
-    'I cannot recommend this one a read enough for anyone shipping agents.',
+    'Sarah broke down the whole eviction policy in plain terms. This one is worth your time:',          // worth-endorsement
+    'New deep dive on agent memory just dropped today. This one is a must-read for the whole team.',     // must-read
+    'I read the entire thing twice this weekend. I highly recommend giving this a read soon.',           // recommend-a-read
+    'The setup is fiddly but the payoff is huge here. Do yourself a favor and read this tonight.',       // do-yourself-a-favor
+    'The agenda is packed and the speakers are all sharp. You won\'t want to miss this one.',             // won't-want-to-miss
+    'It saved me an entire afternoon of painful debugging. Thank me later, seriously, you will.',        // thank-me-later
+    'It is the cleanest reference I have found all year. Save this one for later when you ship.',        // save-for-later
+    'Everything you need for the whole migration is in this one. Bookmark this post.',                   // bookmark-this
+    'The benchmarks completely flip the usual assumptions. Don\'t sleep on this one, honestly.',         // don't-sleep-on
+    'The framing reframed the entire debate for me cleanly. Trust me, you\'ll want to read this.',       // trust-me-you'll
   ];
   for (const text of variants) {
     const r = AIDetector.analyzeText(text);
@@ -440,13 +449,41 @@ test('v2: social endorsement closer catches the bare-CTA variants', () => {
   }
 });
 
-test('v2: social endorsement closer does NOT fire on plain human endorsement', () => {
-  // Bare "worth reading" is a word-table judgment call, not the demonstrative
-  // closer — the detector should leave normal human prose alone.
-  const text = 'The book is worth reading if you have the time, but the middle third drags and I almost put it down before the payoff in the final chapters.';
-  const r = AIDetector.analyzeText(text);
-  const types = new Set(r.issues.map((i) => i.type));
-  assert.ok(!types.has('social-cta-closer'), 'plain endorsement should not trip the closer detector');
+test('v2: social endorsement closer matches curly-apostrophe forms', () => {
+  // LinkedIn / Word / macOS auto-curl apostrophes, so the canonical
+  // "you won't" / "don't" / "you'll" closers ship with U+2019, not ASCII.
+  // A straight-only class would miss the dominant real-world input.
+  const curly = [
+    'The agenda is packed and the speakers are all sharp. You won’t want to miss this one.',
+    'The benchmarks completely flip the usual assumptions. Don’t sleep on this one, honestly.',
+    'The framing reframed the entire debate for me cleanly. Trust me, you’ll want to read this.',
+  ];
+  for (const text of curly) {
+    const r = AIDetector.analyzeText(text);
+    const types = new Set(r.issues.map((i) => i.type));
+    assert.ok(types.has('social-cta-closer'), `expected social-cta-closer on curly form: ${text}`);
+  }
+});
+
+test('v2: social endorsement closer leaves literal-verb human prose alone', () => {
+  // The anchors (demonstrative object, terminal lookahead, sentence-initial
+  // lookbehind) exist to keep the detector off ordinary instructional and
+  // conversational text. Each of these uses a trigger word in its literal
+  // sense and must stay clean.
+  const clean = [
+    'The book is worth reading if you have the time, but the middle third drags and I almost put it down.',
+    'Bookmark this page so you can find the API reference later when you are wiring up the client.',
+    'I usually save this for later in the sprint when the review queue has finally cleared out a bit.',
+    'Do yourself a favor and read the runbook before you ever go on call for this service again.',
+    'You will not want to miss this design review tomorrow because the API contract is changing under us.',
+    'She will thank me later for the heads up once the deploy window actually closes without incident.',
+    'Trust me, this one took an entire afternoon to track down and it was a single off-by-one in the loop.',
+  ];
+  for (const text of clean) {
+    const r = AIDetector.analyzeText(text);
+    const types = new Set(r.issues.map((i) => i.type));
+    assert.ok(!types.has('social-cta-closer'), `false positive on literal prose: ${text}`);
+  }
 });
 
 test('v2: trinary output present + FN-biased for ambiguous text', () => {
