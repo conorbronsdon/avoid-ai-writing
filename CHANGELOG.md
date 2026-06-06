@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.9.0] — 2026-06-05
+
+### Added
+- **Social endorsement closers** — the curatorial sign-off LLMs append to LinkedIn/X share posts, usually a colon teeing up a link: "This one is worth your time:", "This one's a must-read:", "Do yourself a favor and read this," "You won't want to miss this one," "Thank me later," "Bookmark this," "Don't sleep on this one." Performs a recommendation without giving the reader a reason to click. Distinct from the bare "worth [verb]ing" word-table entry (a single weak word inside a sentence) and from infomercial engagement hooks (mid-flow teasers) — this is the whole closing line of a social post. Demonstrative-anchored ("THIS one is worth your time") so it stays off plain human endorsements ("the book is worth reading, but the middle drags"). Catalog goes from 47 to 48 detection categories; the detector engine gains a `social-cta-closer` `type` (43 → 44). Closes #29.
+
+---
+
 ## [3.8.0] — 2026-05-29
 
 ### Added

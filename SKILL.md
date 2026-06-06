@@ -1,7 +1,7 @@
 ---
 name: avoid-ai-writing
 description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Use this skill when asked to "remove AI-isms," "clean up AI writing," "edit writing for AI patterns," "audit writing for AI tells," or "make this sound less like AI." Supports a detect-only mode, an edit-in-place mode for files, an optional voice profile (casual / professional / technical / warm / blunt), and an iterate-to-convergence pass.
-version: 3.8.0
+version: 3.9.0
 license: MIT
 compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, VS Code Copilot, Hermes Agent, OpenHands, etc.) or OpenClaw. No external tools or APIs required.
 metadata:
@@ -369,6 +369,12 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - Punchy fragment-hooks that tee up a reveal: "The catch?", "The kicker?", "Here's the thing.", "But here's the kicker:", "The best part?", "Plot twist:", "The result?". AI uses these to fake momentum and manufacture suspense around ordinary information — the prose equivalent of a late-night infomercial.
 - Distinct from rhetorical-question openers (which stall before a point) and chatbot artifacts (which perform helpfulness): these are mid-flow teasers that pad the rhythm. The fix is to delete the hook and state the thing. "The catch? It only works on weekends." becomes "It only works on weekends." Adapted from `Aboudjem/humanizer-skill` P41.
 
+### Social endorsement closers
+- The curatorial sign-off LLMs append to LinkedIn and X posts that share or recommend something — usually a colon teeing up a link: "This one is worth your time:", "This one's a must-read:", "I highly recommend giving this a read.", "Do yourself a favor and read this.", "You won't want to miss this one.", "Save this for later.", "Bookmark this.", "Don't sleep on this one.", "Trust me, you'll want to read this.", "Thank me later."
+- Why it's a tell: it performs a recommendation without giving the reader a reason to click. The endorsement is generic and demonstrative-anchored ("THIS one is worth your time") — it could sit under any link, which is exactly why an LLM reaches for it to close a share post.
+- Distinct from the bare "worth [verb]ing" word-table entry (a single weak word inside a sentence) and from infomercial engagement hooks (mid-flow teasers like "The catch?"): this is the whole closing line of a social post.
+- The fix: say *what* the thing is and *who* it's for, then drop the CTA. "This one is worth your time:" becomes "Sarah's breakdown of why context windows leak — the clearest explanation I've found for anyone debugging RAG pipelines." If you can't name a specific reason, the share doesn't need a sign-off at all; let the link stand on its own.
+
 ### Emotional flatline
 - AI claims emotions as a structural crutch without conveying them through the writing: "What surprised me most," "I was fascinated to discover," "What struck me was," "I was excited to learn," "The most interesting part," and the bare section-header variant: "Interesting part of the project:" / "Interesting thing here:" / "Interesting aspect:". The header form drops "the most" but does the same job — pre-announcing significance the writing hasn't earned.
 - Two problems. First, it's tell-don't-show: if the thing is genuinely surprising, the reader should feel that from the content, not from the writer announcing it. Second, these phrases are massively overused as list introductions and transitions. They're filler wearing an emotion costume.
@@ -474,6 +480,7 @@ Not all AI-isms are equal. When doing a quick pass or triaging a large document,
 - Bold overuse
 - Em dash frequency (above 1 per 1,000 words)
 - Generic future-narrative closers ("may become one of the most important narratives…")
+- Social endorsement closers ("This one is worth your time:", "thank me later")
 - Hedge-stacked predictions ("could potentially," "may eventually")
 - Real/actual adjective inflation ("real on-chain tokenomics")
 - Bullet lists of bare noun phrases (5+ short adj+noun items, no verbs)
@@ -535,6 +542,7 @@ Rules not listed in the table apply at full strength across all profiles.
 | Bullet-NP lists | strict | strict | relaxed (technical option lists OK) | strict | relaxed (parameter lists OK) | skip |
 | Tier 3 phrase clustering | strict | strict | strict | **extra strict** | relaxed | skip |
 | Future-narrative closers | strict | strict | strict | **extra strict** | skip | skip |
+| Social endorsement closers | strict (the LinkedIn share-post tell) | strict | strict | strict | skip | relaxed (1 OK in a DM) |
 | Hedge-stacked predictions | strict | strict | relaxed ("could" is hedged accuracy) | **extra strict** | relaxed | skip |
 | Real/actual inflation | strict | strict | strict | **extra strict** | relaxed | skip |
 

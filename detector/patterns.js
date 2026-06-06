@@ -1,6 +1,6 @@
 /**
  * Avoid AI Writing — detection engine (canonical source of truth)
- * Implements 43-category pattern detection. This repo's SKILL.md
+ * Implements 44-category pattern detection. This repo's SKILL.md
  * catalogs the human-editable pattern rules; this engine is the executable
  * expression of the regex-detectable subset and extends it with stylometric and
  * AI-tool-fingerprint detectors that don't make sense as skill prose
@@ -272,6 +272,10 @@ const AIDetector = (() => {
     'hedge-stack': 6,
     'future-narrative': 12,
     'real-actual-inflation': 5,
+    // Social endorsement / CTA closer. Weighted like formulaic-opener: a
+    // strong single-hit social tell that the length divisor would
+    // otherwise wash out on a short LinkedIn-length post.
+    'social-cta-closer': 8,
     'formulaic-opener': 8,
     'title-case-header': 4,
     'parenthetical-hedge': 3,
@@ -586,6 +590,30 @@ const AIDetector = (() => {
     /\bwithout\s+a\s+doubt\b/gi,
   ];
 
+  // ─── Social endorsement / CTA closers ──────────────────────────────
+  // The curatorial sign-off LLMs append to LinkedIn / X posts that share
+  // or recommend something — usually a colon teeing up a link. Distinct
+  // from the bare "worth reading" word-table entry (a single weak word)
+  // and from infomercial hooks (mid-flow teasers): this is the
+  // demonstrative-anchored endorsement — "THIS one is worth your time:",
+  // "do yourself a favor and read this", "thank me later" — that performs
+  // a recommendation without giving the reader a reason to click. The
+  // "this one" / "do yourself a favor" / "won't want to miss" anchors keep
+  // it off the bare endorsements a human writes ("the book is worth
+  // reading, but the middle drags").
+  const SOCIAL_CTA_CLOSER = [
+    /\bthis\s+one'?s?\s+(?:is\s+)?(?:well\s+|totally\s+|absolutely\s+|definitely\s+|really\s+|truly\s+|easily\s+|more\s+than\s+)?worth\s+(?:your\s+time|the\s+read|a\s+read|every\s+(?:minute|second)|reading|watching|a\s+listen|a\s+watch|a\s+look|it)\b/gi,
+    /\bthis\s+one'?s?\s+(?:is\s+)?a\s+must-?(?:read|watch|listen|see)\b/gi,
+    /\b(?:highly|strongly|can'?t|cannot)\s+recommend\w*\s+(?:giving\s+)?(?:this|it)\s+(?:one\s+)?a\s+(?:read|listen|watch|look|go)\b/gi,
+    /\bdo\s+yourself\s+a\s+favou?r\s+and\s+(?:read|watch|listen|check|give)\b/gi,
+    /\byou\s+(?:really\s+)?(?:won'?t|do\s*n'?t|will\s+not|do\s+not)\s+want\s+to\s+miss\s+this\b/gi,
+    /\b(?:you\s+can\s+)?thank\s+me\s+later\b/gi,
+    /\bsave\s+this\s+(?:one\s+)?for\s+later\b/gi,
+    /\bbookmark\s+this(?:\s+(?:one|post|thread))?\b/gi,
+    /\bdo\s*n'?t\s+sleep\s+on\s+this\b/gi,
+    /\btrust\s+me,?\s+(?:on\s+this|you'?ll|this\s+one)\b/gi,
+  ];
+
   // ═══ Helpers ═══════════════════════════════════════════════════════
 
   function tokenize(text) {
@@ -819,6 +847,7 @@ const AIDetector = (() => {
     issues.push(...matchPatterns(text, HEDGE_STACK, 'hedge-stack', 'high'));
     issues.push(...matchPatterns(text, FUTURE_NARRATIVE, 'future-narrative', 'high'));
     issues.push(...matchPatterns(text, REAL_ACTUAL_INFLATION, 'real-actual-inflation', 'medium'));
+    issues.push(...matchPatterns(text, SOCIAL_CTA_CLOSER, 'social-cta-closer', 'high'));
 
     // ── Tier 1 v2: formulaic openers + parenthetical hedges ──────────
     issues.push(...matchPatterns(text, FORMULAIC_OPENERS, 'formulaic-opener', 'high'));
@@ -1594,6 +1623,7 @@ const AIDetector = (() => {
     'hedge-stack': 'Hedge-stacked prediction',
     'future-narrative': 'Generic future narrative',
     'real-actual-inflation': '"Real/actual" inflation',
+    'social-cta-closer': 'Engagement-bait closer',
     'formulaic-opener': 'Formulaic opener',
     'title-case-header': 'Title Case header',
     'parenthetical-hedge': 'Parenthetical hedge',

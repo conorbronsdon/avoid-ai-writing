@@ -38,7 +38,7 @@ A one-shot "make this sound human" prompt catches the obvious stuff. This skill 
 - **Structured audit** — returns identified issues with quoted text, the rewrite, a change summary, and a second-pass audit in four discrete sections. You see exactly what changed and why.
 - **Two-pass detection** — the second pass re-reads the rewrite and catches patterns that survive the first edit: recycled transitions, lingering inflation, copula swaps that snuck through.
 - **109-entry word replacement table across 3 tiers + 10 Tier 3 phrases** — not vibes-based. Every flagged word has a specific, plainer alternative. "Leverage" → "use." "Commence" → "start." Tier 1 words always flag, Tier 2 words flag when they cluster, Tier 3 words flag only at high density. Tier 3 *phrases* (multi-word boilerplate like "the integration of," "decentralized compute") flag on per-phrase repetition or when 3+ distinct phrases stack in one piece — the LLM-self-varies-boilerplate shape.
-- **47 pattern categories** — representative examples below, each with before/after. Includes structural detection (hashtag stuffing, bare-NP bullet lists, hedge-stacked predictions), AI-tool fingerprints (placeholders, citation markup, UTM params), rhythm/uniformity checks, and writer-side tests. The full catalog lives in [`SKILL.md`](./SKILL.md); this count is enforced against it in CI.
+- **48 pattern categories** — representative examples below, each with before/after. Includes structural detection (hashtag stuffing, bare-NP bullet lists, hedge-stacked predictions), AI-tool fingerprints (placeholders, citation markup, UTM params), rhythm/uniformity checks, and writer-side tests. The full catalog lives in [`SKILL.md`](./SKILL.md); this count is enforced against it in CI.
 - **Detect mode** — flag patterns without rewriting. See which flags are real problems vs. judgment calls. Useful when patterns might be intentional or you're auditing content you don't want altered.
 - **Works across platforms** — one `SKILL.md` runs in Claude Code, Cowork (as a plugin), OpenClaw, and Cursor (as a ported rule). See the install paths below.
 
@@ -175,7 +175,7 @@ Trigger detect mode with: "detect," "flag only," "audit only," "just flag," "sca
 
 ## Pattern reference
 
-> Representative examples from the catalog — not the exhaustive list (that's [`SKILL.md`](./SKILL.md)). The skill's human-facing prose catalog and the [detector engine](./detector/) use **different counts on purpose**: the engine implements 43 `type` categories because it splits the vocabulary tiers and adds stylometric/fingerprint signals (punctuation distribution, function-word entropy, bypass-trick detection) that work as math over a document rather than as a rule you'd look up. The two are mapped in [`detector/CATEGORIES.md`](./detector/CATEGORIES.md); don't "fix" one count to match the other.
+> Representative examples from the catalog — not the exhaustive list (that's [`SKILL.md`](./SKILL.md)). The skill's human-facing prose catalog and the [detector engine](./detector/) use **different counts on purpose**: the engine implements 44 `type` categories because it splits the vocabulary tiers and adds stylometric/fingerprint signals (punctuation distribution, function-word entropy, bypass-trick detection) that work as math over a document rather than as a rule you'd look up. The two are mapped in [`detector/CATEGORIES.md`](./detector/CATEGORIES.md); don't "fix" one count to match the other.
 
 ### Content Patterns
 
@@ -299,7 +299,7 @@ That's 35+ AI tells.
 ## Run the detector
 
 The skill ships a deterministic, zero-dependency detection engine in
-[`detector/`](./detector/) — the same 43-category engine the rules above
+[`detector/`](./detector/) — the same 44-category engine the rules above
 describe, as runnable code. It works in Node (`>=18`) and the browser with no
 build step.
 
