@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.10.0] — 2026-06-10
+
+### Added
+- **Bold list-label periods** — in bulleted lists where each item leads with a short bold label, LLMs end the label with a period (`**Intros.**`, `**Content distribution.**`) and run the gloss as a separate sentence, where a person almost always uses a colon (`**Intros:**`). The colon reads as "here's what this label means"; the period reads as a sentence the next clause then contradicts by continuing. Fix is to swap the period for a colon and lowercase the gloss, or drop the bold label entirely. Distinct from inline-header lists (bold headers that repeat the point): this rule is about the punctuation on the label, not the redundancy. Carve-out: a bold span that is a full standalone sentence keeps its period. Catalog goes from 48 to 49 detection categories. LLM-judgment rule (no detector `type`). Closes #31.
+
+---
+
 ## [3.9.0] — 2026-06-05
 
 ### Added
