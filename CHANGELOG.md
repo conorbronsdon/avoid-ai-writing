@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.11.0] — 2026-07-05
+
+### Changed
+- **"It's not X — it's Y" contrastive rule** — broadened to name the **split-sentence variant**, where the negation and the correction land in two separate sentences ("The headline isn't the speed. The real story is Y.") rather than pivoting on a single dash or comma. The joined form was the rule's implicit template, so the two-sentence split — which reads as two innocent declaratives — was slipping through. Same move, now flagged. LLM-judgment rule; catalog stays at 49 categories. Addresses #39.
+
+---
+
 ## [3.10.0] — 2026-06-10
 
 ### Added
