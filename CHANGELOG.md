@@ -4,6 +4,21 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.13.0] — 2026-07-07
+
+### Added
+- **Speculative scenario openers** — the LLM habit of opening an argument with a hypothetical that lists desirable outcomes instead of making a claim: "Imagine a world where…", "Picture a future in which…", "Envision a world where…". The scenario does the persuading; no evidence is offered. New detection category (49 → 50) and a `speculative-opener` detector `type` (44 → 45). Gated to the world/future/reality object plus where/in-which, so instructional "imagine you have a sorted array" and analytical "consider a scenario where…" stay clean. Source: tropes.fyi ("Imagine a World Where…").
+- **"deeply" in the Tier 2 word table** — one of the "magic adverbs" AI uses to inflate mundane descriptions ("deeply integrated," "deeply committed"). Cluster-gated like the rest of Tier 2, so a lone "deeply nested" in technical prose does not fire. Source: tropes.fyi ("Quietly" and Other Magic Adverbs).
+
+### Changed
+- **"It's not X — it's Y" contrastive rule** — extended to name the **multi-negation countdown** ("It's not the price. It's not the features. It's the trust."), the same reveal move inflated across several negated options. LLM-judgment rule; no new category. Source: tropes.fyi ("Not X. Not Y. Just Z.").
+- **Novelty inflation** — extended to flag **invented concept labels**: pseudo-analytical compound terms coined mid-sentence and never defined ("the supervision paradox," "a coordination tax"). Naming a concept is not explaining it. LLM-judgment rule; no new category. Source: tropes.fyi ("Invented Concept Labels").
+- **Notability name-dropping** — extended with a related-pattern note on **historical analogy stacking**: rapid-fire lists of past technologies or companies to borrow their weight ("like the printing press, the telegraph, and the internet before it"). LLM-judgment rule; no new category. Source: tropes.fyi ("Historical Analogy Stacking").
+
+Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) and its [tropes-md digest](https://tropes.fyi/tropes-md), with thanks to the [tropes.fyi markdown gist](https://gist.github.com/ossa-ma/f3baa9d25154c33095e22272c631f5a1) by ossa-ma. Most of the 33 catalogued tropes were already covered; this release adds the gaps that survived a false-positive review.
+
+---
+
 ## [3.12.0] — 2026-07-06
 
 ### Added

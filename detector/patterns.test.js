@@ -424,6 +424,29 @@ test('v2: formulaic opener fires', () => {
   assert.ok(types.has('formulaic-opener'), 'expected formulaic-opener flag');
 });
 
+test('v2: speculative scenario opener fires', () => {
+  const text = 'Imagine a world where every developer ships bug-free code on the first try. That is the promise this framework keeps making in its docs, and it deserves a much harder look before anyone commits a roadmap to it.';
+  const r = AIDetector.analyzeText(text);
+  const types = new Set(r.issues.map((i) => i.type));
+  assert.ok(types.has('speculative-opener'), 'expected speculative-opener flag');
+});
+
+test('v2: speculative opener leaves instructional "imagine you have" alone', () => {
+  // The gate keys on the world/future/reality/scenario object plus
+  // where/in-which, so a teaching device that points at a concrete
+  // example must stay clean.
+  const clean = [
+    'Imagine you have a sorted array of one million integers and you want to find one value fast.',
+    'Picture the request as it moves through the load balancer, the cache, and finally the database.',
+    'Consider a scenario where the token expires mid-request; the client has to retry with a fresh one.',
+  ];
+  for (const text of clean) {
+    const r = AIDetector.analyzeText(text);
+    const types = new Set(r.issues.map((i) => i.type));
+    assert.ok(!types.has('speculative-opener'), `false positive on instructional prose: ${text}`);
+  }
+});
+
 test('v2: parenthetical hedge fires', () => {
   const text = 'The protocol works as intended (and increasingly, with better latency than competitors). The team has shipped consistently for six months without missing a single release cadence target.';
   const r = AIDetector.analyzeText(text);

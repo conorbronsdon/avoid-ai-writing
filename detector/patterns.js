@@ -1,6 +1,6 @@
 /**
  * Avoid AI Writing — detection engine (canonical source of truth)
- * Implements 44-category pattern detection. This repo's SKILL.md
+ * Implements 45-category pattern detection. This repo's SKILL.md
  * catalogs the human-editable pattern rules; this engine is the executable
  * expression of the regex-detectable subset and extends it with stylometric and
  * AI-tool-fingerprint detectors that don't make sense as skill prose
@@ -188,6 +188,7 @@ const AIDetector = (() => {
     'quintessential': 'typical, classic, defining',
     'overarching': 'main, central, broad',
     'quietly': 'cut, or name the concrete contrast',
+    'deeply': 'cut, or name what specifically runs deep',
     'underpinning': 'basis, foundation',
     'underpinnings': 'basis, foundations',
     'paradigm-shifting': 'describe what shifted',
@@ -278,6 +279,10 @@ const AIDetector = (() => {
     // otherwise wash out on a short LinkedIn-length post.
     'social-cta-closer': 8,
     'formulaic-opener': 8,
+    // Speculative scenario opener ("Imagine a world where…"). Weighted like
+    // formulaic-opener: a single strong opener tell the length divisor would
+    // otherwise wash out on a short post.
+    'speculative-opener': 8,
     'title-case-header': 4,
     'parenthetical-hedge': 3,
     'smart-punct-signature': 6,
@@ -559,6 +564,20 @@ const AIDetector = (() => {
     // language"). Same gating for "has become increasingly".
     /\bhas\s+emerged\s+as\s+(?:a|the|one\s+of)\s+(?:leading|key|major|critical|essential|fundamental|pivotal|prominent|dominant|important)\s+\w+/gi,
     /\bhas\s+become\s+increasingly\s+(?:important|critical|popular|relevant|prominent|essential)\b/gi,
+  ];
+
+  // ─── Speculative scenario openers ──────────────────────────────────
+  // "Imagine a world where...", "Picture a future in which...", "Envision
+  // a world where..." — the LLM habit of opening an argument with a
+  // hypothetical that lists desirable outcomes instead of making a claim.
+  // Gated to the world/future/reality object plus where/in-which so it
+  // stays off instructional "imagine you have an array" (a teaching device
+  // pointing at a concrete example, not a speculative world) and bare
+  // "imagine that" asides. "consider a scenario where…" is deliberately
+  // excluded: that is analytical framing common in technical reasoning,
+  // not the marketing-opener tell.
+  const SPECULATIVE_OPENERS = [
+    /\b(?:imagine|picture|envision)\s+a\s+(?:world|future|reality)\s+(?:where|in\s+which)\b/gi,
   ];
 
   // ─── Title Case Section Headers in non-technical prose ─────────────
@@ -860,6 +879,7 @@ const AIDetector = (() => {
 
     // ── Tier 1 v2: formulaic openers + parenthetical hedges ──────────
     issues.push(...matchPatterns(text, FORMULAIC_OPENERS, 'formulaic-opener', 'high'));
+    issues.push(...matchPatterns(text, SPECULATIVE_OPENERS, 'speculative-opener', 'high'));
     issues.push(...matchPatterns(text, PARENTHETICAL_HEDGE, 'parenthetical-hedge', 'medium'));
 
     // Title-case headers — gated to marketing/personal/general modes
@@ -1634,6 +1654,7 @@ const AIDetector = (() => {
     'real-actual-inflation': '"Real/actual" inflation',
     'social-cta-closer': 'Engagement-bait closer',
     'formulaic-opener': 'Formulaic opener',
+    'speculative-opener': 'Speculative scenario opener',
     'title-case-header': 'Title Case header',
     'parenthetical-hedge': 'Parenthetical hedge',
     'smart-punct-signature': 'Smart-punct signature',
