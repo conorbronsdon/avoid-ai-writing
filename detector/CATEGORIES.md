@@ -92,6 +92,7 @@ mistake their absence for a coverage gap:
 - Structural issues / Excessive structure / Inline-header lists / Numbered list inflation
 - False ranges
 - Notability name-dropping
+- Vague third-party validation
 - Self-labeling significance
 - When to rewrite from scratch vs. patch
 - Severity tiers (P0 / P1 / P2)

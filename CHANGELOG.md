@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.14.0] — 2026-07-07
+
+### Added
+- **Vague third-party validation** — manufacturing credibility by pointing at an *unnamed* external authority, usually with a generic superlative ("an outside party measuring the same models everyone runs and putting us on top," "independent testing confirms," "analysts agree"). The authority is faceless and the claim unfalsifiable, so the reader can't tell who measured what or go check. The inverse of **Notability name-dropping** (which over-names *specific* prestigious sources); a passage can run both moves at once. Carve-out: specifically attributed, checkable validation — a named benchmark, a linked report, a dated audit — stays unflagged, since the tell is the vagueness, not the citation. Catalog goes from 50 to 51 detection categories. LLM-judgment rule (no detector `type`); listed in `detector/CATEGORIES.md` §C. Addresses #39 (the follow-up half raised by @hiSandog).
+
+---
+
 ## [3.13.0] — 2026-07-07
 
 ### Added
