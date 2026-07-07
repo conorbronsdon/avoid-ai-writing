@@ -180,6 +180,33 @@ test('"quietly" clusters with another Tier 2 word flags tier2', () => {
   assert.ok(clusteredTypes.has('tier2'), 'expected tier2 flag when "quietly" clusters with another Tier 2 word');
 });
 
+test('"deeply" joins a tier2 cluster only in significance collocations', () => {
+  // "deeply" is conditional Tier 2: bare uses never count toward a cluster,
+  // even next to another Tier 2 word — the base rate of literal "deeply"
+  // in human prose is too high for an unconditional entry.
+  const literal = [
+    'The parser handles deeply nested JSON, and getting the indentation right is crucial for readability.',
+    'I care deeply about this work, and the reality is more nuanced than the headline suggests.',
+    'This helper is deeply coupled to the session object; could we facilitate testing by injecting it?',
+  ];
+  for (const text of literal) {
+    const r = AIDetector.analyzeText(text);
+    const types = new Set(r.issues.map((i) => i.type));
+    assert.ok(!types.has('tier2'), `literal "deeply" must not cluster: ${text}`);
+  }
+
+  // The significance collocation DOES count when a second Tier 2 word
+  // shares the paragraph...
+  const clustered = AIDetector.analyzeText('The team is deeply committed to helping partners harness the new platform across every region.');
+  const clusteredTypes = new Set(clustered.issues.map((i) => i.type));
+  assert.ok(clusteredTypes.has('tier2'), 'expected tier2 when "deeply committed" clusters with another Tier 2 word');
+
+  // ...but the collocation alone, with no second Tier 2 word, stays clean.
+  const lone = AIDetector.analyzeText('The billing module is deeply integrated with the ledger, so invoice edits show up in both places.');
+  const loneTypes = new Set(lone.issues.map((i) => i.type));
+  assert.ok(!loneTypes.has('tier2'), 'lone "deeply integrated" must not fire tier2 by itself');
+});
+
 test('bullet-np-list does not fire on prose containing short verb-form bullets', () => {
   // Genuine list items with finite verbs should not trip the bare-NP
   // detector. The verb-token guard is what keeps todo lists, changelog
@@ -429,6 +456,11 @@ test('v2: speculative scenario opener fires', () => {
   const r = AIDetector.analyzeText(text);
   const types = new Set(r.issues.map((i) => i.type));
   assert.ok(types.has('speculative-opener'), 'expected speculative-opener flag');
+
+  // The comma-interrupted cadence is the same tell and must also fire.
+  const interrupted = AIDetector.analyzeText('Imagine, for a moment, a world where every deploy is instant. That is the pitch, and the pricing page leans on it hard enough that the claim deserves scrutiny before anyone signs.');
+  const interruptedTypes = new Set(interrupted.issues.map((i) => i.type));
+  assert.ok(interruptedTypes.has('speculative-opener'), 'expected speculative-opener on "Imagine, for a moment, a world where"');
 });
 
 test('v2: speculative opener leaves instructional "imagine you have" alone', () => {

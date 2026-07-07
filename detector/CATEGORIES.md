@@ -37,7 +37,7 @@ writer-side tests with no detectable form). The
 | `lets-construction` | "Let's" opener | "Let's" constructions |
 | `reasoning-artifact` | Reasoning artifact | Reasoning chain artifacts |
 | `significance-inflation` | Significance inflation | Significance inflation |
-| `novelty-inflation` | Novelty inflation | Novelty inflation |
+| `novelty-inflation` | Novelty inflation | Novelty inflation *(the invented-concept-labels sub-rule is LLM-judgment only — open-ended coinages aren't regex-matchable)* |
 | `real-actual-inflation` | "Real/actual" inflation | "Real/actual" adjective inflation |
 | `vague-attribution` | Vague attribution | Vague attributions |
 | `emotional-flatline` | Emotional flatline | Emotional flatline / Superficial -ing analyses |
@@ -88,6 +88,7 @@ mistake their absence for a coverage gap:
 - Synonym cycling
 - Copula avoidance
 - Promotional language
+- Sentence structure: "It's not X — it's Y" / split-sentence form / multi-negation countdown
 - Structural issues / Excessive structure / Inline-header lists / Numbered list inflation
 - False ranges
 - Notability name-dropping

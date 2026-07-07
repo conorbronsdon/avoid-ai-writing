@@ -199,7 +199,7 @@ These words are legitimate on their own. When two or more show up together, the 
 | quintessential | typical, classic, defining |
 | overarching | main, central, broad |
 | quietly | cut, or name the concrete contrast |
-| deeply | cut, or name what specifically runs deep |
+| deeply *(significance collocations only — "deeply integrated," "deeply committed," "deeply rooted"; literal uses like "deeply nested" or "cares deeply" never count toward a cluster)* | cut, or name what specifically runs deep |
 | underpinning / underpinnings | basis, foundation, what supports |
 
 #### Tier 3 — Flag only at high density

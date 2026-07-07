@@ -188,11 +188,24 @@ const AIDetector = (() => {
     'quintessential': 'typical, classic, defining',
     'overarching': 'main, central, broad',
     'quietly': 'cut, or name the concrete contrast',
-    'deeply': 'cut, or name what specifically runs deep',
     'underpinning': 'basis, foundation',
     'underpinnings': 'basis, foundations',
     'paradigm-shifting': 'describe what shifted',
   };
+
+  // Conditional Tier 2 entries: everyday words whose AI tell is a specific
+  // significance collocation, not the word itself. They join a paragraph's
+  // Tier 2 cluster only when the collocation matches — bare uses ("deeply
+  // nested JSON", "cares deeply") never count, because the base rate of
+  // these words in innocent prose is far higher than the rest of the table
+  // and an unconditional entry measurably flags clean human writing.
+  const TIER2_CONDITIONAL = [
+    {
+      word: 'deeply',
+      pattern: /\bdeeply\s+(?:integrated|committed|rooted|personal|human|flawed|resonant|transformative|interconnected|ingrained|embedded|meaningful)\b/i,
+      suggestion: 'cut, or name what specifically runs deep',
+    },
+  ];
 
   // ─── Tier 3: Flag by density ───────────────────────────────────────
   const TIER3 = [
@@ -575,9 +588,14 @@ const AIDetector = (() => {
   // pointing at a concrete example, not a speculative world) and bare
   // "imagine that" asides. "consider a scenario where…" is deliberately
   // excluded: that is analytical framing common in technical reasoning,
-  // not the marketing-opener tell.
+  // not the marketing-opener tell. An optional short comma interrupter
+  // catches the equally common "Imagine, for a moment, a world where…"
+  // cadence. Known accepted false positive: fiction openings and staged
+  // thought experiments match too — the engine has no fiction context
+  // mode, so that call is left to the skill's carve-out (highlight-only;
+  // a lone hit cannot flip a document's classification).
   const SPECULATIVE_OPENERS = [
-    /\b(?:imagine|picture|envision)\s+a\s+(?:world|future|reality)\s+(?:where|in\s+which)\b/gi,
+    /\b(?:imagine|picture|envision)(?:\s*,[^,\n]{1,30},)?\s+a\s+(?:world|future|reality)\s+(?:where|in\s+which)\b/gi,
   ];
 
   // ─── Title Case Section Headers in non-technical prose ─────────────
@@ -810,9 +828,17 @@ const AIDetector = (() => {
     for (const para of paragraphs) {
       const paraTokens = tokenize(para);
       const found = [];
+      const suggestions = {};
       for (const token of paraTokens) {
         if (TIER2[token] && !found.includes(token)) {
           found.push(token);
+          suggestions[token] = TIER2[token];
+        }
+      }
+      for (const cond of TIER2_CONDITIONAL) {
+        if (!found.includes(cond.word) && cond.pattern.test(para)) {
+          found.push(cond.word);
+          suggestions[cond.word] = cond.suggestion;
         }
       }
       if (found.length >= 2) {
@@ -822,7 +848,7 @@ const AIDetector = (() => {
             type: 'tier2',
             text: word,
             severity: 'medium',
-            suggestion: TIER2[word],
+            suggestion: suggestions[word],
           });
         }
       }
