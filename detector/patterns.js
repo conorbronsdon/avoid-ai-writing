@@ -1234,6 +1234,19 @@ const AIDetector = (() => {
     }
     flushRun();
 
+    // NOTE: "Wall-of-text replies" (SKILL.md) is deliberately NOT a
+    // detector rule here. A first pass tried "reply-length text, >=4
+    // sentences, zero newlines" as a structural gate — it broke the
+    // "repeated Tier 1 phrase does not inflate score linearly" fixture
+    // and, on reflection, would fire on any ordinary short paragraph
+    // (a blog intro, a single-paragraph email) since "one paragraph with
+    // no internal line break" is simply what continuous prose looks
+    // like, not an AI-specific shape. The tell in SKILL.md depends on
+    // knowing the text is conversational-reply register in the first
+    // place, which the engine can't reliably infer from the bytes alone
+    // (CONTRIBUTING.md: "a signal that fires on most normal prose is not
+    // worth adding"). Left as an LLM-judgment rule; see CATEGORIES.md §C.
+
     // Confidence calibration is only flagged when it stacks (3+ instances).
     // Gating happens pre-dedup on raw match count, since that signals actual
     // stacking, not just vocabulary use.

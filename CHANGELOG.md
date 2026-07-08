@@ -4,6 +4,21 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.15.0] — 2026-07-08
+
+### Added
+- **Wall-of-text replies** — reply-length text (roughly under 150 words, four or more sentences) delivered as one unbroken paragraph with no line breaks anywhere, the shape LLMs default to in conversational registers (issue/PR comments, chat, DMs, casual email) where humans instead break at thought boundaries. Catalog goes from 51 to 52 detection categories. LLM-judgment rule, not a detector `type`: a first pass implemented it as a structural gate (reply-length + sentence floor + zero newlines) and it broke the "repeated Tier 1 phrase does not inflate score linearly" fixture on review — turned out "one paragraph, no internal line break" is just what an ordinary short paragraph looks like, not an AI-specific shape, so an unconditional detector would fire on routine human prose. Reverted per the precision-over-recall principle in `CONTRIBUTING.md`; documented in `detector/CATEGORIES.md` §C with the reasoning.
+- **Recap-flattery opener** — replying to a person by summarizing their own work back at them with praise before getting to the point ("Thanks for all the legwork here — the X and Y you worked through are what made Z possible"). The reader already knows what they did; the recap performs appreciation instead of conveying information. Catalog goes from 52 to 53 detection categories. LLM-judgment rule (no detector `type` — the tell is redundancy with information the reader already holds, which requires reading both sides of an exchange, not a fixed phrase).
+
+### Changed
+- **Formatting** — extended the curly-quotes weak-signal tier with **immaculate typography in casual registers**: perfect spacing, punctuation, and capitalization in a context humans type fast (comments, chat) is corroborating evidence, never conclusive alone. Also flags the inverse: when editing a human's casual text, preserve their typos — smoothing them away erases the fingerprint that marks the text as theirs. LLM-judgment rule; folded into the existing Formatting section (same tier as curly quotes), no new category.
+- Cursor port (`cursor-rules/avoid-ai-writing.mdc`) caught up from v3.12.0 to v3.15.0: ported the 3.13.0 (speculative scenario openers, "deeply" conditional Tier 2, multi-negation countdown, invented concept labels, historical analogy stacking) and 3.14.0 (vague third-party validation) rule changes it had missed, plus this release's three additions.
+
+### Source
+- Observed in the wild: a maintainer on a GitHub issue flagged an assisted-sounding reply with "I prefer to talk human to human." The block-paragraph shape and the recap of the maintainer's own prior work were the tells, not any single word. Name and repo withheld.
+
+---
+
 ## [3.14.0] — 2026-07-07
 
 ### Added

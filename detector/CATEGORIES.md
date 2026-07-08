@@ -94,6 +94,9 @@ mistake their absence for a coverage gap:
 - Notability name-dropping
 - Vague third-party validation
 - Self-labeling significance
+- Wall-of-text replies (missing line breaks) *(tried as a detector — "reply-length, >=4 sentences, zero newlines" — and reverted; it fires on any ordinary short paragraph, not just conversational-reply register, so it stayed judgment-only. See the NOTE in `patterns.js` near the bullet-NP-list block)*
+- Recap-flattery opener
+- Immaculate typography in casual registers *(folded into the Formatting section — same weak-signal tier as curly quotes, not a standalone category)*
 - When to rewrite from scratch vs. patch
 - Severity tiers (P0 / P1 / P2)
 - Self-reference escape hatch

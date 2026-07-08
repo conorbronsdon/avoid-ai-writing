@@ -40,7 +40,7 @@ A one-shot "make this sound human" prompt catches the obvious stuff. This skill 
 - **Structured audit** — returns identified issues with quoted text, the rewrite, a change summary, and a second-pass audit in four discrete sections. You see exactly what changed and why.
 - **Two-pass detection** — the second pass re-reads the rewrite and catches patterns that survive the first edit: recycled transitions, lingering inflation, copula swaps that snuck through.
 - **109-entry word replacement table across 3 tiers + 10 Tier 3 phrases** — not vibes-based. Every flagged word has a specific, plainer alternative. "Leverage" → "use." "Commence" → "start." Tier 1 words always flag, Tier 2 words flag when they cluster, Tier 3 words flag only at high density. Tier 3 *phrases* (multi-word boilerplate like "the integration of," "decentralized compute") flag on per-phrase repetition or when 3+ distinct phrases stack in one piece — the LLM-self-varies-boilerplate shape.
-- **51 pattern categories** — representative examples below, each with before/after. Includes structural detection (hashtag stuffing, bare-NP bullet lists, hedge-stacked predictions), AI-tool fingerprints (placeholders, citation markup, UTM params), rhythm/uniformity checks, and writer-side tests. The full catalog lives in [`SKILL.md`](./SKILL.md); this count is enforced against it in CI.
+- **53 pattern categories** — representative examples below, each with before/after. Includes structural detection (hashtag stuffing, bare-NP bullet lists, hedge-stacked predictions), AI-tool fingerprints (placeholders, citation markup, UTM params), rhythm/uniformity checks, conversational-register tells, and writer-side tests. The full catalog lives in [`SKILL.md`](./SKILL.md); this count is enforced against it in CI.
 - **Detect mode** — flag patterns without rewriting. See which flags are real problems vs. judgment calls. Useful when patterns might be intentional or you're auditing content you don't want altered.
 - **Works across platforms** — one `SKILL.md` runs in Claude Code, Cowork (as a plugin), OpenClaw, and Cursor (as a ported rule). See the install paths below.
 
@@ -267,6 +267,15 @@ Added in v3.4 to catch LLM output that sidesteps the vocabulary tables by substi
 | 50 | **Self-labeling significance** | "That last move is the contrarian one," "This is the interesting part" | Cut the label; let the explanation carry the weight, or reposition the item so it stands out on its own |
 | 51 | **List-label periods** | `- **Intros.** Years of conferences and operator network.` (also unbolded: `- Intros. Years of...`) | Use a colon, not a period, on a list label: `- **Intros:** years of conferences and operator network.` |
 
+### Conversational-register patterns (v3.15)
+
+Added after a real-world exchange in which a maintainer called out an assisted-sounding GitHub issue reply with "I prefer to talk human to human." Both are judgment calls rather than regex-detectable (an ordinary human paragraph and an AI-generated one can look structurally identical; the tell is the register and the redundant context, not a fixed shape) — see the `detector/CATEGORIES.md` §C note for why a first attempt at a wall-of-text detector was reverted.
+
+| # | Pattern | Before | After |
+|---|---------|--------|-------|
+| 52 | **Wall-of-text replies** | A 4+ sentence, sub-150-word reply delivered as one unbroken paragraph with no line breaks — the shape LLMs default to in issue/PR comments, chat, and DMs | Break at thought boundaries. One idea per line-group, the way a person actually types a reply |
+| 53 | **Recap-flattery opener** | "Thanks for all the legwork here — the migration script and the rollback plan you worked through are what made this possible." | Substance first. If thanks is warranted, one plain clause without the recap: "Thanks for the legwork — this looks right to me" |
+
 Two writer-side **tests** round out the catalog (judgment checks, not auto-detected): **paragraph-reshuffle immunity** (can you swap two body paragraphs without breaking the piece?) and the **treadmill effect** ("what's actually new in this paragraph?").
 
 ## Full Example
@@ -302,7 +311,7 @@ That's 35+ AI tells.
 ## Run the detector
 
 The skill ships a deterministic, zero-dependency detection engine in
-[`detector/`](./detector/) — the same 44-category engine the rules above
+[`detector/`](./detector/) — the same 45-category engine the rules above
 describe, as runnable code. It works in Node (`>=18`) and the browser with no
 build step.
 
