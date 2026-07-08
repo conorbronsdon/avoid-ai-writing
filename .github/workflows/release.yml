@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "CHANGELOG.md"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Parse latest version from CHANGELOG.md
+        id: changelog
+        run: |
+          HEADING_LINE="$(grep -m1 -E '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md || true)"
+          if [ -z "$HEADING_LINE" ]; then
+            echo "::error::Could not find a '## [X.Y.Z]' heading in CHANGELOG.md"
+            exit 1
+          fi
+          VERSION="$(echo "$HEADING_LINE" | sed -E 's/^## \[([0-9]+\.[0-9]+\.[0-9]+)\].*/\1/')"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Latest CHANGELOG.md version: $VERSION"
+
+          PKG_VERSION="$(node -p "require('./package.json').version" 2>/dev/null || echo unknown)"
+          if [ "$PKG_VERSION" != "$VERSION" ]; then
+            echo "::warning::package.json version ($PKG_VERSION) does not match the top CHANGELOG.md entry ($VERSION). This is pre-existing drift, not something this workflow fixes."
+          fi
+
+      - name: Check if the release tag already exists
+        id: tagcheck
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v${{ steps.changelog.outputs.version }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release $TAG already exists — nothing to do."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Extract this version's changelog section
+        if: steps.tagcheck.outputs.exists == 'false'
+        run: |
+          VERSION="${{ steps.changelog.outputs.version }}"
+          awk -v heading="## [$VERSION]" '
+            $0 ~ /^## \[/ {
+              if (found) exit
+              if (index($0, heading) == 1) { found = 1; next }
+            }
+            found { print }
+          ' CHANGELOG.md > /tmp/release-notes.md
+          # Drop the "---" section separators and any leading blank lines.
+          sed -i '/^---$/d' /tmp/release-notes.md
+          sed -i '/./,$!d' /tmp/release-notes.md
+          echo "--- release notes ---"
+          cat /tmp/release-notes.md
+
+      - name: Create GitHub release
+        if: steps.tagcheck.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.changelog.outputs.version }}"
+          gh release create "v$VERSION" \
+            --target "$GITHUB_SHA" \
+            --title "v$VERSION" \
+            --notes-file /tmp/release-notes.md
