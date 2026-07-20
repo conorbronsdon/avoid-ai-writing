@@ -88,7 +88,7 @@ mistake their absence for a coverage gap:
 - Synonym cycling
 - Copula avoidance
 - Promotional language
-- Sentence structure: "It's not X — it's Y" / split-sentence form / multi-negation countdown
+- Sentence structure: "It's not X — it's Y" / split-sentence form / multi-negation countdown / tailing negation
 - Structural issues / Excessive structure / Inline-header lists / Numbered list inflation
 - False ranges
 - Notability name-dropping
@@ -97,6 +97,10 @@ mistake their absence for a coverage gap:
 - Wall-of-text replies (missing line breaks) *(tried as a detector — "reply-length, >=4 sentences, zero newlines" — and reverted; it fires on any ordinary short paragraph, not just conversational-reply register, so it stayed judgment-only. See the NOTE in `patterns.js` near the bullet-NP-list block)*
 - Recap-flattery opener
 - Immaculate typography in casual registers *(folded into the Formatting section — same weak-signal tier as curly quotes, not a standalone category)*
+- Subjectless fragments *(docs and changelog registers are carve-outs — the fragment is the correct form there)*
+- Diff-anchored writing *(changelogs, release notes, and migration guides are carve-outs)*
+- Manufactured punchlines / staccato drama
+- Aphorism formulas *(a regex for "X is the Y of Z" would flag ordinary genitive copulas — "Paris is the capital of France")*
 - When to rewrite from scratch vs. patch
 - Severity tiers (P0 / P1 / P2)
 - Self-reference escape hatch

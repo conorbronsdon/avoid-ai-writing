@@ -4,6 +4,22 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.17.0] — 2026-07-20
+
+### Added
+- **Four categories harvested from [`blader/humanizer`](https://github.com/blader/humanizer) v2.8.2**, the residue of a full cross-audit against its 33-pattern catalog (most were already covered here, several via earlier adaptations): **Subjectless fragments** (P13 — "No configuration file needed"; docs and changelog registers carved out, plus a tolerance-matrix row so `docs`/`casual` skip it), **Diff-anchored writing** (P30 — docs narrating the edit instead of the artifact; changelogs, release notes, and migration guides carved out), **Manufactured punchlines and staccato drama** (P31 — three or more same-shape reveal-fragments in a row; reconciled with Rhythm and uniformity: one emphatic fragment is human variation, the drumroll is the tell), **Aphorism formulas** (P32 — "X is the language of Y"; quotations and established idioms carved out). Catalog goes from 53 to 57 detection categories. All four are LLM-judgment rules (no detector `type`): each needs reading for meaning, and the obvious regexes fail the precision-over-recall bar — "X is the Y of Z" matches "Paris is the capital of France."
+
+### Changed
+- **"It's not X — it's Y"** — extended with the **tailing negation**, the clipped fragment form of the same contrastive move ("The options come from the selected item, no guessing"). Spec-constraint lists ("no dependencies, no telemetry") stay clean. Adapted from `blader/humanizer` P9.
+- **Excessive structure** — extended with **fragmented headers**: a heading followed by a one-line warm-up that restates it ("## Performance", then "Speed matters."). Adapted from `blader/humanizer` P29.
+- **Infomercial engagement hooks** — extended with **fake-candid openers**: "Honestly?", "Look,", "Real talk:" as standalone pause-and-reveal stagers; mid-sentence "honestly" or "look" is ordinary English and stays unflagged. Adapted from `blader/humanizer` P33.
+- **Tone calibration** — gains a put-voice-back note adapted from humanizer's "Personality and soul" section: a rewrite that clears every flag but reads sterile is still recognizably machine output; when the genre carries a voice, re-inject one deliberately, and leave neutral registers neutral.
+
+### Source
+- Cross-audit run 2026-07-20 against `blader/humanizer` v2.8.2, which grounds its catalog in [Wikipedia:Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing) (WikiProject AI Cleanup). Earlier releases had already absorbed P21, P26, and P27 directly, and P34/P35/P38/P41/P43 via `Aboudjem/humanizer-skill`; these additions are the remaining gaps that survived a false-positive review.
+
+---
+
 ## [3.16.0] — 2026-07-15
 
 ### Added
