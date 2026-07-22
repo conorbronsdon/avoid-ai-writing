@@ -1271,13 +1271,16 @@ const AIDetector = (() => {
     // ── 22. Em dash frequency ────────────────────────────────────
     // Match real em dashes, plus `--` only when surrounded by whitespace on at
     // least one side (skips CLI flags like --save-dev and YAML `---` blocks).
-    // Em dashes in separator position — a bolded lead term or markdown link
-    // opening a line/bullet, then the dash ("**Term** — desc",
-    // "[label](url) — desc") — are definition-list typography, not prose
-    // splices, and are excluded from the rate. Line-anchored on purpose:
-    // a mid-sentence "**bold** — like this" splice still counts.
+    // Em dashes in separator position — a bulleted or numbered list item
+    // opening with a bolded lead term or markdown link, then the dash
+    // ("- **Term** — desc", "- [label](url) — desc") — are definition-list
+    // typography, not prose splices, and are excluded from the rate. The
+    // list marker is required on purpose: a line-initial "**Bold lead** —
+    // full sentence" outside a list is itself an AI tell and still counts,
+    // as does a mid-sentence "**bold** — like this" splice. Em dash only —
+    // the `--` substitute is never carved out.
     const rawEmDashCount = (text.match(/—|(?<=\s)--(?=\s|$)|(?<=^|\s)--(?=\s)/gm) || []).length;
-    const separatorDashCount = (text.match(/^(?:\s*(?:[-*+]|\d+\.)\s+)?(?:\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^)\n]*\))[ \t]*—/gm) || []).length;
+    const separatorDashCount = (text.match(/^\s*(?:[-*+]|\d+\.)\s+(?:\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^)\n]*\))[ \t]*—/gm) || []).length;
     const emDashCount = rawEmDashCount - separatorDashCount;
     const emDashRate = emDashCount / (wordCount / 1000);
     if (emDashRate > 1) {

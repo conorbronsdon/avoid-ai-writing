@@ -106,6 +106,29 @@ test('em-dash detector skips definition-list separators (bold term / link + dash
   assert.equal(emDashIssues.length, 0, 'separator-position dashes should not count toward the rate');
 });
 
+test('em-dash carve-out covers numbered-list separators too', () => {
+  const text = [
+    '1. **Install** — run the setup script from the repo root.',
+    '2. **Configure** — copy the sample config and set the API token.',
+    '3. **Verify** — the status command reports green when everything works.',
+    'The whole flow takes about two minutes on a fresh machine.',
+  ].join('\n');
+  const r = AIDetector.analyzeText(text);
+  const emDashIssues = r.issues.filter((i) => i.type === 'em-dash');
+  assert.equal(emDashIssues.length, 0, 'numbered-list separators should not count toward the rate');
+});
+
+test('em-dash carve-out requires a list marker — line-initial bold splices still fire', () => {
+  const text = [
+    '**The architecture** — it scales horizontally without coordination.',
+    '**The cache layer** — it absorbs the read traffic before it hits disk.',
+    '**The result** — latency drops and throughput climbs on every node.',
+  ].join('\n');
+  const r = AIDetector.analyzeText(text);
+  const emDashIssues = r.issues.filter((i) => i.type === 'em-dash');
+  assert.ok(emDashIssues.length >= 1, 'bold-lead splices outside a list should still count');
+});
+
 test('em-dash detector still fires on mid-sentence splices at the same density', () => {
   const text =
     'The build is fast — under a second — on most machines. The cache helps — especially on cold starts. Deploys run on push — no manual step — and roll back automatically.';
