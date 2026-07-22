@@ -964,7 +964,7 @@ const AIDetector = (() => {
     // dash ("- **Term** — desc", "- [label](url) — desc") — are
     // definition-list typography, not prose punctuation. Shared by the
     // smart-punct signature below and the em-dash frequency check (§22).
-    const SEPARATOR_DASH_RE = /^\s*(?:[-*+]|\d+\.)\s+(?:\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^)\n]*\))[ \t]*—/gm;
+    const SEPARATOR_DASH_RE = /^\s*(?:[-*+]|\d+[.)])\s+(?:\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^)\n]*\))[ \t]*—/gm;
 
     // ── Smart-punctuation co-occurrence signature ────────────────────
     // Curly quotes + em-dash + Oxford comma all present + zero typos

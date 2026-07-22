@@ -111,6 +111,7 @@ test('em-dash carve-out covers numbered-list separators too', () => {
     '1. **Install** — run the setup script from the repo root.',
     '2. **Configure** — copy the sample config and set the API token.',
     '3. **Verify** — the status command reports green when everything works.',
+    '4) **Cleanup** — remove the temp files once the run finishes.',
     'The whole flow takes about two minutes on a fresh machine.',
   ].join('\n');
   const r = AIDetector.analyzeText(text);
