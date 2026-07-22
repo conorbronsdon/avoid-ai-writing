@@ -959,15 +959,25 @@ const AIDetector = (() => {
       });
     }
 
+    // Em dashes in list-item separator position — a bulleted or numbered
+    // list item opening with a bolded lead term or markdown link, then the
+    // dash ("- **Term** — desc", "- [label](url) — desc") — are
+    // definition-list typography, not prose punctuation. Shared by the
+    // smart-punct signature below and the em-dash frequency check (§22).
+    const SEPARATOR_DASH_RE = /^\s*(?:[-*+]|\d+\.)\s+(?:\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^)\n]*\))[ \t]*—/gm;
+
     // ── Smart-punctuation co-occurrence signature ────────────────────
     // Curly quotes + em-dash + Oxford comma all present + zero typos
     // (no double-spaces, no missing apostrophes in common contractions)
     // is a near-dispositive paste-from-LLM signature: humans typing
     // directly into a textarea don't produce all four. Standalone any of
-    // these is meaningless — co-occurrence is the signal.
+    // these is meaningless — co-occurrence is the signal. Separator-position
+    // dashes are typography and don't corroborate it.
     {
       const hasCurly = /[“”‘’]/.test(text);
-      const hasEmDash = /—/.test(text);
+      const totalEmDashes = (text.match(/—/g) || []).length;
+      const separatorEmDashes = (text.match(SEPARATOR_DASH_RE) || []).length;
+      const hasEmDash = totalEmDashes > separatorEmDashes;
       const oxfordHit = text.match(/\b\w+,\s+\w+,\s+and\s+\w+/g);
       const hasOxford = (oxfordHit?.length || 0) >= 1;
       const doubleSpaces = (text.match(/[^.!?]  +/g) || []).length;
@@ -1271,16 +1281,13 @@ const AIDetector = (() => {
     // ── 22. Em dash frequency ────────────────────────────────────
     // Match real em dashes, plus `--` only when surrounded by whitespace on at
     // least one side (skips CLI flags like --save-dev and YAML `---` blocks).
-    // Em dashes in separator position — a bulleted or numbered list item
-    // opening with a bolded lead term or markdown link, then the dash
-    // ("- **Term** — desc", "- [label](url) — desc") — are definition-list
-    // typography, not prose splices, and are excluded from the rate. The
-    // list marker is required on purpose: a line-initial "**Bold lead** —
-    // full sentence" outside a list is itself an AI tell and still counts,
-    // as does a mid-sentence "**bold** — like this" splice. Em dash only —
-    // the `--` substitute is never carved out.
+    // Separator-position em dashes (SEPARATOR_DASH_RE above) are excluded
+    // from the rate. The list marker is required on purpose: a line-initial
+    // "**Bold lead** — full sentence" outside a list is itself an AI tell
+    // and still counts, as does a mid-sentence "**bold** — like this"
+    // splice. Em dash only — the `--` substitute is never carved out.
     const rawEmDashCount = (text.match(/—|(?<=\s)--(?=\s|$)|(?<=^|\s)--(?=\s)/gm) || []).length;
-    const separatorDashCount = (text.match(/^\s*(?:[-*+]|\d+\.)\s+(?:\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^)\n]*\))[ \t]*—/gm) || []).length;
+    const separatorDashCount = (text.match(SEPARATOR_DASH_RE) || []).length;
     const emDashCount = rawEmDashCount - separatorDashCount;
     const emDashRate = emDashCount / (wordCount / 1000);
     if (emDashRate > 1) {

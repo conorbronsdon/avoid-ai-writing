@@ -129,6 +129,22 @@ test('em-dash carve-out requires a list marker — line-initial bold splices sti
   assert.ok(emDashIssues.length >= 1, 'bold-lead splices outside a list should still count');
 });
 
+test('smart-punct signature is not corroborated by separator-only em dashes', () => {
+  // Curly quotes + Oxford commas + zero typos + ≥80 words, but every em
+  // dash is a list-item separator. Before the carve-out this fired on
+  // the dash-as-typography; now the em-dash leg of the co-occurrence
+  // requires a non-separator dash.
+  const text = [
+    '- **Detect mode** — flags “possible issues” without rewriting, so you can review, compare, and decide.',
+    '- **Edit mode** — rewrites the file in place and keeps the original wording where it already reads fine.',
+    '- **Voice profiles** — casual, professional, and technical presets tune how hard each rule is enforced.',
+    'The catalog lives in one file, the CI check keeps the README count honest, and the plugin copy is generated from the root skill so the two can never drift apart in a release.',
+  ].join('\n');
+  const r = AIDetector.analyzeText(text);
+  const hits = r.issues.filter((i) => i.type === 'smart-punct-signature');
+  assert.equal(hits.length, 0, 'separator-only dashes should not complete the co-occurrence signature');
+});
+
 test('em-dash detector still fires on mid-sentence splices at the same density', () => {
   const text =
     'The build is fast — under a second — on most machines. The cache helps — especially on cold starts. Deploys run on push — no manual step — and roll back automatically.';
