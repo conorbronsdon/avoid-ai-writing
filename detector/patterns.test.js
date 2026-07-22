@@ -94,6 +94,26 @@ test('repeated Tier 1 phrase does not inflate score linearly', () => {
   );
 });
 
+test('em-dash detector skips definition-list separators (bold term / link + dash)', () => {
+  const text = [
+    '- **Detect mode** — flag patterns without rewriting anything in the file.',
+    '- **Edit mode** — rewrite the file in place and report what changed.',
+    '- [agentskills.io](https://agentskills.io) — the SKILL.md format this repo follows.',
+    'The catalog lives in one file and a CI check keeps the README count honest.',
+  ].join('\n');
+  const r = AIDetector.analyzeText(text);
+  const emDashIssues = r.issues.filter((i) => i.type === 'em-dash');
+  assert.equal(emDashIssues.length, 0, 'separator-position dashes should not count toward the rate');
+});
+
+test('em-dash detector still fires on mid-sentence splices at the same density', () => {
+  const text =
+    'The build is fast — under a second — on most machines. The cache helps — especially on cold starts. Deploys run on push — no manual step — and roll back automatically.';
+  const r = AIDetector.analyzeText(text);
+  const emDashIssues = r.issues.filter((i) => i.type === 'em-dash');
+  assert.ok(emDashIssues.length >= 1, 'prose splices should still flag');
+});
+
 test('em-dash detector ignores CLI flags like --save-dev', () => {
   const text = 'Run npm install --save-dev and then npm run build --no-verify --silent. Takes about ten seconds on this machine. The package is installed into node_modules directly after the install command completes successfully.';
   const r = AIDetector.analyzeText(text);

@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.18.0] — 2026-07-22
+
+### Changed
+- **Em dashes** — carve-out for the definition-list separator position: an em dash directly after a bolded lead term or a markdown link that opens a list item (`**Term** — description`, `[label](url) — description`) is typography, not a prose splice, and no longer counts toward the 1-per-1,000-words rate. The detector excludes the same shape from the `em-dash` count — line-anchored with an optional bullet marker, so a mid-sentence `**bold** — like this` splice still counts. Fixture pair added: a definition-style feature list stays clean; the same dash density in flowing prose still fires. This repo's own README and changelog use the separator convention throughout, which is what the strict-context false positive looks like in practice. (The same carve-out was independently proposed upstream in `blader/humanizer` PR #190.)
+
+---
+
 ## [3.17.0] — 2026-07-20
 
 ### Added
