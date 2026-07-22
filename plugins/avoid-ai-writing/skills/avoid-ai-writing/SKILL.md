@@ -308,7 +308,7 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - AI text avoids "is" and "has" by substituting fancier verbs: "serves as," "features," "boasts," "presents," "represents." These sound like a press release.
 - Default to "is" or "has" unless a more specific verb genuinely adds meaning.
 
-### Subjectless fragments
+### Subjectless fragments and agentless passives
 - Sentences with the subject dropped or the actor hidden: "No configuration file needed." "The results are preserved automatically." "Support for nested queries was added." The clipped no-subject form is a shape LLMs reach for when compressing feature descriptions, and the passive hides who does what.
 - Fix: name the actor when it clarifies — "You don't need a configuration file. The CLI preserves results automatically." Prefer active voice unless the actor is irrelevant.
 - Carve-out: terse reference registers where the fragment is the correct form — README feature lists, changelog entries, parameter docs, commit subjects ("No breaking changes"). Flag in flowing prose; skip in docs and casual registers (see the tolerance matrix). A single deliberate fragment for emphasis is rhythm, not a tell. Adapted from `blader/humanizer` P13.
@@ -609,7 +609,7 @@ Rules not listed in the table apply at full strength across all profiles.
 | Social endorsement closers | strict (the LinkedIn share-post tell) | strict | strict | strict | skip | relaxed (1 OK in a DM) |
 | Hedge-stacked predictions | strict | strict | relaxed ("could" is hedged accuracy) | **extra strict** | relaxed | skip |
 | Real/actual inflation | strict | strict | strict | **extra strict** | relaxed | skip |
-| Subjectless fragments | relaxed (short-form fragments are the register) | strict | relaxed | strict | skip (fragment lists are docs) | skip |
+| Subjectless fragments and agentless passives | relaxed (short-form fragments are the register) | strict | relaxed | strict | skip (fragment lists are docs) | skip |
 
 **Technical-blog word table exceptions:** These terms have legitimate technical meaning and should not be flagged in technical context: `robust`, `comprehensive`, `seamless`, `ecosystem`, `leverage` (when discussing actual platform leverage/APIs), `facilitate`, `underpin`, `streamline`. Still flag: `delve`, `tapestry`, `beacon`, `embark`, `testament to`, `game-changer`, `harness`.
 
