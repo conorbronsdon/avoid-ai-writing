@@ -90,6 +90,8 @@ mistake their absence for a coverage gap:
 - Promotional language
 - Sentence structure: "It's not X — it's Y" / split-sentence form / multi-negation countdown / tailing negation
 - Structural issues / Excessive structure / Inline-header lists / Numbered list inflation
+- Moral-adjective category errors (including ontological slop on assumptions, gratuitous universal quantifiers)
+- Invented contrast-pair mirroring
 - False ranges
 - Notability name-dropping
 - Vague third-party validation

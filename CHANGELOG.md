@@ -2,12 +2,25 @@
 
 All notable changes to this project are documented here.
 
+
+## [3.19.0] - 2025-07-24
+
+### Added
+- **Moral-adjective category errors** rule: catches AI gluing moral adjectives (`honest`, `genuine`, `faithful`) onto non-agentic technical nouns (`shape`, `number`, `representation`) where the modifier cannot literally apply. Also covers passive-voice moral adverbs (`"described honestly"`), ontological slop on assumptions (`"stops being true"`), and gratuitous universal quantifiers (`"every first-year course"`).
+- **Invented contrast-pair mirroring** rule: catches AI fabricating the second half of a contrast pair for symmetry (`"false precision rather than genuine accuracy"` — the first term is real, the second is phantom).
+
+- Both rules added to P1 severity tier and tolerance matrix (relaxed for `technical-blog` and `docs` profiles).
+
+
+
 ---
 
 ## [3.18.0] — 2026-07-22
 
 ### Changed
 - **Em dashes** — carve-out for the definition-list separator position: an em dash after a bolded lead term or a markdown link opening a bulleted or numbered list item (`- **Term** — description`, `- [label](url) — description`) is typography, not a prose splice, and no longer counts toward the 1-per-1,000-words rate. The detector's exclusion requires the list marker — a line-initial `**Bold lead** — full sentence` outside a list is itself an AI tell and still counts, as do mid-sentence splices; the `--` substitute is never carved out. The same separator dashes no longer corroborate the `smart-punct-signature` co-occurrence check either — its em-dash leg now requires a non-separator dash. Fixtures added for all the boundaries: bulleted and numbered definition lists stay clean, markerless bold-lead splices and flowing-prose splices still fire, and a curly-quoted definition list with separator-only dashes no longer completes the smart-punct signature. This repo's own README and changelog use the separator convention throughout, which is what the strict-context false positive looks like in practice. (The same carve-out was independently proposed upstream in `blader/humanizer` PR #190.)
+
+
 
 ---
 
@@ -31,12 +44,16 @@ Four categories harvested from [`blader/humanizer`](https://github.com/blader/hu
 ### Source
 - Cross-audit run 2026-07-20 against `blader/humanizer` v2.8.2, which grounds its catalog in [Wikipedia:Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing) (WikiProject AI Cleanup). Earlier releases had already absorbed P21, P26, and P27 directly, and P34/P35/P38/P41/P43 via `Aboudjem/humanizer-skill`; these additions are the remaining gaps that survived a false-positive review.
 
+
+
 ---
 
 ## [3.16.0] — 2026-07-15
 
 ### Added
 - **"load-bearing" (metaphor) to Tier 1 word table** — LLMs, especially Claude, use "load-bearing" as a portable label for any dependency the argument rests on: "load-bearing assumption," "load-bearing claim," "load-bearing test," "load-bearing invariant." Added to both the SKILL.md Tier 1 table and the detector engine as a `TIER1_PHRASES` entry. Matches the hyphenated compound only — unhyphenated "load bearing" is ordinary English ("the load bearing down on the bridge"). Construction carve-out: literal uses before a structural noun (`wall`, `beam`, `column`, `joist`, `truss`, `member`, `footing`, `slab`, `stud`, `partition`, `masonry`, `lintel`, `pier`, `rafter`, `girder`, `capacity`) are exempt, including with one material or position adjective in between (`load-bearing structural wall`). Abstract-capable nouns (`structure`, `element`, `frame`, `foundation`) are excluded from the carve-out on purpose, so the metaphor still fires on them. Known gap: predicative use ("the wall is load-bearing") still flags — carve-out design tracked in #56. Replacement: essential, critical, necessary — or say what breaks if you remove it. Sources: [Marek Šuppa — "Load-bearing" is becoming LLM speak](https://mareksuppa.com/til/load-bearing/); [Yaniv Bernstein (LinkedIn)](https://www.linkedin.com/posts/ybernstein_opus-47-has-dropped-a-new-ai-slop-writing-activity-7452530977479774208-kbQA); [Developers Digest](https://www.developersdigest.tech/blog/stop-claude-saying-load-bearing).
+
+
 
 ---
 
@@ -53,12 +70,16 @@ Four categories harvested from [`blader/humanizer`](https://github.com/blader/hu
 ### Source
 - Observed in the wild: a maintainer on a GitHub issue flagged an assisted-sounding reply with "I prefer to talk human to human." The block-paragraph shape and the recap of the maintainer's own prior work were the tells, not any single word. Name and repo withheld.
 
+
+
 ---
 
 ## [3.14.0] — 2026-07-07
 
 ### Added
 - **Vague third-party validation** — manufacturing credibility by pointing at an *unnamed* external authority, usually with a generic superlative ("an outside party measuring the same models everyone runs and putting us on top," "independent testing confirms," "analysts agree"). The authority is faceless and the claim unfalsifiable, so the reader can't tell who measured what or go check. The inverse of **Notability name-dropping** (which over-names *specific* prestigious sources); a passage can run both moves at once. Carve-out: specifically attributed, checkable validation — a named benchmark, a linked report, a dated audit — stays unflagged, since the tell is the vagueness, not the citation. Catalog goes from 50 to 51 detection categories. LLM-judgment rule (no detector `type`); listed in `detector/CATEGORIES.md` §C. Addresses #39 (the follow-up half raised by @hiSandog).
+
+
 
 ---
 
@@ -75,12 +96,16 @@ Four categories harvested from [`blader/humanizer`](https://github.com/blader/hu
 
 Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) and its [tropes-md digest](https://tropes.fyi/tropes-md), with thanks to the [tropes.fyi markdown gist](https://gist.github.com/ossa-ma/f3baa9d25154c33095e22272c631f5a1) by ossa-ma. Most of the 33 catalogued tropes were already covered; this release adds the gaps that survived a false-positive review.
 
+
+
 ---
 
 ## [3.12.0] — 2026-07-06
 
 ### Added
 - **"quietly" to Tier 2 word table** — AI uses "quietly" as a significance adverb to imply underdog credibility without evidence: "quietly building," "quietly reshaping," "quietly becoming." On its own in a sentence it's fine; in a paragraph already leaning on other Tier 2 words it's a cluster tell. Added to both the SKILL.md Tier 2 table and the detector engine. The detector fires when "quietly" appears alongside one other Tier 2 word in the same paragraph. Replacement: cut the adverb, or name the concrete contrast. Source: tropes.fyi/tropes ("Quietly" and Other Magic Adverbs).
+
+
 
 ---
 
@@ -89,12 +114,16 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 ### Changed
 - **"It's not X — it's Y" contrastive rule** — broadened to name the **split-sentence variant**, where the negation and the correction land in two separate sentences ("The headline isn't the speed. The real story is Y.") rather than pivoting on a single dash or comma. The joined form was the rule's implicit template, so the two-sentence split — which reads as two innocent declaratives — was slipping through. Same move, now flagged. LLM-judgment rule; catalog stays at 49 categories. Addresses #39.
 
+
+
 ---
 
 ## [3.10.0] — 2026-06-10
 
 ### Added
 - **List-label periods** — in bulleted lists where each item leads with a short label, LLMs end the label with a period and run the gloss as a separate sentence, where a person almost always uses a colon. Strongest with bold labels (`**Intros.**` vs `**Intros:**`); the unbolded shape (`- Intros. Years of...`) is the same tell, slightly weaker. The colon reads as "here's what this label means"; the period reads as a sentence the next clause then contradicts by continuing. Fix is to swap the period for a colon and lowercase the gloss, or drop the bold label entirely. Distinct from inline-header lists (bold headers that repeat the point): this rule is about the punctuation on the label, not the redundancy. Carve-out: a bold span that is a full standalone sentence keeps its period. Catalog goes from 48 to 49 detection categories. LLM-judgment rule (no detector `type`). Closes #31.
+
+
 
 ---
 
@@ -103,6 +132,8 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 ### Added
 - **Social endorsement closers** — the curatorial sign-off LLMs append to LinkedIn/X share posts, usually a colon teeing up a link: "This one is worth your time:", "This one's a must-read:", "Do yourself a favor and read this," "You won't want to miss this one," "Thank me later," "Bookmark this," "Don't sleep on this one." Performs a recommendation without giving the reader a reason to click. Distinct from the bare "worth [verb]ing" word-table entry (a single weak word inside a sentence) and from infomercial engagement hooks (mid-flow teasers) — this is the whole closing line of a social post. Demonstrative-anchored ("THIS one is worth your time") so it stays off plain human endorsements ("the book is worth reading, but the middle drags"). Catalog goes from 47 to 48 detection categories; the detector engine gains a `social-cta-closer` `type` (43 → 44). Closes #29.
 
+
+
 ---
 
 ## [3.8.0] — 2026-05-29
@@ -110,12 +141,16 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 ### Added
 - **Self-labeling significance** — back-pointing labels that flag which item in a list is supposed to matter ("That last move is the contrarian one," "This is the interesting part," "That third bullet is the real story") instead of writing the list so the right item carries the weight on its own. Distinct from confidence calibration (which front-loads the cue) and emotional flatline (which prefaces a single claim) — this one back-points after the fact. Catalog goes from 46 to 47 detection categories. LLM-judgment rule (no detector `type`); documented in `detector/CATEGORIES.md` §C.
 
+
+
 ---
 
 ## [3.7.2] — 2026-05-28
 
 ### Changed
 - **Curly quotation marks** — recalibrated per review of #15. Reframed from a "strong" tell to a **weak, corroborating** signal meaningful mainly in plain-text contexts (code comments, commit messages, plaintext drafts), since Word/Google Docs/macOS/iOS auto-curl quotes by default. Curly apostrophes (U+2019) are no longer flagged on their own (they appear in every contraction). Fixes the German low-9 example. Keeps it consistent with the deterministic detector's co-occurrence logic (#16).
+
+
 
 ---
 
@@ -127,6 +162,8 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 
 ### Credit
 - Contributed by [@augustasas](https://github.com/augustasas) (#15).
+
+
 
 ---
 ## [3.7.0] — 2026-05-28
@@ -142,6 +179,8 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 
 ### Credit
 - Patterns adapted from `blader/humanizer` (P21, P26, P27) and Wikipedia's "Signs of AI writing," identified in the competitive research tracked in #22.
+
+
 
 ---
 
@@ -160,6 +199,8 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 ### Notes
 - Designed from a competitive feature audit (Aboudjem/humanizer-skill, brandonwise/humanizer, blader/humanizer) plus detection-science and writing-craft research. The `--score` feature and four additional catalog patterns from that research are tracked separately (#21, #22).
 
+
+
 ---
 
 ## [3.5.0] — 2026-05-27
@@ -175,6 +216,8 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 
 ### Credit
 - Patterns adapted from [`Aboudjem/humanizer-skill`](https://github.com/Aboudjem/humanizer-skill) (P38, P40, P41, P43), identified during a competitive catalog audit.
+
+
 
 ---
 
@@ -199,6 +242,8 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 ### Reported by
 - A user of the avoid-ai-writing extension flagged two crypto-shill social posts (MineBench reviews) that the v3.3.x wordlist+regex detector scored as "Minimal AI signals" despite being obvious LLM output. Both posts avoided every Tier 1 vocabulary entry by substituting synonyms ("emerging sector," "scalable network contribution," "viability") and used structural shapes (hashtag block, bare-NP bullet lists, hedge stacks, future-narrative templates) the detector had no rule for. v3.4 adds rules for the structures, not just the words.
 
+
+
 ---
 
 ## [3.3.0] — 2026-04-01
@@ -210,6 +255,8 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 ### Changed
 - Version bump to 3.3.0
 
+
+
 ---
 
 ## [3.2.0] — 2026-03-31
@@ -220,6 +267,8 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 ### Changed
 - Output format section now documents both rewrite (default) and detect mode outputs
 - Version bump to 3.2.0
+
+
 
 ---
 
@@ -238,6 +287,8 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 
 ### Source
 - Pangram Labs AI detection research (pangram.com) — decoder-only classifier trained on 28M human documents. Key insight: structural uniformity and pacing consistency are weighted higher than individual word choices.
+
+
 
 ---
 
@@ -258,6 +309,8 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 ### Changed
 - Pattern count: 30 → 35 categories
 
+
+
 ---
 
 ## [2.2.0] — 2026-03-18
@@ -269,6 +322,8 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 
 ### Changed
 - `README.md` — broadened description to reference both platforms, reorganized installation into Claude Code and OpenClaw sections
+
+
 
 ---
 
@@ -287,6 +342,8 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 - `README.md` — updated pattern count, added Meta Patterns table, expanded credits with source descriptions
 - Communication Patterns table in README now includes all communication patterns
 
+
+
 ---
 
 ## [2.0.0] — 2026-03-18
@@ -304,6 +361,8 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 - Total vocabulary: 58 → 102 entries (53 Tier 1 + 38 Tier 2 + 11 Tier 3)
 - `README.md` — updated replacement table description, pattern table, and credits
 
+
+
 ---
 
 ## [1.4.0] — 2026-03-17
@@ -317,6 +376,8 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 - Deduplicated filler phrases that appeared in both the word table and the filler section
 - `README.md` — updated pattern count (22 → 23), replacement table count (43 → 58), added "let's" constructions row to pattern table
 
+
+
 ---
 
 ## [1.3.0] — 2026-03-17
@@ -325,6 +386,8 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 - Em dash detection now catches double-hyphen (`--`) in addition to Unicode em dash (`—`)
 - `README.md` — updated formatting pattern description to mention `--`
 
+
+
 ---
 
 ## [1.2.0] — 2026-03-06
@@ -332,6 +395,8 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 ### Added
 - New pattern category: emotional flatline (AI claims emotions as structural crutch without conveying them; also flags lazy human writing)
 - Skill now covers 22 pattern categories with 43 word/phrase replacements
+
+
 
 ---
 
@@ -344,6 +409,8 @@ Trope review sourced from [tropes.fyi/directory](https://tropes.fyi/directory) a
 
 ### Changed
 - `README.md` — expanded full example (6 paragraphs → 4 clean sentences, 40+ tells flagged); added per-pattern before/after table organized into Content, Language, Structure, Communication groups; updated pattern count and replacement table count throughout
+
+
 
 ---
 
