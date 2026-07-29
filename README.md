@@ -354,7 +354,7 @@ Built something on top of this skill? Open an issue — happy to link it here.
 
 ## Disclaimer
 
-*All views, opinions, and statements expressed on this account are solely my own and are made in my personal capacity. They do not reflect, and should not be construed as reflecting, the views, positions, or policies of Modular. This account is not affiliated with, authorized by, or endorsed by Modular in any way.*
+*This is an independent personal project, not affiliated with, sponsored by, or endorsed by any company. All views expressed are my own.*
 
 ## License
 
