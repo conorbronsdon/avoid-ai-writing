@@ -4,6 +4,18 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.19.0] — 2026-07-24
+
+### Added
+
+Two judgment-only rules (no detector `type`) found during a real audit. Catalog goes from 57 to 59 detection categories.
+
+- **Moral-adjective category errors** — AI glues moral adjectives (`honest`, `genuine`, `faithful`) onto non-agentic technical nouns (`shape`, `number`, `representation`) where the modifier cannot literally apply. Also covers passive-voice moral adverbs (`"described honestly"`), ontological slop on assumptions (`"stops being true"`), and gratuitous universal quantifiers (`"every first-year course"`).
+- **Invented contrast-pair mirroring** — AI fabricates the second half of a contrast pair for symmetry (`"false precision rather than genuine accuracy"`, where the first term is real and the second is phantom).
+- Both added to the P1 severity tier and the tolerance matrix (relaxed for `technical-blog` and `docs` profiles).
+
+---
+
 ## [3.18.0] — 2026-07-22
 
 ### Changed
