@@ -287,6 +287,53 @@ test('"load-bearing" (metaphor) flags tier1; construction nouns exempt', () => {
   }
 });
 
+test('"verbatim" flags tier1; terms-of-art nouns exempt', () => {
+  // Same length-gate discipline as the load-bearing fixtures above: every string
+  // is padded past wordCount < 10, or it would pass with the pattern deleted.
+  const vHits = (text) => {
+    const r = AIDetector.analyzeText(text);
+    assert.ok(!r.tooShort, `fixture must clear the length gate (wordCount >= 10): ${text}`);
+    return { hits: r.issues.filter((i) => /verbatim/i.test(i.text)), types: new Set(r.issues.map((i) => i.type)) };
+  };
+
+  const redundant = [
+    'The packaging step copies the in-app resource verbatim into the extension bundle.',
+    'He asked me to repeat the entire paragraph verbatim to the committee this morning.',
+    'They shipped a verbatim copy of the upstream binary without changing a single flag.',
+    'The migration script reproduces every legacy column verbatim in the new schema today.',
+  ];
+  for (const text of redundant) {
+    const { hits, types } = vHits(text);
+    assert.ok(types.has('tier1'), `expected tier1 flag for redundant use: ${text}`);
+    assert.ok(hits.length > 0, `expected a verbatim tier1 hit: ${text}`);
+  }
+
+  // One fixture per carve-out noun: dropping any single noun from the lookahead
+  // must fail this test.
+  const termsOfArt = [
+    'The verbatim transcript was entered into evidence during the second day of hearings.',
+    'Both verbatim transcripts were released to counsel before the deposition resumed on Friday.',
+    'A verbatim record of the hearing is kept by the clerk for seven years.',
+    'The verbatim records from the tribunal were archived and indexed by case number.',
+    'The researcher pulled a verbatim quote from the interview to anchor the finding.',
+    'We coded the verbatim quotes by theme before writing up the qualitative results.',
+    'Each verbatim quotation in the appendix is attributed to a numbered participant.',
+    'The verbatim minutes of the board meeting were circulated to every director yesterday.',
+    'Her verbatim testimony contradicted the written statement she had filed the previous month.',
+    'The clerk kept verbatim notes throughout the entire proceeding without missing a word.',
+    'A verbatim note of the exchange appears in the appendix to the report.',
+    'The verbatim reporter transcribed the entire cross-examination without a single dropped line.',
+    'Two verbatim reporters rotated through the long afternoon session to avoid fatigue errors.',
+    'Verbatim reporting is the standard for appellate review in this jurisdiction today.',
+    // The plural noun (market research) is exempt for free: \b blocks the match.
+    'We coded the verbatims from the customer survey into eight recurring complaint themes.',
+  ];
+  for (const text of termsOfArt) {
+    const { hits } = vHits(text);
+    assert.equal(hits.length, 0, `term-of-art use should not fire tier1: ${text}`);
+  }
+});
+
 test('"quietly" clusters with another Tier 2 word flags tier2', () => {
   // "quietly" alone in a paragraph should not fire; paired with another
   // Tier 2 word in the same paragraph it should produce a tier2 issue.
