@@ -116,7 +116,6 @@ Words are organized into three tiers based on how reliably they signal AI-genera
 | game-changer / game-changing | describe what specifically changed and why it matters |
 | hit differently / hits different | (say what specifically changed, or cut) |
 | utilize | use |
-| verbatim | usually cut: "copies X verbatim" says nothing "copies X" doesn't. If the exactness carries a contrast, name it concretely: byte-for-byte (bytes), word for word (text), unchanged, as is. Carve-out: `verbatim transcript` / `verbatim record` / `verbatim testimony` in legal, research, and QA registers is a term of art, not an intensifier |
 | watershed moment | turning point, shift (or describe what changed) |
 | marking a pivotal moment | (state what happened) |
 | the future looks bright | (cut — say something specific or nothing) |
@@ -227,6 +226,7 @@ These are normal words. Only flag them when the text is saturated with them — 
 | sophisticated | Describe the sophistication |
 | instrumental | Say what role it played |
 | world-class / state-of-the-art / best-in-class | Cite a benchmark or comparison |
+| verbatim | Usually redundant with the verb ("copies X verbatim" = "copies X") — cut it. If the exactness marks a contrast, name it: byte-for-byte, word for word, unchanged. Term of art in legal/research/QA registers ("verbatim transcript / record / testimony"), so weigh density in that context before flagging |
 
 #### Tier 3 phrases — Flag at density or in clusters
 

@@ -120,14 +120,6 @@ const AIDetector = (() => {
     { pattern: /\btestament\s+to\b/gi, replace: 'shows, proves' },
     { pattern: /\bleverag(?:e|es|ing|ed)\b/gi, replace: 'use' },
     { pattern: /\bwatershed\s+moment\b/gi, replace: 'turning point, shift' },
-    // `verbatim` is almost always redundant with the verb it modifies: "copies X
-    // verbatim" says nothing "copies X" doesn't. Cut first; only when the exactness
-    // carries a contrast (an unmodified copy vs. a modified one) pick the concrete
-    // form. Terms-of-art carve-out: "verbatim transcript/record/quote/testimony" in
-    // legal, research, and QA registers is the standard name for the artifact, not
-    // an intensifier. The plural noun "verbatims" (market research) is exempt for
-    // free, since \b blocks the match.
-    { pattern: /\bverbatim\b(?!\s+(?:transcripts?|records?|quot(?:e|es|ations?)|minutes|testimony|notes?|reporters?|reporting)\b)/gi, replace: 'cut it — "copies X verbatim" is "copies X"; if exactness is the point: byte-for-byte, word for word, unchanged' },
     { pattern: /\bmarking\s+a\s+pivotal\s+moment\b/gi, replace: 'state what happened' },
     { pattern: /\bthe\s+future\s+looks\s+bright\b/gi, replace: 'cut or say something specific' },
     { pattern: /\bonly\s+time\s+will\s+tell\b/gi, replace: 'cut or say something specific' },
@@ -238,6 +230,11 @@ const AIDetector = (() => {
     'exceptional', 'exceptionally', 'remarkable', 'remarkably',
     'sophisticated', 'instrumental',
     'world-class', 'state-of-the-art', 'best-in-class',
+    // `verbatim` is usually redundant with the verb it modifies ("copies X
+    // verbatim" = "copies X"). It has a genuine term-of-art sense in legal,
+    // research, and QA registers ("verbatim transcript"), so it lives at Tier 3:
+    // density-gated, it only fires on overuse, not on a single legitimate use.
+    'verbatim',
   ];
 
   // Multi-word Tier 3 phrases. Density-gated like single Tier 3 words because
