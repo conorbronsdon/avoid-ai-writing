@@ -4,6 +4,17 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.21.0] — 2026-07-30
+
+### Added
+
+One rule with detector coverage. Catalog goes from 60 to 61 detection categories; the engine goes from 46 to 47 `type`s.
+
+- **Narrated candor** (`narrated-candor`) — announcing your own disclosure instead of disclosing: `"Two caveats I would rather flag than let you discover later:"`, `"I want to be upfront:"`, `"in the interest of full disclosure"`, `"rather than bury this"`, `"I could have left this out, but"`. The content is "Two caveats:"; the rest advertises the writer's forthrightness. Completes a set with two existing rules: **chatbot artifacts** perform helpfulness and **sycophantic tone** flatters the reader, while this performs candor about oneself — the shape assistant training rewards, since visible transparency reads as trustworthy. Usually arrives as a matched antithesis (*flag* rather than *let you discover*), which is a tell in its own right. Added to the P1 severity tier.
+- **Precision carve-out.** The disclosure itself is never matched, only the separable clause about disclosing. `"I haven't tested this on Windows"`, `"the numbers don't reproduce on my hardware"`, and `"this is a mitigation, not a fix"` all stay clean, as does a bare `"Two caveats:"`. Bare `"to be honest"` / `"to be transparent"` are left to the existing hollow-intensifier rule rather than double-flagged here. Fixtures cover both directions, including four must-not-fire admissions.
+
+---
+
 ## [3.20.0] — 2026-07-29
 
 ### Added

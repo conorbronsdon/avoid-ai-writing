@@ -1,7 +1,7 @@
 ---
 name: avoid-ai-writing
 description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Use this skill when asked to "remove AI-isms," "clean up AI writing," "edit writing for AI patterns," "audit writing for AI tells," or "make this sound less like AI." Supports a detect-only mode, an edit-in-place mode for files, an optional voice profile (casual / professional / technical / warm / blunt), and an iterate-to-convergence pass.
-version: 3.20.0
+version: 3.21.0
 license: MIT
 compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, VS Code Copilot, Hermes Agent, OpenHands, etc.) or OpenClaw. No external tools or APIs required.
 metadata:
@@ -458,6 +458,13 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - "Great question!", "Excellent point!", "You're absolutely right!", "That's a really insightful observation" — these are conversational rewards from chat interfaces, not writing. Remove entirely.
 - Distinct from chatbot artifacts: sycophancy specifically validates the reader/questioner rather than just performing helpfulness.
 
+### Narrated candor
+- Announcing your own disclosure instead of disclosing: "Two caveats I would rather flag than let you discover later:", "I want to be upfront:", "To be fully transparent:", "Rather than bury this, I'll say it plainly:", "I could have left this out, but:", "Being honest about the limitations here:". The content is "Two caveats:"; the rest advertises the writer's forthrightness.
+- Completes the set with two neighbours. Chatbot artifacts perform **helpfulness** ("I hope this helps!"); sycophantic tone validates **the reader** ("Great question!"); this performs **candor about oneself**. Assistant training rewards visible transparency, so the model narrates being forthcoming rather than simply being it.
+- Note the shape is usually a matched antithesis (flag rather than let you discover, say plainly rather than bury), which is its own tell — the symmetry is doing the work that content should.
+- **The deletion test.** Cut the frame. If the sentence loses no information, it was never content: "Two caveats I would rather flag than let you discover later: X and Y" and "Two caveats: X and Y" say the same thing.
+- **Carve-out — the disclosure itself.** Substantive admissions stay, and are the point: "I haven't tested this on Windows", "the numbers in the commit message don't reproduce on my hardware", "this is a mitigation, not a fix". Those carry information. The tell is the separable clause *about* disclosing, not the disclosure.
+
 ### Acknowledgment loops
 - "You're asking about," "The question of whether," "To answer your question," "That's a great question. The..." — AI restates the prompt before answering. In writing, this is pure filler. The reader knows what they asked. Just answer.
 - Related pattern: opening a section by summarizing what the previous section said. If the structure is clear, the reader doesn't need a recap.
@@ -563,6 +570,7 @@ Not all AI-isms are equal. When doing a quick pass or triaging a large document,
 - Generic future-narrative closers ("may become one of the most important narratives…")
 - Social endorsement closers ("This one is worth your time:", "thank me later")
 - Lingering-attention claims ("the line I keep coming back to," "I can't stop thinking about this")
+- Narrated candor ("I would rather flag this than let you discover it later", "in the interest of full disclosure")
 - Hedge-stacked predictions ("could potentially," "may eventually")
 - Real/actual adjective inflation ("real on-chain tokenomics")
 - Moral-adjective category errors ("honest shape," "flagged honestly")

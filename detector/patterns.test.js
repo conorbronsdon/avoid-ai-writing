@@ -228,6 +228,52 @@ test('"I cannot stop thinking about" flags lingering-attention', () => {
   assert.ok(types.has('lingering-attention'), 'expected lingering-attention flag');
 });
 
+test('"I would rather flag than let you discover later" flags narrated-candor', () => {
+  const text = 'Two caveats I would rather flag than let you discover later: the cache invalidates on every schema bump.';
+  const r = AIDetector.analyzeText(text);
+  const types = new Set(r.issues.map((i) => i.type));
+  assert.ok(types.has('narrated-candor'), 'expected narrated-candor flag');
+});
+
+test('"in the interest of full disclosure" flags narrated-candor', () => {
+  const text = 'In the interest of full disclosure, the benchmark numbers were measured on a machine with other work running.';
+  const r = AIDetector.analyzeText(text);
+  const types = new Set(r.issues.map((i) => i.type));
+  assert.ok(types.has('narrated-candor'), 'expected narrated-candor flag');
+});
+
+test('"I want to be upfront:" flags narrated-candor', () => {
+  const text = 'I want to be upfront: the migration has not been tested against a database larger than ten thousand rows.';
+  const r = AIDetector.analyzeText(text);
+  const types = new Set(r.issues.map((i) => i.type));
+  assert.ok(types.has('narrated-candor'), 'expected narrated-candor flag');
+});
+
+test('a substantive admission with no disclosure-announcing clause does NOT flag narrated-candor', () => {
+  // The carve-out: this rule targets the clause spent on the act of
+  // disclosing, never the disclosure. Flagging plain admissions would
+  // discourage exactly the writing the rule is meant to encourage.
+  const cases = [
+    'I have not tested this on Windows, and the permission bits behave differently there.',
+    'The numbers in the commit message do not reproduce on my hardware; I get 74 microseconds, not 62.',
+    'This is a mitigation rather than a complete fix, because the dialer lives in another process.',
+    'Two caveats: the cache invalidates on a schema bump, and the server side is unbenchmarked.',
+  ];
+
+  for (const text of cases) {
+    const r = AIDetector.analyzeText(text);
+    const types = new Set(r.issues.map((i) => i.type));
+    assert.ok(!types.has('narrated-candor'), `plain admission must not flag: ${text}`);
+  }
+});
+
+test('bare "to be honest" does NOT flag narrated-candor (hollow-intensifier owns it)', () => {
+  const text = 'To be honest the rollout went fine, and the dashboard has looked healthy every day since we shipped it.';
+  const r = AIDetector.analyzeText(text);
+  const types = new Set(r.issues.map((i) => i.type));
+  assert.ok(!types.has('narrated-candor'), 'bare intensifier belongs to hollow-intensifier, not this rule');
+});
+
 test('bare "I keep coming back to X because ..." does NOT flag lingering-attention', () => {
   // Precision carve-out: the bare verb phrase with a reason attached is
   // legitimate analytical writing, so only the noun-anchored frame fires.
