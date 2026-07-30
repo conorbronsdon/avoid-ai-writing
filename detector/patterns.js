@@ -286,6 +286,7 @@ const AIDetector = (() => {
     'vague-attribution': 5,
     'hollow-intensifier': 2,
     'emotional-flatline': 2,
+    'lingering-attention': 3,
     'novelty-inflation': 3,
     'cutoff-disclaimer': 10,
     'template-phrase': 3,
@@ -461,6 +462,30 @@ const AIDetector = (() => {
     // `(?:^|\n)` form silently missed bare openers at the very start of
     // input — caught by silent-failure audit 2026-05-16.
     /^\s*interesting\s+(?:part|thing|aspect|piece)(?:\s+of\s+(?:the\s+)?\w+)?\s*:/gim,
+  ];
+
+  // ─── Lingering-attention claims ────────────────────────────────────
+  // The share-post opener that claims duration of attention instead of
+  // saying anything about the thing ("the line I keep coming back to").
+  //
+  // Precision note: the bare verb phrase "I keep coming back to X" is NOT
+  // matched on its own, because it is legitimate whenever a reason follows
+  // ("I keep coming back to Hirschman because it predicts who quits"), and
+  // the reason clause is not reliably detectable by regex. Only the
+  // noun-anchored frame ("the line/quote/bit ... I keep coming back to")
+  // fires, which is the shape that introduces a subject rather than
+  // asserting something about it. The bare form stays a skill-prose
+  // judgment call. See SKILL.md §Lingering-attention claims carve-out.
+  const LINGERING_ATTENTION = [
+    // "the line I keep coming back to", "the one quote that I keep coming back to"
+    // Noun-anchored frame only. "can't stop thinking about" is deliberately
+    // left to its own pattern below rather than folded into this alternation,
+    // so "the line I can't stop thinking about" scores once, not twice.
+    /\b(?:the|that|this)\s+(?:one\s+)?(?:line|quote|bit|part|idea|point|framing|comment|thing)\s+(?:that\s+)?i\s+keep\s+(?:coming\s+back\s+to|thinking\s+about)\b/gi,
+    /\bi\s+can'?t\s+stop\s+thinking\s+about\b/gi,
+    /\bstill\s+thinking\s+about\s+(?:this|that)\s+one\b/gi,
+    /\b(?:been|be)\s+rattling\s+around\s+(?:in\s+)?my\s+(?:head|brain)\b/gi,
+    /\bi'?ve\s+been\s+chewing\s+on\s+(?:this|that)\b/gi,
   ];
 
   // ─── Novelty inflation ─────────────────────────────────────────────
@@ -910,6 +935,7 @@ const AIDetector = (() => {
     issues.push(...matchPatterns(text, VAGUE_ATTRIBUTIONS, 'vague-attribution', 'critical'));
     issues.push(...matchPatterns(text, HOLLOW_INTENSIFIERS, 'hollow-intensifier', 'medium'));
     issues.push(...matchPatterns(text, EMOTIONAL_FLATLINE, 'emotional-flatline', 'low'));
+    issues.push(...matchPatterns(text, LINGERING_ATTENTION, 'lingering-attention', 'medium'));
     issues.push(...matchPatterns(text, NOVELTY_INFLATION, 'novelty-inflation', 'medium'));
     issues.push(...matchPatterns(text, CUTOFF_DISCLAIMERS, 'cutoff-disclaimer', 'critical'));
     issues.push(...matchPatterns(text, AI_PLACEHOLDERS, 'ai-placeholder', 'critical'));
@@ -1712,6 +1738,7 @@ const AIDetector = (() => {
     'vague-attribution': 'Vague attribution',
     'hollow-intensifier': 'Hollow intensifier',
     'emotional-flatline': 'Emotional flatline',
+    'lingering-attention': 'Lingering-attention claim',
     'novelty-inflation': 'Novelty inflation',
     'cutoff-disclaimer': 'Cutoff disclaimer',
     'template-phrase': 'Template phrase',

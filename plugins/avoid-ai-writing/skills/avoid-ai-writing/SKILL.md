@@ -1,7 +1,7 @@
 ---
 name: avoid-ai-writing
 description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Use this skill when asked to "remove AI-isms," "clean up AI writing," "edit writing for AI patterns," "audit writing for AI tells," or "make this sound less like AI." Supports a detect-only mode, an edit-in-place mode for files, an optional voice profile (casual / professional / technical / warm / blunt), and an iterate-to-convergence pass.
-version: 3.19.0
+version: 3.20.0
 license: MIT
 compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, VS Code Copilot, Hermes Agent, OpenHands, etc.) or OpenClaw. No external tools or APIs required.
 metadata:
@@ -428,6 +428,12 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - The fix isn't "never say surprised." It's: if you claim an emotion, the writing around it should earn it. Otherwise cut the claim and present the thing directly.
 - Related pattern: "hit differently" / "hits different." AI uses trendy colloquialisms as a shortcut to sound relatable without earning the emotional beat. If something genuinely affected you, describe how. Otherwise cut.
 
+### Lingering-attention claims
+- The share-post frame that claims a thing has occupied the writer's mind: "the line I keep coming back to," "I can't stop thinking about this," "still thinking about this one," "this has been rattling around in my head all week," "I've been chewing on this since Tuesday." The claim is about the writer's attention, not about the thing, and it arrives *before* the reader has any reason to care.
+- Distinct from emotional flatline, which claims a **feeling** ("What surprised me most"). This claims **duration** of attention, which is unfalsifiable and self-flattering in a way a feeling isn't: nobody can check whether you kept coming back to it, and the frame implies the quote earned repeat visits without showing what it earned them with. Also distinct from social endorsement closers, which vouch for a link at the end of a post; this opens one.
+- **Carve-out — reason attached.** Leave it when the sentence says *why* the thing recurred: "I keep coming back to Hirschman's exit-voice framing because it predicts which engineers quit and which ones file the RFC." That's a claim about the idea's explanatory reach. The tell is the bare frame with the reason missing.
+- Fix: delete the frame and open on the thing itself. "The line I keep coming back to: agents are teenagers." becomes "Jeetu describes AI agents as teenagers." The quote either lands or it doesn't, and the frame doesn't change which.
+
 ### False concession structure
 - "While X is impressive, Y remains a challenge" or "Although X has made strides, Y is still an open question." AI uses this to sound balanced without actually weighing anything. Both halves are vague. Either make the concession specific (name what's impressive, name the actual challenge) or pick a side and argue it.
 
@@ -556,6 +562,7 @@ Not all AI-isms are equal. When doing a quick pass or triaging a large document,
 - Em dash frequency (above 1 per 1,000 words)
 - Generic future-narrative closers ("may become one of the most important narratives…")
 - Social endorsement closers ("This one is worth your time:", "thank me later")
+- Lingering-attention claims ("the line I keep coming back to," "I can't stop thinking about this")
 - Hedge-stacked predictions ("could potentially," "may eventually")
 - Real/actual adjective inflation ("real on-chain tokenomics")
 - Moral-adjective category errors ("honest shape," "flagged honestly")

@@ -214,6 +214,29 @@ test('"Interesting part of the project:" header opener flags emotional-flatline'
   assert.ok(types.has('emotional-flatline'), 'expected emotional-flatline flag');
 });
 
+test('"the line I keep coming back to" flags lingering-attention', () => {
+  const text = 'Recorded with a guest yesterday. The line I keep coming back to is that agents behave like teenagers on an unbounded goal.';
+  const r = AIDetector.analyzeText(text);
+  const types = new Set(r.issues.map((i) => i.type));
+  assert.ok(types.has('lingering-attention'), 'expected lingering-attention flag');
+});
+
+test('"I cannot stop thinking about" flags lingering-attention', () => {
+  const text = "I can't stop thinking about the runtime guardrail argument he made near the end of our conversation about agent drift.";
+  const r = AIDetector.analyzeText(text);
+  const types = new Set(r.issues.map((i) => i.type));
+  assert.ok(types.has('lingering-attention'), 'expected lingering-attention flag');
+});
+
+test('bare "I keep coming back to X because ..." does NOT flag lingering-attention', () => {
+  // Precision carve-out: the bare verb phrase with a reason attached is
+  // legitimate analytical writing, so only the noun-anchored frame fires.
+  const text = 'I keep coming back to the exit-voice framing because it predicts which engineers quit and which ones file the RFC instead.';
+  const r = AIDetector.analyzeText(text);
+  const types = new Set(r.issues.map((i) => i.type));
+  assert.ok(!types.has('lingering-attention'), 'bare reasoned form must not flag');
+});
+
 test('"real on-chain tokenomics" flags real-actual-inflation', () => {
   const text = 'The team is researching real on-chain tokenomics and actual reward sustainability versus electricity cost across the network deployment phase.';
   const r = AIDetector.analyzeText(text);

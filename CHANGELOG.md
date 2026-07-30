@@ -4,6 +4,17 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.20.0] — 2026-07-29
+
+### Added
+
+One rule with detector coverage, found while drafting a podcast teaser post. Catalog goes from 59 to 60 detection categories; the engine goes from 45 to 46 `type`s.
+
+- **Lingering-attention claims** (`lingering-attention`) — the share-post frame that claims a thing has occupied the writer's mind rather than saying anything about the thing: `"the line I keep coming back to"`, `"I can't stop thinking about this"`, `"still thinking about this one"`, `"rattling around in my head all week"`, `"I've been chewing on this"`. Sits next to **emotional flatline** in the catalog but is a separate claim: flatline claims a *feeling* ("What surprised me most"), this claims *duration* of attention, which is unfalsifiable and self-flattering in a way a feeling isn't. It also opens a share post where **social endorsement closers** close one. Added to the P1 severity tier.
+- **Precision carve-out.** The bare verb phrase `"I keep coming back to X"` deliberately does *not* fire, because it is legitimate whenever a reason follows ("I keep coming back to the exit-voice framing because it predicts which engineers quit"), and the reason clause is not reliably regex-detectable. Only the noun-anchored frame (`the line/quote/bit/idea ... I keep coming back to`) is matched — the shape that introduces a subject instead of asserting something about it. The bare form stays an LLM-judgment call in the skill prose. Fixtures cover both directions, including the must-not-fire case.
+
+---
+
 ## [3.19.0] — 2026-07-24
 
 ### Added
