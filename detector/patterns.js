@@ -287,7 +287,6 @@ const AIDetector = (() => {
     'hollow-intensifier': 2,
     'emotional-flatline': 2,
     'lingering-attention': 3,
-    'narrated-candor': 3,
     'novelty-inflation': 3,
     'cutoff-disclaimer': 10,
     'template-phrase': 3,
@@ -487,31 +486,6 @@ const AIDetector = (() => {
     /\bstill\s+thinking\s+about\s+(?:this|that)\s+one\b/gi,
     /\b(?:been|be)\s+rattling\s+around\s+(?:in\s+)?my\s+(?:head|brain)\b/gi,
     /\bi'?ve\s+been\s+chewing\s+on\s+(?:this|that)\b/gi,
-  ];
-
-  // ─── Narrated candor ───────────────────────────────────────────────
-  // Announcing the disclosure rather than disclosing. Sibling of the chatbot
-  // and sycophancy patterns: those perform helpfulness and flatter the reader;
-  // this performs the writer's own forthrightness.
-  //
-  // Precision note: bare "to be honest" and "to be transparent" are NOT matched
-  // here — they are already covered as hollow intensifiers, and on their own
-  // they are ordinary speech. What fires is the fuller construction, where a
-  // clause is spent on the act of disclosing. A substantive admission with no
-  // such clause ("I haven't tested this on Windows") is the thing this rule
-  // wants to keep.
-  const NARRATED_CANDOR = [
-    // "...I would rather flag than let you discover later", "I'd rather say it
-    // now than have you find out later" — the antithesis form.
-    /\bi'?d?\s+(?:would\s+)?rather\s+(?:\w+\s+){0,4}?than\s+(?:let\s+you|have\s+you)\s+\w+/gi,
-    /\brather\s+than\s+(?:bury|hide|gloss\s+over)\s+(?:this|it|that)\b/gi,
-    // Trailing whitespace is optional: "I want to be upfront:" puts the colon
-    // straight after the adjective.
-    /\bi\s+want\s+to\s+be\s+(?:upfront|transparent|candid)\s*(?:about\s+(?:\w+\s*){1,3})?[:,]/gi,
-    /\b(?:to\s+be|being)\s+(?:fully\s+|completely\s+|totally\s+)?(?:upfront|transparent|candid)\s+(?:about|with)\s+you\b/gi,
-    /\bin\s+the\s+interest\s+of\s+(?:full\s+)?(?:disclosure|transparency)\b/gi,
-    /\bi\s+could\s+have\s+(?:left\s+(?:this|that)\s+out|omitted\s+(?:this|that)|not\s+mentioned\s+(?:this|that))\b/gi,
-    /\bi'?ll\s+say\s+(?:this|it)\s+plainly\s+rather\s+than\b/gi,
   ];
 
   // ─── Novelty inflation ─────────────────────────────────────────────
@@ -962,7 +936,6 @@ const AIDetector = (() => {
     issues.push(...matchPatterns(text, HOLLOW_INTENSIFIERS, 'hollow-intensifier', 'medium'));
     issues.push(...matchPatterns(text, EMOTIONAL_FLATLINE, 'emotional-flatline', 'low'));
     issues.push(...matchPatterns(text, LINGERING_ATTENTION, 'lingering-attention', 'medium'));
-    issues.push(...matchPatterns(text, NARRATED_CANDOR, 'narrated-candor', 'medium'));
     issues.push(...matchPatterns(text, NOVELTY_INFLATION, 'novelty-inflation', 'medium'));
     issues.push(...matchPatterns(text, CUTOFF_DISCLAIMERS, 'cutoff-disclaimer', 'critical'));
     issues.push(...matchPatterns(text, AI_PLACEHOLDERS, 'ai-placeholder', 'critical'));
@@ -1766,7 +1739,6 @@ const AIDetector = (() => {
     'hollow-intensifier': 'Hollow intensifier',
     'emotional-flatline': 'Emotional flatline',
     'lingering-attention': 'Lingering-attention claim',
-    'narrated-candor': 'Narrated candor',
     'novelty-inflation': 'Novelty inflation',
     'cutoff-disclaimer': 'Cutoff disclaimer',
     'template-phrase': 'Template phrase',
