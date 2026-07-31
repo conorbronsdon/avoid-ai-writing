@@ -898,6 +898,90 @@ test('#62: a heading inside a fenced block is illustration, not a section header
   assert.equal(titleCaseHits(text).length, 0, 'a fenced example must not flag');
 });
 
+test('#62: headings opening with a function word are not the tell', () => {
+  // Measured on 81 files that provably predate LLMs (2018-19 eBooks stamped
+  // year: 2018/2019, 2020 posts): these fired 13 times on the branch and zero
+  // times on main. Every one opens with "The". The rule's own comment has
+  // always said the function word marks a MID-sentence "And"; the test never
+  // enforced it. Verbatim headings from that corpus.
+  for (const heading of [
+    '## The New Security Landscape',
+    '## The Microsoft Approach to Identity',
+    '### The Four Keys to a Successful and Secure Modern Workplace',
+    '## The Changing Face of Manufacturing',
+    '## The Key to Winning Georgia',
+    '## The Chain of Thought Podcast',
+  ]) {
+    assert.equal(titleCaseHits(heading + HEADING_BODY).length, 0, `must not flag: ${heading}`);
+  }
+});
+
+test('#62: an interior function word still flags, in both forms', () => {
+  // The other side of the guard above. If this ever goes quiet the rule is dead.
+  for (const heading of [
+    '## Benefits And Strategic Considerations',
+    'Benefits And Strategic Considerations',
+    '## Strategic Negotiations And Key Partnerships',
+  ]) {
+    assert.equal(titleCaseHits(heading + HEADING_BODY).length, 1, `must flag: ${heading}`);
+  }
+});
+
+test('#62: fences that a parity count gets wrong', () => {
+  const f3 = '```';
+  const f4 = '````';
+  const intro = 'Documentation about writing Markdown, long enough to clear the word gate.';
+  const title = '## Benefits And Strategic Considerations';
+
+  // A four-backtick fence wrapping a three-backtick example is how you document
+  // fences — the motivating case. Counting delimiters inverts on it.
+  assert.equal(
+    titleCaseHits([intro, f4, f3 + 'markdown', title, f3, f4].join('\n') + HEADING_BODY).length,
+    0,
+    'four-backtick outer fence',
+  );
+  // CommonMark allows up to three spaces of indent.
+  assert.equal(
+    titleCaseHits([intro, '   ' + f3, title, '   ' + f3].join('\n') + HEADING_BODY).length,
+    0,
+    'indented fence',
+  );
+  // An unclosed fence runs to end of document, as renderers treat it.
+  assert.equal(
+    titleCaseHits([intro, f3, title].join('\n') + HEADING_BODY).length,
+    0,
+    'unclosed fence',
+  );
+  // ...and a correctly closed one must not swallow what follows.
+  assert.equal(
+    titleCaseHits([intro, f3, 'code', f3, title].join('\n') + HEADING_BODY).length,
+    1,
+    'heading after a closed fence must still flag',
+  );
+});
+
+test('#62: MD_HEADING_PREFIX accepts what the pattern accepts', () => {
+  // The two must stay coupled: TITLE_CASE_HEADER matches `#{1,6}[ \t]+`, so if
+  // the prefix strip stops accepting a tab, `##` survives into the token list
+  // and reintroduces the ##-as-token bug this fix exists for.
+  //
+  // The probe has to open with a function word. On a heading whose function
+  // word is interior, an unstripped `##` only pushes the token COUNT up and the
+  // result is unchanged — mutation testing caught that a firing fixture here
+  // passes either way. Here the unstripped `##` shifts what slice(1) sees onto
+  // the leading "The", which flips the verdict.
+  assert.equal(
+    titleCaseHits('##\tThe New Security Landscape' + HEADING_BODY).length,
+    0,
+    'a tab-separated heading must strip like a space-separated one',
+  );
+  assert.equal(
+    titleCaseHits('##\tBenefits And Strategic Considerations' + HEADING_BODY).length,
+    1,
+    'and must still flag the real tell',
+  );
+});
+
 test('#62: an indented line is not a Markdown heading', () => {
   // Kills the `#{0,6}` mutant: making the hash count optional turns any indented
   // line into a heading, so four-space code blocks would flag.
