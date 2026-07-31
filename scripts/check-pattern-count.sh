@@ -57,6 +57,12 @@ $(awk '
   /^#### Tier 2 — /      { t = 2; sep = 0; next }
   /^#### Tier 3 — /      { t = 3; sep = 0; next }
   /^#### Tier 3 phrases/ { t = 0; next }
+  # A tier can hold more than one table (Tier 1 splits into 1A markers and 1B
+  # clarity edits). Reset the positional header detector at each sub-heading,
+  # or the header row of the second table gets counted as data.
+  # NB: no apostrophes in this block. The awk program is single-quoted, so one
+  # would close the quote and break the command substitution.
+  /^##### / { sep = 0; next }
   /^#### / || /^### / || /^## / { t = 0; next }
   t && /^\|/ {
     if ($0 ~ /^\|[-: ]*\|[-: ]*\|?[-: ]*$/) { sep = 1; next }   # separator row

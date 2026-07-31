@@ -131,17 +131,17 @@ const AIDetector = (() => {
     { pattern: /\bthought\s+leader(?:ship)?\b/gi, replace: 'expert, authority' },
     { pattern: /\bbest\s+practices\b/gi, replace: 'what works, proven methods' },
     { pattern: /\bat\s+its\s+core\b/gi, replace: 'cut, just state it' },
-    { pattern: /\bin\s+order\s+to\b/gi, replace: 'to' },
-    { pattern: /\bdue\s+to\s+the\s+fact\s+that\b/gi, replace: 'because' },
-    { pattern: /\bserves\s+as\b/gi, replace: 'is' },
-    { pattern: /\bfeatures\b/gi, replace: 'has, includes', filter: true },
-    { pattern: /\bboasts\b/gi, replace: 'has' },
-    { pattern: /\butiliz(?:e|es|ing|ed)\b/gi, replace: 'use' },
+    { pattern: /\bin\s+order\s+to\b/gi, replace: 'to', clarity: true },
+    { pattern: /\bdue\s+to\s+the\s+fact\s+that\b/gi, replace: 'because', clarity: true },
+    { pattern: /\bserves\s+as\b/gi, replace: 'is', clarity: true },
+    { pattern: /\bfeatures\b/gi, replace: 'has, includes', filter: true, clarity: true },
+    { pattern: /\bboasts\b/gi, replace: 'has', clarity: true },
+    { pattern: /\butiliz(?:e|es|ing|ed)\b/gi, replace: 'use', clarity: true },
     { pattern: /\bshowcas(?:e|es|ing|ed)\b/gi, replace: 'show, demonstrate' },
     { pattern: /\bembark(?:s|ing|ed)?\b/gi, replace: 'start, begin' },
-    { pattern: /\bcommenc(?:e|es|ing|ed)\b/gi, replace: 'start, begin' },
-    { pattern: /\bascertain(?:s|ing|ed)?\b/gi, replace: 'find out, determine' },
-    { pattern: /\bendeavou?r(?:s|ing|ed)?\b/gi, replace: 'effort, attempt, try' },
+    { pattern: /\bcommenc(?:e|es|ing|ed)\b/gi, replace: 'start, begin', clarity: true },
+    { pattern: /\bascertain(?:s|ing|ed)?\b/gi, replace: 'find out, determine', clarity: true },
+    { pattern: /\bendeavou?r(?:s|ing|ed)?\b/gi, replace: 'effort, attempt, try', clarity: true },
     { pattern: /\bunderscor(?:es|ing|ed)\b/gi, replace: 'highlights, shows' },
     // Hyphen required. The unhyphenated "load bearing" is ordinary English —
     // "the load bearing down on the bridge" — where `bearing` is a participle,
@@ -272,6 +272,9 @@ const AIDetector = (() => {
   // though all three are tagged `critical`.
   const ISSUE_WEIGHTS = {
     tier1: 5,
+    // Wordiness, not an AI-frequency marker. Weighted like tier2 so a
+    // clarity fix cannot push a document toward an AI classification.
+    'tier1-clarity': 3,
     tier2: 3,
     tier3: 2,
     transition: 2,
@@ -860,9 +863,11 @@ const AIDetector = (() => {
         if (tier1Found.has(lower)) continue;
         tier1Found.add(lower);
         issues.push({
-          type: 'tier1',
+          // Clarity-band entries are wordiness edits, not frequency evidence.
+          // Same fix, weaker claim — see the Tier 1A/1B split in SKILL.md.
+          type: phrase.clarity ? 'tier1-clarity' : 'tier1',
           text: match[0],
-          severity: 'high',
+          severity: phrase.clarity ? 'medium' : 'high',
           suggestion: phrase.replace,
         });
       }
@@ -1724,6 +1729,7 @@ const AIDetector = (() => {
 
   const TYPE_LABELS = {
     'tier1': 'AI vocabulary',
+    'tier1-clarity': 'Wordiness',
     'tier2': 'Word cluster',
     'tier3': 'Overused word',
     'transition': 'AI transition',

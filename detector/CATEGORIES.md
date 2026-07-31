@@ -23,6 +23,7 @@ writer-side tests with no detectable form). The
 | Detector `type` | Label | SKILL.md section |
 |---|---|---|
 | `tier1` / `tier2` / `tier3` | AI vocabulary / Word cluster / Overused word | Words and phrases to replace |
+| `tier1-clarity` | Wordiness | Words and phrases to replace (Tier 1B) |
 | `transition` | AI transition | Transition phrases to remove or rewrite |
 | `template-phrase` | Template phrase | Template phrases (avoid) |
 | `tier3-phrase` / `tier3-phrase-cluster` | Boilerplate phrase / cluster | Template phrases (avoid) |

@@ -95,6 +95,18 @@ Words are organized into three tiers based on how reliably they signal AI-genera
 
 #### Tier 1 — Always replace
 
+Tier 1 splits into two bands. **Both are always replaced**; the edit is the same. What differs is what a flag *means*.
+
+**1A — AI frequency markers.** Words claimed to appear far more often in machine text than in human writing. A cluster of these is evidence about how a passage was produced.
+
+**1B — Clarity edits.** Wordiness and inflated formality. Replacing them is good writing regardless of who wrote the sentence, and a 1B hit is **not** evidence of machine authorship. Measured against 257 paragraphs of verified pre-2023 human prose, 1B entries fire on ordinary professional and formal writing at a meaningful rate — `in order to`, `utilize`, `commence`, `ascertain`, and `endeavor` are simply the words some people reach for. The detector emits these as `tier1-clarity`, weights them like Tier 2, and excludes them from the dense-AI-vocabulary signal so a wordiness fix can never push a document toward an AI classification.
+
+In `detect` mode, report the two bands separately. Presenting a wordiness fix as authorship evidence is the error this split exists to prevent.
+
+Caveat worth keeping visible: the "appears far more often in AI text" claim behind 1A is **inherited, not measured here**. It traces to [brandonwise/humanizer](https://github.com/brandonwise/humanizer), which states a 5–20x ratio without publishing a method or dataset. Treat 1A as a well-supported convention rather than a verified statistic until this repo measures the ratios itself against a machine-written corpus.
+
+##### Tier 1A — AI frequency markers
+
 | Replace | With |
 |---|---|
 | delve / delve into | explore, dig into, look at |
@@ -115,7 +127,6 @@ Words are organized into three tiers based on how reliably they signal AI-genera
 | seamless / seamlessly | smooth, easy, without friction |
 | game-changer / game-changing | describe what specifically changed and why it matters |
 | hit differently / hits different | (say what specifically changed, or cut) |
-| utilize | use |
 | watershed moment | turning point, shift (or describe what changed) |
 | marking a pivotal moment | (state what happened) |
 | the future looks bright | (cut — say something specific or nothing) |
@@ -142,15 +153,6 @@ Words are organized into three tiers based on how reliably they signal AI-genera
 | at its core | (cut — just state the thing) |
 | synergy / synergies | (describe the actual combined effect) |
 | interplay | relationship, connection, interaction |
-| in order to | to |
-| due to the fact that | because |
-| serves as | is |
-| features (verb) | has, includes |
-| boasts | has |
-| presents (inflated) | is, shows, gives |
-| commence | start, begin |
-| ascertain | find out, determine, learn |
-| endeavor | effort, attempt, try |
 | keen (as intensifier) | interested, eager, enthusiastic (or cut — just state the interest) |
 | genuinely / genuine (as intensifier) | (cut — just state the fact) |
 | symphony (metaphor) | (describe the actual coordination or combination) |
@@ -160,6 +162,23 @@ Words are organized into three tiers based on how reliably they signal AI-genera
 **Hyphen required:** unhyphenated "load bearing" is ordinary English ("the load bearing down on the bridge") — only the hyphenated compound is the tell.
 
 **Construction carve-out:** `load-bearing` before a literal structural noun (`wall`, `beam`, `column`, `joist`, `truss`, `member`, `footing`, `slab`, `stud`, `partition`, `masonry`, `lintel`, `pier`, `rafter`, `girder`, `capacity`), optionally with one material or position adjective in between (`load-bearing structural wall`), is standard building terminology — don't flag. Abstract-capable nouns (`structure`, `element`, `frame`, `foundation`) are excluded on purpose, so "the load-bearing structure of his argument" still flags. Known gap: predicative use ("the wall is load-bearing") still flags — see issue #56.
+
+##### Tier 1B — Clarity edits
+
+Wordiness and formality, not authorship evidence. Same fix, weaker claim.
+
+| Replace | With |
+|---|---|
+| utilize | use |
+| in order to | to |
+| due to the fact that | because |
+| serves as | is |
+| features (verb) | has, includes |
+| boasts | has |
+| presents (inflated) | is, shows, gives |
+| commence | start, begin |
+| ascertain | find out, determine, learn |
+| endeavor | effort, attempt, try |
 
 #### Tier 2 — Flag when 2+ appear in the same paragraph
 
@@ -712,7 +731,7 @@ Re-read the rewritten version from section 2. Identify any remaining AI tells th
 Return your response in two sections:
 
 **1. Issues found**
-A bulleted list of every AI-ism identified, with the offending text quoted. Group by severity (P0, P1, P2).
+A bulleted list of every AI-ism identified, with the offending text quoted. Group by severity (P0, P1, P2). Keep Tier 1B clarity edits visually separate from Tier 1A markers, and say which is which — a wordiness fix is a writing suggestion, not evidence about who wrote the text.
 
 **2. Assessment**
 For each flag, note whether it's a clear problem or a judgment call. Some AI-associated patterns are effective writing techniques — uniform paragraph length is a problem, but a well-placed "however" isn't. Call out which flags the writer should definitely fix vs. which ones are worth a second look but might be fine in context. If the text is clean, say so.

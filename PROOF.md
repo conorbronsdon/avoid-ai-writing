@@ -15,13 +15,13 @@ node scripts/self-scan.js
 
 | Document | Words | Raw score | Exempt score | Budget |
 |---|---:|---:|---:|---:|
-| `README.md` | 3,928 | 67 | **24** | 30 |
-| `SKILL.md` | 13,716 | 92 | **13** | 25 |
+| `README.md` | 3,977 | 65 | **21** | 30 |
+| `SKILL.md` | 14,008 | 89 | **12** | 25 |
 | `CONTRIBUTING.md` | 527 | 3 | **1** | 15 |
 | `detector/README.md` | 593 | 2 | **2** | 15 |
-| `detector/CATEGORIES.md` | 1,051 | 1 | **1** | 15 |
-| `CHANGELOG.md` | 6,343 | 62 | **33** | 40 |
-| `PROOF.md` | 952 | 16 | **14** | 20 |
+| `detector/CATEGORIES.md` | 1,064 | 1 | **1** | 15 |
+| `CHANGELOG.md` | 6,601 | 63 | **32** | 40 |
+| `PROOF.md` | 952 | 15 | **14** | 20 |
 
 The `PROOF.md` row is a snapshot and mildly self-referential: editing this page
 changes its own word count and score. CI gates the live number from
@@ -86,7 +86,7 @@ notes trip the detector by naming patterns trips the detector by naming
 patterns. One hit was a real one, an "in order to" in the paragraph above the
 table, and it is now "to".
 
-**4. `README.md` at 24 is the honest number for a page that sells something.**
+**4. `README.md` at 21 is the honest number for a page that sells something.**
 The residue is promotional register, not vocabulary. That is the expected
 failure mode for a project README, and the tolerance matrix in `SKILL.md`
 relaxes exactly nothing for it.

@@ -120,15 +120,25 @@ posts, 2019–2022):
 | Category | Paragraphs firing | Rate |
 |---|---:|---|
 | `em-dash` | 47 | **18.3%** |
-| `tier1` | 32 | **12.5%** |
+| `tier1` (1A markers) | 23 | **8.9%** |
 | `transition` | 11 | 4.3% |
+| `tier1-clarity` (1B) | 9 | 3.5% |
 | `uniformity` | 6 | 2.3% |
 | `hollow-intensifier` | 3 | 1.2% |
 | `smart-punct-signature` | 3 | 1.2% |
 
-The Tier 1 words doing it: `embrace` (7), `when it comes to` (5),
-`in order to` (4), `leverage` and inflections (7), `that said` (4),
-`features` (3), `thriving` (2), `robust` (2), `truly` (2).
+**This measurement is what split Tier 1.** Before the split it read as a
+single 12.5% figure. Separated, it is 8.9% frequency markers and 3.5%
+wordiness, and no paragraph triggered both — so roughly a quarter of Tier 1
+hits on genuine human prose were clarity edits being reported as an AI signal.
+
+1A markers: `embrace` (7), `leverage` and inflections (8), `thriving` (2),
+`robust` (2), `pivotal`, `game-changer`, `best practices`, `meticulously`.
+
+1B clarity: `in order to` (4), `features` (3), `serves as`, `utilize`. On the
+public-domain leg the same band catches `commence`, `ascertain`, and
+`endeavor` in the Federalist Papers and Faraday, which is the same problem
+seen from the formal-register end.
 
 Both rates are slightly *higher* on the verified originals than on the current
 published versions (17.2% and 11.7%), which is what you would expect if later
@@ -139,6 +149,13 @@ author's ordinary 2019 vocabulary, written years before the models existed.**
 Tier 1 is documented as "always flag — replace on sight," and on genuine
 pre-LLM prose from a marketing and developer-relations writer it fires in
 roughly one paragraph in eight.
+
+The 1B band is the part that was fixable, and it has been fixed: those entries
+now carry a separate type, a lower weight, and no contribution to the
+dense-AI-vocabulary signal. The 1A rate is not a defect — this is a
+writing-quality tool, and `leverage` → `use` is good advice regardless of who
+wrote the sentence. It is, however, a reason to be careful about calling a
+Tier 1 flag evidence of anything.
 
 The same holds for `em-dash`, and this time it is not a transcription artifact:
 one paragraph in six of his own pre-2023 writing exceeds the em-dash rate
