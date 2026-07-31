@@ -4,6 +4,21 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.22.1] — 2026-07-31
+
+### Fixed
+
+- **`title-case-header` never fired on a Markdown heading (#62).** The pattern was anchored `^[A-Z][a-z]+`, which requires the line to begin with a capital letter. A Markdown heading begins with `#`, so the anchor failed and `## Benefits And Strategic Considerations` produced no issue. The rule caught the bare-line form (`Benefits And Strategic Considerations`) while missing the commonest way a heading is actually written, which is also the form the bare line usually gets converted from. Now accepts and discards an optional `#{1,6}` prefix. Setext headings were already covered, since their text line is bare.
+- Reported by a downstream that vendors `detector/patterns.js` byte-identical to a pinned commit, so they filed rather than patching locally. Worth noting as the first externally-reported detection gap.
+- Two fixture groups pin it: the rule fires on `#`, `##` and `######` headings, and stays quiet on a sentence-case heading, on `##Text` with no space (not a heading), and on seven hashes (not a heading). Sentence case is the correct form, so flagging it would invert the rule.
+- **No measurable false-positive cost.** The human-control corpus is prose without Markdown headings, so FPR and TPR are byte-identical before and after, at 0.0% across all six registers. `self-scan --check` still passes on all seven documents.
+
+### Note
+
+`#67` (em-dash carve-out for changelog headings and bold-lead parentheticals) and `#69` (hedge-stack over-matching `could not possibly`) were both fixed in 3.22.0 and verified here against the shipped detector. The issues are still open and can be closed.
+
+---
+
 ## [3.22.0] — 2026-07-31
 
 ### Added

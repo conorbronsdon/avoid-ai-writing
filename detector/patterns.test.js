@@ -819,6 +819,38 @@ test('v2: context mode "technical" suppresses Title Case header flag', () => {
   assert.ok(!technicalHas, 'technical mode should suppress title-case header');
 });
 
+test('#62: Title Case flagged on a Markdown heading, not just a bare line', () => {
+  // The `^[A-Z]` anchor required the line to START with a capital, so a
+  // `## Heading` never matched — the first character is `#`. The rule missed
+  // the commonest way a heading is actually written while catching the bare
+  // form it gets converted from. Reported by a downstream vendoring the file.
+  const body =
+    '\n\nThe team closed three deals this quarter. Each agreement included revenue-share terms and dispute-resolution clauses. The legal review took two weeks per contract on average.';
+  for (const prefix of ['#', '##', '######']) {
+    const r = AIDetector.analyzeText(`${prefix} Strategic Negotiations And Key Partnerships${body}`, {
+      contextMode: 'general',
+    });
+    assert.ok(
+      r.issues.some((i) => i.type === 'title-case-header'),
+      `expected title-case-header on a "${prefix}" heading`,
+    );
+  }
+});
+
+test('#62: the heading fix does not flag sentence-case or non-headings', () => {
+  const body =
+    '\n\nThe team closed three deals this quarter. Each agreement included revenue-share terms and dispute-resolution clauses. The legal review took two weeks per contract on average.';
+  const cases = [
+    ['## Strategic negotiations and key partnerships', 'sentence-case heading is correct, not a tell'],
+    ['##Strategic Negotiations And Key Partnerships', 'no space after # is not a Markdown heading'],
+    ['####### Strategic Negotiations And Key Partnerships', 'seven hashes is not a heading'],
+  ];
+  for (const [line, why] of cases) {
+    const r = AIDetector.analyzeText(line + body, { contextMode: 'general' });
+    assert.ok(!r.issues.some((i) => i.type === 'title-case-header'), why);
+  }
+});
+
 test('v2: markdown **bold** is preserved by normalize pre-pass', () => {
   // Regression: lookbehind/lookahead added in review fix. The pre-fix
   // regex stripped the inner half of `**bold**` and counted each as
