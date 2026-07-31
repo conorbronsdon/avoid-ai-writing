@@ -20,7 +20,7 @@ node scripts/self-scan.js
 | `CONTRIBUTING.md` | 527 | 3 | **1** | 15 |
 | `detector/README.md` | 593 | 2 | **2** | 15 |
 | `detector/CATEGORIES.md` | 1,064 | 1 | **1** | 15 |
-| `CHANGELOG.md` | 6,601 | 63 | **32** | 40 |
+| `CHANGELOG.md` | 7,013 | 63 | **32** | 40 |
 | `PROOF.md` | 952 | 15 | **14** | 20 |
 
 The `PROOF.md` row is a snapshot and mildly self-referential: editing this page

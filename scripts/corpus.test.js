@@ -10,6 +10,8 @@
 
 const assert = require('node:assert/strict');
 const { stripGutenberg, htmlToText, applySlice, sha256 } = require('./corpus.js');
+const { parseCsv } = require('./csv-lite.js');
+const { DOMAIN_REGISTER } = require('./dataset-raid.js');
 
 let failed = 0;
 function test(name, fn) {
@@ -128,6 +130,47 @@ test('slice.maxWords bounds the sample', () => {
 
 test('no slice returns the text unchanged', () => {
   assert.equal(applySlice('unchanged', null), 'unchanged');
+});
+
+// ── CSV (the machine corpus arrives as an 11.8 GB CSV) ─────────────────
+
+test('csv: quoted commas and escaped quotes', () => {
+  assert.equal(parseCsv('a,b\n"x,y",2\n').rows[0].a, 'x,y');
+  assert.equal(parseCsv('a\n"he said ""hi"""\n').rows[0].a, 'he said "hi"');
+});
+
+test('csv: a newline inside a quoted field is not a row break', () => {
+  // RAID generations contain paragraph breaks. Splitting on newlines would
+  // shred the exact text being measured.
+  const r = parseCsv('a,b\n"line1\nline2",2\n');
+  assert.equal(r.rows.length, 1);
+  assert.equal(r.rows[0].a, 'line1\nline2');
+});
+
+test('csv: CRLF and a missing final newline both parse', () => {
+  assert.equal(parseCsv('a,b\r\n1,2\r\n').rows.length, 1);
+  assert.equal(parseCsv('a,b\n1,2').rows.length, 1);
+});
+
+test('csv: a truncated tail record is dropped, not half-parsed', () => {
+  // Byte-range requests always cut the final record. Keeping it would feed a
+  // mangled fragment into the measurement.
+  const r = parseCsv('a,b\n1,2\n"unterminated', { dropLastPartial: true });
+  assert.equal(r.rows.length, 1);
+  assert.equal(r.truncated, true);
+});
+
+test('csv: empty fields are preserved rather than collapsed', () => {
+  assert.equal(parseCsv('a,b,c\n1,,3\n').rows[0].b, '');
+});
+
+// ── RAID domain mapping ────────────────────────────────────────────────
+
+test('raid: only defensible registers are mapped', () => {
+  assert.equal(DOMAIN_REGISTER.abstracts, 'academic');
+  assert.equal(DOMAIN_REGISTER.reddit, 'conversational');
+  assert.equal(DOMAIN_REGISTER.code, undefined, 'code is not a prose register');
+  assert.equal(DOMAIN_REGISTER.german, undefined, 'non-English domains are out of scope');
 });
 
 // ── Hashing ────────────────────────────────────────────────────────────

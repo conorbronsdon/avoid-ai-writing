@@ -170,6 +170,19 @@ function applySlice(text, slice) {
   return out.trim();
 }
 
+/**
+ * Rows of a dataset document. Human-authored documents are a single row so
+ * callers can treat both kinds uniformly.
+ */
+function loadRows(doc) {
+  const text = loadText(doc);
+  if (text === null) return null;
+  if (doc.source.type !== 'dataset') {
+    return [{ id: doc.id, text, register: doc.register, class: doc.class || 'human', model: null, domain: null }];
+  }
+  return text.split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line));
+}
+
 function cachePath(doc) {
   return path.join(CACHE, `${doc.id}.txt`);
 }
@@ -189,6 +202,19 @@ async function fetchDoc(doc, force) {
   if (doc.source.type === 'local') return { id: doc.id, status: 'local' };
   const p = cachePath(doc);
   if (fs.existsSync(p) && !force) return { id: doc.id, status: 'cached' };
+
+  // A dataset entry is a whole sampled collection rather than one document.
+  // The sampler is deterministic, so the cached JSONL and its hash are
+  // reproducible from the spec recorded in the manifest.
+  if (doc.source.type === 'dataset') {
+    const builders = { raid: './dataset-raid.js', hc3: './dataset-hc3.js' };
+    if (!builders[doc.source.dataset]) throw new Error(`unknown dataset: ${doc.source.dataset}`);
+    const { build } = require(builders[doc.source.dataset]);
+    const { jsonl, stats } = await build(doc.source.select, (m) => console.error(m));
+    fs.mkdirSync(CACHE, { recursive: true });
+    fs.writeFileSync(p, jsonl);
+    return { id: doc.id, status: 'fetched', sha256: sha256(jsonl), words: null, stats };
+  }
 
   const res = await fetch(doc.source.url, { redirect: 'follow' });
   if (!res.ok) return { id: doc.id, status: `HTTP ${res.status}` };
@@ -222,7 +248,8 @@ async function cmdFetch(force) {
     const doc = m.documents.find((d) => d.id === r.id);
     if (!doc.sha256) {
       doc.sha256 = r.sha256;
-      doc.words = r.words;
+      if (r.words != null) doc.words = r.words;
+      if (r.stats) doc.stats = r.stats;
       updated++;
     }
   }
@@ -354,4 +381,4 @@ async function main() {
 
 if (require.main === module) main();
 
-module.exports = { readManifest, loadText, sha256, REGISTERS, AUTHORSHIP, stripGutenberg, htmlToText, applySlice };
+module.exports = { readManifest, loadText, loadRows, sha256, REGISTERS, AUTHORSHIP, stripGutenberg, htmlToText, applySlice };
