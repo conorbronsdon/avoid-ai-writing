@@ -851,6 +851,71 @@ test('#62: the heading fix does not flag sentence-case or non-headings', () => {
   }
 });
 
+// Prose long enough to clear the ten-word gate, appended to single-line fixtures.
+const HEADING_BODY =
+  '\n\nThe team closed three deals this quarter. Each agreement included revenue-share terms and dispute-resolution clauses. The legal review took two weeks per contract on average.';
+
+function titleCaseHits(text) {
+  const r = AIDetector.analyzeText(text, { contextMode: 'general' });
+  return r.issues.filter((i) => i.type === 'title-case-header');
+}
+
+// NOT covered, and deliberately so: a four-content-word Title Case heading such
+// as '# The Art Of War' or '## Notes On The Design' still fires. The >= 4 guard
+// cannot tell those from '## Benefits And Strategic Considerations' -- they are
+// the same shape. That is pre-existing behaviour, identical for the bare-line
+// form on main, and out of scope here.
+test('#62: legitimate three-word Title Case headings are not flagged', () => {
+  // The regression the first version of this fix shipped. matchPatterns reports
+  // match[0], so '## Terms Of Service' arrived with '##' as a token, silently
+  // lowering the proper-noun guard from four content words to three for
+  // headings only. These are ordinary human headings, on a detector whose
+  // stated first priority is not firing on human writing.
+  for (const heading of [
+    '## Terms Of Service',
+    '## Table Of Contents',
+    '## Bank Of America',
+    '## Pride And Prejudice',
+    '## Statement Of Work',
+  ]) {
+    assert.equal(titleCaseHits(heading + HEADING_BODY).length, 0, `must not flag: ${heading}`);
+  }
+});
+
+test('#62: a heading inside a fenced block is illustration, not a section header', () => {
+  // A document that documents Markdown is the normal case for this rule.
+  // Without the fence check, every docs page flags itself.
+  const fence = '```';
+  const text = [
+    'How to write documentation, briefly, with a worked example that follows.',
+    '',
+    fence + 'markdown',
+    '## Benefits And Strategic Considerations',
+    fence,
+    '',
+    'That is the shape to avoid in your own prose, not in a code sample.',
+  ].join('\n');
+  assert.equal(titleCaseHits(text).length, 0, 'a fenced example must not flag');
+});
+
+test('#62: an indented line is not a Markdown heading', () => {
+  // Kills the `#{0,6}` mutant: making the hash count optional turns any indented
+  // line into a heading, so four-space code blocks would flag.
+  assert.equal(
+    titleCaseHits('    Benefits And Strategic Considerations' + HEADING_BODY).length,
+    0,
+    'an indented line must not flag',
+  );
+});
+
+test('#62: the reported text is value-asserted, not merely present', () => {
+  // The whole change alters what match[0] contains, so assert the value. A
+  // presence-only check is what let the `##`-as-token defect through.
+  const hits = titleCaseHits('## Benefits And Strategic Considerations' + HEADING_BODY);
+  assert.equal(hits.length, 1);
+  assert.equal(hits[0].text.trim(), '## Benefits And Strategic Considerations');
+});
+
 test('v2: markdown **bold** is preserved by normalize pre-pass', () => {
   // Regression: lookbehind/lookahead added in review fix. The pre-fix
   // regex stripped the inner half of `**bold**` and counted each as

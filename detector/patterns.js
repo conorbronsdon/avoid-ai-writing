@@ -651,6 +651,24 @@ const AIDetector = (() => {
     /\b(?:imagine|picture|envision)(?:\s*,[^,\n]{1,30},)?\s+a\s+(?:world|future|reality)\s+(?:where|in\s+which)\b/gi,
   ];
 
+  // Shared with the title-case post-filter: the same prefix the pattern accepts.
+  const MD_HEADING_PREFIX = /^#{1,6}[ 	]+/;
+
+  /** True if `index` falls inside a fenced code block.
+   *
+   * A document that documents Markdown is the normal case for this rule --
+   * a fenced `## Heading` example is illustration, not the author's own
+   * section header, and flagging it makes every docs page flag itself.
+   * Counting fence delimiters before the offset is enough: fences cannot
+   * nest, so an odd count means we are inside one. */
+  function isInsideFence(text, index) {
+    if (typeof index !== 'number') return false;
+    const before = text.slice(0, index);
+    const fences = before.match(/^(?:```|~~~)/gm);
+
+    return fences ? fences.length % 2 === 1 : false;
+  }
+
   // ─── Title Case Section Headers in non-technical prose ─────────────
   // "Strategic Negotiations And Key Partnerships" — every content word
   // capitalized. Acceptable in API docs, ML papers, news headlines. Tell
@@ -981,11 +999,21 @@ const AIDetector = (() => {
       // Drop matches that look like proper-noun titles (single line, all
       // tokens capitalized incl. function words) — that's headline style,
       // not the AI-section-header tell which has mid-sentence "And".
+      //
+      // The prefix strip is load-bearing. matchPatterns reports match[0], so a
+      // Markdown hit arrives as "## Terms Of Service" and `##` counts as a
+      // token — silently lowering this guard from four content words to three
+      // for headings only, which is exactly the class it exists to protect.
+      // "## Terms Of Service", "## Bank Of America" and "## Table Of Contents"
+      // all flagged as a result: ordinary human headings, on a detector whose
+      // stated first priority is not firing on human writing.
       const filtered = titleHits.filter((h) => {
-        const tokens = h.text.split(/\s+/);
-        return tokens.length >= 4 && /\b(?:And|Or|Of|The|In|For|To|A|An)\b/.test(h.text);
+        const title = h.text.replace(MD_HEADING_PREFIX, '');
+        const tokens = title.trim().split(/\s+/);
+
+        return tokens.length >= 4 && /\b(?:And|Or|Of|The|In|For|To|A|An)\b/.test(title);
       });
-      issues.push(...filtered);
+      issues.push(...filtered.filter((h) => !isInsideFence(text, h.index)));
     }
 
     // ── Normalization-trigger flag ───────────────────────────────────
