@@ -17,6 +17,7 @@ A single-file writing skill (`SKILL.md`) that audits and rewrites content to rem
 Edit `SKILL.md` directly. There's nothing to build or test. When making changes:
 
 - Bump the version in the SKILL.md frontmatter (`version: X.Y.Z`)
+- Run `bash scripts/sync-plugin-skill.sh`. Root SKILL.md is the source of truth; the plugin's bundled copy and `plugin.json`'s version are generated from it, and CI fails on a mismatch. Bumping the frontmatter without this step fails the `check` job with `version mismatch: SKILL.md=X plugin.json=Y`.
 - Add a dated entry to CHANGELOG.md
 - Update README.md if the change affects installation, usage, feature list, or pattern count
 - The pattern count lives in **one** place — the README "46 pattern categories" bullet — and is derived from SKILL.md's detection `###` entries. Don't restate it elsewhere; CI (`scripts/check-pattern-count.sh`) fails the build if the README number drifts from SKILL.md, so just add the new `###` entry and bump the README bullet.
