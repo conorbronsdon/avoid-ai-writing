@@ -591,7 +591,12 @@ const AIDetector = (() => {
   // opportunities", "may eventually unlock value." Either word alone is
   // fine; the stack is the tell.
   const HEDGE_STACK = [
-    /\b(?:could|may|might)\s+(?:\w+\s+){0,2}(?:potentially|eventually|ultimately|possibly|conceivably)\b/gi,
+    // At most one intervening word, and never a negator. The old {0,2} gap
+    // matched ordinary English: "could not possibly" (plain emphatic
+    // negation) and inverted questions like "could a savage possibly" both
+    // fired. Measured on the human-control corpus, 3 of 4 hedge-stack flags
+    // were this over-match. See issue #69.
+    /\b(?:could|may|might)\s+(?:(?!not\b|never\b|hardly\b|scarcely\b|barely\b)\w+\s+)?(?:potentially|eventually|ultimately|possibly|conceivably)\b/gi,
     /\b(?:potentially|eventually|ultimately)\s+(?:could|may|might)\b/gi,
   ];
 
@@ -1000,7 +1005,18 @@ const AIDetector = (() => {
     // dash ("- **Term** — desc", "- [label](url) — desc") — are
     // definition-list typography, not prose punctuation. Shared by the
     // smart-punct signature below and the em-dash frequency check (§22).
-    const SEPARATOR_DASH_RE = /^\s*(?:[-*+]|\d+[.)])\s+(?:\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^)\n]*\))[ \t]*—/gm;
+    // An optional parenthetical or inline-code span may sit between the bold
+    // lead term and the dash — "- **Lingering-attention claims**
+    // (`lingering-attention`) — the share-post frame…" is the same definition
+    // typography as the bare form. Found by the self-scan (see PROOF.md, #67).
+    const SEPARATOR_DASH_RE = /^\s*(?:[-*+]|\d+[.)])\s+(?:\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^)\n]*\))(?:[ \t]*(?:\([^)\n]*\)|`[^`\n]+`))?[ \t]*—/gm;
+
+    // Keep-a-Changelog version headings (`## [3.21.0] — 2026-07-30`) join a
+    // label to a value exactly as a list separator does. Deliberately narrow:
+    // a bracketed or bare semver token, then a dash, then an ISO date, and
+    // nothing else on the line. Ordinary prose dashes in headings still count,
+    // because SKILL.md applies the em-dash rule to headings too.
+    const VERSION_HEADING_DASH_RE = /^#{1,6}[ \t]+\[?v?\d+\.\d+\.\d+[^\]\n]*\]?[ \t]*—[ \t]*\d{4}-\d{2}-\d{2}[ \t]*$/gm;
 
     // ── Smart-punctuation co-occurrence signature ────────────────────
     // Curly quotes + em-dash + Oxford comma all present + zero typos
@@ -1012,7 +1028,8 @@ const AIDetector = (() => {
     {
       const hasCurly = /[“”‘’]/.test(text);
       const totalEmDashes = (text.match(/—/g) || []).length;
-      const separatorEmDashes = (text.match(SEPARATOR_DASH_RE) || []).length;
+      const separatorEmDashes = (text.match(SEPARATOR_DASH_RE) || []).length
+        + (text.match(VERSION_HEADING_DASH_RE) || []).length;
       const hasEmDash = totalEmDashes > separatorEmDashes;
       const oxfordHit = text.match(/\b\w+,\s+\w+,\s+and\s+\w+/g);
       const hasOxford = (oxfordHit?.length || 0) >= 1;
@@ -1323,7 +1340,8 @@ const AIDetector = (() => {
     // and still counts, as does a mid-sentence "**bold** — like this"
     // splice. Em dash only — the `--` substitute is never carved out.
     const rawEmDashCount = (text.match(/—|(?<=\s)--(?=\s|$)|(?<=^|\s)--(?=\s)/gm) || []).length;
-    const separatorDashCount = (text.match(SEPARATOR_DASH_RE) || []).length;
+    const separatorDashCount = (text.match(SEPARATOR_DASH_RE) || []).length
+      + (text.match(VERSION_HEADING_DASH_RE) || []).length;
     const emDashCount = rawEmDashCount - separatorDashCount;
     const emDashRate = emDashCount / (wordCount / 1000);
     if (emDashRate > 1) {

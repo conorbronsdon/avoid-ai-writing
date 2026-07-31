@@ -20,8 +20,8 @@ node scripts/self-scan.js
 | `CONTRIBUTING.md` | 527 | 3 | **1** | 15 |
 | `detector/README.md` | 593 | 2 | **2** | 15 |
 | `detector/CATEGORIES.md` | 1,064 | 1 | **1** | 15 |
-| `CHANGELOG.md` | 7,013 | 63 | **32** | 40 |
-| `PROOF.md` | 952 | 15 | **14** | 20 |
+| `CHANGELOG.md` | 7,192 | 62 | **32** | 40 |
+| `PROOF.md` | 995 | 15 | **14** | 20 |
 
 The `PROOF.md` row is a snapshot and mildly self-referential: editing this page
 changes its own word count and score. CI gates the live number from
@@ -73,10 +73,14 @@ implements exactly that. It does not exempt two near-identical forms:
   ``- **Lingering-attention claims** (`lingering-attention`) — the share-post
   frame…``
 
-Of 137 em dashes in `CHANGELOG.md`, the detector carves out 53 and counts 84.
-Thirty-three of those 84 are the two shapes above. Tracked in
-[#67](https://github.com/conorbronsdon/avoid-ai-writing/issues/67); the scan is
-what surfaced it.
+Of 137 em dashes in `CHANGELOG.md` at the time of the scan, the detector carved
+out 53 and counted 84. Thirty-three of those 84 were the two shapes above.
+
+**Fixed** in [#67](https://github.com/conorbronsdon/avoid-ai-writing/issues/67):
+both shapes are now carve-outs, with fixtures pinning the narrow scope — a prose
+dash inside a heading still counts, because `SKILL.md` applies the em-dash rule
+to headings too. The scan is what surfaced it, which is the argument for having
+the scan.
 
 **3. This page is in the table, and it scores 14 for the reason it just
 described.** Nearly every hit on `PROOF.md` comes from the italicized list of

@@ -119,6 +119,51 @@ test('em-dash carve-out covers numbered-list separators too', () => {
   assert.equal(emDashIssues.length, 0, 'numbered-list separators should not count toward the rate');
 });
 
+test('em-dash carve-out covers a bold lead term with a parenthetical (#67)', () => {
+  // Found by the self-scan: the bare `- **Term** —` form was carved out but
+  // `- **Term** (`slug`) —` was not, though it is the same definition
+  // typography. 1 of the 84 counted dashes in CHANGELOG.md was this shape.
+  const text = [
+    '- **Lingering-attention claims** (`lingering-attention`) — the share-post frame.',
+    '- **Narrated candor** (judgment-only) — announcing your disclosure instead of disclosing.',
+    'Both rules landed in the same release and share a severity tier.',
+  ].join('\n');
+  const r = AIDetector.analyzeText(text);
+  assert.equal(r.issues.filter((i) => i.type === 'em-dash').length, 0);
+});
+
+test('em-dash carve-out covers Keep-a-Changelog version headings (#67)', () => {
+  // `## [3.21.0] — 2026-07-30` joins a label to a value exactly as a list
+  // separator does. 32 of the 84 counted dashes in CHANGELOG.md were these.
+  const body = Array.from({ length: 60 }, (_, i) => `word${i}`).join(' ') + '.';
+  const text = `## [3.21.0] — 2026-07-30\n\n${body}\n\n## [3.20.0] — 2026-07-29\n\n${body}`;
+  const r = AIDetector.analyzeText(text);
+  assert.equal(r.issues.filter((i) => i.type === 'em-dash').length, 0);
+});
+
+test('em-dash carve-out stays narrow — prose dashes in a heading still fire (#67)', () => {
+  const text = [
+    '## Why this matters — and why it did not before now',
+    'Short text — with several — prose dashes — packed into it here today.',
+  ].join('\n');
+  const r = AIDetector.analyzeText(text);
+  assert.ok(r.issues.filter((i) => i.type === 'em-dash').length >= 1);
+});
+
+test('hedge-stack does not fire on ordinary negation or inverted questions (#69)', () => {
+  // Measured on the human-control corpus: 3 of 4 hedge-stack flags were this
+  // over-match. The old pattern allowed two words between modal and adverb.
+  const frame = (s) => `The committee reviewed the proposal at length and concluded that it ${s} work as designed, given every constraint documented during the previous quarter.`;
+  for (const phrase of ['could not possibly', 'could never possibly', 'could a savage possibly', 'might a person conceivably']) {
+    const r = AIDetector.analyzeText(frame(phrase));
+    assert.equal(r.issues.filter((i) => i.type === 'hedge-stack').length, 0, `"${phrase}" should not fire`);
+  }
+  for (const phrase of ['could potentially', 'may eventually unlock', 'might ultimately transform']) {
+    const r = AIDetector.analyzeText(frame(phrase));
+    assert.ok(r.issues.filter((i) => i.type === 'hedge-stack').length >= 1, `"${phrase}" should still fire`);
+  }
+});
+
 test('em-dash carve-out requires a list marker — line-initial bold splices still fire', () => {
   const text = [
     '**The architecture** — it scales horizontally without coordination.',
