@@ -4,6 +4,24 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.22.0] — 2026-07-31
+
+### Added
+
+Two pieces of enforcement. No new detection categories: the catalog stays at 61 and the engine at 46 `type`s.
+
+- **Preservation validator** (`detector/validate.js`, `detector/validate.test.js`). Edit mode writes to files, and until now the promises it makes were prose instructions to a model with nothing checking them. `validate(original, rewritten)` errors when a rewrite modifies a fenced code block, YAML frontmatter, a blockquote, a table cell, inline code, a URL, a file path, or the heading count and nesting, and when the rewrite ends with more flagged patterns than it started with. Warnings cover reworded headings, figures that vanished, and rewrites that drop more than 40% of the words. There is a CLI (`node detector/validate.js before.md after.md`) that exits 1 on any error. 23 tests, no dependencies.
+- **Two carve-outs, because a validator that fires on its own skill's instructions gets switched off.** URLs are compared with AI tracking parameters stripped from both sides, since the skill tells you to strip them; heading text changing is a warning rather than an error, since the skill tells you to sentence-case Title Case headings and cut emoji from them.
+- **Self-scan and `PROOF.md`** (`scripts/self-scan.js`). Scores this repo's documentation with this repo's detector and publishes both numbers: raw, which counts every pattern quoted as an example, and exempt, which applies the self-reference escape hatch `SKILL.md` has documented in prose since v1 and never implemented. Budgets gate the exempt column in CI and only move down.
+- The scan found two gaps in our own work, both recorded in `PROOF.md` rather than quietly patched: the em-dash rule carves out list-item separators but not Keep-a-Changelog version headings (`## [3.21.0] — 2026-07-30`) or a bold lead term with a parenthetical before the dash, and roughly half of `CHANGELOG.md`'s residual score is release notes enumerating the very words each new rule catches.
+
+### Changed
+
+- `npm test` now runs the preservation tests as well. `npm run self-scan` and `npm run self-scan:check` are new. CI runs the self-scan check as a step in the existing `detector` job rather than a second job, since branch protection pins required checks by job name.
+- Edit mode's output format in `SKILL.md` now points at the validator as an optional mechanical check.
+
+---
+
 ## [3.21.0] — 2026-07-30
 
 ### Added

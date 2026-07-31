@@ -9,12 +9,15 @@
   },
   "main": "detector/patterns.js",
   "files": [
-    "detector/patterns.js"
+    "detector/patterns.js",
+    "detector/validate.js"
   ],
   "engines": {
     "node": ">=18"
   },
   "scripts": {
-    "test": "node detector/patterns.test.js && node detector/categories.test.js"
+    "test": "node detector/patterns.test.js && node detector/categories.test.js && node detector/validate.test.js",
+    "self-scan": "node scripts/self-scan.js",
+    "self-scan:check": "node scripts/self-scan.js --check"
   }
 }

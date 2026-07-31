@@ -4,15 +4,30 @@ on:
   push:
     paths:
       - "detector/**"
+      - "scripts/self-scan.js"
       - "package.json"
       - ".github/workflows/detector-test.yml"
+      - "README.md"
+      - "SKILL.md"
+      - "CHANGELOG.md"
+      - "CONTRIBUTING.md"
+      - "PROOF.md"
   pull_request:
     paths:
       - "detector/**"
+      - "scripts/self-scan.js"
       - "package.json"
       - ".github/workflows/detector-test.yml"
+      - "README.md"
+      - "SKILL.md"
+      - "CHANGELOG.md"
+      - "CONTRIBUTING.md"
+      - "PROOF.md"
 
 jobs:
+  # Kept as a single job on purpose: branch protection pins required checks by
+  # job name, so a second job would silently not be required until someone
+  # updates the rule.
   test:
     runs-on: ubuntu-latest
     steps:
@@ -21,3 +36,7 @@ jobs:
         with:
           node-version: "20"
       - run: npm test
+      # Scores this repo's own docs with this repo's own detector. A document
+      # that drifts past its budget in scripts/self-scan.js fails here. PROOF.md
+      # explains what the numbers mean and what they do not claim.
+      - run: npm run self-scan:check

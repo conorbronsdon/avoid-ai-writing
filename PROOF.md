@@ -1,0 +1,114 @@
+# Proof: this skill's detector, run against this skill's own writing
+
+A tool that flags "delve" in your draft should survive its own pass. This page
+is the result of running `detector/patterns.js` over the repo's documentation,
+including the findings that are unflattering.
+
+Reproduce it in one command, no dependencies:
+
+```bash
+git clone https://github.com/conorbronsdon/avoid-ai-writing && cd avoid-ai-writing
+node scripts/self-scan.js
+```
+
+## Result (v3.22.0, measured 2026-07-31)
+
+| Document | Words | Raw score | Exempt score | Budget |
+|---|---:|---:|---:|---:|
+| `README.md` | 3,814 | 67 | **24** | 30 |
+| `SKILL.md` | 13,244 | 92 | **15** | 25 |
+| `CONTRIBUTING.md` | 527 | 3 | **1** | 15 |
+| `detector/README.md` | 593 | 2 | **2** | 15 |
+| `detector/CATEGORIES.md` | 1,051 | 1 | **1** | 15 |
+| `CHANGELOG.md` | 5,545 | 61 | **34** | 40 |
+| `PROOF.md` | 883 | 16 | **15** | 20 |
+
+The `PROOF.md` row is a snapshot and mildly self-referential: editing this page
+changes its own word count and score. CI gates the live number from
+`scripts/self-scan.js`, not the table text, so treat that row as accurate to
+the commit it was written in and run the command for the current value.
+
+Score runs 0 to 100, where 0 is clean. Two columns are published because
+publishing only the flattering one is the behavior this project exists to
+criticize.
+
+**Raw** counts every match, including the 112-entry vocabulary table and every
+pattern this repo quotes to warn about it. `SKILL.md` scoring 92 raw
+means the catalog contains the words it catalogs. That number is noise, and it
+is here so nobody has to wonder what was suppressed.
+
+**Exempt** applies the self-reference escape hatch that `SKILL.md` has always
+documented in prose: *"quoted examples are exempt from flagging. Text inside
+quotation marks, code blocks, or explicitly marked as illustrative should not
+be rewritten."* Until this scan existed, that rule was an instruction to a
+model and nothing more. `applyExemptions()` in `scripts/self-scan.js` is its
+executable form: it blanks fenced code, inline code, tables, blockquotes, and
+quoted spans, then scores what remains.
+
+Budgets gate the exempt column in CI. They are regression ceilings set from
+measured values with a few points of headroom, not quality claims, and they
+only move down. Raising one is a decision that belongs in a pull request with
+the new number stated.
+
+## What the scan found in our own writing
+
+Four results worth naming rather than scrubbing.
+
+**1. `CHANGELOG.md` scores worst, and roughly half of it is unreachable by the
+exemption.** A changelog announcing a new rule lists the words that rule
+catches, unquoted and comma-separated: *bustling, intricate, ever-evolving,
+daunting, holistic, actionable, impactful, learnings, synergy, interplay*. The
+detector reads a Tier 1 vocabulary run. A reader reads a release note. The
+exemption only reaches quoted or code-fenced text, so this residue stays in the
+number.
+
+**2. The em-dash rule does not implement its own carve-out for two shapes.**
+`SKILL.md` exempts the list-item separator (`- **Term** — description`) as
+typography rather than prose punctuation, and `detector/patterns.js`
+implements exactly that. It does not exempt two near-identical forms:
+
+- Keep-a-Changelog version headings: `## [3.21.0] — 2026-07-30`. Thirty-two of
+  them in `CHANGELOG.md`, every one counted as a prose em dash.
+- A bulleted item whose bold lead term carries a parenthetical before the dash:
+  ``- **Lingering-attention claims** (`lingering-attention`) — the share-post
+  frame…``
+
+Of 137 em dashes in `CHANGELOG.md`, the detector carves out 53 and counts 84.
+Thirty-three of those 84 are the two shapes above. Tracked in
+[#67](https://github.com/conorbronsdon/avoid-ai-writing/issues/67); the scan is
+what surfaced it.
+
+**3. This page is in the table, and it scores 15 for the reason it just
+described.** Nearly every hit on `PROOF.md` comes from the italicized list of
+Tier 1 words two paragraphs above. Italics are not an exempt span; quotation
+marks, code, tables, and blockquotes are. The page explaining that release
+notes trip the detector by naming patterns trips the detector by naming
+patterns. One hit was a real one, an "in order to" in the paragraph above the
+table, and it is now "to".
+
+**4. `README.md` at 24 is the honest number for a page that sells something.**
+The residue is promotional register, not vocabulary. That is the expected
+failure mode for a project README, and the tolerance matrix in `SKILL.md`
+relaxes exactly nothing for it.
+
+## What this page does not claim
+
+A low score means the text carries no surface pattern hits. It does not mean
+the writing is good, and it does not mean the writing is human. The detector
+measures a regex-detectable subset of `SKILL.md` plus a few stylometric
+signals. Prose can be hollow, structurally uniform, and entirely free of tells.
+
+The scan also has a known limitation worth stating: blanking exempt spans
+slightly changes document-level metrics that are computed over the whole text
+(em-dash rate, type-token ratio, bold-phrase count), because the denominator
+shrinks. Vocabulary and phrase categories are unaffected.
+
+There is no false-positive rate on this page, because we have not measured one.
+That work is tracked separately, and until it exists, no accuracy claim on this
+repo should be read as measured.
+
+## In CI
+
+`.github/workflows/detector-test.yml` runs `node scripts/self-scan.js --check`
+on every push that touches the detector or the docs. A document that drifts
+past its budget fails the build.
