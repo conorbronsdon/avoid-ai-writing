@@ -42,69 +42,117 @@ the worst register and would have hidden the finding.
 This repo's tolerance matrix already asserts that registers differ. The register
 buckets are what let that assertion be checked instead of assumed.
 
-## Current contents and the large caveat
+## Current contents
 
-The seed corpus is nine public-domain works, 1788 to 1907, sliced to 6,000 words
-each. They were chosen because their provenance is beyond argument: nothing
-written in 1859 was machine-generated.
+Two sources, chosen for different reasons.
 
-**That is also their limitation, and it is severe.** Nineteenth-century literary
-and scientific prose is a poor proxy for the registers this skill actually
-operates on. Nobody is running `avoid-ai-writing` over *Walden*. They are
-running it over LinkedIn posts, READMEs, release notes, and investor emails, and
-this corpus contains none of those.
+**Nine public-domain works, 1788 to 1907**, sliced to 6,000 words each. Their
+provenance is beyond argument: nothing written in 1859 was machine-generated.
+That is also their limitation, and it is severe. Nobody runs this tool over
+*Walden*. On its own, this leg can only show the detector is not firing wildly
+on formal English prose.
 
-Read the current numbers as a floor, not as a rate. A corpus this far from the
-target distribution can only tell you the detector is not firing wildly on
-formal English prose. It cannot tell you how the tool behaves on a technical
-blog post written last week.
+**Thirty-four blog posts by this repo's maintainer, 2019 to October 2022**,
+published on his own site and fetched from it. Written before ChatGPT's
+release, in the register the tool is actually pointed at, by someone whose
+authorship is not in question. This is the leg that produced the useful
+findings.
 
-## Results, first run (v3.22.0, 2026-07-31)
+Three exclusions are worth recording:
 
-303 paragraphs, 50 to 400 words each, from nine works.
+- **Two guest posts** on the same site, by Adam Noble and Steve Fawthrop, were
+  found by byline and excluded. They are human-written, so they would not have
+  corrupted an FP rate, but attributing them to the wrong author would have.
+- **Three posts carried "Looking back from 2025" retrospective sections** added
+  years after publication. Their pre-LLM provenance is broken, so they are out.
+  This is the corpus equivalent of a contaminated sample, and it was caught by
+  reading the worst-scoring paragraphs rather than by any check in the tooling.
+
+**A standing caveat on the maintainer's leg:** these are the *currently
+published* versions of pre-2023 posts, not verified originals. The site has been
+rebuilt since. Silent post-2023 edits would not announce themselves the way the
+three above did. Fetching from the Wayback Machine at a pre-2023 timestamp is
+the fix, and it has not been done.
+
+## Results (v3.22.0, 2026-07-31)
+
+628 paragraphs of 50 to 400 words, from 43 documents.
 
 | Threshold | n | flagged | FP rate | Wilson 95% CI |
 |---|---:|---:|---:|---|
-| score >= 25 | 303 | 0 | 0.0% | 0.0–1.3% |
-| score >= 40 | 303 | 0 | 0.0% | 0.0–1.3% |
-| score >= 50 | 303 | 0 | 0.0% | 0.0–1.3% |
-| score >= 65 | 303 | 0 | 0.0% | 0.0–1.3% |
+| score >= 25 | 628 | 0 | 0.0% | 0.0–0.6% |
+| score >= 40 | 628 | 0 | 0.0% | 0.0–0.6% |
+| score >= 50 | 628 | 0 | 0.0% | 0.0–0.6% |
+| score >= 65 | 628 | 0 | 0.0% | 0.0–0.6% |
 
-No paragraph of canonical human prose scored above **8 out of 100**. Per
-register, `academic` (116), `essay-literary` (141), `technical-blog` (20), and
-`blog` (26) all sit at 0.0%.
+Not one human paragraph crossed the lowest threshold. The worst scored **11 out
+of 100**. Per register: `blog` 351, `essay-literary` 141, `academic` 116,
+`technical-blog` 20, all at 0.0%.
 
-The honest reading, in patina's phrasing, is `no_calibration_signal_yet`: **the
-corpus is too easy to expose a trade-off.** That is a valid outcome and it is
-not a performance claim. Emerson does not say "delve into the landscape," so a
-vocabulary detector aimed at LLM register has almost nothing to hit.
+**At the document-score level, the detector does not fire on human prose.** That
+is the result, and it is a real one now that the corpus contains modern
+blog-register writing rather than only Victorian essays.
 
-### What did fire, and why it matters anyway
+### The flag level tells a different story
 
-Document scores stayed at zero, but individual categories fired on human text,
-and in `detect` mode every one of those is shown to a user as a flag.
+`detect` mode does not show users a document score. It shows them every flag.
+And categories fire on human writing constantly.
 
-| Category | Units firing | Reading |
+On the maintainer's own pre-LLM posts alone (325 paragraphs, 2019–2022):
+
+| Category | Paragraphs firing | Rate |
 |---|---:|---|
-| `em-dash` | 57 / 303 (18.8%) | **corpus artifact, mostly.** Thoreau and Du Bois used real em dashes freely; Emerson and Twain arrive via Gutenberg's `--` transcription convention. Nineteenth-century prose cannot test this rule. |
-| `tier1` | 16 / 303 (5.3%) | **real signal.** Formal-register vocabulary: `endeavor` (5), `in order to` (3), `commence` (2), `ascertain` (2), `comprehensive` (2). |
-| `hollow-intensifier` | 6 / 303 | `truly` (5), `genuine` (1). |
-| `transition` | 5 / 303 | `moreover` (3), `furthermore` (2). |
-| `hedge-stack` | 4 / 303 | **three of the four are a bug.** See below. |
+| `em-dash` | 56 | **17.2%** |
+| `tier1` | 38 | **11.7%** |
+| `transition` | 9 | 2.8% |
+| `uniformity` | 8 | 2.5% |
+| `smart-punct-signature` | 5 | 1.5% |
+| `hollow-intensifier` | 3 | 0.9% |
 
-Two findings came out of this that a synthetic test would not have produced.
+The Tier 1 words doing it: `embrace` (9), `leverage` and inflections (8),
+`in order to` (5), `when it comes to` (4), `that said` (4), `features` (3),
+`thriving` (2), `robust` (2), `truly` (2), plus single hits on `utilize`,
+`pivotal`, `serves as`, `genuinely`, and `in an era where`.
+
+**Read that carefully. Those are not AI tells in this text. They are the
+author's ordinary 2019 vocabulary, written years before the models existed.**
+Tier 1 is documented as "always flag — replace on sight," and on genuine
+pre-LLM prose from a marketing and developer-relations writer it fires in
+roughly one paragraph in eight.
+
+The same holds for `em-dash`, and this time it is not a transcription artifact:
+one paragraph in six of his own pre-2023 writing exceeds the em-dash rate
+ceiling. The rule targets a habit he already had.
+
+None of this makes the document score wrong. It does mean the two numbers
+answer different questions, and only one of them is what a `detect`-mode user
+sees.
+
+### Two defects found
 
 **1. `hedge-stack` over-matches ordinary negation.** The pattern allows two
 words between the modal and the hedge adverb, so `could not possibly` and
 `could a savage possibly` both fire. Filed as
 [#69](https://github.com/conorbronsdon/avoid-ai-writing/issues/69).
 
-**2. The Tier 1 list penalizes formal register.** `endeavor`, `commence`, and
-`ascertain` are on the always-flag tier. In LLM output they are inflation. In
-Federalist-era prose, in legal writing, and in some academic registers they are
-simply the ordinary word. This is not obviously a defect, but it is the shape of
-a register-scoped relaxation the tolerance matrix does not currently have, and
-it is worth deciding deliberately rather than by omission.
+**2. Nineteenth-century text cannot test the em-dash rule at all.** On the
+public-domain leg the flags are a mix of real period usage and Gutenberg's `--`
+transcription convention. Recorded so nobody later reads that leg's 18.8% as a
+rate.
+
+### One decision this raises
+
+`endeavor`, `commence`, and `ascertain` fire on the Federalist Papers and
+Faraday; `embrace`, `leverage`, and `in order to` fire on the maintainer's own
+posts. All sit on the always-flag tier. In LLM output they are inflation; in
+formal registers and in ordinary professional writing they are just the word
+someone reached for.
+
+That is the shape of a register-scoped relaxation the tolerance matrix does not
+have, and it is worth deciding deliberately rather than by omission. The
+counter-argument is real too: the skill is a writing-quality tool, and
+"`leverage` → `use`" is good advice whether or not a machine wrote the
+sentence.
 
 ## What this does not measure
 

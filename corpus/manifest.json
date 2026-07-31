@@ -192,6 +192,652 @@
       "added": "2026-07-31",
       "sha256": "7ba5c04870fb9e2a7cb46b07fe3bdf72d96ae51650a49ae2aae9a0897c65aa2d",
       "words": 6000
+    },
+    {
+      "id": "cb-seattles-beverage-tax-is-a-symptom-of-washingtons-upside-down-tax-system",
+      "title": "Seattle’s beverage tax is a symptom of Washington’s upside-down tax system",
+      "author": "Conor Bronsdon",
+      "year": 2019,
+      "date": "2019-01-22",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/seattles-beverage-tax-is-a-symptom-of-washingtons-upside-down-tax-system/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "f8de1d4b522922a85e1d595bbcfd6ba06346fd2d23ab91a4cb43a2e44116a609",
+      "words": 714
+    },
+    {
+      "id": "cb-portland-got-it-right-seattle-needs-e-scooters-too",
+      "title": "Portland got it right – Seattle needs E-Scooters too",
+      "author": "Conor Bronsdon",
+      "year": 2019,
+      "date": "2019-01-29",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/portland-got-it-right-seattle-needs-e-scooters-too/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "8ff6206f84750aac009c05e14bda8966bd72af5afafdd006a2584f4570fa1636",
+      "words": 865
+    },
+    {
+      "id": "cb-senate-bill-5638-what-does-the-new-blockchain-bill-mean-for-washington-state",
+      "title": "Senate Bill 5638: What Does the New “Blockchain Bill” Mean for Washington State?",
+      "author": "Conor Bronsdon",
+      "year": 2019,
+      "date": "2019-02-05",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/senate-bill-5638-what-does-the-new-blockchain-bill-mean-for-washington-state/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "7d01129d17d28638f9e3b16d99356b7f641f5ebc76a09cff044d16770a4dfc7e",
+      "words": 1355
+    },
+    {
+      "id": "cb-seattle-should-lead-on-mass-timberand-solve-our-housing-crisis",
+      "title": "Seattle Should Lead on Mass Timber–and Solve Our Housing Crisis",
+      "author": "Conor Bronsdon",
+      "year": 2019,
+      "date": "2019-02-15",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/seattle-should-lead-on-mass-timberand-solve-our-housing-crisis/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "079e7a6611db009ef0b90b64a7e24ecd7af7374385d5acd8dffdd6145bedaee6",
+      "words": 1279
+    },
+    {
+      "id": "cb-washington-state-senate-unanimously-passes-blockchain-bill",
+      "title": "Washington State Senate Unanimously Passes Blockchain Bill",
+      "author": "Conor Bronsdon",
+      "year": 2019,
+      "date": "2019-03-06",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/washington-state-senate-unanimously-passes-blockchain-bill/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "b4efd000a7ef3ef4d952a915cbbc6c1d53ecf691008fdaec904ba84e4a649ce2",
+      "words": 349
+    },
+    {
+      "id": "cb-twilight-imperium-how-playing-a-board-game-is-the-best-exercise-for-your-brain",
+      "title": "Twilight Imperium – How playing a board game is the best exercise for your brain",
+      "author": "Conor Bronsdon",
+      "year": 2019,
+      "date": "2019-06-08",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/twilight-imperium-how-playing-a-board-game-is-the-best-exercise-for-your-brain/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "88ab08dbd7d3688008ae1e965817f2e29b105fbe1567d955d5534a698f6b685f",
+      "words": 1063
+    },
+    {
+      "id": "cb-writing-update-september-2019",
+      "title": "Writing Update: September 2019",
+      "author": "Conor Bronsdon",
+      "year": 2019,
+      "date": "2019-09-04",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/writing-update-september-2019/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "0175b14844f8f28b13bddad909d1346cca50040cd22a0ae28c870d1c106435e5",
+      "words": 555
+    },
+    {
+      "id": "cb-why-jay-inslee-should-embrace-cross-laminated-timber",
+      "title": "Why Jay Inslee Should Embrace Cross Laminated Timber",
+      "author": "Conor Bronsdon",
+      "year": 2019,
+      "date": "2019-11-18",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/why-jay-inslee-should-embrace-cross-laminated-timber/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "027df661b485dc52c5bd5ebad7e5f39cf7e3c6b543d59c3b4dcd4f3991a99648",
+      "words": 724
+    },
+    {
+      "id": "cb-how-political-campaigns-can-effectively-use-chatbots-and-ai",
+      "title": "How political campaigns can effectively use chatbots and AI",
+      "author": "Conor Bronsdon",
+      "year": 2020,
+      "date": "2020-01-08",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/how-political-campaigns-can-effectively-use-chatbots-and-ai/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "943de1ae8072bf462ebe8abcc9805ccaffa7decec6f147fa108cab46e787562d",
+      "words": 1300
+    },
+    {
+      "id": "cb-august-2020-update",
+      "title": "August 2020 Life Update",
+      "author": "Conor Bronsdon",
+      "year": 2020,
+      "date": "2020-08-22",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/august-2020-update/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "8cbd87e46daff893b8ddbf14101882495f96777e1a5e1c535b4b3bb20c4bc75c",
+      "words": 1176
+    },
+    {
+      "id": "cb-how-to-pitch-a-story-to-media-5-tips-and-best-practices",
+      "title": "How to pitch a story to media: 5 tips and best practices",
+      "author": "Conor Bronsdon",
+      "year": 2020,
+      "date": "2020-09-21",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/how-to-pitch-a-story-to-media-5-tips-and-best-practices/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "a8c6cd3f093c238e50586ea29c065b2f2a4523edb5df6437ee543d7d6c1858ff",
+      "words": 1169
+    },
+    {
+      "id": "cb-october-2020-update-mass-timber-psbj-podcast-and-patreon",
+      "title": "October 2020 Update: Mass Timber, PSBJ, Podcast, and Patreon",
+      "author": "Conor Bronsdon",
+      "year": 2020,
+      "date": "2020-10-02",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/october-2020-update-mass-timber-psbj-podcast-and-patreon/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "b5907535d070d70f22edf1887ae646c7fff1d88f06ee087f46b105bd97db8393",
+      "words": 304
+    },
+    {
+      "id": "cb-a-green-new-deal-for-washington-state",
+      "title": "A Green New Deal for Washington State",
+      "author": "Conor Bronsdon",
+      "year": 2020,
+      "date": "2020-10-15",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/a-green-new-deal-for-washington-state/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "c850fdab4d5ad901c8e13a55ce394c8909e61345f1b60a0e735cc41a59cf438a",
+      "words": 982
+    },
+    {
+      "id": "cb-divest-washington-state-pension-funds",
+      "title": "Divest Washington State's Public Employees Retirement System",
+      "author": "Conor Bronsdon",
+      "year": 2020,
+      "date": "2020-10-16",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/divest-washington-state-pension-funds/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "3d98858d8b32524aaf3e8981721cccaba35d3ed0aae3cd9f2db55ce219150427",
+      "words": 760
+    },
+    {
+      "id": "cb-how-to-redefine-us-agriculture-for-working-families",
+      "title": "How to Redefine US Agriculture for Working Families",
+      "author": "Conor Bronsdon",
+      "year": 2020,
+      "date": "2020-10-24",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/how-to-redefine-us-agriculture-for-working-families/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "d971fd207a89341bbee6bc59e8ef24a74b07679b2257c01748f3d813c06f663e",
+      "words": 1412
+    },
+    {
+      "id": "cb-what-is-st-2040-expanding-washingtons-public-transit-with-bidens-clean-energy-plan",
+      "title": "What is ST 2040: Expanding Washington's Public Transit With Biden's Clean Energy Plan",
+      "author": "Conor Bronsdon",
+      "year": 2020,
+      "date": "2020-10-26",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/what-is-st-2040-expanding-washingtons-public-transit-with-bidens-clean-energy-plan/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "af1a42f1877fff25d13c72861ffcb65c892cedb105c88c93dd4ad89d4c267c8e",
+      "words": 1522
+    },
+    {
+      "id": "cb-what-is-weatherization-building-the-green-economy-with-the-biden-climate-plan",
+      "title": "What is Weatherization? -Building the Green Economy with the Biden Climate Plan",
+      "author": "Conor Bronsdon",
+      "year": 2020,
+      "date": "2020-11-01",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/what-is-weatherization-building-the-green-economy-with-the-biden-climate-plan/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "403f7f3890cd6593d24f4fc5ff9baa2fe230228e049063284f8cd375050fca3e",
+      "words": 449
+    },
+    {
+      "id": "cb-democrats-must-run-a-progressive-message",
+      "title": "So you've decided to run as a Democrat? Congrats, you're a socialist.",
+      "author": "Conor Bronsdon",
+      "year": 2020,
+      "date": "2020-11-06",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/democrats-must-run-a-progressive-message/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "6725cd811124d960ccb1e2efb4f56ab04cf63f2dce67c5f655188f093bb5434d",
+      "words": 1126
+    },
+    {
+      "id": "cb-how-to-save-modern-media",
+      "title": "How to save modern media",
+      "author": "Conor Bronsdon",
+      "year": 2020,
+      "date": "2020-11-09",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/how-to-save-modern-media/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "dd2ad35bc8f8f006c88f9553bb4dd9ba71189d6524311ca5cfb6776b97b47031",
+      "words": 2804
+    },
+    {
+      "id": "cb-mass-timber-helps-stop-wildfires-and-builds-the-green-economy",
+      "title": "How mass timber helps stop wildfires and builds the green economy",
+      "author": "Conor Bronsdon",
+      "year": 2020,
+      "date": "2020-11-11",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/mass-timber-helps-stop-wildfires-and-builds-the-green-economy/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "0c02c31710c615d27856ae884178bb55780dae0d6374331495638bfa72f147e6",
+      "words": 1155
+    },
+    {
+      "id": "cb-how-to-fix-the-democratic-party",
+      "title": "6 ways the Democratic party failed in the 2020 elections and the 6 ways to fix it",
+      "author": "Conor Bronsdon",
+      "year": 2020,
+      "date": "2020-11-23",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/how-to-fix-the-democratic-party/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "ed02a8646ec4d4c934986a8c39413503954bd4ef7579ff43fe2aeafbacd5e653",
+      "words": 4602
+    },
+    {
+      "id": "cb-im-61-220-lbs-and-a-victim-of-domestic-abuse",
+      "title": "I’m 6'1″ 220 lbs — and a victim of domestic abuse",
+      "author": "Conor Bronsdon",
+      "year": 2020,
+      "date": "2020-11-24",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/im-61-220-lbs-and-a-victim-of-domestic-abuse/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "2fc4314bdef041bded42e49e4d7f99694feb7cdad3e4ee5edaa82e8b3e5f7c0e",
+      "words": 689
+    },
+    {
+      "id": "cb-will-voting-on-blockchain-keep-elections-fair-and-transparent",
+      "title": "Will Voting on Blockchain keep elections fair and transparent?",
+      "author": "Conor Bronsdon",
+      "year": 2020,
+      "date": "2020-11-25",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/will-voting-on-blockchain-keep-elections-fair-and-transparent/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "7602f4b3881ce51d39358a9344675baf5f68f66425dfb3a63addf9d3476c913c",
+      "words": 586
+    },
+    {
+      "id": "cb-the-energy-side-of-blockchain-bitcoin-amp-cryptocurrency",
+      "title": "The Energy Side of Blockchain, Bitcoin, & Cryptocurrency",
+      "author": "Conor Bronsdon",
+      "year": 2020,
+      "date": "2020-11-30",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/the-energy-side-of-blockchain-bitcoin-amp-cryptocurrency/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "0b14397d3b7ef8c132f8ba012593679d715099948408fcc0f81e114c8b2a1346",
+      "words": 953
+    },
+    {
+      "id": "cb-how-to-subscribe-to-a-twitch-streamer-using-amazon-prime",
+      "title": "How to Subscribe to a Twitch Streamer Using Amazon Prime",
+      "author": "Conor Bronsdon",
+      "year": 2020,
+      "date": "2020-12-16",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/how-to-subscribe-to-a-twitch-streamer-using-amazon-prime/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "29c1d01700ef0741efbe6e720de9bfe622868d8c74e351ef80d1d4b5b7cb6cb2",
+      "words": 778
+    },
+    {
+      "id": "cb-two-years-of-writing-and-whats-next",
+      "title": "Celebrating Two Years of Writing and What’s Next",
+      "author": "Conor Bronsdon",
+      "year": 2021,
+      "date": "2021-01-08",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/two-years-of-writing-and-whats-next/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "d6702f3e28f9aeec6b54b0f240defeb5d36325a6bebc4e96e192c8ca1abce4b8",
+      "words": 737
+    },
+    {
+      "id": "cb-challenger-marketing-contenthow-to-make-an-effective-digital-marketing-funnel",
+      "title": "Challenger Marketing Content—How to make an effective digital marketing funnel",
+      "author": "Conor Bronsdon",
+      "year": 2021,
+      "date": "2021-02-01",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/challenger-marketing-contenthow-to-make-an-effective-digital-marketing-funnel/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "b75ed4496524c19704c97e2d3270cee68b4e36ce8fab38b96b81972675a9a973",
+      "words": 714
+    },
+    {
+      "id": "cb-how-to-get-your-email-opened-and-read",
+      "title": "How to get your email opened and read: 5 tips on email marketing",
+      "author": "Conor Bronsdon",
+      "year": 2021,
+      "date": "2021-02-04",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/how-to-get-your-email-opened-and-read/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "bc20d33247a45506da8aace08e357565a7b84a3027021ccf9a8b219e7aa5bcfd",
+      "words": 1145
+    },
+    {
+      "id": "cb-how-can-challenger-sales-methodology-help-your-marketing",
+      "title": "How can Challenger Sales methodology help your marketing?",
+      "author": "Conor Bronsdon",
+      "year": 2021,
+      "date": "2021-02-06",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/how-can-challenger-sales-methodology-help-your-marketing/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "68b0c73d9b80eae6ac18206ebd4ebbf13d92f41ea7740ea59b37bb029c23f5d7",
+      "words": 1094
+    },
+    {
+      "id": "cb-what-do-different-twitter-emojis-mean",
+      "title": "What do different Twitter emojis mean?",
+      "author": "Conor Bronsdon",
+      "year": 2021,
+      "date": "2021-02-06",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/what-do-different-twitter-emojis-mean/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "958023df09fed83118ba2abe71a87cd62fc53928b6109dd21a0cabacb6b1aaa9",
+      "words": 1245
+    },
+    {
+      "id": "cb-why-electric-cars-wont-solve-climate-change",
+      "title": "Why electric cars won't solve climate change",
+      "author": "Conor Bronsdon",
+      "year": 2021,
+      "date": "2021-02-23",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/why-electric-cars-wont-solve-climate-change/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "dbf40304118b35852afd0eedad2c8421a499604447c4baa92edda3543c3082af",
+      "words": 1868
+    },
+    {
+      "id": "cb-four-lessons-from-crashing-a-1700-person-stream",
+      "title": "4 Lessons from Crashing a 1700+ Person Livestream",
+      "author": "Conor Bronsdon",
+      "year": 2022,
+      "date": "2022-04-20",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/four-lessons-from-crashing-a-1700-person-stream/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "0442f92362fe2019b42262c3632f3d5d8b72cc60bddbb907733202d04416cef3",
+      "words": 560
+    },
+    {
+      "id": "cb-8-ways-to-grow-your-career-remotely",
+      "title": "8 ways to grow your career while working from home",
+      "author": "Conor Bronsdon",
+      "year": 2022,
+      "date": "2022-04-29",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/8-ways-to-grow-your-career-remotely/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "e5407d810f38125cfb12a1eb8ef5af5c35a4951fae479be7d35c8831dda28e5c",
+      "words": 911
+    },
+    {
+      "id": "cb-decentralized-money-needs-decentralized-infrastructure-terra-x-flux",
+      "title": "Infrastructure for decentralized money: Terra x Flux",
+      "author": "Conor Bronsdon",
+      "year": 2022,
+      "date": "2022-05-03",
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://conorbronsdon.com/blog/decentralized-money-needs-decentralized-infrastructure-terra-x-flux/",
+        "license": "author-owned-not-redistributed",
+        "html": {
+          "selector": "article"
+        }
+      },
+      "sha256": "5ca04589f4e5f14936e119d548925381d9adb78258d735e59e340b054c17ae9f",
+      "words": 634
     }
   ]
 }

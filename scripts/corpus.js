@@ -93,6 +93,41 @@ function stripGutenberg(raw) {
 }
 
 /**
+ * Pull readable prose out of an HTML page.
+ *
+ * Deliberately crude: take the named container, drop scripts and styles, turn
+ * block-level closers into paragraph breaks, strip the rest of the tags, and
+ * decode the handful of entities that actually appear. No parser, no
+ * dependency. Navigation, titles, and datelines survive as short lines, and
+ * the measurement's 50-word paragraph floor discards them, so they never reach
+ * a score.
+ */
+function htmlToText(html, selector = 'article') {
+  const container = new RegExp(`<${selector}[\\s\\S]*?<\\/${selector}>`, 'i');
+  const m = html.match(container);
+  if (!m) throw new Error(`no <${selector}> element found`);
+  return m[0]
+    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, '')
+    .replace(/<\/(p|div|h[1-6]|li|blockquote|section|tr)>/gi, '\n\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#8217;/g, '’')
+    .replace(/&#8216;/g, '‘')
+    .replace(/&#8220;/g, '“')
+    .replace(/&#8221;/g, '”')
+    .replace(/&#8212;/g, '—')
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/**
  * Take a bounded slice so the cache stays small and one long book cannot
  * dominate the sample. `slice.after` is a literal string; measurement starts at
  * the first paragraph following it.
@@ -141,6 +176,7 @@ async function fetchDoc(doc, force) {
   if (!res.ok) return { id: doc.id, status: `HTTP ${res.status}` };
   let text = await res.text();
   if (doc.source.gutenberg) text = stripGutenberg(text);
+  if (doc.source.html) text = htmlToText(text, doc.source.html.selector);
   text = applySlice(text, doc.slice);
 
   fs.mkdirSync(CACHE, { recursive: true });
@@ -300,4 +336,4 @@ async function main() {
 
 if (require.main === module) main();
 
-module.exports = { readManifest, loadText, sha256, REGISTERS, AUTHORSHIP, stripGutenberg, applySlice };
+module.exports = { readManifest, loadText, sha256, REGISTERS, AUTHORSHIP, stripGutenberg, htmlToText, applySlice };
