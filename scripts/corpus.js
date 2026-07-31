@@ -102,11 +102,29 @@ function stripGutenberg(raw) {
  * the measurement's 50-word paragraph floor discards them, so they never reach
  * a score.
  */
-function htmlToText(html, selector = 'article') {
-  const container = new RegExp(`<${selector}[\\s\\S]*?<\\/${selector}>`, 'i');
-  const m = html.match(container);
-  if (!m) throw new Error(`no <${selector}> element found`);
-  return m[0]
+function htmlToText(html, opts = {}) {
+  const config = typeof opts === 'string' ? { selector: opts } : opts;
+  const selector = config.selector || 'article';
+
+  let source;
+  if (config.mode === 'paragraphs') {
+    // Archived pages predate the current site and carry no <article> element.
+    // Collecting the body paragraphs directly is more robust across platforms
+    // than guessing at a wrapper div, and `match` filters out navigation and
+    // footer paragraphs by an attribute the body paragraphs share.
+    const paras = [...html.matchAll(/<p\b([^>]*)>([\s\S]*?)<\/p>/gi)]
+      .filter(([, attrs]) => (config.match ? attrs.includes(config.match) : true))
+      .map(([, , body]) => body);
+    if (!paras.length) throw new Error(`no <p> elements matched ${JSON.stringify(config.match || 'any')}`);
+    source = paras.join('\n\n');
+  } else {
+    const container = new RegExp(`<${selector}[\\s\\S]*?<\\/${selector}>`, 'i');
+    const m = html.match(container);
+    if (!m) throw new Error(`no <${selector}> element found`);
+    source = m[0];
+  }
+
+  return source
     .replace(/<(script|style)[\s\S]*?<\/\1>/gi, '')
     .replace(/<\/(p|div|h[1-6]|li|blockquote|section|tr)>/gi, '\n\n')
     .replace(/<br\s*\/?>/gi, '\n')
@@ -176,7 +194,7 @@ async function fetchDoc(doc, force) {
   if (!res.ok) return { id: doc.id, status: `HTTP ${res.status}` };
   let text = await res.text();
   if (doc.source.gutenberg) text = stripGutenberg(text);
-  if (doc.source.html) text = htmlToText(text, doc.source.html.selector);
+  if (doc.source.html) text = htmlToText(text, doc.source.html);
   text = applySlice(text, doc.slice);
 
   fs.mkdirSync(CACHE, { recursive: true });
