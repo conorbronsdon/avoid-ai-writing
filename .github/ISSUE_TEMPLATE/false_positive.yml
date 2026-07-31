@@ -1,0 +1,106 @@
+name: False positive
+description: A rule fired on writing that was not machine-generated
+title: "False positive: "
+labels: ["false-positive"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is the most useful report this project receives.
+
+        The skill's whole design premise is that these patterns are signals
+        rather than proof, and the tiering exists to keep it off text that was
+        already human. When it flags your writing anyway, that is a defect,
+        and a good report becomes a test fixture that stops it recurring.
+
+        Please do not paste anything you would mind seeing in a public repo.
+        If the text is private, describe the shape and quote the shortest
+        fragment that fires.
+
+  - type: textarea
+    id: text
+    attributes:
+      label: The text that fired
+      description: The shortest passage that still triggers the flag. A sentence is usually enough.
+      placeholder: Paste the exact text here.
+    validations:
+      required: true
+
+  - type: input
+    id: rule
+    attributes:
+      label: Which rule or category fired
+      description: The category name from the output, e.g. `tier1`, `em-dash`, `bullet-np-list`. Leave blank if you are not sure.
+      placeholder: em-dash
+    validations:
+      required: false
+
+  - type: dropdown
+    id: register
+    attributes:
+      label: Register
+      description: What kind of writing is this? False-positive rates differ sharply by register, so this field is what makes the report measurable rather than anecdotal.
+      options:
+        - Blog or essay
+        - Technical documentation or README
+        - Technical blog or architecture writeup
+        - Academic or research writing
+        - Social post (LinkedIn, X)
+        - Email or DM
+        - Issue, PR, or code comment
+        - Changelog or release notes
+        - Fiction or creative
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: authorship
+    attributes:
+      label: How was this text written?
+      description: Answer honestly. Mixed authorship is the common case and is still worth reporting; it just gets analyzed separately.
+      options:
+        - Entirely written by a person, no AI assistance
+        - Written by a person, then spell/grammar checked
+        - Written by a person, edited with AI assistance
+        - Drafted by AI, then heavily rewritten by a person
+    validations:
+      required: true
+
+  - type: dropdown
+    id: fixture
+    attributes:
+      label: May we use this text as a public test fixture?
+      description: Fixtures live in the repo and run in CI. If you say no, the report is still useful; it just gets recorded as a hash and a description rather than as text.
+      options:
+        - "Yes, use it as a public fixture"
+        - "No, keep the text out of the repo"
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why the flag is wrong
+      description: What is the rule missing? A carve-out it should have, a register where it does not apply, a legitimate technical or idiomatic use.
+      placeholder: "\"load-bearing wall\" is standard construction terminology, not the metaphor the rule targets."
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The `version:` line in SKILL.md, or the release tag you installed.
+      placeholder: "3.22.0"
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        **What happens next.** Reports are triaged into three outcomes: a
+        carve-out added to the rule, a register-scoped relaxation in the
+        tolerance matrix, or a decision to keep the flag with the reasoning
+        recorded. All three end with a test fixture, and the third gets an
+        explanation rather than a silent close.

@@ -15,13 +15,13 @@ node scripts/self-scan.js
 
 | Document | Words | Raw score | Exempt score | Budget |
 |---|---:|---:|---:|---:|
-| `README.md` | 3,814 | 67 | **24** | 30 |
-| `SKILL.md` | 13,244 | 92 | **15** | 25 |
+| `README.md` | 3,928 | 67 | **24** | 30 |
+| `SKILL.md` | 13,716 | 92 | **13** | 25 |
 | `CONTRIBUTING.md` | 527 | 3 | **1** | 15 |
 | `detector/README.md` | 593 | 2 | **2** | 15 |
 | `detector/CATEGORIES.md` | 1,051 | 1 | **1** | 15 |
-| `CHANGELOG.md` | 5,545 | 61 | **34** | 40 |
-| `PROOF.md` | 883 | 16 | **15** | 20 |
+| `CHANGELOG.md` | 5,736 | 60 | **33** | 40 |
+| `PROOF.md` | 952 | 16 | **14** | 20 |
 
 The `PROOF.md` row is a snapshot and mildly self-referential: editing this page
 changes its own word count and score. CI gates the live number from
@@ -78,7 +78,7 @@ Thirty-three of those 84 are the two shapes above. Tracked in
 [#67](https://github.com/conorbronsdon/avoid-ai-writing/issues/67); the scan is
 what surfaced it.
 
-**3. This page is in the table, and it scores 15 for the reason it just
+**3. This page is in the table, and it scores 14 for the reason it just
 described.** Nearly every hit on `PROOF.md` comes from the italicized list of
 Tier 1 words two paragraphs above. Italics are not an exempt span; quotation
 marks, code, tables, and blockquotes are. The page explaining that release
@@ -104,8 +104,15 @@ slightly changes document-level metrics that are computed over the whole text
 shrinks. Vocabulary and phrase categories are unaffected.
 
 There is no false-positive rate on this page, because we have not measured one.
-That work is tracked separately, and until it exists, no accuracy claim on this
-repo should be read as measured.
+Until that exists, no accuracy claim on this repo should be read as measured.
+
+The intake for it is open: if a rule fires on writing a person wrote, the
+[false-positive report](https://github.com/conorbronsdon/avoid-ai-writing/issues/new?template=false_positive.yml)
+form collects the shortest text that fires, the register, how the text was
+actually written, and whether it can become a public fixture. Register is the
+field that matters, because false-positive rates are not uniform across blog,
+documentation, academic, and chat prose, and a single number that hides that
+spread would be a worse claim than none.
 
 ## In CI
 

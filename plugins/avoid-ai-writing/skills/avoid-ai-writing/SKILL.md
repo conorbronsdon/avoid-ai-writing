@@ -753,3 +753,21 @@ Removal is half the job. A rewrite that clears every flag but reads sterile — 
 If the original writing is already strong, say so and make only the necessary cuts. Don't over-edit for the sake of it.
 
 The replacement table provides defaults, not mandates. If a flagged word is clearly the right choice in context, preserve it.
+
+### Never inject these
+
+The instruction above — put voice back on purpose — has a predictable failure mode: the model reaches for a stock kit of "human" moves and installs a personality the author never had. That trades one detectable register for a louder one. An independent stress test of `blader/humanizer` found exactly this: generic AI phrasing replaced by a recognizable *humanizer* voice of fragments and staccato rhythm. A new fingerprint, not the absence of one.
+
+None of the following may be **added** to a text that did not already contain it. Every one is a rewrite failure even when the result scores clean:
+
+- **Fake first person.** "I've seen this a hundred times," "in my experience," "I'll admit" dropped into prose that had no author presence. Voice comes from the author or not at all. If the source has no `I`, the rewrite has no `I`.
+- **Manufactured stakes.** "In a world where," "now more than ever," "the stakes have never been higher." Covered as a detection rule under Speculative scenario openers; listed again here because the rewrite side is where it gets *introduced*.
+- **Forced contrarianism.** "Everyone says X, but they're wrong," "the conventional wisdom is backwards." Only legitimate when the source actually argued it. Inventing a foil is inventing a claim.
+- **Performed candor.** "Let's be honest," "real talk," "here's the thing." See Narrated candor and Infomercial engagement hooks. A rewrite that adds one is failing two rules at once.
+- **Em-dash theatrics.** Dashes staged for drama the content has not earned. The rule elsewhere is a rate ceiling; this is about *adding* dashes during a rewrite, which should never happen.
+- **Staccato conversion.** Chopping ordinary sentences into fragments to manufacture rhythm. Vary sentence length by varying the sentences, not by breaking them.
+- **Invented specifics.** A number, name, date, tool, or mechanism the source never contained. Specificity is the most tempting fix because it always reads better, and a fabricated specific is worse than the vague phrasing it replaced. If the concrete detail is missing, flag the gap and leave it. Never fill it.
+
+**The test.** For each edit, ask whether the information in the rewrite came from the source. Subtraction and sharpening are in scope: cutting filler, making an existing claim concrete, surfacing a buried point. Addition of stance, personality, or fact is not. Adapted from `isatimur/de-slop`'s guardrails, which state the rule plainly: you may subtract and sharpen, you may not add.
+
+**Why it belongs here rather than in the pattern catalog.** These are constraints on the editor, not detections on the text. A first-person aside is not a flag when the author wrote it; it is a failure when the tool inserted it. The difference is provenance, which no pattern can see, so it lives with the rewrite instructions where the decision is actually made.

@@ -342,6 +342,21 @@ See [`detector/README.md`](./detector/README.md) for the full `analyzeText` API
 and [`detector/CATEGORIES.md`](./detector/CATEGORIES.md) for the rule ↔ category
 map that keeps `SKILL.md` and the engine in sync.
 
+The engine also ships a preservation validator. `detector/validate.js` compares
+a rewrite against its original and fails when the edit touched something it
+shouldn't have: a code block, YAML frontmatter, a blockquote, a table cell,
+inline code, a URL, a file path, the heading structure, or when the rewrite ends
+with more flagged patterns than it started with.
+
+```bash
+node detector/validate.js before.md after.md   # exits 1 on a preservation error
+```
+
+**Does it pass its own pass?** [`PROOF.md`](./PROOF.md) scores this repo's
+documentation with this repo's detector and publishes the result, including two
+defects the scan found in our own work. `npm run self-scan` reproduces it, and
+CI fails when a document drifts past its budget.
+
 ## Credits
 
 Pattern research informed by:
