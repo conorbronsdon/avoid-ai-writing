@@ -194,25 +194,6 @@
       "words": 6000
     },
     {
-      "id": "cb-seattles-beverage-tax-is-a-symptom-of-washingtons-upside-down-tax-system",
-      "title": "Seattle’s beverage tax is a symptom of Washington’s upside-down tax system",
-      "author": "Conor Bronsdon",
-      "year": 2019,
-      "date": "2019-01-22",
-      "register": "blog",
-      "authorship": "human-pre-llm",
-      "source": {
-        "type": "url",
-        "url": "https://conorbronsdon.com/blog/seattles-beverage-tax-is-a-symptom-of-washingtons-upside-down-tax-system/",
-        "license": "author-owned-not-redistributed",
-        "html": {
-          "selector": "article"
-        }
-      },
-      "sha256": "f8de1d4b522922a85e1d595bbcfd6ba06346fd2d23ab91a4cb43a2e44116a609",
-      "words": 714
-    },
-    {
       "id": "cb-portland-got-it-right-seattle-needs-e-scooters-too",
       "title": "Portland got it right – Seattle needs E-Scooters too",
       "author": "Conor Bronsdon",
@@ -222,14 +203,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/portland-got-it-right-seattle-needs-e-scooters-too/",
+        "url": "https://web.archive.org/web/20210309221955id_/https://conorbronsdon.com/blog/portland-got-it-right-seattle-needs-e-scooters-too",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "8ff6206f84750aac009c05e14bda8966bd72af5afafdd006a2584f4570fa1636",
-      "words": 865
+      "provenance": {
+        "captured": "2021-03-09",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.968
+      },
+      "sha256": "f12c9bb62a4519926b21195f198b3caa248cacaaa32f7b7bb3a6d6dc80c51a33",
+      "words": 867
     },
     {
       "id": "cb-senate-bill-5638-what-does-the-new-blockchain-bill-mean-for-washington-state",
@@ -241,14 +228,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/senate-bill-5638-what-does-the-new-blockchain-bill-mean-for-washington-state/",
+        "url": "https://web.archive.org/web/20210316074238id_/https://conorbronsdon.com/blog/senate-bill-5638-what-does-the-new-blockchain-bill-mean-for-washington-state",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "7d01129d17d28638f9e3b16d99356b7f641f5ebc76a09cff044d16770a4dfc7e",
-      "words": 1355
+      "provenance": {
+        "captured": "2021-03-16",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.918
+      },
+      "sha256": "4c90701c3dd8e270aaab0fae4321f4033036e86fca24d98db0078bbdbde1da5e",
+      "words": 1282
     },
     {
       "id": "cb-seattle-should-lead-on-mass-timberand-solve-our-housing-crisis",
@@ -260,14 +253,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/seattle-should-lead-on-mass-timberand-solve-our-housing-crisis/",
+        "url": "https://web.archive.org/web/20210309203710id_/https://conorbronsdon.com/blog/seattle-should-lead-on-mass-timberand-solve-our-housing-crisis",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "079e7a6611db009ef0b90b64a7e24ecd7af7374385d5acd8dffdd6145bedaee6",
-      "words": 1279
+      "provenance": {
+        "captured": "2021-03-09",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.951
+      },
+      "sha256": "e0e1e39396292f7bb2a5d9f220f24652767de670a645764645792a0685b82f82",
+      "words": 1244
     },
     {
       "id": "cb-washington-state-senate-unanimously-passes-blockchain-bill",
@@ -279,14 +278,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/washington-state-senate-unanimously-passes-blockchain-bill/",
+        "url": "https://web.archive.org/web/20210316074555id_/https://conorbronsdon.com/blog/washington-state-senate-unanimously-passes-blockchain-bill",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "b4efd000a7ef3ef4d952a915cbbc6c1d53ecf691008fdaec904ba84e4a649ce2",
-      "words": 349
+      "provenance": {
+        "captured": "2021-03-16",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.919
+      },
+      "sha256": "25d18e4184d724d5d106685ec44d9b4be94ac4b4228e8739a6e703ed540a024f",
+      "words": 353
     },
     {
       "id": "cb-twilight-imperium-how-playing-a-board-game-is-the-best-exercise-for-your-brain",
@@ -298,52 +303,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/twilight-imperium-how-playing-a-board-game-is-the-best-exercise-for-your-brain/",
+        "url": "https://web.archive.org/web/20190818222328id_/https://conorbronsdon.com/blog/whytwilightimperium",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "88ab08dbd7d3688008ae1e965817f2e29b105fbe1567d955d5534a698f6b685f",
-      "words": 1063
-    },
-    {
-      "id": "cb-writing-update-september-2019",
-      "title": "Writing Update: September 2019",
-      "author": "Conor Bronsdon",
-      "year": 2019,
-      "date": "2019-09-04",
-      "register": "blog",
-      "authorship": "human-pre-llm",
-      "source": {
-        "type": "url",
-        "url": "https://conorbronsdon.com/blog/writing-update-september-2019/",
-        "license": "author-owned-not-redistributed",
-        "html": {
-          "selector": "article"
-        }
+      "provenance": {
+        "captured": "2019-08-18",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.921
       },
-      "sha256": "0175b14844f8f28b13bddad909d1346cca50040cd22a0ae28c870d1c106435e5",
-      "words": 555
-    },
-    {
-      "id": "cb-why-jay-inslee-should-embrace-cross-laminated-timber",
-      "title": "Why Jay Inslee Should Embrace Cross Laminated Timber",
-      "author": "Conor Bronsdon",
-      "year": 2019,
-      "date": "2019-11-18",
-      "register": "blog",
-      "authorship": "human-pre-llm",
-      "source": {
-        "type": "url",
-        "url": "https://conorbronsdon.com/blog/why-jay-inslee-should-embrace-cross-laminated-timber/",
-        "license": "author-owned-not-redistributed",
-        "html": {
-          "selector": "article"
-        }
-      },
-      "sha256": "027df661b485dc52c5bd5ebad7e5f39cf7e3c6b543d59c3b4dcd4f3991a99648",
-      "words": 724
+      "sha256": "6870f670ca27dcfdc53e33f2b99bd4f09394e0d8741b3994bdc1b7b00e5fac7b",
+      "words": 1006
     },
     {
       "id": "cb-how-political-campaigns-can-effectively-use-chatbots-and-ai",
@@ -355,33 +328,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/how-political-campaigns-can-effectively-use-chatbots-and-ai/",
+        "url": "https://web.archive.org/web/20221208195227id_/https://conorbronsdon.com/blog/how-political-campaigns-can-effectively-use-chatbots-and-ai",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "943de1ae8072bf462ebe8abcc9805ccaffa7decec6f147fa108cab46e787562d",
-      "words": 1300
-    },
-    {
-      "id": "cb-august-2020-update",
-      "title": "August 2020 Life Update",
-      "author": "Conor Bronsdon",
-      "year": 2020,
-      "date": "2020-08-22",
-      "register": "blog",
-      "authorship": "human-pre-llm",
-      "source": {
-        "type": "url",
-        "url": "https://conorbronsdon.com/blog/august-2020-update/",
-        "license": "author-owned-not-redistributed",
-        "html": {
-          "selector": "article"
-        }
+      "provenance": {
+        "captured": "2022-12-08",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.927
       },
-      "sha256": "8cbd87e46daff893b8ddbf14101882495f96777e1a5e1c535b4b3bb20c4bc75c",
-      "words": 1176
+      "sha256": "42afd425ef6904c8633ccce5baa0a036176b7e1922a16b272bda91d5e33d49ba",
+      "words": 1218
     },
     {
       "id": "cb-how-to-pitch-a-story-to-media-5-tips-and-best-practices",
@@ -393,14 +353,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/how-to-pitch-a-story-to-media-5-tips-and-best-practices/",
+        "url": "https://web.archive.org/web/20201004010757id_/https://conorbronsdon.com/blog/bestpracticesforpitchingastory",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "a8c6cd3f093c238e50586ea29c065b2f2a4523edb5df6437ee543d7d6c1858ff",
-      "words": 1169
+      "provenance": {
+        "captured": "2020-10-04",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.896
+      },
+      "sha256": "4bd2ddd96176a00d24d1c34e0afc2bddf19530c67e0059e6d0326413b2461a6b",
+      "words": 1090
     },
     {
       "id": "cb-october-2020-update-mass-timber-psbj-podcast-and-patreon",
@@ -412,14 +378,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/october-2020-update-mass-timber-psbj-podcast-and-patreon/",
+        "url": "https://web.archive.org/web/20201031054225id_/https://conorbronsdon.com/blog/october2020update",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "b5907535d070d70f22edf1887ae646c7fff1d88f06ee087f46b105bd97db8393",
-      "words": 304
+      "provenance": {
+        "captured": "2020-10-31",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.926
+      },
+      "sha256": "63e8871b3eaf5d2905ba63bd6b4a0996db48571ff2294e23a892d79d11188bdb",
+      "words": 310
     },
     {
       "id": "cb-a-green-new-deal-for-washington-state",
@@ -431,14 +403,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/a-green-new-deal-for-washington-state/",
+        "url": "https://web.archive.org/web/20201101023205id_/https://conorbronsdon.com/blog/a-green-new-deal-for-washington-state",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "c850fdab4d5ad901c8e13a55ce394c8909e61345f1b60a0e735cc41a59cf438a",
-      "words": 982
+      "provenance": {
+        "captured": "2020-11-01",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.964
+      },
+      "sha256": "8ae367e3644432f62cd6b52a56171277b18759c489f3f38b3c23909be0b2f2c8",
+      "words": 972
     },
     {
       "id": "cb-divest-washington-state-pension-funds",
@@ -450,14 +428,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/divest-washington-state-pension-funds/",
+        "url": "https://web.archive.org/web/20201116204430id_/https://conorbronsdon.com/blog/divest-washington-state-pension-funds",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "3d98858d8b32524aaf3e8981721cccaba35d3ed0aae3cd9f2db55ce219150427",
-      "words": 760
+      "provenance": {
+        "captured": "2020-11-16",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.958
+      },
+      "sha256": "73c1160f1a806708ff8f5356cdc46de8e1abe79728b4ec346f4c3a8d4d6fc932",
+      "words": 768
     },
     {
       "id": "cb-how-to-redefine-us-agriculture-for-working-families",
@@ -469,14 +453,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/how-to-redefine-us-agriculture-for-working-families/",
+        "url": "https://web.archive.org/web/20210309221452id_/https://conorbronsdon.com/blog/how-to-redefine-us-agriculture-for-working-families",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "d971fd207a89341bbee6bc59e8ef24a74b07679b2257c01748f3d813c06f663e",
-      "words": 1412
+      "provenance": {
+        "captured": "2021-03-09",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.951
+      },
+      "sha256": "4da1515256ad34b1c2e228b207a36c0a9e301bdd80681b178c0ca86945fa8fa7",
+      "words": 1390
     },
     {
       "id": "cb-what-is-st-2040-expanding-washingtons-public-transit-with-bidens-clean-energy-plan",
@@ -488,14 +478,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/what-is-st-2040-expanding-washingtons-public-transit-with-bidens-clean-energy-plan/",
+        "url": "https://web.archive.org/web/20201101134723id_/https://conorbronsdon.com/blog/st-2040-expanding-washingtons-public-transit-with-bidens-clean-energy-plan",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "af1a42f1877fff25d13c72861ffcb65c892cedb105c88c93dd4ad89d4c267c8e",
-      "words": 1522
+      "provenance": {
+        "captured": "2020-11-01",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.919
+      },
+      "sha256": "90e09cd9c0ab75ed9f464f554256c4fabfca8d0214d832b52048a9f24f34bb70",
+      "words": 1452
     },
     {
       "id": "cb-what-is-weatherization-building-the-green-economy-with-the-biden-climate-plan",
@@ -507,14 +503,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/what-is-weatherization-building-the-green-economy-with-the-biden-climate-plan/",
+        "url": "https://web.archive.org/web/20201101182641id_/https://conorbronsdon.com/blog/weatherization-building-the-green-economy-with-the-biden-climate-plan",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "403f7f3890cd6593d24f4fc5ff9baa2fe230228e049063284f8cd375050fca3e",
-      "words": 449
+      "provenance": {
+        "captured": "2020-11-01",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.906
+      },
+      "sha256": "05a0040abcf2152911036a66aa19749e3c3cffbcfa74c62c048991a6366bd0c2",
+      "words": 431
     },
     {
       "id": "cb-democrats-must-run-a-progressive-message",
@@ -526,14 +528,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/democrats-must-run-a-progressive-message/",
+        "url": "https://web.archive.org/web/20211231033214id_/https://conorbronsdon.com/blog/democrats-must-run-a-progressive-message",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "6725cd811124d960ccb1e2efb4f56ab04cf63f2dce67c5f655188f093bb5434d",
-      "words": 1126
+      "provenance": {
+        "captured": "2021-12-31",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.787
+      },
+      "sha256": "b123b11d4992b2d50bae9209d30d2a40d30c83a9f0f0df2d7d2a061cf5ff12fa",
+      "words": 908
     },
     {
       "id": "cb-how-to-save-modern-media",
@@ -545,14 +553,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/how-to-save-modern-media/",
+        "url": "https://web.archive.org/web/20210222222955id_/https://conorbronsdon.com/blog/how-to-save-modern-media",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "dd2ad35bc8f8f006c88f9553bb4dd9ba71189d6524311ca5cfb6776b97b47031",
-      "words": 2804
+      "provenance": {
+        "captured": "2021-02-22",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.982
+      },
+      "sha256": "03db4a24840a7cabde229499785b30018deb71634fc752b8825f3ff248230f4f",
+      "words": 2759
     },
     {
       "id": "cb-mass-timber-helps-stop-wildfires-and-builds-the-green-economy",
@@ -564,14 +578,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/mass-timber-helps-stop-wildfires-and-builds-the-green-economy/",
+        "url": "https://web.archive.org/web/20210208005233id_/https://conorbronsdon.com/blog/mass-timber-helps-stop-wildfires-and-builds-the-green-economy",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "0c02c31710c615d27856ae884178bb55780dae0d6374331495638bfa72f147e6",
-      "words": 1155
+      "provenance": {
+        "captured": "2021-02-08",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.951
+      },
+      "sha256": "ce222c68c1bc621028996bf8d109e84c5196e0c46494100bf65bbb7fb7357857",
+      "words": 1134
     },
     {
       "id": "cb-how-to-fix-the-democratic-party",
@@ -583,33 +603,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/how-to-fix-the-democratic-party/",
+        "url": "https://web.archive.org/web/20201123164656id_/https://conorbronsdon.com/blog/six-ways-to-fix-the-democratic-party",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "ed02a8646ec4d4c934986a8c39413503954bd4ef7579ff43fe2aeafbacd5e653",
-      "words": 4602
-    },
-    {
-      "id": "cb-im-61-220-lbs-and-a-victim-of-domestic-abuse",
-      "title": "I’m 6'1″ 220 lbs — and a victim of domestic abuse",
-      "author": "Conor Bronsdon",
-      "year": 2020,
-      "date": "2020-11-24",
-      "register": "blog",
-      "authorship": "human-pre-llm",
-      "source": {
-        "type": "url",
-        "url": "https://conorbronsdon.com/blog/im-61-220-lbs-and-a-victim-of-domestic-abuse/",
-        "license": "author-owned-not-redistributed",
-        "html": {
-          "selector": "article"
-        }
+      "provenance": {
+        "captured": "2020-11-23",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.881
       },
-      "sha256": "2fc4314bdef041bded42e49e4d7f99694feb7cdad3e4ee5edaa82e8b3e5f7c0e",
-      "words": 689
+      "sha256": "dc62439a641572b86186513251b222f127bb253515b09099fbeb6745f13ecebe",
+      "words": 4155
     },
     {
       "id": "cb-will-voting-on-blockchain-keep-elections-fair-and-transparent",
@@ -621,14 +628,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/will-voting-on-blockchain-keep-elections-fair-and-transparent/",
+        "url": "https://web.archive.org/web/20211130023653id_/https://conorbronsdon.com/blog/will-voting-on-blockchain-keep-elections-fair-and-transparent",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "7602f4b3881ce51d39358a9344675baf5f68f66425dfb3a63addf9d3476c913c",
-      "words": 586
+      "provenance": {
+        "captured": "2021-11-30",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.945
+      },
+      "sha256": "e445712d2793113ea0a8995c86b7f2f5312445999d9f8bd1c2c89d9ab04edf40",
+      "words": 588
     },
     {
       "id": "cb-the-energy-side-of-blockchain-bitcoin-amp-cryptocurrency",
@@ -640,14 +653,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/the-energy-side-of-blockchain-bitcoin-amp-cryptocurrency/",
+        "url": "https://web.archive.org/web/20201130163638id_/https://conorbronsdon.com/blog/the-energy-side-of-blockchain-bitcoin-cryptocurrency",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "0b14397d3b7ef8c132f8ba012593679d715099948408fcc0f81e114c8b2a1346",
-      "words": 953
+      "provenance": {
+        "captured": "2020-11-30",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.933
+      },
+      "sha256": "0d823051ee684fcd0086903d2d12128d88c3687538a19eeb7d6298f82c19adf4",
+      "words": 992
     },
     {
       "id": "cb-how-to-subscribe-to-a-twitch-streamer-using-amazon-prime",
@@ -659,14 +678,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/how-to-subscribe-to-a-twitch-streamer-using-amazon-prime/",
+        "url": "https://web.archive.org/web/20201216185204id_/https://conorbronsdon.com/blog/how-to-subscribe-to-a-twitch-streamer-using-amazon-prime",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "29c1d01700ef0741efbe6e720de9bfe622868d8c74e351ef80d1d4b5b7cb6cb2",
-      "words": 778
+      "provenance": {
+        "captured": "2020-12-16",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.76
+      },
+      "sha256": "d4d55b763f926c6fc44844d517c00c32e39e3f097f24ee0db3469ae85d92e21b",
+      "words": 705
     },
     {
       "id": "cb-two-years-of-writing-and-whats-next",
@@ -678,14 +703,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/two-years-of-writing-and-whats-next/",
+        "url": "https://web.archive.org/web/20210109170109id_/https://conorbronsdon.com/blog/two-years-of-writing-and-whats-next",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "d6702f3e28f9aeec6b54b0f240defeb5d36325a6bebc4e96e192c8ca1abce4b8",
-      "words": 737
+      "provenance": {
+        "captured": "2021-01-09",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.905
+      },
+      "sha256": "4a48f8cf2aa01ad5344a5634596bd4dfab5db107c3aac4801ab9f05974c68a1e",
+      "words": 753
     },
     {
       "id": "cb-challenger-marketing-contenthow-to-make-an-effective-digital-marketing-funnel",
@@ -697,52 +728,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/challenger-marketing-contenthow-to-make-an-effective-digital-marketing-funnel/",
+        "url": "https://web.archive.org/web/20190724031659id_/https://conorbronsdon.com/blog/challengerfunnel",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "b75ed4496524c19704c97e2d3270cee68b4e36ce8fab38b96b81972675a9a973",
-      "words": 714
-    },
-    {
-      "id": "cb-how-to-get-your-email-opened-and-read",
-      "title": "How to get your email opened and read: 5 tips on email marketing",
-      "author": "Conor Bronsdon",
-      "year": 2021,
-      "date": "2021-02-04",
-      "register": "blog",
-      "authorship": "human-pre-llm",
-      "source": {
-        "type": "url",
-        "url": "https://conorbronsdon.com/blog/how-to-get-your-email-opened-and-read/",
-        "license": "author-owned-not-redistributed",
-        "html": {
-          "selector": "article"
-        }
+      "provenance": {
+        "captured": "2019-07-24",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.848
       },
-      "sha256": "bc20d33247a45506da8aace08e357565a7b84a3027021ccf9a8b219e7aa5bcfd",
-      "words": 1145
-    },
-    {
-      "id": "cb-how-can-challenger-sales-methodology-help-your-marketing",
-      "title": "How can Challenger Sales methodology help your marketing?",
-      "author": "Conor Bronsdon",
-      "year": 2021,
-      "date": "2021-02-06",
-      "register": "blog",
-      "authorship": "human-pre-llm",
-      "source": {
-        "type": "url",
-        "url": "https://conorbronsdon.com/blog/how-can-challenger-sales-methodology-help-your-marketing/",
-        "license": "author-owned-not-redistributed",
-        "html": {
-          "selector": "article"
-        }
-      },
-      "sha256": "68b0c73d9b80eae6ac18206ebd4ebbf13d92f41ea7740ea59b37bb029c23f5d7",
-      "words": 1094
+      "sha256": "8be5946d3eaf6ee2d05508150419da4a3cb714c64ac30b021fa381d71eb22fba",
+      "words": 643
     },
     {
       "id": "cb-what-do-different-twitter-emojis-mean",
@@ -754,14 +753,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/what-do-different-twitter-emojis-mean/",
+        "url": "https://web.archive.org/web/20210214040738id_/https://conorbronsdon.com/blog/what-do-different-twitter-emojis-mean",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "958023df09fed83118ba2abe71a87cd62fc53928b6109dd21a0cabacb6b1aaa9",
-      "words": 1245
+      "provenance": {
+        "captured": "2021-02-14",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.937
+      },
+      "sha256": "1005dcb76cdb5a2ff2da3d859c1b2f5108401ec7327e647004a547f60b83bffb",
+      "words": 1162
     },
     {
       "id": "cb-why-electric-cars-wont-solve-climate-change",
@@ -773,14 +778,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/why-electric-cars-wont-solve-climate-change/",
+        "url": "https://web.archive.org/web/20221228212937id_/https://conorbronsdon.com/blog/why-electric-cars-wont-solve-climate-change",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "dbf40304118b35852afd0eedad2c8421a499604447c4baa92edda3543c3082af",
-      "words": 1868
+      "provenance": {
+        "captured": "2022-12-28",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.918
+      },
+      "sha256": "ce059296e9409d517275e314e60805b4b0aed8454bf35ff60af21539f284e032",
+      "words": 1895
     },
     {
       "id": "cb-four-lessons-from-crashing-a-1700-person-stream",
@@ -792,52 +803,20 @@
       "authorship": "human-pre-llm",
       "source": {
         "type": "url",
-        "url": "https://conorbronsdon.com/blog/four-lessons-from-crashing-a-1700-person-stream/",
+        "url": "https://web.archive.org/web/20220817203409id_/https://conorbronsdon.com/blog/four-lessons-from-crashing-a-1700-person-stream",
         "license": "author-owned-not-redistributed",
         "html": {
-          "selector": "article"
+          "mode": "paragraphs",
+          "match": "white-space:pre-wrap"
         }
       },
-      "sha256": "0442f92362fe2019b42262c3632f3d5d8b72cc60bddbb907733202d04416cef3",
-      "words": 560
-    },
-    {
-      "id": "cb-8-ways-to-grow-your-career-remotely",
-      "title": "8 ways to grow your career while working from home",
-      "author": "Conor Bronsdon",
-      "year": 2022,
-      "date": "2022-04-29",
-      "register": "blog",
-      "authorship": "human-pre-llm",
-      "source": {
-        "type": "url",
-        "url": "https://conorbronsdon.com/blog/8-ways-to-grow-your-career-remotely/",
-        "license": "author-owned-not-redistributed",
-        "html": {
-          "selector": "article"
-        }
+      "provenance": {
+        "captured": "2022-08-17",
+        "via": "web.archive.org",
+        "similarity_to_current": 0.923
       },
-      "sha256": "e5407d810f38125cfb12a1eb8ef5af5c35a4951fae479be7d35c8831dda28e5c",
-      "words": 911
-    },
-    {
-      "id": "cb-decentralized-money-needs-decentralized-infrastructure-terra-x-flux",
-      "title": "Infrastructure for decentralized money: Terra x Flux",
-      "author": "Conor Bronsdon",
-      "year": 2022,
-      "date": "2022-05-03",
-      "register": "blog",
-      "authorship": "human-pre-llm",
-      "source": {
-        "type": "url",
-        "url": "https://conorbronsdon.com/blog/decentralized-money-needs-decentralized-infrastructure-terra-x-flux/",
-        "license": "author-owned-not-redistributed",
-        "html": {
-          "selector": "article"
-        }
-      },
-      "sha256": "5ca04589f4e5f14936e119d548925381d9adb78258d735e59e340b054c17ae9f",
-      "words": 634
+      "sha256": "db2a20a4a12957143060c54654e4bcb6bbcdef08fe7ca023291ae8ecae104d0f",
+      "words": 563
     }
   ]
 }

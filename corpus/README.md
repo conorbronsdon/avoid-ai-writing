@@ -52,42 +52,58 @@ That is also their limitation, and it is severe. Nobody runs this tool over
 *Walden*. On its own, this leg can only show the detector is not firing wildly
 on formal English prose.
 
-**Thirty-four blog posts by this repo's maintainer, 2019 to October 2022**,
-published on his own site and fetched from it. Written before ChatGPT's
-release, in the register the tool is actually pointed at, by someone whose
-authorship is not in question. This is the leg that produced the useful
-findings.
+**Twenty-five blog posts by this repo's maintainer, 2019 to December 2022**,
+read from **Project Gutenberg's equivalent for the web**: `web.archive.org`
+captures taken before 2023. Written before ChatGPT, in the register the tool is
+actually pointed at, by someone whose authorship is not in question. This is the
+leg that produced the useful findings.
 
-Three exclusions are worth recording:
+Reading them from the archive rather than the live site is deliberate. The live
+site has been rebuilt and its posts edited since; the median archived capture is
+only **0.92 similar** to its currently published counterpart, and five of the
+twenty-five fall below 0.90. Measuring "his pre-2023 writing" against pages
+edited in 2025 would have measured the wrong thing.
 
-- **Two guest posts** on the same site, by Adam Noble and Steve Fawthrop, were
-  found by byline and excluded. They are human-written, so they would not have
-  corrupted an FP rate, but attributing them to the wrong author would have.
-- **Three posts carried "Looking back from 2025" retrospective sections** added
-  years after publication. Their pre-LLM provenance is broken, so they are out.
-  This is the corpus equivalent of a contaminated sample, and it was caught by
-  reading the worst-scoring paragraphs rather than by any check in the tooling.
+Resolving them was not a matter of swapping a domain. The old site used
+compressed slugs (`beveragetax`, `challengerfunnel`, `emailmarketing`) that do
+not match current URLs, so candidates were found by slug similarity and then
+**verified by content**: an archived page is accepted only if its extracted text
+scores at least 0.45 Jaccard similarity against the current version. Genuine
+matches land between 0.76 and 0.98. Four slug guesses scored below 0.17 and were
+rejected by that check rather than silently accepted, which is the entire reason
+the check exists.
 
-**A standing caveat on the maintainer's leg:** these are the *currently
-published* versions of pre-2023 posts, not verified originals. The site has been
-rebuilt since. Silent post-2023 edits would not announce themselves the way the
-three above did. Fetching from the Wayback Machine at a pre-2023 timestamp is
-the fix, and it has not been done.
+Exclusions, all recorded rather than quietly dropped:
+
+- **Two guest posts** on the same site, by Adam Noble and Steve Fawthrop, found
+  by byline. They are human-written, so they would not have corrupted an FP
+  rate, but attributing them to the wrong author would have.
+- **Three posts carrying "Looking back from 2025" retrospective sections**
+  added years after publication. Their pre-LLM provenance is broken. Caught by
+  reading the worst-scoring paragraphs, not by any check in the tooling.
+- **Nine posts with no verifiable pre-2023 capture.** Five have no archived
+  snapshot at all; four had candidate slugs that failed the content check. They
+  are out rather than included on their current-site text, because a corpus
+  whose provenance rule bends for convenience is not a provenance rule.
 
 ## Results (v3.22.0, 2026-07-31)
 
-628 paragraphs of 50 to 400 words, from 43 documents.
+560 paragraphs of 50 to 400 words, from 34 documents.
 
 | Threshold | n | flagged | FP rate | Wilson 95% CI |
 |---|---:|---:|---:|---|
-| score >= 25 | 628 | 0 | 0.0% | 0.0–0.6% |
-| score >= 40 | 628 | 0 | 0.0% | 0.0–0.6% |
-| score >= 50 | 628 | 0 | 0.0% | 0.0–0.6% |
-| score >= 65 | 628 | 0 | 0.0% | 0.0–0.6% |
+| score >= 25 | 560 | 0 | 0.0% | 0.0–0.7% |
+| score >= 40 | 560 | 0 | 0.0% | 0.0–0.7% |
+| score >= 50 | 560 | 0 | 0.0% | 0.0–0.7% |
+| score >= 65 | 560 | 0 | 0.0% | 0.0–0.7% |
 
 Not one human paragraph crossed the lowest threshold. The worst scored **11 out
-of 100**. Per register: `blog` 351, `essay-literary` 141, `academic` 116,
+of 100**. Per register: `blog` 283, `essay-literary` 141, `academic` 116,
 `technical-blog` 20, all at 0.0%.
+
+The same measurement run against the *current* published versions of those
+posts, before the switch to archived originals, also returned 0.0% across 628
+paragraphs. The result is not an artifact of which copy was measured.
 
 **At the document-score level, the detector does not fire on human prose.** That
 is the result, and it is a real one now that the corpus contains modern
@@ -98,21 +114,25 @@ blog-register writing rather than only Victorian essays.
 `detect` mode does not show users a document score. It shows them every flag.
 And categories fire on human writing constantly.
 
-On the maintainer's own pre-LLM posts alone (325 paragraphs, 2019–2022):
+On the maintainer's Wayback-verified pre-2023 posts alone (257 paragraphs, 25
+posts, 2019–2022):
 
 | Category | Paragraphs firing | Rate |
 |---|---:|---|
-| `em-dash` | 56 | **17.2%** |
-| `tier1` | 38 | **11.7%** |
-| `transition` | 9 | 2.8% |
-| `uniformity` | 8 | 2.5% |
-| `smart-punct-signature` | 5 | 1.5% |
-| `hollow-intensifier` | 3 | 0.9% |
+| `em-dash` | 47 | **18.3%** |
+| `tier1` | 32 | **12.5%** |
+| `transition` | 11 | 4.3% |
+| `uniformity` | 6 | 2.3% |
+| `hollow-intensifier` | 3 | 1.2% |
+| `smart-punct-signature` | 3 | 1.2% |
 
-The Tier 1 words doing it: `embrace` (9), `leverage` and inflections (8),
-`in order to` (5), `when it comes to` (4), `that said` (4), `features` (3),
-`thriving` (2), `robust` (2), `truly` (2), plus single hits on `utilize`,
-`pivotal`, `serves as`, `genuinely`, and `in an era where`.
+The Tier 1 words doing it: `embrace` (7), `when it comes to` (5),
+`in order to` (4), `leverage` and inflections (7), `that said` (4),
+`features` (3), `thriving` (2), `robust` (2), `truly` (2).
+
+Both rates are slightly *higher* on the verified originals than on the current
+published versions (17.2% and 11.7%), which is what you would expect if later
+editing passes had cleaned some of it up.
 
 **Read that carefully. Those are not AI tells in this text. They are the
 author's ordinary 2019 vocabulary, written years before the models existed.**
