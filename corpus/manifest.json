@@ -1,0 +1,197 @@
+{
+  "version": 1,
+  "purpose": "Human-authored control corpus for measuring this detector's false-positive rate. Hash-only: text is never committed. See corpus/README.md.",
+  "documents": [
+    {
+      "id": "emerson-essays-1841",
+      "title": "Essays (First Series)",
+      "author": "Ralph Waldo Emerson",
+      "year": 1841,
+      "register": "essay-literary",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://www.gutenberg.org/cache/epub/16643/pg16643.txt",
+        "license": "public-domain",
+        "gutenberg": true
+      },
+      "slice": {
+        "after": "MR. PRESIDENT AND GENTLEMEN",
+        "maxWords": 6000
+      },
+      "added": "2026-07-31",
+      "sha256": "bf096596d40be111aadc5e125f660fea4f6e6d631469655977a7a56e9565518b",
+      "words": 6000
+    },
+    {
+      "id": "thoreau-walden-1854",
+      "title": "Walden",
+      "author": "Henry David Thoreau",
+      "year": 1854,
+      "register": "essay-literary",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://www.gutenberg.org/cache/epub/205/pg205.txt",
+        "license": "public-domain",
+        "gutenberg": true
+      },
+      "slice": {
+        "after": "When I wrote the following pages",
+        "maxWords": 6000
+      },
+      "added": "2026-07-31",
+      "sha256": "f07283e1911eebf008b757d5212f53c90bc9920be3ce901a342340ad6a1b5c70",
+      "words": 6000
+    },
+    {
+      "id": "dubois-souls-1903",
+      "title": "The Souls of Black Folk",
+      "author": "W. E. B. Du Bois",
+      "year": 1903,
+      "register": "essay-literary",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://www.gutenberg.org/cache/epub/408/pg408.txt",
+        "license": "public-domain",
+        "gutenberg": true
+      },
+      "slice": {
+        "after": "Herein lie buried many things",
+        "maxWords": 6000
+      },
+      "added": "2026-07-31",
+      "sha256": "35733684fc41282fdeb331528ac1afded4be9498a84e58bf44a7d0babc3f15d7",
+      "words": 6000
+    },
+    {
+      "id": "twain-how-to-tell-a-story-1897",
+      "title": "How to Tell a Story, and Other Essays",
+      "author": "Mark Twain",
+      "year": 1897,
+      "register": "essay-literary",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://www.gutenberg.org/cache/epub/3250/pg3250.txt",
+        "license": "public-domain",
+        "gutenberg": true
+      },
+      "slice": {
+        "after": "I do not claim that I can tell a story",
+        "maxWords": 6000
+      },
+      "added": "2026-07-31",
+      "sha256": "901fb19a14501999557be22f6554aa32c00c3511822aa9d4735aec88e54685d1",
+      "words": 6000
+    },
+    {
+      "id": "james-pragmatism-1907",
+      "title": "Pragmatism: A New Name for Some Old Ways of Thinking",
+      "author": "William James",
+      "year": 1907,
+      "register": "academic",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://www.gutenberg.org/cache/epub/5116/pg5116.txt",
+        "license": "public-domain",
+        "gutenberg": true
+      },
+      "slice": {
+        "after": "The lectures that follow were delivered at the Lowell Institute",
+        "maxWords": 6000
+      },
+      "added": "2026-07-31",
+      "sha256": "9b4cdb5a0748d21905be1f875cd4444b27740aeefe0a213de02a905280f52289",
+      "words": 6000
+    },
+    {
+      "id": "darwin-origin-1859",
+      "title": "On the Origin of Species",
+      "author": "Charles Darwin",
+      "year": 1859,
+      "register": "academic",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://www.gutenberg.org/cache/epub/1228/pg1228.txt",
+        "license": "public-domain",
+        "gutenberg": true
+      },
+      "slice": {
+        "after": "When on board H.M.S. ‘Beagle,’ as naturalist",
+        "maxWords": 6000
+      },
+      "added": "2026-07-31",
+      "sha256": "743625896ff84f4cdec9b9cac9692b706543c376492f5eeb02906343a9b57d6f",
+      "words": 6000
+    },
+    {
+      "id": "federalist-papers-1788",
+      "title": "The Federalist Papers",
+      "author": "Hamilton, Madison, Jay",
+      "year": 1788,
+      "register": "academic",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://www.gutenberg.org/cache/epub/18/pg18.txt",
+        "license": "public-domain",
+        "gutenberg": true
+      },
+      "slice": {
+        "after": "After an unequivocal experience of the inefficacy",
+        "maxWords": 6000
+      },
+      "added": "2026-07-31",
+      "sha256": "20b24f2fe39cbd2358962b14862981e9122a141ede27d502b8674cb69f989b3b",
+      "words": 6000
+    },
+    {
+      "id": "faraday-candle-1861",
+      "title": "The Chemical History of a Candle",
+      "author": "Michael Faraday",
+      "year": 1861,
+      "register": "technical-blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://www.gutenberg.org/cache/epub/14474/pg14474.txt",
+        "license": "public-domain",
+        "gutenberg": true
+      },
+      "slice": {
+        "after": "I purpose, in return for the honour",
+        "maxWords": 6000
+      },
+      "note": "Lectures explaining a technical subject to a general audience. The closest public-domain analogue to a technical explainer, and still not a README.",
+      "added": "2026-07-31",
+      "sha256": "d29179787eb4daecb862c3286f396c7caa01d4c0f6f1e985663d955f5d489ebd",
+      "words": 6000
+    },
+    {
+      "id": "franklin-autobiography-1791",
+      "title": "Autobiography of Benjamin Franklin",
+      "author": "Benjamin Franklin",
+      "year": 1791,
+      "register": "blog",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://www.gutenberg.org/cache/epub/20203/pg20203.txt",
+        "license": "public-domain",
+        "gutenberg": true
+      },
+      "slice": {
+        "after": "I have ever had pleasure in obtaining any little anecdotes",
+        "maxWords": 6000
+      },
+      "note": "First-person narrative addressed to one reader. Stands in for personal-blog register, imperfectly.",
+      "added": "2026-07-31",
+      "sha256": "7ba5c04870fb9e2a7cb46b07fe3bdf72d96ae51650a49ae2aae9a0897c65aa2d",
+      "words": 6000
+    }
+  ]
+}

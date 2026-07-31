@@ -17,3 +17,6 @@ Desktop.ini
 
 # Local git worktrees (parallel Claude Code sessions)
 .worktrees/
+
+# Human-control corpus: text is fetched, never committed. See corpus/README.md.
+corpus/cache/
