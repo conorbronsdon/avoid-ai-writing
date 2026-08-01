@@ -107,10 +107,24 @@ slightly changes document-level metrics that are computed over the whole text
 (em-dash rate, type-token ratio, bold-phrase count), because the denominator
 shrinks. Vocabulary and phrase categories are unaffected.
 
-There is no false-positive rate on this page, because we have not measured one.
-Until that exists, no accuracy claim on this repo should be read as measured.
+A false-positive rate has been measured, and it is not quoted here as a claim.
+[`corpus/README.md`](corpus/README.md) publishes the full table against 875
+human and 779 machine paragraphs: at `score >= 5`, 4.2% FPR (95% CI 3.1–5.8)
+against 7.2% TPR. Paragraph-level ROC-AUC is 0.501 pooled — a coin flip — and
+0.623 at document level. Read plainly, the composite score cannot reliably
+separate machine text from human text, and no threshold on it buys a useful
+true-positive rate at a tolerable false-positive cost.
 
-The intake for it is open: if a rule fires on writing a person wrote, the
+Those numbers stay in the corpus write-up rather than becoming a headline
+because they do not clear this repo's own publication gate. The gate requires
+each claim cell to carry n >= 100, a confidence interval, and more than one
+register people actually write in today. The current run satisfies the first
+two and **fails the register test outright**: HC3 is ChatGPT only, RAID is a
+different task shape, and nothing in either is a modern instruction-tuned model
+writing a LinkedIn post. A rate measured on 2022–2024 assistant prose is an
+upper bound on performance against current models, not an estimate of it.
+
+The intake to fix that is open: if a rule fires on writing a person wrote, the
 [false-positive report](https://github.com/conorbronsdon/avoid-ai-writing/issues/new?template=false_positive.yml)
 form collects the shortest text that fires, the register, how the text was
 actually written, and whether it can become a public fixture. Register is the
