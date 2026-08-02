@@ -1,0 +1,110 @@
+name: promo-drift
+
+# Every release moves the pattern count and the word-table count. The promo
+# surfaces that quote those numbers live in other repos and do not change on
+# that day, so nothing over there has a commit to hook onto — the drift is
+# created here and can only be caught from here.
+#
+# Runs on release, weekly as a backstop, and on demand. Opens (or updates) a
+# single issue when a surface has gone stale.
+
+on:
+  release:
+    types: [published]
+  schedule:
+    # Mondays 15:00 UTC. Weekly is enough: releases fire the check directly,
+    # and this only has to catch a release that was cut some other way.
+    - cron: "0 15 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: promo-drift
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      # ssot-check resolves `../<repo>/...` copies against real directories on
+      # disk, so the surfaces have to be cloned as siblings of this checkout.
+      # Depth 1: only the current content of each file matters.
+      - name: Clone the public promo surfaces
+        env:
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          cd "$GITHUB_WORKSPACE/.."
+          for repo in agent-skills ai-tools-for-creators conorbronsdon; do
+            git clone --depth 1 --quiet \
+              "https://github.com/$OWNER/$repo.git" "$repo"
+          done
+
+      # conorbronsdon-site is private. Without a token the copy in builds.ts is
+      # reported as NOT CHECKED rather than quietly passing. Add a repo-scoped
+      # PAT as SITE_REPO_TOKEN to bring it into coverage; no other change needed.
+      - name: Clone the private site (only if a token is configured)
+        env:
+          OWNER: ${{ github.repository_owner }}
+          SITE_TOKEN: ${{ secrets.SITE_REPO_TOKEN }}
+        if: ${{ env.SITE_TOKEN != '' }}
+        run: |
+          cd "$GITHUB_WORKSPACE/.."
+          git clone --depth 1 --quiet \
+            "https://x-access-token:$SITE_TOKEN@github.com/$OWNER/conorbronsdon-site.git" \
+            conorbronsdon-site
+
+      - name: Get ssot-check
+        run: |
+          cd "$GITHUB_WORKSPACE/.."
+          git clone --depth 1 --quiet https://github.com/conorbronsdon/ssot-check.git ssot-check
+
+      - name: Check the promo surfaces
+        id: check
+        run: |
+          set -o pipefail
+          # `check` exits 1 on any problem; the report script decides what is
+          # actually actionable, so do not let the raw exit code kill the step.
+          python3 ../ssot-check/ssot_check.py check --json > result.json || true
+          if ! python3 scripts/promo-drift-report.py < result.json > report.md; then
+            echo "drift=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "drift=false" >> "$GITHUB_OUTPUT"
+          fi
+          cat report.md >> "$GITHUB_STEP_SUMMARY"
+          cat report.md
+
+      - name: Open or update the drift issue
+        if: steps.check.outputs.drift == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Promo surfaces have drifted from the canonical counts"
+          {
+            echo "The counts in this repo's README moved and one or more"
+            echo "surfaces elsewhere still quote the old ones."
+            echo
+            cat report.md
+            echo
+            echo "Canonical is this repo. Fix the surfaces, not the README —"
+            echo "the README is already asserted against SKILL.md by"
+            echo "\`scripts/check-pattern-count.sh\`."
+            echo
+            echo "_Opened by [promo-drift](.github/workflows/promo-drift.yml)._"
+          } > issue.md
+
+          # Loose search, then exact title match, so a differently-worded issue
+          # never gets commented on by mistake.
+          existing="$(gh issue list --state open --search "in:title drifted from the canonical counts" \
+            --json number,title \
+            --jq --arg t "$title" 'map(select(.title == $t)) | .[0].number // empty')"
+
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file issue.md
+          else
+            gh issue create --title "$title" --body-file issue.md
+          fi

@@ -1,0 +1,60 @@
+# Which promo surfaces copy this repo's counts, and where the real number lives.
+#
+# There are two links in this chain and they are policed separately:
+#
+#   SKILL.md  ->  README.md          scripts/check-pattern-count.sh (every push)
+#   README.md ->  promo surfaces     this manifest (.github/workflows/promo-drift.yml)
+#
+# The first link derives the count from the catalog, so the README cannot lie
+# about SKILL.md. The second link is the one that actually rots: a release moves
+# the number here, the four surfaces below sit still, and nothing in *their*
+# repos changes — so no pre-commit hook over there can ever fire on it. That is
+# why this check is a release/cron job and not a hook.
+#
+# Checked with https://github.com/conorbronsdon/ssot-check:
+#   python3 ssot_check.py check          # from this repo root, siblings cloned at ../
+#
+# Adding a surface is two lines under `copies`. Do not add a surface that floors
+# the number ("60+ pattern categories") — a floored number is a different,
+# looser fact, and tracking it as a copy fires false drift on every release.
+
+facts:
+  - name: avoid-ai-pattern-count
+    type: integer
+    note: >
+      The human-facing prose-catalog category count. Canonical is the README
+      bullet, which check-pattern-count.sh derives from SKILL.md's `###` entries
+      under "What to remove or fix". This is NOT the detector engine's `type`
+      category count — that number is deliberately different and the mapping
+      lives in detector/CATEGORIES.md. Never reconcile the two.
+    canonical:
+      file: README.md
+      pattern: '\*\*(\d+) pattern categories\*\*'
+    copies:
+      - file: ../agent-skills/README.md
+        pattern: '(\d+) pattern categories'
+      - file: ../ai-tools-for-creators/README.md
+        pattern: '(\d+) pattern categories'
+      - file: ../conorbronsdon/README.md
+        pattern: '(\d+) pattern categories'
+      - file: ../conorbronsdon-site/src/data/builds.ts
+        pattern: '(\d+) pattern categories'
+
+  - name: avoid-ai-replacement-table
+    type: integer
+    note: >
+      Word replacement table entry count (Tier 1 + 2 + 3 data rows; the Tier 3
+      *phrases* table is counted separately in the README bullet and excluded
+      here). Canonical is the README bullet, derived from SKILL.md by
+      check-pattern-count.sh. agent-skills is absent below on purpose: it cites
+      the pattern count but not this one.
+    canonical:
+      file: README.md
+      pattern: '\*\*(\d+)-entry word replacement table'
+    copies:
+      - file: ../ai-tools-for-creators/README.md
+        pattern: '(\d+)-entry replacement table'
+      - file: ../conorbronsdon/README.md
+        pattern: '(\d+)-entry replacement table'
+      - file: ../conorbronsdon-site/src/data/builds.ts
+        pattern: '(\d+)-entry replacement table'
