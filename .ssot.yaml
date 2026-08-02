@@ -17,6 +17,10 @@
 # Adding a surface is two lines under `copies`. Do not add a surface that floors
 # the number ("60+ pattern categories") — a floored number is a different,
 # looser fact, and tracking it as a copy fires false drift on every release.
+#
+# conorbronsdon.com/builds is deliberately absent for exactly that reason: it
+# floors both counts, so there is nothing to keep in sync. It is also the one
+# private surface, and excluding it keeps this check free of any credential.
 
 facts:
   - name: avoid-ai-pattern-count
@@ -37,8 +41,6 @@ facts:
         pattern: '(\d+) pattern categories'
       - file: ../conorbronsdon/README.md
         pattern: '(\d+) pattern categories'
-      - file: ../conorbronsdon-site/src/data/builds.ts
-        pattern: '(\d+) pattern categories'
 
   - name: avoid-ai-replacement-table
     type: integer
@@ -55,6 +57,4 @@ facts:
       - file: ../ai-tools-for-creators/README.md
         pattern: '(\d+)-entry replacement table'
       - file: ../conorbronsdon/README.md
-        pattern: '(\d+)-entry replacement table'
-      - file: ../conorbronsdon-site/src/data/builds.ts
         pattern: '(\d+)-entry replacement table'

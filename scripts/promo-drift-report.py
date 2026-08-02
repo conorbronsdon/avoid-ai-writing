@@ -7,10 +7,10 @@ the workflow opens an issue:
     0  every surface that could be read is in sync
     1  at least one surface carries a stale number
 
-A surface that could not be read at all (private repo, no token on the runner)
-is reported as NOT CHECKED and does *not* fail the job. That case is a coverage
-gap, not drift, and failing red every week on it would train everyone to ignore
-the check. It is always printed, never silently dropped.
+A surface that could not be read at all (repo renamed, moved, or a clone that
+failed) is reported as NOT CHECKED and does *not* fail the job. That case is a
+coverage gap, not drift, and conflating the two makes a red check meaningless.
+It is always printed, never silently dropped.
 """
 import json
 import sys
@@ -59,7 +59,8 @@ def main():
                 # comes back as the bare word "local". Say what that means.
                 note = copy.get("note") or ""
                 if note in ("", "local"):
-                    note = "not cloned on the runner — needs SITE_REPO_TOKEN"
+                    note = ("file not present on the runner — the surface repo "
+                            "was renamed, moved, or failed to clone")
                 unreadable.append(f"- **{name}** — `{copy.get('file')}` ({note})")
             else:
                 checked += 1

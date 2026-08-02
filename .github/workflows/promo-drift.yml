@@ -7,6 +7,10 @@ name: promo-drift
 #
 # Runs on release, weekly as a backstop, and on demand. Opens (or updates) a
 # single issue when a surface has gone stale.
+#
+# Every tracked surface is a public repo, so this needs no secret beyond the
+# job's own GITHUB_TOKEN. conorbronsdon.com/builds floors both counts instead
+# of quoting them, which is why it is not tracked and no PAT is required here.
 
 on:
   release:
@@ -43,20 +47,6 @@ jobs:
             git clone --depth 1 --quiet \
               "https://github.com/$OWNER/$repo.git" "$repo"
           done
-
-      # conorbronsdon-site is private. Without a token the copy in builds.ts is
-      # reported as NOT CHECKED rather than quietly passing. Add a repo-scoped
-      # PAT as SITE_REPO_TOKEN to bring it into coverage; no other change needed.
-      - name: Clone the private site (only if a token is configured)
-        env:
-          OWNER: ${{ github.repository_owner }}
-          SITE_TOKEN: ${{ secrets.SITE_REPO_TOKEN }}
-        if: ${{ env.SITE_TOKEN != '' }}
-        run: |
-          cd "$GITHUB_WORKSPACE/.."
-          git clone --depth 1 --quiet \
-            "https://x-access-token:$SITE_TOKEN@github.com/$OWNER/conorbronsdon-site.git" \
-            conorbronsdon-site
 
       - name: Get ssot-check
         run: |
