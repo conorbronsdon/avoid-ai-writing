@@ -39,6 +39,7 @@ The skill has three modes (`rewrite` default, `detect` flag-only, `edit` in-plac
 - The self-reference escape hatch (quoted examples exempt from flagging) must be preserved — without it the skill flags its own documentation
 - Technical-blog profile has explicit word table exceptions (e.g., "robust" and "ecosystem" are legitimate in technical contexts)
 - "Extra strict" and "skip" in the tolerance matrix have specific meanings defined in the file
+- The `ai-writing-skill-field-guide` survey ranks this repo first on upkeep, and its author filed #12 here. Any public citation of that ranking has to carry the disclosure with it
 
 ## Compatibility
 
