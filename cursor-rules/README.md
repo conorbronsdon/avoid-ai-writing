@@ -28,4 +28,4 @@ If you're on a Cursor version that still uses `.cursorrules` (single file at rep
 
 ## Updating
 
-This file is a copy of [`SKILL.md`](../SKILL.md) with Cursor-specific frontmatter. When the upstream skill updates, this file should be re-synced. There's no automated sync between them today — open an issue if drift becomes a problem.
+This file is generated from [`SKILL.md`](../SKILL.md) by [`scripts/sync-cursor-rules.sh`](../scripts/sync-cursor-rules.sh): Cursor-specific frontmatter (with the version derived from SKILL.md), plus three portability rewrites for spans that reference files in this repo — a copied-out rule can't run `node detector/validate.js`, so that check becomes a manual one. CI regenerates the rule on every SKILL.md change and fails when the committed copy drifts, so the two can no longer diverge silently. (They did once: this port sat at v3.16.0 while SKILL.md reached v3.22.3, which is what bought the guard.) Don't edit the `.mdc` by hand — edit SKILL.md and re-run the script.
