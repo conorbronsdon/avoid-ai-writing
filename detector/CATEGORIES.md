@@ -16,7 +16,8 @@ Three counts coexist on purpose and should not be forced to match: the README's
 and guarded in CI), the engine's **47 `type`s** (which split the vocabulary tiers
 and add stylometric signals), and SKILL.md's `###` sections (which also include
 writer-side tests with no detectable form). The
-`categories.test.js` check enforces only the engine ↔ this-file mapping.
+`categories.test.js` enforces the engine ↔ this-file mapping, and checks every
+prose statement of the engine `type` total against `TYPE_LABELS`.
 
 ## A. Direct mapping (skill rule → detector `type`)
 

@@ -85,23 +85,32 @@ const COUNT_SITES = [
   ['CATEGORIES.md', /the engine's \*\*(\d+) `type`s\*\*/],
 ];
 
-test('every prose statement of the engine type total matches TYPE_LABELS', () => {
-  for (const [rel, regex] of COUNT_SITES) {
+// One test per site, so breaking three sites reports three failures rather
+// than aborting on the first.
+for (const [rel, regex] of COUNT_SITES) {
+  test(`${rel} states the engine type total, and it matches TYPE_LABELS (${regex.source.slice(0, 28)}…)`, () => {
     const text = fs.readFileSync(path.join(__dirname, rel), 'utf8');
-    const m = text.match(regex);
+    const matches = [...text.matchAll(new RegExp(regex.source, 'g'))];
     assert.ok(
-      m,
+      matches.length,
       `${rel}: ${regex} no longer matches — the sentence was reworded or ` +
         'removed. Re-point COUNT_SITES in this file at the new wording, or ' +
         'drop the entry only if the number is gone from that file entirely.'
     );
     assert.equal(
-      Number(m[1]),
-      typeKeys.length,
-      `${rel} says ${m[1]} detector types, TYPE_LABELS has ${typeKeys.length}`
+      matches.length,
+      1,
+      `${rel}: ${regex} matched ${matches.length} times. A site must be ` +
+        'unique, or this check silently verifies the wrong sentence.'
     );
-  }
-});
+    assert.equal(
+      Number(matches[0][1]),
+      typeKeys.length,
+      `${rel} (${regex.source}) says ${matches[0][1]} detector types, ` +
+        `TYPE_LABELS has ${typeKeys.length}`
+    );
+  });
+}
 
 if (failed > 0) {
   console.error(`\n${failed} contract check(s) failed.`);

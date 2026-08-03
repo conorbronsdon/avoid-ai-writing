@@ -323,7 +323,7 @@ That's 35+ AI tells.
 ## Run the detector
 
 The skill ships a deterministic, zero-dependency detection engine in
-[`detector/`](./detector/) — the same detection engine the rules above
+[`detector/`](./detector/) — the same engine the rules above
 describe, as runnable code. It works in Node (`>=18`) and the browser with no
 build step.
 
