@@ -4,6 +4,16 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.23.0] — 2026-08-03
+
+### Added
+
+- **Optional `--style` house-style layer, with no bundled guides.** `--style ./house.json` applies a user-supplied config (`register` directives the model follows, plus `mechanics`) and `scripts/check-style.js` verifies the checkable ones deterministically: `quotes` and `latinAbbrev` gate the exit code (0 clean / 1 hard / 2 tool error), `headings`, `emDash` and `spellNumbersUpTo` are advisory, `serialComma` is never checked. `examples/` holds two generic starters and the schema.
+- **A bare `--style "APA"` is a best-effort fallback, not a feature.** `SKILL.md` instructs the model to open with a status line claiming no compliance and not to reproduce the guide's text. Those are instructions rather than checked rules, so that path is unverified by construction. The README says where encoded guides actually live, and the licensing rule behind it is recorded in #88.
+- No detector changes, so the catalog stays 61 / 112. 32 tests in `scripts/check-style.test.js`, most of them pinning must-not-fire cases: link titles and reference definitions, HTML attributes, nested and tilde fences, BOM'd frontmatter, parentheticals that wrap or span a code block, and URLs containing parentheses. Each was a hard violation on a correct document at some point during review.
+
+---
+
 ## [3.22.3] — 2026-08-03
 
 ### Changed

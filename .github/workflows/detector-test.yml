@@ -4,7 +4,8 @@ on:
   push:
     paths:
       - "detector/**"
-      - "scripts/self-scan.js"
+      - "scripts/**"
+      - "examples/**"
       - "package.json"
       - ".github/workflows/detector-test.yml"
       - "README.md"
@@ -15,7 +16,8 @@ on:
   pull_request:
     paths:
       - "detector/**"
-      - "scripts/self-scan.js"
+      - "scripts/**"
+      - "examples/**"
       - "package.json"
       - ".github/workflows/detector-test.yml"
       - "README.md"

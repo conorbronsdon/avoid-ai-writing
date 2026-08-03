@@ -4,12 +4,14 @@
 # Run this after editing SKILL.md. CI fails if the copy is out of sync.
 #
 # The rule is a copy-out artifact: users curl it into their own project's
-# .cursor/rules/, where nothing else from this repo exists. Three spans in
+# .cursor/rules/, where nothing else from this repo exists. Five spans in
 # SKILL.md point at files in this repo, so the generator rewrites them the
 # same way the claude-code-templates vendoring did (davila7/claude-code-templates#773):
 #   1. "this repo measures the ratios" -> passive form (no repo to measure)
 #   2. the detector/CATEGORIES.md citation -> "reverted upstream"
 #   3. the node detector/validate.js mechanical check -> a manual prose check
+#   4. the --style config path (scripts/check-style.js, examples/) -> apply, unverified
+#   5. --style resolution by bare name out of examples/ -> a path only
 # Each rewrite is anchored on the exact upstream text and FAILS LOUDLY if the
 # anchor stops matching exactly once — so an upstream edit to one of those
 # spans breaks CI here instead of silently shipping a wrong Cursor rule.
@@ -72,6 +74,18 @@ It exits non-zero when a rewrite altered a fenced code block, YAML frontmatter, 
     """**3. Preservation check**
 Confirm the rewrite did not alter a fenced code block, YAML frontmatter, a blockquote, a table cell, inline code, a URL, a file path, or the heading structure, and that it did not introduce more flagged patterns than it removed. Those are the promises made above. Rewording a heading to fix Title Case and stripping an AI tracking parameter from a URL are the two carve-outs, because this skill instructs both.""",
     "span 3 (validate.js mechanical check)",
+)
+body = replace_once(
+    body,
+    """**Preferred: a config file.** `--style ./house.json` (or a bare name matching `examples/<name>.json`) applies a user-supplied JSON config and verifies the checkable subset of its mechanics with `node scripts/check-style.js <file> --config <path>` (exit 0 clean / 1 hard violation / 2 tool error). A config is JSON: **`register`** (voice directives you apply as written) plus **`mechanics`** (`quotes` and `latinAbbrev` hard-checkable; `headings`, `emDash`, `spellNumbersUpTo` advisory; `serialComma` model-applied). Schema and rationale: `examples/README.md`.""",
+    """**Preferred: a config file.** `--style ./house.json` applies a user-supplied JSON config: **`register`** (voice directives you apply as written) plus **`mechanics`** (`quotes`, `latinAbbrev`, `headings`, `emDash`, `spellNumbersUpTo`, `serialComma`). Apply the register and enforce the mechanics as written. The upstream repo ships a deterministic checker for the checkable ones; without it, treat the mechanics as applied but unverified.""",
+    "span 4 (check-style.js config path)",
+)
+body = replace_once(
+    body,
+    """**Resolving `--style <arg>`.** A path, or a bare name matching `examples/<name>.json`, loads that config (apply and verify); anything else is the named-guide fallback above.""",
+    """**Resolving `--style <arg>`.** A path to a JSON config loads it, and you apply it as written; anything else is the named-guide fallback above.""",
+    "span 5 (--style resolution)",
 )
 
 cursor_fm = f"""---
