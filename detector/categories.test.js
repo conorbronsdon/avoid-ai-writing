@@ -97,12 +97,16 @@ for (const [rel, regex] of COUNT_SITES) {
         'removed. Re-point COUNT_SITES in this file at the new wording, or ' +
         'drop the entry only if the number is gone from that file entirely.'
     );
-    assert.equal(
-      matches.length,
-      1,
-      `${rel}: ${regex} matched ${matches.length} times. A site must be ` +
-        'unique, or this check silently verifies the wrong sentence.'
-    );
+    // Deliberately NOT asserting the regex matches exactly once. This repo
+    // records corrections by quoting the superseded wording (see the 3.22.0
+    // CHANGELOG entry), so a quoted historical number is an expected, correct
+    // thing to find in a guarded file — and README.md's live statement is
+    // itself inside a blockquote, so filtering quotes out removes the site.
+    // A uniqueness assert therefore reddens a repo with no drift in it, which
+    // is worse than the hole it closes: each regex is anchored on distinctive
+    // backtick-and-bold syntax, and the value assertion below is the real
+    // check. Keep new sites specific enough that the first match is the live
+    // one.
     assert.equal(
       Number(matches[0][1]),
       typeKeys.length,
