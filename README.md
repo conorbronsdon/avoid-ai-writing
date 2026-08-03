@@ -360,15 +360,18 @@ CI fails when a document drifts past its budget.
 ## House style is a different job
 
 This skill removes AI-writing tells. It doesn't enforce a house style guide, and
-it ships no style guides of its own. However, you should be able to provide your agent with style guides alongside your preferred voice profile to improve results. 
+it ships no style guides of its own. You can still hand your agent a style guide
+alongside a voice profile and it will use both, which is usually the fastest way
+to get house style and a de-AI pass in one go.
 
 If you want Google, Microsoft, Red Hat, or Salesforce style checked in CI,
 [Vale](https://github.com/vale-cli/vale) already covers that. Its
 [package registry](https://github.com/vale-cli/packages) carries
-Vale-compatible implementations of those guides alongside `proselint`,
-`write-good`, and `alex`, each MIT-licensed and attributed to the guide it
-implements. The two tools do different things and compose fine: Vale flags
-violations in CI, this skill rewrites prose while you draft.
+Vale-compatible implementations of those four, alongside ports of `proselint`,
+`write-good`, and `alex`. The four style-guide packages are MIT-licensed; the
+linter ports vary, and proselint's is BSD-3-Clause. The two tools do different
+jobs and compose: Vale gates a document against a rule set, applying fixes one
+alert at a time, while this skill rewrites whole passages as you draft.
 
 Paywalled guides (Chicago, APA, MLA, AP) have no machine-readable
 implementation here or in Vale, and won't get one here. Nothing in this repo
