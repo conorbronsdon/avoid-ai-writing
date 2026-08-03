@@ -548,11 +548,28 @@ test('hashtag-stuff excludes hex colours and preprocessor directives', () => {
 
 test('hashtag-stuff ignores hashes inside code spans and fences', () => {
   // A tag in backticks is the author documenting the syntax, not using it.
-  const inline = 'The escape rules trip people up. Write `#88` for a literal, `#fff` for the colour, `#main` for the selector, `#general` for the channel, `#include` for the directive, and `#tag` when you actually mean a tag.';
+  // Every span here is a tag isSocialTag would otherwise KEEP, so the count is
+  // 6 without masking and 0 with it. An earlier version of this fixture quoted
+  // #88 and #fff, which the carve-outs already removed, so it passed with
+  // inline masking deleted and tested nothing.
+  const inline = 'The escape rules trip people up. Write `#AI` for the tag, `#Innovation` for the category, `#Startups` for the vertical, `#Leadership` for the theme, `#Growth` for the metric, and `#FutureOfWork` when you mean the movement.';
   const fenced = 'Here is the config we ship by default, and it has not changed in a year:\n\n```\n#alpha\n#beta\n#gamma\n#delta\n#epsilon\n#zeta\n```\n\nEverything below that line is user overridable and nothing above it is.';
-  for (const [label, text] of [['inline code', inline], ['fenced code', fenced]]) {
+  const indented = 'Config below is what ships by default and nothing above the line is user editable here.\n\n    #alpha\n    #beta\n    #gamma\n    #delta\n    #epsilon\n    #zeta\n\nDone.';
+  for (const [label, text] of [['inline code', inline], ['fenced code', fenced], ['indented code', indented]]) {
     const types = new Set(AIDetector.analyzeText(text).issues.map((i) => i.type));
     assert.ok(!types.has('hashtag-stuff'), `${label} should not count as hashtags`);
+  }
+});
+
+test('hashtag-stuff still counts short hex-shaped words, which are real tags', () => {
+  // #b2b, #e2e, #dad, #cafe, #ace and #face are ordinary tags. Carving out
+  // 3- and 4-digit hex to catch CSS palettes silently deleted true positives
+  // on the stuffed-block shape, so only 6- and 8-digit hex is subtracted.
+  const gtm = 'Great conversation on the go-to-market motion this week with the whole revenue team here.\n#b2b #e2e #saas #growth #ace #fade';
+  const family = 'Weekend was good and the whole family got outside for once this month together.\n#dad #cafe #beef #face #travel #weekend';
+  for (const [label, text] of [['b2b/e2e block', gtm], ['dad/cafe block', family]]) {
+    const types = new Set(AIDetector.analyzeText(text).issues.map((i) => i.type));
+    assert.ok(types.has('hashtag-stuff'), `${label} should still flag as hashtag stuffing`);
   }
 });
 
