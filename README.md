@@ -398,7 +398,6 @@ Authored by [Conor Bronsdon](https://github.com/conorbronsdon) · [LinkedIn](htt
 Things the community has built around this skill:
 
 - **[avoid-ai-writing-multilingual](https://github.com/jurigis/avoid-ai-writing-multilingual)** by [Jürgen Kraus](https://github.com/jurigis) — German (`SKILL-DE.md`) and Romanian (`SKILL-RO.md`) adaptations, grounded in native-language research rather than translated from English. French and Spanish planned.
-- **[$avoid token + burn web app](https://avoid-ai-writing-app.vercel.app)** — a community-built Solana token (`$avoid`) and token-burn web app around this project (2026), now in maintenance mode.
 
 Built something on top of this skill? Open an issue — happy to link it here.
 
