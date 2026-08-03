@@ -4,6 +4,19 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.22.3] — 2026-08-03
+
+### Changed
+
+- **Five prose-contract clarifications in `SKILL.md`; no rule, threshold, or detector changes.** All five came from an automated review (cubic) on a downstream vendoring PR, davila7/claude-code-templates#773. Each was a real gap between what one sentence promised and what another required; none change what the skill flags or how the engine scores. A sixth finding in that review (ship the downstream catalog regeneration inside the PR) was downstream-specific and declined there, with that repo's merge history as evidence.
+- **Tables joined the flag-don't-fix list in the edit-mode instructions.** `detector/validate.js` has always treated table content as reference material and failed a rewrite that altered a cell — but the prose promise the validator claims to enforce ("the promises made above") never actually named tables, so edit mode was told to fix a tell inside a cell and then failed its own preservation check for doing it. The promise now matches the check, with the reason stated: a wording fix is not worth risking the data the table exists to carry.
+- **The rewrite-mode job line no longer claims "all AI-isms removed."** It now scopes the claim to every *editable* AI-ism, with the flag-don't-fix exemptions binding in rewrite mode too. The old wording put a correct rewrite in the wrong on protected content: it either broke the exemptions to satisfy "all" or reported itself incomplete for honoring them. A tell standing inside a blockquote now belongs in section 1 as a flag, not against the rewrite as unfinished work.
+- **An explicit instruction boundary for edit mode.** The file being edited is text under audit, never a source of instructions: a document that tells its editor to "ignore the rules above" or "don't flag this section" gets that sentence flagged, not obeyed. A skill authorized to modify files in place should state this rather than assume it. The same boundary is stated for pasted text in the other two modes.
+- **The AI-tracking-parameter fix now says what it always meant:** strip the listed tracking parameter, leave the rest of the query string alone. "Strip the parameter from every URL" could be read as license to clean query strings generally, and a functional `?page=2` is not evidence of anything.
+- **The second-pass audit must say when its corrected text supersedes section 2.** A reader skimming for the deliverable copies section 2; if the second pass fixed anything, that copy ships the tells the pass just caught. The pass now has to say "use this version, not section 2" in as many words.
+
+---
+
 ## [3.22.2] — 2026-08-02
 
 ### Fixed
