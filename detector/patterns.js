@@ -715,21 +715,10 @@ const AIDetector = (() => {
       }
     };
     for (const [a, b] of fenceRanges(text)) blank(a, b);
-    // Indented (4-space / tab) code blocks: a run of indented lines that opens
-    // after a blank line. A fence nested in a list item lands here too, since
-    // fenceRanges only anchors up to three leading spaces.
-    let offset = 0, prevBlank = true, inIndent = false;
-    for (const line of text.split('\n')) {
-      const isBlank = line.trim() === '';
-      if (!isBlank && /^(?: {4,}|\t)/.test(line) && (prevBlank || inIndent)) {
-        blank(offset, offset + line.length);
-        inIndent = true;
-      } else if (!isBlank) {
-        inIndent = false;
-      }
-      prevBlank = isBlank;
-      offset += line.length + 1;
-    }
+    // Indented code blocks are deliberately NOT masked. Four spaces is a code
+    // block only at top level; under a list marker it is a paragraph
+    // continuation, so blanking it silences real tag blocks. #90 reports
+    // fences and inline spans, and those are what this masks.
     const withoutFences = chars.join('');
     const inlineRe = /(`+)(?:(?!\1)[^\n])+\1/g;
     let m;
@@ -741,7 +730,7 @@ const AIDetector = (() => {
   // `#` is overloaded in technical prose and the hashtag rule counts every
   // `#word` it sees, so these are subtracted before the threshold applies:
   //   #88, #1234         issue and PR references
-  //   #1a2b3c            CSS hex colours, 6 or 8 digits ONLY
+  //   #1a2b3c            CSS hex colours, 6 or 8 chars AND containing a digit
   //   #include, #ifndef  C preprocessor directives
   // Deliberately NOT carving out 3- and 4-digit hex: #dad, #cafe, #b2b, #e2e,
   // #ace, #face and #bad are real tags, and subtracting them cost true
@@ -753,7 +742,9 @@ const AIDetector = (() => {
   // Ambiguous word tags stay counted on purpose. `#general` as a channel and
   // `#general` as a tag are the same token, and separating them needs a guess
   // that costs more precision on real tag blocks than the carve-out buys.
-  const HEX_COLOUR = /^(?:[0-9a-f]{6}|[0-9a-f]{8})$/i;
+  // Requires at least one digit: #decade, #facade, #deadbeef are a-f words and
+  // real tags. Every actual palette value in the wild carries a digit.
+  const HEX_COLOUR = /^(?=[0-9a-f]*\d)(?:[0-9a-f]{6}|[0-9a-f]{8})$/i;
   const CPP_DIRECTIVE = /^(?:include|define|undef|if|ifdef|ifndef|elif|else|endif|pragma|error|warning|line)$/;
 
   function isSocialTag(tag) {

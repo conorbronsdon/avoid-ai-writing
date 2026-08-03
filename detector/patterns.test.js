@@ -539,8 +539,10 @@ test('hashtag-stuff excludes hex colours and preprocessor directives', () => {
   // `#fff` is a colour and `#include` is a directive. Both appear in
   // technical prose well past six per post.
   const css = 'Background is #fff in light mode and #eee in dark. Body text sits at #1a2b3c, muted text at #6b7280, the link colour is #2563eb, hover is #1d4ed8, and the one accent is #f59e0b on the button.';
+  // 8-character RGBA values, so dropping the {8} alternative is caught.
+  const rgba = 'Palette is #1a2b3cff for body and #6b7280ee muted and #2563ebdd links and #1d4ed8cc hover and #f59e0bbb accent and #0a1b2cdd border today.';
   const c = 'Put #include <stdio.h> first, then #include <stdlib.h>, then #include <string.h>. Add #include <unistd.h> and #include <fcntl.h> after those, and guard the block with #ifndef and #endif so it stays idempotent.';
-  for (const [label, text] of [['hex colours', css], ['directives', c]]) {
+  for (const [label, text] of [['hex colours', css], ['rgba colours', rgba], ['directives', c]]) {
     const types = new Set(AIDetector.analyzeText(text).issues.map((i) => i.type));
     assert.ok(!types.has('hashtag-stuff'), `${label} should not count as hashtags`);
   }
@@ -554,8 +556,7 @@ test('hashtag-stuff ignores hashes inside code spans and fences', () => {
   // inline masking deleted and tested nothing.
   const inline = 'The escape rules trip people up. Write `#AI` for the tag, `#Innovation` for the category, `#Startups` for the vertical, `#Leadership` for the theme, `#Growth` for the metric, and `#FutureOfWork` when you mean the movement.';
   const fenced = 'Here is the config we ship by default, and it has not changed in a year:\n\n```\n#alpha\n#beta\n#gamma\n#delta\n#epsilon\n#zeta\n```\n\nEverything below that line is user overridable and nothing above it is.';
-  const indented = 'Config below is what ships by default and nothing above the line is user editable here.\n\n    #alpha\n    #beta\n    #gamma\n    #delta\n    #epsilon\n    #zeta\n\nDone.';
-  for (const [label, text] of [['inline code', inline], ['fenced code', fenced], ['indented code', indented]]) {
+  for (const [label, text] of [['inline code', inline], ['fenced code', fenced]]) {
     const types = new Set(AIDetector.analyzeText(text).issues.map((i) => i.type));
     assert.ok(!types.has('hashtag-stuff'), `${label} should not count as hashtags`);
   }
@@ -563,11 +564,16 @@ test('hashtag-stuff ignores hashes inside code spans and fences', () => {
 
 test('hashtag-stuff still counts short hex-shaped words, which are real tags', () => {
   // #b2b, #e2e, #dad, #cafe, #ace and #face are ordinary tags. Carving out
-  // 3- and 4-digit hex to catch CSS palettes silently deleted true positives
-  // on the stuffed-block shape, so only 6- and 8-digit hex is subtracted.
+  // 3- and 4-digit hex to catch CSS palettes silently deleted true positives on
+  // the stuffed-block shape, so only 6- and 8-char forms CONTAINING A DIGIT are
+  // subtracted: #decade and #facade are a-f words, not colours.
   const gtm = 'Great conversation on the go-to-market motion this week with the whole revenue team here.\n#b2b #e2e #saas #growth #ace #fade';
   const family = 'Weekend was good and the whole family got outside for once this month together.\n#dad #cafe #beef #face #travel #weekend';
-  for (const [label, text] of [['b2b/e2e block', gtm], ['dad/cafe block', family]]) {
+  const decade = 'Reflecting on the last ten years of shipping developer tools to teams everywhere here.\n#decade #facade #deface #beaded #effaced #growth';
+  // Four spaces under a list marker is a paragraph continuation, not a code
+  // block, which is why indented runs are not masked.
+  const listed = '- We shipped the detector and the whole team is happy with how it landed today.\n\n    #AI #Innovation #FutureOfWork #MachineLearning #Leadership #Growth';
+  for (const [label, text] of [['b2b/e2e block', gtm], ['dad/cafe block', family], ['a-f word tags', decade], ['tags under a list item', listed]]) {
     const types = new Set(AIDetector.analyzeText(text).issues.map((i) => i.type));
     assert.ok(types.has('hashtag-stuff'), `${label} should still flag as hashtag stuffing`);
   }
