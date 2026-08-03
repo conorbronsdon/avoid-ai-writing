@@ -360,7 +360,7 @@ CI fails when a document drifts past its budget.
 ## House style is a different job
 
 This skill removes AI-writing tells. It doesn't enforce a house style guide, and
-it ships no style guides of its own.
+it ships no style guides of its own. However, you should be able to provide your agent with style guides alongside your preferred voice profile to improve results. 
 
 If you want Google, Microsoft, Red Hat, or Salesforce style checked in CI,
 [Vale](https://github.com/vale-cli/vale) already covers that. Its
