@@ -525,6 +525,59 @@ test('hashtag-stuff excludes URL fragments from the count', () => {
   assert.ok(!types.has('hashtag-stuff'), 'URL fragments should not count as hashtags');
 });
 
+test('hashtag-stuff excludes issue and PR references from the count', () => {
+  // `#88` in prose is a GitHub issue reference, not a tag. A changelog
+  // paragraph routinely cites six of them, and every such paragraph scored
+  // as a stuffed hashtag block. Found when this repo's own README linked an
+  // issue and the detector flagged the README.
+  const text = 'The regression came in through #88 and stayed hidden until #91 landed. I reverted #92, reopened #93, and then #94 turned out to be the same bug in a different file. #95 is the follow up that fixes it, and #96 tracks the test we still owe.';
+  const types = new Set(AIDetector.analyzeText(text).issues.map((i) => i.type));
+  assert.ok(!types.has('hashtag-stuff'), 'issue references should not count as hashtags');
+});
+
+test('hashtag-stuff excludes hex colours and preprocessor directives', () => {
+  // `#fff` is a colour and `#include` is a directive. Both appear in
+  // technical prose well past six per post.
+  const css = 'Background is #fff in light mode and #eee in dark. Body text sits at #1a2b3c, muted text at #6b7280, the link colour is #2563eb, hover is #1d4ed8, and the one accent is #f59e0b on the button.';
+  const c = 'Put #include <stdio.h> first, then #include <stdlib.h>, then #include <string.h>. Add #include <unistd.h> and #include <fcntl.h> after those, and guard the block with #ifndef and #endif so it stays idempotent.';
+  for (const [label, text] of [['hex colours', css], ['directives', c]]) {
+    const types = new Set(AIDetector.analyzeText(text).issues.map((i) => i.type));
+    assert.ok(!types.has('hashtag-stuff'), `${label} should not count as hashtags`);
+  }
+});
+
+test('hashtag-stuff ignores hashes inside code spans and fences', () => {
+  // A tag in backticks is the author documenting the syntax, not using it.
+  const inline = 'The escape rules trip people up. Write `#88` for a literal, `#fff` for the colour, `#main` for the selector, `#general` for the channel, `#include` for the directive, and `#tag` when you actually mean a tag.';
+  const fenced = 'Here is the config we ship by default, and it has not changed in a year:\n\n```\n#alpha\n#beta\n#gamma\n#delta\n#epsilon\n#zeta\n```\n\nEverything below that line is user overridable and nothing above it is.';
+  for (const [label, text] of [['inline code', inline], ['fenced code', fenced]]) {
+    const types = new Set(AIDetector.analyzeText(text).issues.map((i) => i.type));
+    assert.ok(!types.has('hashtag-stuff'), `${label} should not count as hashtags`);
+  }
+});
+
+test('hashtag-stuff still fires on a tag block that also cites an issue', () => {
+  // The carve-outs subtract non-tag forms; they must not let a real block
+  // through because a `#88` sits beside it.
+  const text = 'Closed out #88 today and the release is live for everyone.\n#AI #Innovation #FutureOfWork #MachineLearning #Leadership #Growth #Startups';
+  const r = AIDetector.analyzeText(text);
+  const types = new Set(r.issues.map((i) => i.type));
+  assert.ok(types.has('hashtag-stuff'), 'expected hashtag-stuff on a 7-tag block');
+  assert.equal(
+    r.issues.find((i) => i.type === 'hashtag-stuff').text,
+    '7 hashtags',
+    'the issue reference must not be counted as a tag'
+  );
+});
+
+test('hashtag-stuff still fires on tags spread inline through a post', () => {
+  // Masking code and subtracting non-tag forms must not weaken the inline
+  // shape, which is the one a trailing-block-only rule would miss.
+  const text = 'Loving the #AI space right now, especially #MachineLearning and #DeepLearning, plus #Startups and #Innovation and #FutureOfWork keep me busy every single day of the week.';
+  const types = new Set(AIDetector.analyzeText(text).issues.map((i) => i.type));
+  assert.ok(types.has('hashtag-stuff'), 'expected hashtag-stuff on 6 inline tags');
+});
+
 test('low-ttr fires on a 200+ token text with narrow vocabulary', () => {
   // Vocabulary-poor synthetic sample: same 11-word sentence repeated.
   // ~200 tokens, ~11 unique = ~5% TTR. Well under the 40% threshold.

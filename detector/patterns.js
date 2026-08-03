@@ -700,6 +700,46 @@ const AIDetector = (() => {
     return typeof index === 'number' && ranges.some(([a, b]) => index >= a && index < b);
   }
 
+  // Copy of the text with fenced blocks and inline code spans blanked out.
+  // Index-preserving: each masked character becomes a space and newlines are
+  // kept, so offsets into the result still address the same position in the
+  // original. For rules where a character inside code is something the author
+  // is quoting rather than using — a `#fff` in a CSS sample is not a tag.
+  // Fences are blanked first so their backticks cannot pair with a later
+  // inline span and swallow the prose between them.
+  function maskCode(text) {
+    const chars = text.split('');
+    const blank = (a, b) => {
+      for (let i = a; i < b && i < chars.length; i += 1) {
+        if (chars[i] !== '\n') chars[i] = ' ';
+      }
+    };
+    for (const [a, b] of fenceRanges(text)) blank(a, b);
+    const withoutFences = chars.join('');
+    const inlineRe = /(`+)(?:(?!\1)[^\n])+\1/g;
+    let m;
+    while ((m = inlineRe.exec(withoutFences)) !== null) blank(m.index, m.index + m[0].length);
+    return chars.join('');
+  }
+
+  // ─── Forms that open with `#` but are not social tags ──────────────
+  // `#` is overloaded in technical prose and the hashtag rule counts every
+  // `#word` it sees, so these are subtracted before the threshold applies:
+  //   #88, #1234         issue and PR references
+  //   #fff, #1a2b3c      CSS hex colours (3, 4, 6, or 8 hex digits)
+  //   #include, #ifndef  C preprocessor directives
+  // `owner/repo#88` and URL fragments need no carve-out: the char before `#`
+  // is a word char, so the rule's own anchor already rejects them.
+  // Ambiguous word tags stay counted on purpose. `#general` as a channel and
+  // `#general` as a tag are the same token, and separating them needs a guess
+  // that costs more precision on real tag blocks than the carve-out buys.
+  const HEX_COLOUR = /^(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+  const CPP_DIRECTIVE = /^(?:include|define|undef|if|ifdef|ifndef|elif|else|endif|pragma|error|warning|line)$/;
+
+  function isSocialTag(tag) {
+    return !/^\d+$/.test(tag) && !HEX_COLOUR.test(tag) && !CPP_DIRECTIVE.test(tag);
+  }
+
   // ─── Title Case Section Headers in non-technical prose ─────────────
   // "Strategic Negotiations And Key Partnerships" — every content word
   // capitalized. Acceptable in API docs, ML papers, news headlines. Tell
@@ -1317,7 +1357,11 @@ const AIDetector = (() => {
     // Earlier char class `[\s\\]` had a literal backslash and silently
     // missed hashtags after sentence punctuation; an interim `[\s]` fix
     // on origin only caught whitespace-preceded tags.
-    const hashtagMatches = text.match(/(?:^|\W)#\w[\w-]*/g) || [];
+    // Code is masked and non-tag `#` forms are subtracted first — see maskCode
+    // and isSocialTag. Without them a changelog paragraph citing six issue
+    // numbers, or a palette listing six hex colours, scored as a tag block.
+    const hashtagMatches = [...maskCode(text).matchAll(/(?:^|\W)#(\w[\w-]*)/g)]
+      .filter((m) => isSocialTag(m[1]));
     if (hashtagMatches.length >= 6) {
       issues.push({
         type: 'hashtag-stuff',
