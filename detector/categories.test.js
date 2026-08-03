@@ -66,6 +66,43 @@ test('every type referenced in the tables is a real detector type', () => {
   );
 });
 
+// The engine's `type` total is a DERIVED fact: the true value is
+// TYPE_LABELS.length, and every sentence that states a number is a copy of it.
+// Copies rot. The README sat at 45 through the two releases that took the real
+// total to 47, because nothing compared the prose to the code. This test has
+// the true value in hand already, so it is the cheapest place to compare.
+//
+// Each site is a file plus a regex with ONE capture group around the number.
+// A regex that stops matching FAILS rather than passing: a reworded sentence
+// has to re-register here instead of silently dropping its own guard. That is
+// the same rule scripts/check-pattern-count.sh applies to its README bullets.
+//
+// Do not add a site that floors or approximates the number ("40+ categories").
+// A floored number is a looser fact and would fail on every release.
+const COUNT_SITES = [
+  ['../README.md', /engine implements (\d+) `type` categories/],
+  ['CATEGORIES.md', /engine exposes (\d+) issue `type`s/],
+  ['CATEGORIES.md', /the engine's \*\*(\d+) `type`s\*\*/],
+];
+
+test('every prose statement of the engine type total matches TYPE_LABELS', () => {
+  for (const [rel, regex] of COUNT_SITES) {
+    const text = fs.readFileSync(path.join(__dirname, rel), 'utf8');
+    const m = text.match(regex);
+    assert.ok(
+      m,
+      `${rel}: ${regex} no longer matches — the sentence was reworded or ` +
+        'removed. Re-point COUNT_SITES in this file at the new wording, or ' +
+        'drop the entry only if the number is gone from that file entirely.'
+    );
+    assert.equal(
+      Number(m[1]),
+      typeKeys.length,
+      `${rel} says ${m[1]} detector types, TYPE_LABELS has ${typeKeys.length}`
+    );
+  }
+});
+
 if (failed > 0) {
   console.error(`\n${failed} contract check(s) failed.`);
   process.exit(1);

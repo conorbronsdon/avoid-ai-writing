@@ -1,6 +1,6 @@
 /**
  * Avoid AI Writing — detection engine (canonical source of truth)
- * Implements 45-category pattern detection. This repo's SKILL.md
+ * Implements type-per-category pattern detection. This repo's SKILL.md
  * catalogs the human-editable pattern rules; this engine is the executable
  * expression of the regex-detectable subset and extends it with stylometric and
  * AI-tool-fingerprint detectors that don't make sense as skill prose

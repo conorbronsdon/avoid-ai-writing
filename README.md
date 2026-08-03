@@ -177,7 +177,7 @@ Trigger detect mode with: "detect," "flag only," "audit only," "just flag," "sca
 
 ## Pattern reference
 
-> Representative examples from the catalog — not the exhaustive list (that's [`SKILL.md`](./SKILL.md)). The skill's human-facing prose catalog and the [detector engine](./detector/) use **different counts on purpose**: the engine implements 45 `type` categories because it splits the vocabulary tiers and adds stylometric/fingerprint signals (punctuation distribution, function-word entropy, bypass-trick detection) that work as math over a document rather than as a rule you'd look up. The two are mapped in [`detector/CATEGORIES.md`](./detector/CATEGORIES.md); don't "fix" one count to match the other.
+> Representative examples from the catalog — not the exhaustive list (that's [`SKILL.md`](./SKILL.md)). The skill's human-facing prose catalog and the [detector engine](./detector/) use **different counts on purpose**: the engine implements 47 `type` categories because it splits the vocabulary tiers and adds stylometric/fingerprint signals (punctuation distribution, function-word entropy, bypass-trick detection) that work as math over a document rather than as a rule you'd look up. The two are mapped in [`detector/CATEGORIES.md`](./detector/CATEGORIES.md); don't "fix" one count to match the other.
 
 ### Content Patterns
 
@@ -323,7 +323,7 @@ That's 35+ AI tells.
 ## Run the detector
 
 The skill ships a deterministic, zero-dependency detection engine in
-[`detector/`](./detector/) — the same 45-category engine the rules above
+[`detector/`](./detector/) — the same detection engine the rules above
 describe, as runnable code. It works in Node (`>=18`) and the browser with no
 build step.
 

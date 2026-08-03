@@ -1,7 +1,7 @@
 {
   "name": "avoid-ai-writing-detector",
   "version": "3.22.1",
-  "description": "Deterministic detection engine for the Avoid AI Writing skill — 45-type pattern + stylometric analysis of AI-generated text.",
+  "description": "Deterministic detection engine for the Avoid AI Writing skill — pattern + stylometric analysis of AI-generated text.",
   "license": "MIT",
   "repository": {
     "type": "git",
