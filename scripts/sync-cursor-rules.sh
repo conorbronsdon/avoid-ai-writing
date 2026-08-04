@@ -15,12 +15,17 @@
 # Each rewrite is anchored on the exact upstream text and FAILS LOUDLY if the
 # anchor stops matching exactly once — so an upstream edit to one of those
 # spans breaks CI here instead of silently shipping a wrong Cursor rule.
+#
+# The anchors only see spans they already know about. A brand-new SKILL.md
+# section that introduces a repo path passes them untouched, so a final gate
+# greps the generated body for repo-relative references and fails on any hit.
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 python3 - "$repo_root/SKILL.md" "$repo_root/cursor-rules/avoid-ai-writing.mdc" <<'PY'
 import io
+import re
 import sys
 
 src, dst = sys.argv[1], sys.argv[2]
@@ -98,6 +103,57 @@ alwaysApply: false
      scripts/sync-cursor-rules.sh; CI fails when the two drift. -->
 """
 
+# ── Portability gate (#103) ──────────────────────────────────────────
+# The anchored rewrites above catch EDITS to a span they already know. A new
+# SKILL.md section naming a repo path sails through them and lands in a rule
+# that users curl into a project where this repo does not exist. Only `body`
+# is scanned: the attribution header names scripts/sync-cursor-rules.sh and
+# lives in cursor_fm, so it is exempt by construction rather than by carve-out.
+#
+# A reference worth blocking names a FILE: `scripts/check-style.js`,
+# `examples/<name>.json`, `detector/CATEGORIES.md`. Requiring the extension is
+# what keeps the gate precise, because the bare directory names collide with
+# ordinary prose in this document: "docs/technical-blog" is a context pair,
+# "examples/counterexamples" and "transcripts/notes" are slash-joined words.
+# Two further exemptions, each a precision call:
+#   - a left word boundary, so "manuscripts/x.md" is prose, not scripts/
+#   - anything inside an http(s) URL, which is the portable form and is also
+#     what this gate's own error message tells an author to switch to
+REPO_DIRS = ("detector", "scripts", "examples", "plugins", "cursor-rules", "corpus")
+# Distinctive enough to block unqualified; README.md and friends are omitted on
+# purpose, since every project has them and this skill's prose names them.
+REPO_FILES = ("check-style.js", "validate.js", "patterns.js", "self-scan.js",
+              "CATEGORIES.md", "PROOF.md")
+FILENAME = r"(?:<[^<>\s]+>|[A-Za-z0-9_.-]+)\.[A-Za-z0-9]+"
+REPO_REF = re.compile(
+    r"(?<![A-Za-z0-9])(?:"
+    + r"(?:" + "|".join(re.escape(d) for d in REPO_DIRS) + r")/" + FILENAME
+    + r"|" + "|".join(re.escape(f) for f in REPO_FILES)
+    + r")"
+)
+URL = re.compile(r"https?://\S+")
+
+leaks = []
+for n, line in enumerate(body.split("\n"), 1):
+    m = REPO_REF.search(URL.sub("", line))
+    if m:
+        leaks.append((n, m.group(0), line.strip()))
+if leaks:
+    offset = cursor_fm.count("\n")
+    shown = "\n".join(
+        # Quote the match itself: a long line truncated from the left can hide it.
+        f"  line {offset + n}: {hit}   in: {text[:72]}{'...' if len(text) > 72 else ''}"
+        for n, hit, text in leaks[:10]
+    )
+    more = f"\n  ... and {len(leaks) - 10} more" if len(leaks) > 10 else ""
+    sys.exit(
+        f"sync-cursor-rules: {len(leaks)} repo-relative reference(s) would ship in the "
+        f"Cursor rule, where none of this repo's files exist. Line numbers are for the "
+        f"rule that would have been generated:\n{shown}{more}\n"
+        "Add a portability rewrite for the new span (see the header comment), link the "
+        "full https://github.com/... URL, or reword the section so it stands alone."
+    )
+
 io.open(dst, "w", encoding="utf-8", newline="\n").write(cursor_fm + body)
-print(f"synced: cursor rule (v{version})")
+print(f"synced: cursor rule (v{version}); no repo references in the ported body")
 PY
