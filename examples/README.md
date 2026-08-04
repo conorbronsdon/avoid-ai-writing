@@ -76,8 +76,12 @@ Before checking, the checker skips YAML frontmatter (only when it closes), code 
 inline), and markdown link destinations, link titles, and reference-definition tails, so
 identifiers, examples, and link syntax don't false-positive. It also masks HTML tags, whose
 attribute values are straight-quoted. Link titles matter here because they are delimited with
-straight quotes as *syntax*, which `quotes: curly` would otherwise read as a violation. Two
+straight quotes as *syntax*, which `quotes: curly` would otherwise read as a violation. Some
 limits worth knowing: an unclosed or multi-line HTML tag still registers, as do quotes inside
 an HTML comment; and the `latinAbbrev` parenthesis carve-out tracks depth across wrapped
 lines but resets at a paragraph break, so an unclosed `(` disables that rule for the rest of
-its paragraph.
+its paragraph. Indented code blocks are masked, with a list exception: 4-space content
+inside a list item is the item's own prose (use a fence there). A double-backtick code span
+whose body contains a backtick leaks to the quote checks; a reference definition with its
+title on the next line is read as prose; and a document opening with a thematic break is
+prose, not frontmatter.

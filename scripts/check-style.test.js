@@ -232,4 +232,33 @@ t('CLI: a file named like the config value is still reachable (not filtered by v
   assert.strictEqual(cliRaw({ technical: '# ok\n\nplain text' }, ['technical', '--config', 'technical']), 0);
 });
 
+// --- indented code blocks (masked) vs lazy continuation and list content (prose) ---
+t('4-space indented code after a blank line is masked (must-not-fire)', () => {
+  assert.strictEqual(check('Para.\n\n    code with "straight" quotes\n\nMore.', { quotes: 'curly' }).hard.length, 0);
+  assert.strictEqual(check('Para.\n\n\tx = f(a, e.g., b)\n\nMore.', { latinAbbrev: 'never' }).hard.length, 0);
+});
+t('a 4-space line directly under a paragraph is lazy continuation and still checked', () => {
+  assert.ok(check('Para starts\n    still "prose" here.', { quotes: 'curly' }).hard.length > 0);
+});
+t('4-space content inside a list item is prose and still checked', () => {
+  assert.ok(check('- item\n\n    second "para" of the item', { quotes: 'curly' }).hard.length > 0);
+});
+t('a paragraph after a list resets list context, so indented code masks again', () => {
+  assert.strictEqual(check('- item\n\nPlain paragraph.\n\n    code "x"\n\nAfter.', { quotes: 'curly' }).hard.length, 0);
+});
+
+// --- a leading thematic break is not frontmatter ---
+t('a document opening with --- then a blank line is not frontmatter (must-fire)', () => {
+  assert.ok(check('---\n\nHe said "hi".\n\n---\n\nmore', { quotes: 'curly' }).hard.length > 0);
+});
+t('real frontmatter still masks, including a quoted value', () => {
+  assert.strictEqual(check('---\ntitle: "Straight quotes are yaml"\n---\n\nplain text', { quotes: 'curly' }).hard.length, 0);
+});
+
+// --- bare-name containment is by construction (no separator reaches that branch) ---
+t('dot-bearing bare names resolve inside examples/ only, and miss', () => {
+  assert.strictEqual(resolveConfig('..'), null);
+  assert.strictEqual(resolveConfig('foo..bar'), null);
+});
+
 console.log(`\ncheck-style: ${passed} passed.`);

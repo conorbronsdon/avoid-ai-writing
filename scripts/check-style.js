@@ -19,7 +19,10 @@
  * feet/inch primes (5'11") after a digit are carved out; an unclosed or multi-line HTML tag
  * still registers, as do quotes inside an HTML comment; and the latinAbbrev parenthesis
  * carve-out tracks depth across wrapped lines but resets at a paragraph break, so an
- * unclosed "(" disables that rule for the rest of its paragraph.
+ * unclosed "(" disables that rule for the rest of its paragraph. A double-backtick code
+ * span whose body contains a backtick leaks its body to the quote checks; a reference
+ * definition with its title on the following line is read as prose; and indented code
+ * inside a LIST item is treated as the item's prose (fence it to skip it).
  */
 'use strict';
 
@@ -38,7 +41,8 @@ function resolveConfig(arg) {
   if (!arg) return null;
   if (/[\\/]/.test(arg) || /\.json$/i.test(arg)) return fs.existsSync(arg) ? arg : null;
   const q = arg.trim().toLowerCase();
-  if (/\.\./.test(q)) return null; // a bare name may not traverse out of examples/
+  // No traversal guard needed: a bare name has no separator (anything with one took the
+  // path branch above), so it joins as a single segment inside examples/ by construction.
   const direct = path.join(__dirname, '..', 'examples', `${q}.json`);
   return fs.existsSync(direct) ? direct : null;
 }
@@ -119,13 +123,22 @@ function check(text, mechanics) {
   const bare = (s) => s.replace(/\r$/, '');
   // Frontmatter: skip a leading --- ... --- block only when it actually closes.
   let fmEnd = -1;
-  if (bare(lines[0]) === '---') {
+  // Only an opener with content on the next line is frontmatter: a document that OPENS
+  // with a thematic break (`---`, blank line after) would otherwise be swallowed to the
+  // next `---` anywhere in the file, silently hiding everything between.
+  if (bare(lines[0]) === '---' && lines.length > 1 && !/^\s*$/.test(bare(lines[1]))) {
     for (let k = 1; k < lines.length; k += 1) { if (bare(lines[k]) === '---') { fmEnd = k; break; } }
   }
   // Fences track their character and length, so an inner ``` doesn't close an outer ````
   // and a ~~~ doesn't close a ``` block. A bare toggle desyncs on a nested fence and then
   // checks the code inside it as prose, which is a hard violation on a correct document.
   let inFence = false, fenceChar = '', fenceLen = 0;
+  // Indented code (4+ spaces or a tab) opens only after a blank line and outside a list:
+  // a 4-space line directly under a paragraph is lazy continuation (prose), and inside a
+  // list item it is the item's own content (prose), so both stay checked. List tracking is
+  // approximate (a marker line enters list context, a flush-left non-marker line leaves
+  // it); a code block nested inside a list item needs a fence to be skipped.
+  let inIndent = false, prevBlank = true, listCtx = false;
   // A paragraph break is a blank line in the ORIGINAL that is not inside frontmatter or a
   // fence. Masked-empty lines aren't breaks (that would cut a parenthetical at a code
   // block), and a blank line inside a fence isn't either.
@@ -139,10 +152,23 @@ function check(text, mechanics) {
       if (!inFence) { inFence = true; fenceChar = ch; fenceLen = len; }
       else if (ch === fenceChar && len >= fenceLen && /^\s*$/.test(fm[2])) inFence = false;
       paraBreak.push(false);
+      inIndent = false; prevBlank = false;
       return '';
     }
-    if (inFence) { paraBreak.push(false); return ''; }
-    paraBreak.push(/^\s*$/.test(b));
+    if (inFence) { paraBreak.push(false); prevBlank = false; return ''; }
+    const blank = /^\s*$/.test(b);
+    const ind4 = /^(?: {4}|\t)/.test(b);
+    if (blank) inIndent = false;
+    else if (!inIndent && ind4 && prevBlank && !listCtx) inIndent = true;
+    else if (!ind4) inIndent = false;
+    const isCode = !blank && inIndent;
+    if (!blank && !isCode) {
+      if (/^ {0,3}(?:[-*+]|\d{1,9}[.)])(?:\s|$)/.test(b)) listCtx = true;
+      else if (/^\S/.test(b)) listCtx = false;
+    }
+    prevBlank = blank;
+    paraBreak.push(blank);
+    if (isCode) return '';
     // Strip inline code, then link destinations and reference-definition tails. Markdown
     // link titles are delimited with STRAIGHT quotes as syntax, so leaving them in makes
     // quotes:curly hard-fail an ordinary titled link on a correct document.

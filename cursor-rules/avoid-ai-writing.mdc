@@ -708,7 +708,7 @@ Each profile is a set of concrete targets, not a vibe:
 
 `--style` copyedits to a house style on top of the de-AI pass (which always runs). No bundled guides. This layer is not a guide registry: it applies **register/voice** directives and removes AI tells, on top of whatever **mechanics** you enforce.
 
-**Preferred: a config file.** `--style ./house.json` applies a user-supplied JSON config: **`register`** (voice directives you apply as written) plus **`mechanics`** (`quotes`, `latinAbbrev`, `headings`, `emDash`, `spellNumbersUpTo`, `serialComma`). Apply the register and enforce the mechanics as written. The upstream repo ships a deterministic checker for the checkable ones; without it, treat the mechanics as applied but unverified.
+**Preferred: a config file.** `--style ./house.json` applies a user-supplied JSON config: **`register`** (voice directives you apply as written) plus **`mechanics`** (`quotes`, `latinAbbrev`, `headings`, `emDash`, `spellNumbersUpTo`, `serialComma`). Apply the register and enforce the mechanics as written. The upstream repo ships a deterministic checker for the checkable ones; without it, treat the mechanics as applied but unverified. Open the output by naming the config you applied, the way the fallback below names its guide, so which mode ran is never ambiguous.
 
 **How `--style` composes.** It is a third axis alongside `--voice` and `--context`, and the narrowest wins: `mechanics` beat everything (they're checkable), then `--voice`, then a config's `register`, then `--context`. So `--voice blunt` with a config asking for warmth stays blunt, while that config's `emDash: deliberate` still governs dashes.
 
