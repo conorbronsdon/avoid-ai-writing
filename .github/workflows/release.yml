@@ -73,3 +73,54 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "v$VERSION" \
             --notes-file /tmp/release-notes.md
+
+  # npm stayed frozen at 3.22.1 while the repo walked to 3.23.0 because this
+  # workflow only ever created GitHub releases — there was no publish step at
+  # all. This job closes that gap. It is independently idempotent (skips when
+  # the version is already on npm), so re-runs and already-tagged pushes are
+  # safe, and it publishes package.json's version only after proving it matches
+  # the CHANGELOG heading the release job used — the drift this workflow
+  # already warns about must block a publish, not ride into the registry.
+  publish-npm:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # npm Trusted Publishing (OIDC) + --provenance
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Refuse to publish a version that disagrees with CHANGELOG.md
+        run: |
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          CHANGELOG_VERSION="$(grep -m1 -E '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md | sed -E 's/^## \[([0-9]+\.[0-9]+\.[0-9]+)\].*/\1/')"
+          if [ "$PKG_VERSION" != "$CHANGELOG_VERSION" ]; then
+            echo "::error::package.json ($PKG_VERSION) != CHANGELOG.md ($CHANGELOG_VERSION) — fix the drift, then re-run. Publishing a mismatched version bakes the drift into the registry."
+            exit 1
+          fi
+
+      - name: Skip if this version is already on npm
+        id: npmcheck
+        run: |
+          PKG="$(node -p "require('./package.json').name")"
+          VERSION="$(node -p "require('./package.json').version")"
+          PUBLISHED="$(npm view "$PKG@$VERSION" version 2>/dev/null || true)"
+          if [ "$PUBLISHED" = "$VERSION" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "$PKG@$VERSION already on npm — nothing to publish."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Test before publish
+        if: steps.npmcheck.outputs.exists == 'false'
+        run: npm test
+
+      - name: Publish with provenance
+        if: steps.npmcheck.outputs.exists == 'false'
+        run: npm publish --provenance --access public
