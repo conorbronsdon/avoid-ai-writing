@@ -1317,6 +1317,27 @@ test('v2: backward compat — score, label, issues, stats still present', () => 
   assert.ok(r.stats && typeof r.stats === 'object', 'stats still object');
 });
 
+test('#109: Object.prototype names in prose do not fire tier lookups', () => {
+  // Plain-object membership tests made TIER1['constructor'] resolve to
+  // Object.prototype.constructor (truthy), flagging ordinary prose.
+  const text =
+    'The class constructor takes nine arguments in this codebase. Review the constructor before calling it, and check that its prototype chain and toString output match what the documentation describes for each valueOf call.';
+  const r = AIDetector.analyzeText(text);
+  const protoHits = r.issues.filter(
+    (i) => ['constructor', 'prototype', 'tostring', 'valueof', 'hasownproperty'].includes(String(i.text).toLowerCase())
+  );
+  assert.equal(protoHits.length, 0, `prototype-name tokens flagged: ${JSON.stringify(protoHits)}`);
+});
+
+test('#109 complement: real tier1 vocabulary still fires after the hasOwn guard', () => {
+  const r = AIDetector.analyzeText(
+    'We delve into the constructor design of this system. The team continues to navigate this comprehensive transformation across every module boundary.'
+  );
+  const tier1Texts = r.issues.filter((i) => i.type === 'tier1').map((i) => String(i.text).toLowerCase());
+  assert.ok(tier1Texts.includes('delve'), `expected 'delve' to still fire, got tier1=${JSON.stringify(tier1Texts)}`);
+  assert.ok(!tier1Texts.includes('constructor'), 'constructor must not ride along in tier1');
+});
+
 if (failed > 0) {
   console.error(`\n${failed} test(s) failed`);
   process.exit(1);
