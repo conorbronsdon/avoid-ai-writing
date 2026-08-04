@@ -47,11 +47,19 @@ echo "pattern count in sync: $detection_count"
 # The count has one same-repo copy: CLAUDE.md's "don't restate it" sentence
 # quotes the README bullet. .ssot.yaml tracks that copy, but the manifest only
 # runs on release / weekly cron (promo-drift), so a same-repo edit could sit
-# stale for up to a week. Asserting it here closes the window on every push.
-# The sed pattern mirrors .ssot.yaml's regex for the copy, so the two guards
-# cannot read different sentences.
+# stale for up to a week. Asserting it in CI closes the window. Extraction is
+# grep -o + head, which takes the FIRST match in file order — the same match
+# a standard first-match regex engine reading .ssot.yaml's pattern would take
+# (a greedy sed s/.*…/ would silently take the LAST match on a line instead).
 claudemd="$repo_root/CLAUDE.md"
-claude_count="$(sed -n 's/.*README "\([0-9][0-9]*\) pattern categories" bullet.*/\1/p' "$claudemd" | head -n1)"
+
+if [ ! -f "$claudemd" ]; then
+  echo "CLAUDE.md not found — it carries a tracked copy of the pattern count (.ssot.yaml)." >&2
+  echo "If it was deliberately removed, drop the copy from .ssot.yaml and this check together." >&2
+  exit 1
+fi
+
+claude_count="$(grep -o 'README "[0-9][0-9]* pattern categories" bullet' "$claudemd" | head -n1 | tr -cd '0-9' || true)"
 
 if [ -z "$claude_count" ]; then
   echo "could not find the 'README \"NN pattern categories\" bullet' sentence in CLAUDE.md" >&2
