@@ -46,6 +46,14 @@ first seem (smart quotes, for instance, are a typing-time default on macOS and i
 Word, not a publication-step artifact). A claim with a citation can be verified;
 an asserted one can't. Put the links in the PR description or inline in the rule.
 
+## Style guides and licensing
+
+The rules from the [#88 license audit](https://github.com/conorbronsdon/avoid-ai-writing/issues/88), recorded here so nobody has to rediscover them:
+
+- **This repo bundles no style guide it cannot verify the license for.** The `--style` layer is config-driven; users supply their own conventions.
+- **Openly-licensed guides may ship later as example configs** (Google, Microsoft, GOV.UK, and 18F qualify), using Vale's attribution pattern: disclaim endorsement, name the license, link the guide upstream.
+- **Paywalled guides (CMOS, APA, MLA, AP) are never shipped, in any form, under any name.** Passing one to `--style` falls through to the fallback that claims no compliance. The reason is trademark and verifiability, not maintenance burden.
+
 ## Run the tests
 
 ```bash
