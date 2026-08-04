@@ -4,23 +4,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A single-file writing skill (`SKILL.md`) that audits and rewrites content to remove AI writing patterns. No build system, no dependencies, no tests — the skill is a markdown file consumed by AI coding assistants.
+A single-file writing skill (`SKILL.md`) that audits and rewrites content to remove AI writing patterns. The skill is a markdown file consumed by AI coding assistants; the repository also includes a dependency-free deterministic detector and test suite.
 
 ## Repository structure
 
-- `SKILL.md` — the skill itself (v3.7.2). This is the product. All rules, tiers, profiles, and output format live here.
+- `SKILL.md` — the skill itself. This is the product. All rules, tiers, profiles, and output format live here.
 - `README.md` — public-facing docs, installation instructions, pattern reference table, full before/after example.
 - `CHANGELOG.md` — version history with what changed and why.
 
 ## How to make changes
 
-Edit `SKILL.md` directly. There's nothing to build or test. When making changes:
+Edit `SKILL.md` directly. When making changes:
 
 - Bump the version in the SKILL.md frontmatter (`version: X.Y.Z`)
 - Run `bash scripts/sync-plugin-skill.sh`. Root SKILL.md is the source of truth; the plugin's bundled copy and `plugin.json`'s version are generated from it, and CI fails on a mismatch. Bumping the frontmatter without this step fails the `check` job with `version mismatch: SKILL.md=X plugin.json=Y`.
+- Run `npm test` to exercise the detector, category contract, validator, corpus helpers, and style checks.
 - Add a dated entry to CHANGELOG.md
 - Update README.md if the change affects installation, usage, feature list, or pattern count
-- The pattern count lives in **one** place — the README "46 pattern categories" bullet — and is derived from SKILL.md's detection `###` entries. Don't restate it elsewhere; CI (`scripts/check-pattern-count.sh`) fails the build if the README number drifts from SKILL.md, so just add the new `###` entry and bump the README bullet.
+- The pattern count lives in **one** place — the README "61 pattern categories" bullet — and is derived from SKILL.md's detection `###` entries. Don't restate it elsewhere; CI (`scripts/check-pattern-count.sh`) fails the build if the README number drifts from SKILL.md, so just add the new `###` entry and bump the README bullet.
 
 ## Architecture of the skill
 

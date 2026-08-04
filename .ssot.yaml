@@ -35,6 +35,8 @@ facts:
       file: README.md
       pattern: '\*\*(\d+) pattern categories\*\*'
     copies:
+      - file: CLAUDE.md
+        pattern: 'README "(\d+) pattern categories" bullet'
       - file: ../agent-skills/README.md
         pattern: '(\d+) pattern categories'
       - file: ../ai-tools-for-creators/README.md
