@@ -44,6 +44,29 @@ fi
 
 echo "pattern count in sync: $detection_count"
 
+# The count has one same-repo copy: CLAUDE.md's "don't restate it" sentence
+# quotes the README bullet. .ssot.yaml tracks that copy, but the manifest only
+# runs on release / weekly cron (promo-drift), so a same-repo edit could sit
+# stale for up to a week. Asserting it here closes the window on every push.
+# The sed pattern mirrors .ssot.yaml's regex for the copy, so the two guards
+# cannot read different sentences.
+claudemd="$repo_root/CLAUDE.md"
+claude_count="$(sed -n 's/.*README "\([0-9][0-9]*\) pattern categories" bullet.*/\1/p' "$claudemd" | head -n1)"
+
+if [ -z "$claude_count" ]; then
+  echo "could not find the 'README \"NN pattern categories\" bullet' sentence in CLAUDE.md" >&2
+  echo "If the sentence was reworded, update this check AND the CLAUDE.md copy in .ssot.yaml together." >&2
+  exit 1
+fi
+
+if [ "$claude_count" != "$detection_count" ]; then
+  echo "pattern-count drift: CLAUDE.md quotes $claude_count, SKILL.md derives $detection_count" >&2
+  echo "Update the count in CLAUDE.md's pattern-count sentence to $detection_count." >&2
+  exit 1
+fi
+
+echo "CLAUDE.md copy in sync: $claude_count"
+
 # Word-table entries = data rows across the Tier 1/2/3 word tables. The Tier 3
 # *phrases* table is counted separately in the README bullet, so it is excluded.
 #
