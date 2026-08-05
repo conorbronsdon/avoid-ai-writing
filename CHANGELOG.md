@@ -4,6 +4,28 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.23.1] — 2026-08-05
+
+### Fixed
+
+- **`constructor` in prose no longer fires the detector.** Tier lookups now use
+  `Object.hasOwn`, so words that collide with `Object.prototype` property names
+  can't false-positive (#109, #112).
+
+### Changed
+
+- **npm publishing is automated, guarded, and carries provenance.** Merging a
+  version bump to main creates the GitHub release and publishes to npm in one
+  pipeline: package.json and CHANGELOG.md must agree on the version, the run
+  must be the exact commit the release tag names (so npm content can't drift
+  from the GitHub release and `--provenance` can't attest the wrong commit),
+  and duplicate runs queue and no-op (#113).
+- **The cursor-rules leak gate closed its nested-path hole**, self-tests a
+  review matrix on every run, and the README pattern-count copy is asserted in
+  CI (#110, #111, #114, #115).
+
+---
+
 ## [3.23.0] — 2026-08-03
 
 ### Added
