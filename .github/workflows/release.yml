@@ -139,6 +139,37 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # The version guard above proves package.json and CHANGELOG.md agree on
+      # which *version* this is. It says nothing about which *commit*, and the
+      # two come apart on exactly the recovery this job exists for: npm sat at
+      # 3.22.1 while main walked eight commits past the v3.23.0 tag, so a
+      # dispatch from main would ship post-tag work to npm as 3.23.0 while the
+      # GitHub release for 3.23.0 names an older commit. Checking out the tag
+      # here would fix the tarball and leave the attestation lying — npm builds
+      # provenance from the run's github.sha, not from the worktree — and a
+      # published version is immutable, so this fails closed instead. Only
+      # runs when something is actually about to be published: a CHANGELOG.md
+      # edit that does not bump the version is a normal reason to be off the
+      # tag, and it must not turn the workflow red.
+      - name: Refuse to publish a commit that is not the release tag
+        if: steps.npmcheck.outputs.exists == 'false'
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          TAG="v$VERSION"
+          # The default checkout is depth-1 with no tags, so fetch the one tag
+          # this resolves. A missing tag is a different failure from a moved one.
+          if ! git fetch --no-tags --depth=1 origin "+refs/tags/$TAG:refs/tags/$TAG"; then
+            echo "::error::Tag $TAG does not exist — check the release job's log, and that the release is not still a draft (a draft creates no tag). The release job creates $TAG before this job runs, so publishing without it would put $VERSION on npm with no GitHub release behind it."
+            exit 1
+          fi
+          TAG_SHA="$(git rev-parse --verify "refs/tags/$TAG^{commit}")"
+          HEAD_SHA="$(git rev-parse HEAD)"
+          if [ "$TAG_SHA" != "$HEAD_SHA" ]; then
+            echo "::error::HEAD ($HEAD_SHA) is not the commit tagged $TAG ($TAG_SHA) — bump to a new version and let the push to main tag and publish that. Publishing here would ship this commit to npm as $VERSION while the GitHub release for $VERSION names a different commit, and --provenance would sign the mismatch in."
+            exit 1
+          fi
+          echo "HEAD is the commit tagged $TAG ($TAG_SHA) — safe to publish."
+
       - name: Test before publish
         if: steps.npmcheck.outputs.exists == 'false'
         run: npm test
