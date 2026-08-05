@@ -115,39 +115,90 @@ alwaysApply: false
 # what keeps the gate precise, because the bare directory names collide with
 # ordinary prose in this document: "docs/technical-blog" is a context pair,
 # "examples/counterexamples" and "transcripts/notes" are slash-joined words.
-# Two further exemptions, each a precision call:
-#   - a left word boundary, so "manuscripts/x.md" is prose, not scripts/
+# Exemptions, each a precision call (the last three from the #110 review):
+#   - a left word boundary, so "manuscripts/x.md" is prose, not scripts/;
+#     `_` counts as a word character, so "my_scripts/foo.js" is prose too
 #   - anything inside an http(s) URL, which is the portable form and is also
 #     what this gate's own error message tells an author to switch to
+#   - a markdown link whose TARGET is an http(s) URL drops entirely (text and
+#     target): [scripts/check-style.js](https://github.com/...) is the exact
+#     form the error message recommends, so the gate must not block it
+#   - a right boundary, so "patterns.json" cannot block via its patterns.js
+#     prefix
 REPO_DIRS = ("detector", "scripts", "examples", "plugins", "cursor-rules", "corpus")
 # Distinctive enough to block unqualified; README.md and friends are omitted on
 # purpose, since every project has them and this skill's prose names them.
 REPO_FILES = ("check-style.js", "validate.js", "patterns.js", "self-scan.js",
               "CATEGORIES.md", "PROOF.md")
+# Path segments may precede the final filename: every real file under plugins/
+# is nested (plugins/avoid-ai-writing/SKILL.md), so without the segment loop
+# that REPO_DIRS entry was a guarantee that could never fire (#110 review).
+SEGMENT = r"[A-Za-z0-9_.-]+"
 FILENAME = r"(?:<[^<>\s]+>|[A-Za-z0-9_.-]+)\.[A-Za-z0-9]+"
 REPO_REF = re.compile(
-    r"(?<![A-Za-z0-9])(?:"
-    + r"(?:" + "|".join(re.escape(d) for d in REPO_DIRS) + r")/" + FILENAME
+    r"(?<![A-Za-z0-9_])(?:"
+    + r"(?:" + "|".join(re.escape(d) for d in REPO_DIRS) + r")/"
+    + r"(?:" + SEGMENT + r"/)*" + FILENAME
     + r"|" + "|".join(re.escape(f) for f in REPO_FILES)
-    + r")"
+    + r")(?![A-Za-z0-9])"
 )
 URL = re.compile(r"https?://\S+")
+MD_LINK_URL = re.compile(r"\[[^\]\n]*\]\(https?://[^)\s]*\)")
+
+def scan_line(line):
+    return [m.group(0) for m in REPO_REF.finditer(URL.sub("", MD_LINK_URL.sub("", line)))]
+
+# The review matrix from #110, asserted on every run so the regex cannot
+# regress silently — an intentional change to the gate must move the case it
+# changes to the other list in the same edit. Runs in <1ms; CI executes this
+# script for the drift check, so the matrix rides along with no extra wiring.
+MUST_BLOCK = (
+    "run scripts/check-style.js against the draft",
+    "see detector/CATEGORIES.md for the tiers",
+    "bare validate.js and PROOF.md mentions",
+    "plugins/avoid-ai-writing/SKILL.md",                # nested — the #110 hole
+    "corpus/human/essay-01.md",                         # nested, two segments deep
+    "./scripts/self-scan.js",
+    "patterns.js, with trailing punctuation",
+    "[scripts/check-style.js](see the docs)",           # link text, non-URL target
+    "cursor-rules/avoid-ai-writing.mdc",
+)
+MUST_PASS = (
+    "manuscripts/x.md",
+    "my_scripts/foo.js",
+    "patterns.json and validate.json",
+    "docs/technical-blog is a context pair",
+    "examples/counterexamples and transcripts/notes",
+    "superscripts/subscripts",
+    "https://github.com/conorbronsdon/avoid-ai-writing/blob/main/scripts/check-style.js",
+    "[scripts/check-style.js](https://github.com/conorbronsdon/avoid-ai-writing/blob/main/scripts/check-style.js)",
+    # A bare dotfile is not one of this repo's files; the #110 review ruled the
+    # behavior correct and the old claim about it wrong, so it lives here now.
+    "examples/.json",
+    "DISPROOF.md",
+)
+for case in MUST_BLOCK:
+    assert scan_line(case), f"gate self-test: expected a block, got a pass: {case!r}"
+for case in MUST_PASS:
+    assert not scan_line(case), f"gate self-test: expected a pass, got a block: {case!r}"
 
 leaks = []
 for n, line in enumerate(body.split("\n"), 1):
-    m = REPO_REF.search(URL.sub("", line))
-    if m:
-        leaks.append((n, m.group(0), line.strip()))
+    hits = scan_line(line)
+    if hits:
+        leaks.append((n, hits, line.strip()))
 if leaks:
     offset = cursor_fm.count("\n")
+    total = sum(len(hits) for _, hits, _ in leaks)
     shown = "\n".join(
-        # Quote the match itself: a long line truncated from the left can hide it.
-        f"  line {offset + n}: {hit}   in: {text[:72]}{'...' if len(text) > 72 else ''}"
-        for n, hit, text in leaks[:10]
+        # Quote the matches themselves: a long line truncated from the left can
+        # hide them (finditer, so one line with two refs reports both).
+        f"  line {offset + n}: {', '.join(hits)}   in: {text[:72]}{'...' if len(text) > 72 else ''}"
+        for n, hits, text in leaks[:10]
     )
-    more = f"\n  ... and {len(leaks) - 10} more" if len(leaks) > 10 else ""
+    more = f"\n  ... and {len(leaks) - 10} more line(s)" if len(leaks) > 10 else ""
     sys.exit(
-        f"sync-cursor-rules: {len(leaks)} repo-relative reference(s) would ship in the "
+        f"sync-cursor-rules: {total} repo-relative reference(s) would ship in the "
         f"Cursor rule, where none of this repo's files exist. Line numbers are for the "
         f"rule that would have been generated:\n{shown}{more}\n"
         "Add a portability rewrite for the new span (see the header comment), link the "
