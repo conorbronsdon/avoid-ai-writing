@@ -98,7 +98,12 @@ jobs:
       - name: Refuse to publish a version that disagrees with CHANGELOG.md
         run: |
           PKG_VERSION="$(node -p "require('./package.json').version")"
-          CHANGELOG_VERSION="$(grep -m1 -E '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md | sed -E 's/^## \[([0-9]+\.[0-9]+\.[0-9]+)\].*/\1/')"
+          HEADING_LINE="$(grep -m1 -E '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md || true)"
+          if [ -z "$HEADING_LINE" ]; then
+            echo "::error::Could not find a '## [X.Y.Z]' heading in CHANGELOG.md"
+            exit 1
+          fi
+          CHANGELOG_VERSION="$(echo "$HEADING_LINE" | sed -E 's/^## \[([0-9]+\.[0-9]+\.[0-9]+)\].*/\1/')"
           if [ "$PKG_VERSION" != "$CHANGELOG_VERSION" ]; then
             echo "::error::package.json ($PKG_VERSION) != CHANGELOG.md ($CHANGELOG_VERSION) — fix the drift, then re-run. Publishing a mismatched version bakes the drift into the registry."
             exit 1
