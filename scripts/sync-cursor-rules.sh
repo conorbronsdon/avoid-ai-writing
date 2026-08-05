@@ -182,6 +182,13 @@ for case in MUST_BLOCK:
 for case in MUST_PASS:
     assert not scan_line(case), f"gate self-test: expected a pass, got a block: {case!r}"
 
+# The error message's count comes from len(hits), so scan_line must report
+# every ref on a line, not just the first (#110 review, finding 3). A
+# reversion to first-match-only scanning goes red here, not just quieter.
+multi_ref = "run scripts/check-style.js then see detector/CATEGORIES.md"
+assert len(scan_line(multi_ref)) == 2, \
+    f"gate self-test: expected 2 hits on a two-ref line, got {scan_line(multi_ref)!r}"
+
 leaks = []
 for n, line in enumerate(body.split("\n"), 1):
     hits = scan_line(line)
