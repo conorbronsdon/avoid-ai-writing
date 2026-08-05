@@ -10,6 +10,23 @@ on:
 permissions:
   contents: write
 
+# Both jobs check-then-act against shared state: the release job reads
+# `gh release view` before `gh release create`, and publish-npm reads
+# `npm view` before `npm publish`. Overlapping runs can both read "not there
+# yet" and then collide. Two runs carrying the same version turn one of them
+# red; two runs carrying different versions can finish out of order and leave
+# npm's `latest` pointing at the older one. Serializing puts the second run's
+# checks after the first run's writes, so its `exists` guards see the truth and
+# skip — the guards and this block do the job together, neither one alone.
+#
+# The group omits `github.ref` on purpose: the registry and the release list are
+# repo-global, so a workflow_dispatch has to queue behind a main push too.
+# Never cancel — a cancelled run can die between its check and its publish, or
+# leave a GitHub release standing with nothing published against it.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: ubuntu-latest
