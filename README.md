@@ -408,7 +408,7 @@ Authored by [Conor Bronsdon](https://github.com/conorbronsdon) · [LinkedIn](htt
 
 Things the community has built around this skill:
 
-- **[avoid-ai-writing-multilingual](https://github.com/jurigis/avoid-ai-writing-multilingual)** by [Jürgen Kraus](https://github.com/jurigis) — German (`SKILL-DE.md`) and Romanian (`SKILL-RO.md`) adaptations, grounded in native-language research rather than translated from English. French and Spanish planned.
+- **[avoid-ai-writing-multilingual](https://github.com/jurigis/avoid-ai-writing-multilingual)** by [Jürgen Kraus](https://github.com/jurigis) — German (`SKILL-DE.md`), French (`SKILL-FR.md`), Italian (`SKILL-IT.md`), Romanian (`SKILL-RO.md`), and Swedish (`SKILL-SV.md`) adaptations, grounded in native-language research rather than translated from English.
 
 Built something on top of this skill? Open an issue — happy to link it here.
 
