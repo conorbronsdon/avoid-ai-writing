@@ -1,7 +1,7 @@
 ---
 name: avoid-ai-writing
 description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Use this skill when asked to "remove AI-isms," "clean up AI writing," "edit writing for AI patterns," "audit writing for AI tells," or "make this sound less like AI." Supports a detect-only mode, an edit-in-place mode for files, an optional voice profile (casual / professional / technical / warm / blunt), and an iterate-to-convergence pass.
-version: 3.23.1
+version: 3.24.0
 license: MIT
 compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, VS Code Copilot, Hermes Agent, OpenHands, etc.) or OpenClaw. No external tools or APIs required.
 metadata:
@@ -401,8 +401,15 @@ These slot-fill constructions signal that a sentence was generated, not written.
 ### Title case headings
 - AI over-capitalizes headings: "Strategic Negotiations And Key Partnerships" instead of "Strategic negotiations and key partnerships." Use sentence case for subheadings. Title case only for the piece's main title, if at all.
 
-### Hyphenated-pair overuse
-- AI stacks compound modifiers: "a high-quality, well-architected, future-proof solution." Two distinct problems. First, density — strings of hyphenated adjectives piled on one noun; cut to the modifier that actually matters. Second, the attributive/predicate error: a compound is hyphenated *before* the noun ("a high-quality report") but not *after* a linking verb ("the report is high quality," no hyphen). AI frequently hyphenates the predicate form; fix it to two words. Adapted from `blader/humanizer` P26.
+### Hyphenated modifier stacking
+- AI stacks compound modifiers: "a high-quality, well-architected, future-proof solution." The individual hyphens may be correct; the tell is the density. Cut to the modifier that matters. Adapted from `blader/humanizer` P26.
+
+### Unnecessary hyphenation
+- Check welded open noun phrases: "research-impact aggregator" becomes "research impact aggregator," "data-source strategy" becomes "data source strategy," and "Python-package usage" becomes "Python package usage."
+- Close compounds whose standard form is one word: "code-base," "data-set," "time-frame," and "road-map" become "codebase," "dataset," "timeframe," and "roadmap."
+- Remove attributive hyphens when the phrase is used adverbially or as a noun: "in real-time" becomes "in real time" and "works out-of-the-box" becomes "works out of the box." Keep the same compounds before a noun: "real-time analytics," "long-term plan," and "out-of-the-box support."
+- Preserve established and technical compounds such as "high-quality," "open-access," "third-party," "machine-readable," "server-side," "field-normalized," and "family-owned." Spelling varies by dialect and house style, so ambiguous pairs are judgment calls rather than automatic rewrites.
+- Treat a clear hit as P2 copyediting, not evidence of machine authorship. The deterministic detector uses a curated list and excludes code, quoted material, URLs, paths, filenames, and command flags. General attributive-versus-predicate cases stay judgment-only.
 
 ### Cutoff disclaimers
 - "While specific details are limited based on available information," "As of my last update," "I don't have access to real-time data." These are model limitations leaking into prose. Either find the information or remove the hedge. Never publish a sentence that admits the writer didn't look something up.
@@ -609,6 +616,7 @@ Not all AI-isms are equal. When doing a quick pass or triaging a large document,
 - Transition phrases (Moreover, Furthermore, Additionally)
 - Hashtag stuffing (`blog`/`technical-blog` profiles)
 - Tier 3 phrase repetition (single phrase ≥2× — fine in isolation, suspect in stacks)
+- Unnecessary hyphenation (curated open, closed, and position-dependent compounds)
 
 Use P0+P1 for quick passes. Full audit covers all three tiers.
 

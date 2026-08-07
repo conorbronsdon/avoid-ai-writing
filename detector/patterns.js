@@ -342,6 +342,10 @@ const AIDetector = (() => {
     'ai-placeholder': 10,
     'ai-citation-markup': 15,
     'ai-utm-source': 12,
+    // Curated copyedits, not authorship evidence. These contribute the same
+    // modest weight as other P2 language cleanups and never act as a trinary
+    // classifier corroborator.
+    'unnecessary-hyphenation': 2,
   };
 
   // ─── Transition phrases ────────────────────────────────────────────
@@ -700,6 +704,12 @@ const AIDetector = (() => {
     return typeof index === 'number' && ranges.some(([a, b]) => index >= a && index < b);
   }
 
+  function blankRange(chars, start, end) {
+    for (let i = start; i < end && i < chars.length; i += 1) {
+      if (chars[i] !== '\n') chars[i] = ' ';
+    }
+  }
+
   // Copy of the text with fenced blocks and inline code spans blanked out.
   // Index-preserving: each masked character becomes a space and newlines are
   // kept, so offsets into the result still address the same position in the
@@ -709,12 +719,7 @@ const AIDetector = (() => {
   // inline span and swallow the prose between them.
   function maskCode(text) {
     const chars = text.split('');
-    const blank = (a, b) => {
-      for (let i = a; i < b && i < chars.length; i += 1) {
-        if (chars[i] !== '\n') chars[i] = ' ';
-      }
-    };
-    for (const [a, b] of fenceRanges(text)) blank(a, b);
+    for (const [a, b] of fenceRanges(text)) blankRange(chars, a, b);
     // Indented code blocks are deliberately NOT masked. Four spaces is a code
     // block only at top level; under a list marker it is a paragraph
     // continuation, so blanking it silences real tag blocks. #90 reports
@@ -722,8 +727,71 @@ const AIDetector = (() => {
     const withoutFences = chars.join('');
     const inlineRe = /(`+)(?:(?!\1)[^\n])+\1/g;
     let m;
-    while ((m = inlineRe.exec(withoutFences)) !== null) blank(m.index, m.index + m[0].length);
+    while ((m = inlineRe.exec(withoutFences)) !== null) blankRange(chars, m.index, m.index + m[0].length);
     return chars.join('');
+  }
+
+  function maskTopLevelIndentedCode(chars) {
+    const lines = chars.join('').split('\n');
+    let offset = 0;
+    let inBlock = false;
+    for (let i = 0; i < lines.length; i += 1) {
+      const line = lines[i];
+      const indented = /^(?: {4}|\t)\S/.test(line);
+      const previousBlank = i === 0 || lines[i - 1].trim() === '';
+      if (indented && (inBlock || previousBlank)) {
+        blankRange(chars, offset, offset + line.length);
+        inBlock = true;
+      } else if (line.trim() !== '') {
+        inBlock = false;
+      }
+      offset += line.length + 1;
+    }
+  }
+
+  // Additional protected spans for the hyphenation copyedit. Unlike general
+  // AI-tell matching, this rule must not "correct" a literal spelling in a
+  // quote, URL, path, filename, command flag, or Markdown blockquote.
+  function maskHyphenationProtected(text) {
+    const chars = maskCode(text).split('');
+    maskTopLevelIndentedCode(chars);
+    const maskMatches = (regex) => {
+      const source = chars.join('');
+      let match;
+      while ((match = regex.exec(source)) !== null) {
+        blankRange(chars, match.index, match.index + match[0].length);
+      }
+    };
+
+    maskMatches(/^[ \t]*>[^\n]*$/gm);
+    maskMatches(/"[^"\n]+"|“[^”\n]+”|(?<![a-z0-9])'(?:[^'\n]|(?<=[a-z0-9])'(?=[a-z0-9]))+'(?![a-z0-9])|‘(?:[^’\n]|(?<=[a-z0-9])’(?=[a-z0-9]))+’/gi);
+    maskMatches(/\b(?:https?:\/\/|www\.)[^\s<>()]+/gi);
+    maskMatches(/(?<!\S)--?[a-z0-9][a-z0-9-]*/gi);
+    maskMatches(/(?:[a-z]:[\\/]|(?:\.\.?[\\/])?)(?:[a-z0-9_.-]+[\\/])+[a-z0-9_.-]+/gi);
+    maskMatches(/\b[a-z0-9_.-]+-[a-z0-9_.-]+\.[a-z0-9]{1,16}\b/gi);
+
+    return chars.join('');
+  }
+
+  function findUnnecessaryHyphenation(text) {
+    const scanText = maskHyphenationProtected(text);
+    const issues = [];
+    for (const entry of UNNECESSARY_HYPHENATION) {
+      const regex = new RegExp(entry.pattern.source, entry.pattern.flags);
+      let match;
+      while ((match = regex.exec(scanText)) !== null) {
+        issues.push({
+          type: 'unnecessary-hyphenation',
+          text: match[0],
+          index: match.index,
+          severity: 'medium',
+          suggestion: typeof entry.suggestion === 'function'
+            ? entry.suggestion(match[0])
+            : entry.suggestion,
+        });
+      }
+    }
+    return issues;
   }
 
   // ─── Forms that open with `#` but are not social tags ──────────────
@@ -821,6 +889,46 @@ const AIDetector = (() => {
     /\bbookmark\s+this(?:\s+(?:one|post|thread))?(?=\s*(?:[:.!\n]|$))/gi,
     /\bdo\s*n['’]?t\s+sleep\s+on\s+this\b/gi,
     /\btrust\s+me,?\s+(?:on\s+this|you['’]?ll)\b/gi,
+  ];
+
+  // ─── Unnecessary hyphenation (#107) ───────────────────────────────
+  // Precision-first subclasses only. The general question of whether a
+  // compound modifier is established English needs editorial judgment and
+  // remains in SKILL.md; the engine covers only curated open/closed forms and
+  // compounds whose surrounding syntax makes the unhyphenated form clear.
+  const UNNECESSARY_HYPHENATION = [
+    // Welded open noun phrases reported in #107. Match the complete phrase so
+    // a project-specific spelling of the pair in another role is not swept in.
+    { pattern: /\bresearch-impact\s+aggregat(?:or|ion)s?\b/gi, suggestion: (match) => match.replace(/research-impact/i, 'research impact') },
+    { pattern: /\bdata-source\s+strateg(?:y|ies)\b/gi, suggestion: (match) => match.replace(/data-source/i, 'data source') },
+    { pattern: /\bPython-package\s+usage\b/g, suggestion: (match) => match.replace('Python-package', 'Python package') },
+    { pattern: /\bRust-crate\s+usage\b/g, suggestion: (match) => match.replace('Rust-crate', 'Rust crate') },
+    { pattern: /\bsingle-Project\s+Manifest\b/g, suggestion: (match) => match.replace('single-Project', 'single Project') },
+    { pattern: /\btotal-downloads\s+figures?\b/gi, suggestion: (match) => match.replace(/total-downloads/i, 'total downloads') },
+    { pattern: /\blife-sciences-native\s+citation\s+count\b/gi, suggestion: 'citation count from a life sciences source' },
+
+    // Compounds whose standard spelling is closed. Kept as a small curated
+    // list rather than guessing that every noun-noun pair should close up.
+    { pattern: /\bcode-base\b/gi, suggestion: (match) => match.replace('-', '') },
+    { pattern: /\bdata-set\b/gi, suggestion: (match) => match.replace('-', '') },
+    { pattern: /\btime-frame\b/gi, suggestion: (match) => match.replace('-', '') },
+    { pattern: /\broad-map\b/gi, suggestion: (match) => match.replace('-', '') },
+
+    // Attributive-only forms used adverbially or as nouns. The boundary after
+    // real-time / long-term is intentionally narrow: "real-time analytics"
+    // and "long-term plan" must not fire.
+    {
+      pattern: /\bin\s+real-time(?=\s*(?:[,.!?;:]|$)|\s+(?:(?:across|and|as|automatically|because|but|continuously|during|dynamically|every|for|from|immediately|instantly|on|or|simultaneously|through|throughout|until|via|when|while|with|without)\b))/gi,
+      suggestion: 'in real time',
+    },
+    {
+      pattern: /\b(?:for|over)\s+the\s+long-term(?=\s*(?:[,.!?;:]|$)|\s+(?:across|and|because|but|by|during|for|from|on|or|through|throughout|until|via|when|while|with|without)\b)/gi,
+      suggestion: (match) => match.replace(/long-term/i, 'long term'),
+    },
+    {
+      pattern: /\b(?:functions?|functioned|functioning|operates?|operated|operating|runs?|ran|running|works?|worked|working)\s+out-of-the-box\b/gi,
+      suggestion: (match) => match.replace(/out-of-the-box/i, 'out of the box'),
+    },
   ];
 
   // ═══ Helpers ═══════════════════════════════════════════════════════
@@ -1068,6 +1176,7 @@ const AIDetector = (() => {
     issues.push(...matchPatterns(text, FUTURE_NARRATIVE, 'future-narrative', 'high'));
     issues.push(...matchPatterns(text, REAL_ACTUAL_INFLATION, 'real-actual-inflation', 'medium'));
     issues.push(...matchPatterns(text, SOCIAL_CTA_CLOSER, 'social-cta-closer', 'high'));
+    issues.push(...findUnnecessaryHyphenation(text));
 
     // ── Tier 1 v2: formulaic openers + parenthetical hedges ──────────
     issues.push(...matchPatterns(text, FORMULAIC_OPENERS, 'formulaic-opener', 'high'));
@@ -1930,6 +2039,7 @@ const AIDetector = (() => {
     'ai-placeholder': 'Unfilled placeholder',
     'ai-citation-markup': 'Chatbot citation markup leak',
     'ai-utm-source': 'AI-tool URL parameter',
+    'unnecessary-hyphenation': 'Unnecessary hyphenation',
   };
 
   return {

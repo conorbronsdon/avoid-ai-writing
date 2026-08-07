@@ -4,6 +4,37 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.24.0] — 2026-08-07
+
+### Added
+
+- **Unnecessary hyphenation is now a P2 copyedit with deterministic detector
+  coverage (#107).** The rule handles three bounded subclasses: welded open
+  noun phrases (`research-impact aggregator` → `research impact aggregator`),
+  compounds with an established closed form (`code-base` → `codebase`), and
+  attributive compounds used adverbially (`in real-time` → `in real time`,
+  while `real-time analytics` stays unchanged). The catalog goes from 61 to 62
+  categories and the engine from 47 to 48 `type`s.
+- **Protected spans and legitimate compounds stay out of the detector.** It
+  masks fenced and inline code, quotes, Markdown blockquotes, URLs, paths,
+  filenames, and command flags. Fixtures preserve `high-quality`,
+  `family-owned`, `third-party`, `real-time dashboard`, `long-term plan`, and
+  `out-of-the-box support`.
+- **The general grammar call remains editorial judgment.** Open-ended compound
+  detection would flag ordinary technical writing, so the engine uses a curated
+  list and reports suggestions instead of rewriting text. The optional `-ly`
+  adverb cleanup discussed in #107 is deliberately absent from this release;
+  the issue agreement allowed it to ship later as opt-out style cleanup rather
+  than as an AI tell.
+
+### Changed
+
+- **Hyphenated-pair overuse is now named hyphenated modifier stacking.** Its
+  signal is the density of otherwise valid compounds, not the correctness of
+  each hyphen. Incorrect but deterministic forms belong to the new rule.
+
+---
+
 ## [3.23.1] — 2026-08-05
 
 ### Fixed
