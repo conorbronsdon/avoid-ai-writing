@@ -342,10 +342,10 @@ const AIDetector = (() => {
     'ai-placeholder': 10,
     'ai-citation-markup': 15,
     'ai-utm-source': 12,
-    // Curated copyedits, not authorship evidence. These contribute the same
-    // modest weight as other P2 language cleanups and never act as a trinary
-    // classifier corroborator.
-    'unnecessary-hyphenation': 2,
+    // Curated P2 copyedits, not authorship evidence. Keep them visible in the
+    // issue list without moving the AI score, label, probabilities, or
+    // trinary classification on short documents.
+    'unnecessary-hyphenation': 0,
   };
 
   // ─── Transition phrases ────────────────────────────────────────────
@@ -749,12 +749,107 @@ const AIDetector = (() => {
     }
   }
 
+  function maskYamlFrontmatter(chars) {
+    const lines = chars.join('').split('\n');
+    const bare = (line) => line.replace(/\r$/, '');
+    const first = bare(lines[0]).replace(/^\uFEFF/, '');
+    if (first !== '---' || lines.length < 2 || /^\s*$/.test(bare(lines[1]))) return;
+
+    let closingLine = -1;
+    for (let i = 1; i < lines.length; i += 1) {
+      if (bare(lines[i]) === '---') {
+        closingLine = i;
+        break;
+      }
+    }
+    if (closingLine === -1) return;
+
+    let end = 0;
+    for (let i = 0; i <= closingLine; i += 1) {
+      end += lines[i].length;
+      if (i < lines.length - 1) end += 1;
+    }
+    blankRange(chars, 0, end);
+  }
+
+  function maskYamlMetadata(chars) {
+    const lines = chars.join('').split('\n');
+    let offset = 0;
+    let nestedAfterIndent = null;
+    for (const line of lines) {
+      const bare = line.replace(/\r$/, '');
+      // Lowercase keys are the common unfenced-YAML shape. Keeping this
+      // case-sensitive prevents prose labels such as "Note: ..." from being
+      // mistaken for metadata and silencing a real copyedit on the line.
+      const key = bare.match(/^([ \t]*)(?:-[ \t]+)?[a-z_][a-z0-9_.-]*[ \t]*:(.*)$/);
+      const indentation = (bare.match(/^[ \t]*/) || [''])[0].length;
+      let shouldMask = false;
+
+      if (key) {
+        shouldMask = true;
+        nestedAfterIndent = key[2].trim() === '' ? key[1].length : null;
+      } else if (nestedAfterIndent !== null && bare.trim() !== '' && indentation > nestedAfterIndent) {
+        shouldMask = true;
+      } else if (bare.trim() === '') {
+        nestedAfterIndent = null;
+      } else {
+        nestedAfterIndent = null;
+      }
+
+      if (shouldMask) blankRange(chars, offset, offset + line.length);
+      offset += line.length + 1;
+    }
+  }
+
+  function maskMarkdownTables(chars) {
+    const lines = chars.join('').split('\n');
+    const delimiter = /^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*\r?$/;
+    const rows = new Set();
+    for (let i = 0; i < lines.length; i += 1) {
+      if (!delimiter.test(lines[i])) continue;
+      if (i > 0 && lines[i - 1].includes('|')) rows.add(i - 1);
+      rows.add(i);
+      for (let j = i + 1; j < lines.length && lines[j].includes('|'); j += 1) rows.add(j);
+    }
+
+    let offset = 0;
+    for (let i = 0; i < lines.length; i += 1) {
+      if (rows.has(i)) blankRange(chars, offset, offset + lines[i].length);
+      offset += lines[i].length + 1;
+    }
+  }
+
+  function maskDelimitedQuotes(chars, open, close, apostropheAware = false) {
+    const isWord = (char) => char !== undefined && /[a-z0-9]/i.test(char);
+    const isEscaped = (index) => {
+      let slashes = 0;
+      for (let i = index - 1; i >= 0 && chars[i] === '\\'; i -= 1) slashes += 1;
+      return slashes % 2 === 1;
+    };
+    let start = -1;
+    for (let i = 0; i < chars.length; i += 1) {
+      if (start === -1) {
+        if (chars[i] === open && !isEscaped(i) && (!apostropheAware || !isWord(chars[i - 1]))) start = i;
+      } else if (chars[i] === close && !isEscaped(i) && (!apostropheAware || !isWord(chars[i + 1]))) {
+        blankRange(chars, start, i + 1);
+        start = -1;
+      }
+    }
+  }
+
   // Additional protected spans for the hyphenation copyedit. Unlike general
   // AI-tell matching, this rule must not "correct" a literal spelling in a
   // quote, URL, path, filename, command flag, or Markdown blockquote.
   function maskHyphenationProtected(text) {
     const chars = maskCode(text).split('');
     maskTopLevelIndentedCode(chars);
+    maskYamlFrontmatter(chars);
+    maskYamlMetadata(chars);
+    maskMarkdownTables(chars);
+    maskDelimitedQuotes(chars, '"', '"');
+    maskDelimitedQuotes(chars, '“', '”');
+    maskDelimitedQuotes(chars, "'", "'", true);
+    maskDelimitedQuotes(chars, '‘', '’', true);
     const maskMatches = (regex) => {
       const source = chars.join('');
       let match;
@@ -764,11 +859,31 @@ const AIDetector = (() => {
     };
 
     maskMatches(/^[ \t]*>[^\n]*$/gm);
-    maskMatches(/"[^"\n]+"|“[^”\n]+”|(?<![a-z0-9])'(?:[^'\n]|(?<=[a-z0-9])'(?=[a-z0-9]))+'(?![a-z0-9])|‘(?:[^’\n]|(?<=[a-z0-9])’(?=[a-z0-9]))+’/gi);
-    maskMatches(/\b(?:https?:\/\/|www\.)[^\s<>()]+/gi);
-    maskMatches(/(?<!\S)--?[a-z0-9][a-z0-9-]*/gi);
-    maskMatches(/(?:[a-z]:[\\/]|(?:\.\.?[\\/])?)(?:[a-z0-9_.-]+[\\/])+[a-z0-9_.-]+/gi);
-    maskMatches(/\b[a-z0-9_.-]+-[a-z0-9_.-]+\.[a-z0-9]{1,16}\b/gi);
+    maskMatches(/\b(?:https?:\/\/|www\.)[^\s<>]+/gi);
+    maskMatches(/<[!?/]?[a-z][^>\n]*>/gi);
+    maskMatches(/(?<![a-z0-9_-])--?[a-z0-9][a-z0-9-]{0,127}/gi);
+
+    // Paths and filenames use bounded components. Besides preventing
+    // superlinear backtracking on long kebab blobs, the explicit prefix and
+    // trailing-slash forms cover single-component paths such as C:\\code-base,
+    // ~/code-base, /code-base, and code-base/.
+    maskMatches(/(?:[a-z]:[\\/]|\.{1,2}[\\/]|~[\\/]|[\\/])[a-z0-9_.-]{1,64}/gi);
+    maskMatches(/(?:[a-z]:[\\/]|(?:\.\.?[\\/])?)(?:[a-z0-9_.-]{1,64}[\\/]){1,128}[a-z0-9_.-]{1,64}/gi);
+    maskMatches(/\b[a-z0-9_.]{0,63}-[a-z0-9_.-]{1,64}[\\/]/gi);
+    maskMatches(/\b[a-z0-9_.-]{1,64}-[a-z0-9_.-]{1,64}\.[a-z0-9]{1,16}\b/gi);
+
+    // Technical identifiers that are distinguishable from ordinary prose:
+    // selectors, scoped packages, versioned tokens, assignments, and kebab
+    // names next to an explicit identifier cue. Plain lowercase compounds
+    // remain visible to the curated copyedit patterns below.
+    maskMatches(/[.#][a-z_][a-z0-9_.-]{0,63}-[a-z0-9_.-]{1,64}\b/gi);
+    maskMatches(/@[a-z0-9_.-]{1,64}\/[a-z0-9_.-]{1,64}-[a-z0-9_.-]{1,64}(?:@[^\s,;)\]}]{1,32})?/gi);
+    maskMatches(/\b[a-z0-9_.-]{1,64}-[a-z0-9_.-]{1,64}@[~^]?v?\d[a-z0-9*_.+-]{0,31}\b/gi);
+    maskMatches(/\b(?:[a-z0-9_.-]{0,64}\d[a-z0-9_.-]{0,64}-[a-z0-9_.-]{1,64}|[a-z0-9_.-]{1,64}-[a-z0-9_.-]{0,64}\d[a-z0-9_.-]{0,64})\b/gi);
+    maskMatches(/\b[a-z_][a-z0-9_.]{0,63}(?:-[a-z0-9_.]{1,64}){1,8}(?=[ \t]*[=:])/gi);
+    maskMatches(/\b[a-z_][a-z0-9_.]{0,63}(?:-[a-z0-9_.]{1,64}){1,8}(?=[ \t]+(?:npm[ \t]+)?(?:package|module|class|selector|config(?:uration)?[ \t]+key|key|identifier|property|setting|token|slug|command|option)\b)/gi);
+    maskMatches(/\b(?:(?:file(?:name)?|directory|folder|package|module|class|selector|config(?:uration)?[ \t]+key|identifier|property|setting|token|slug|command|option)(?:[ \t]+(?:named|called|is|was))?|key[ \t]+(?:named|called|is|was))[ \t]+(?:@[a-z0-9_.-]{1,64}\/)?[a-z_][a-z0-9_.]{0,63}(?:-[a-z0-9_.]{1,64}){1,8}\b/gi);
+    maskMatches(/\b(?:npm|pnpm|yarn)[ \t]+(?:add|install)[ \t]+(?:@[a-z0-9_.-]{1,64}\/)?[a-z0-9_.]{1,64}(?:-[a-z0-9_.]{1,64}){1,8}/gi);
 
     return chars.join('');
   }
@@ -783,7 +898,6 @@ const AIDetector = (() => {
         issues.push({
           type: 'unnecessary-hyphenation',
           text: match[0],
-          index: match.index,
           severity: 'medium',
           suggestion: typeof entry.suggestion === 'function'
             ? entry.suggestion(match[0])
@@ -899,30 +1013,30 @@ const AIDetector = (() => {
   const UNNECESSARY_HYPHENATION = [
     // Welded open noun phrases reported in #107. Match the complete phrase so
     // a project-specific spelling of the pair in another role is not swept in.
-    { pattern: /\bresearch-impact\s+aggregat(?:or|ion)s?\b/gi, suggestion: (match) => match.replace(/research-impact/i, 'research impact') },
-    { pattern: /\bdata-source\s+strateg(?:y|ies)\b/gi, suggestion: (match) => match.replace(/data-source/i, 'data source') },
+    { pattern: /\bresearch-impact\s+aggregat(?:or|ion)s?\b/g, suggestion: (match) => match.replace('research-impact', 'research impact') },
+    { pattern: /\bdata-source\s+strateg(?:y|ies)\b/g, suggestion: (match) => match.replace('data-source', 'data source') },
     { pattern: /\bPython-package\s+usage\b/g, suggestion: (match) => match.replace('Python-package', 'Python package') },
     { pattern: /\bRust-crate\s+usage\b/g, suggestion: (match) => match.replace('Rust-crate', 'Rust crate') },
     { pattern: /\bsingle-Project\s+Manifest\b/g, suggestion: (match) => match.replace('single-Project', 'single Project') },
-    { pattern: /\btotal-downloads\s+figures?\b/gi, suggestion: (match) => match.replace(/total-downloads/i, 'total downloads') },
-    { pattern: /\blife-sciences-native\s+citation\s+count\b/gi, suggestion: 'citation count from a life sciences source' },
+    { pattern: /\btotal-downloads\s+figures?\b/g, suggestion: (match) => match.replace('total-downloads', 'total downloads') },
+    { pattern: /\blife-sciences-native\s+citation\s+count\b/g, suggestion: 'citation count from a life sciences source' },
 
     // Compounds whose standard spelling is closed. Kept as a small curated
     // list rather than guessing that every noun-noun pair should close up.
-    { pattern: /\bcode-base\b/gi, suggestion: (match) => match.replace('-', '') },
-    { pattern: /\bdata-set\b/gi, suggestion: (match) => match.replace('-', '') },
-    { pattern: /\btime-frame\b/gi, suggestion: (match) => match.replace('-', '') },
-    { pattern: /\broad-map\b/gi, suggestion: (match) => match.replace('-', '') },
+    { pattern: /\bcode-base\b/g, suggestion: (match) => match.replace('-', '') },
+    { pattern: /\bdata-set\b/g, suggestion: (match) => match.replace('-', '') },
+    { pattern: /\btime-frame\b/g, suggestion: (match) => match.replace('-', '') },
+    { pattern: /\broad-map\b/g, suggestion: (match) => match.replace('-', '') },
 
     // Attributive-only forms used adverbially or as nouns. The boundary after
     // real-time / long-term is intentionally narrow: "real-time analytics"
     // and "long-term plan" must not fire.
     {
-      pattern: /\bin\s+real-time(?=\s*(?:[,.!?;:]|$)|\s+(?:(?:across|and|as|automatically|because|but|continuously|during|dynamically|every|for|from|immediately|instantly|on|or|simultaneously|through|throughout|until|via|when|while|with|without)\b))/gi,
+      pattern: /\bin\s+real-time(?=\s*(?:[,.!?;:]|$)|\s+(?:(?:across|as|automatically|because|but|continuously|during|dynamically|every|for|from|immediately|instantly|on|simultaneously|through|throughout|until|via|when|while|with|without)\b))/gi,
       suggestion: 'in real time',
     },
     {
-      pattern: /\b(?:for|over)\s+the\s+long-term(?=\s*(?:[,.!?;:]|$)|\s+(?:across|and|because|but|by|during|for|from|on|or|through|throughout|until|via|when|while|with|without)\b)/gi,
+      pattern: /\b(?:for|over)\s+the\s+long-term(?=\s*(?:[,.!?;:]|$)|\s+(?:across|because|but|by|during|for|from|on|through|throughout|until|via|when|while|with|without)\b)/gi,
       suggestion: (match) => match.replace(/long-term/i, 'long term'),
     },
     {

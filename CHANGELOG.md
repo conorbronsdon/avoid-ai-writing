@@ -17,7 +17,8 @@ All notable changes to this project are documented here.
   categories and the engine from 47 to 48 `type`s.
 - **Protected spans and legitimate compounds stay out of the detector.** It
   masks fenced and inline code, quotes, Markdown blockquotes, URLs, paths,
-  filenames, and command flags. Fixtures preserve `high-quality`,
+  filenames, command flags, identifiers, version strings, YAML metadata,
+  Markdown tables, and HTML attributes. Fixtures preserve `high-quality`,
   `family-owned`, `third-party`, `real-time dashboard`, `long-term plan`, and
   `out-of-the-box support`.
 - **The general grammar call remains editorial judgment.** Open-ended compound
@@ -32,6 +33,15 @@ All notable changes to this project are documented here.
 - **Hyphenated-pair overuse is now named hyphenated modifier stacking.** Its
   signal is the density of otherwise valid compounds, not the correctness of
   each hyphen. Incorrect but deterministic forms belong to the new rule.
+- **P2 hyphenation copyedits do not contribute to the AI score.** They remain
+  visible as editing suggestions without changing the label, class
+  probabilities, or trinary classification in short documents.
+
+### Fixed
+
+- **Path and filename masking remains linear on adversarial input.** Bounded
+  path components remove the superlinear backtracking exposed by long kebab
+  identifiers, with a timing regression fixture covering the failure shape.
 
 ---
 
