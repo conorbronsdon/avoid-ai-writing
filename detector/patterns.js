@@ -867,7 +867,7 @@ const AIDetector = (() => {
     // superlinear backtracking on long kebab blobs, the explicit prefix and
     // trailing-slash forms cover single-component paths such as C:\\code-base,
     // ~/code-base, /code-base, and code-base/.
-    maskMatches(/(?:[a-z]:[\\/]|\.{1,2}[\\/]|~[\\/]|[\\/])[a-z0-9_.-]{1,64}/gi);
+    maskMatches(/(?:[a-z]:[\\/]|\.{1,2}[\\/]|~[\\/]|[\\/])[a-z0-9_.-]{1,255}/gi);
     maskMatches(/(?:[a-z]:[\\/]|(?:\.\.?[\\/])?)(?:[a-z0-9_.-]{1,64}[\\/]){1,128}[a-z0-9_.-]{1,64}/gi);
     maskMatches(/\b[a-z0-9_.]{0,63}-[a-z0-9_.-]{1,64}[\\/]/gi);
     maskMatches(/\b[a-z0-9_.-]{1,64}-[a-z0-9_.-]{1,64}\.[a-z0-9]{1,16}\b/gi);

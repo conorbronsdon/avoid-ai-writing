@@ -500,6 +500,8 @@ test('#107: punctuation-adjacent flags and single-component paths stay protected
     'The generated output is copied into code-base/ during every local release build.',
     'The relative file lives at ./code-base for users of the legacy client.',
     'The parent-relative file lives at ../code-base for users of the legacy client.',
+    `The generated file lives at /${'a'.repeat(65)}-code-base for users of the legacy client.`,
+    `The generated Windows file lives at C:\\${'a'.repeat(65)}-code-base for legacy users.`,
   ];
 
   for (const text of protectedForms) {
