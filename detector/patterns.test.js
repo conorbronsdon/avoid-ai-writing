@@ -594,6 +594,11 @@ test('#107: copyedit-only findings do not affect score or trinary classification
   assert.equal(result.label, baseline.label, 'copyedit-only issues must not change the AI label');
   assert.equal(result.document_classification, baseline.document_classification);
   assert.deepEqual(result.class_probabilities, baseline.class_probabilities);
+  assert.deepEqual(
+    result.highlight_sentence_for_ai,
+    [],
+    'copyedit-only issues must not create AI-highlight regions'
+  );
 });
 
 test('"verbatim" is Tier 3: single use stays clean, overuse flags by density', () => {

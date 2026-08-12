@@ -1894,13 +1894,17 @@ const AIDetector = (() => {
     }
     if (sentences.length === 0) return [];
 
-    // Map issue.text back to sentence indexes via substring search. Issues
-    // without a meaningful text (e.g. summary signals like "Punctuation
-    // density uniform across paragraphs") have no sentence anchor — they
-    // contribute to the document-level signal but not to highlights.
+    // Map issue.text back to sentence indexes via substring search. Two
+    // kinds of issue stay out of the AI-highlight regions. Summary signals
+    // like "Punctuation density uniform across paragraphs" have no sentence
+    // anchor — they contribute to the document-level signal but not to
+    // highlights. Zero-weight style copyedits (unnecessary-hyphenation) do
+    // have an anchor, but they are P2 grammar cleanup rather than evidence
+    // of machine authorship, so they belong in issues[] and nowhere near a
+    // field reserved for AI sentence highlights.
     // Filter by issue TYPE not text-regex: text-based filtering used to
     // drop legitimate phrase issues containing "across" / "density".
-    const SUMMARY_ONLY_TYPES = new Set([
+    const NON_HIGHLIGHT_TYPES = new Set([
       'punct-distribution',
       'cross-para-burstiness',
       'fnword-trigram-entropy',
@@ -1914,13 +1918,14 @@ const AIDetector = (() => {
       'tier3-phrase-cluster',
       'hashtag-stuff',
       'bullet-np-list',
+      'unnecessary-hyphenation',
     ]);
     const hits = sentences.map(() => ({ count: 0, weight: 0 }));
     const lowerText = text.toLowerCase();
     let unmappedHighlights = 0;
     for (const issue of issues) {
       if (!issue.text || issue.text.length > 200) continue;
-      if (SUMMARY_ONLY_TYPES.has(issue.type)) continue;
+      if (NON_HIGHLIGHT_TYPES.has(issue.type)) continue;
       const needle = issue.text.toLowerCase();
       let idx = 0;
       let matched = false;
