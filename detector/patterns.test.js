@@ -1282,6 +1282,18 @@ test('#62: fences that a parity count gets wrong', () => {
   );
 });
 
+test('#77: a fence with an info string cannot close an outer fence', () => {
+  const f3 = '```';
+  const intro = 'Documentation about writing Markdown, long enough to clear the word gate.';
+  const title = '## Benefits And Strategic Considerations';
+
+  assert.equal(
+    titleCaseHits([intro, f3, f3 + 'js', title, f3, f3].join('\n') + HEADING_BODY).length,
+    0,
+    'an info string belongs to an opening fence, so the heading remains code',
+  );
+});
+
 test('#62: MD_HEADING_PREFIX accepts what the pattern accepts', () => {
   // The two must stay coupled: TITLE_CASE_HEADER matches `#{1,6}[ \t]+`, so if
   // the prefix strip stops accepting a tab, `##` survives into the token list

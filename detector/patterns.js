@@ -682,7 +682,7 @@ const AIDetector = (() => {
    * sliced the whole document for every candidate, which is quadratic on a
    * heading-dense file. */
   function fenceRanges(text) {
-    const re = /^[ \t]{0,3}(`{3,}|~{3,})[^\n]*$/gm;
+    const re = /^[ \t]{0,3}(`{3,}|~{3,})([^\n]*)$/gm;
     const ranges = [];
     let open = null;
     let m;
@@ -690,7 +690,11 @@ const AIDetector = (() => {
       const marker = m[1];
       if (!open) {
         open = { char: marker[0], len: marker.length, start: m.index };
-      } else if (marker[0] === open.char && marker.length >= open.len) {
+      } else if (
+        marker[0] === open.char &&
+        marker.length >= open.len &&
+        m[2].trim() === ''
+      ) {
         ranges.push([open.start, m.index + m[0].length]);
         open = null;
       }
