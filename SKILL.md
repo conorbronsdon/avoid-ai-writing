@@ -1,7 +1,7 @@
 ---
 name: avoid-ai-writing
 description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Use this skill when asked to "remove AI-isms," "clean up AI writing," "edit writing for AI patterns," "audit writing for AI tells," or "make this sound less like AI." Supports a detect-only mode, an edit-in-place mode for files, an optional voice profile (casual / professional / technical / warm / blunt), and an iterate-to-convergence pass.
-version: 3.24.0
+version: 3.25.0
 license: MIT
 compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, VS Code Copilot, Hermes Agent, OpenHands, etc.) or OpenClaw. No external tools or APIs required.
 metadata:
@@ -77,7 +77,7 @@ In **edit** mode, your job is to:
 
 ### Sentence structure
 - **"It's not X — it's Y" / "This isn't about X, it's about Y"**: Rewrite as a direct positive statement. Max one per piece, and only if it serves the argument. This includes the **split-sentence form**, where the negation and the correction fall in two separate sentences rather than pivoting on a single dash or comma: "The headline isn't the speed. The real story is Y." Read on its own, each sentence looks like an innocent declarative, which is exactly why the split version slips past a check tuned to the joined phrasing — flag it the same way. AI also stacks the negation across several options before the reveal ("It's not the price. It's not the features. It's the trust."). The multi-negation countdown is the same move inflated; flag it and cut straight to the positive claim. The **tailing negation** is the clipped cousin: a bare negation fragment tacked onto the end of a sentence — "The options come from the selected item, no guessing." Write the constraint as a real clause ("without forcing the user to guess") or cut it. Carve-out: negations enumerating spec constraints in a list ("no dependencies, no telemetry") are list content, not a reveal. Adapted from `blader/humanizer` P9.
-- **Hollow intensifiers**: Cut `genuine` / `genuinely`, `real` (as in "a real improvement"), `truly`, `quite frankly`, `to be honest`, `let's be clear`, `it's worth noting that`. Just state the fact.
+- **Hollow intensifiers**: Cut `genuine` / `genuinely`, `real` (as in "a real improvement"), `truly`, `quite frankly`, `to be honest`, `let's be clear`, `it's worth noting that`, and `actually` when it only adds emphasis. The default fix for `actually` is deletion, not substitution: "This actually makes the process simpler" becomes "This makes the process simpler." Keep it when it marks a specific correction or expectation gap the sentence names ("we expected a cache hit; it was actually a miss"), though a direct contrast may still be clearer ("it was a miss, not a hit"). Just state the fact.
 - **Vague endorsement ("worth [verb]ing")**: Cut or replace `worth reading`, `worth paying attention to`, `worth a look`, `worth exploring`, `worth checking out`, `worth your time`. These substitute a generic thumbs-up for a specific reason. Say *why* something matters instead.
 - **Hedging**: Cut `perhaps`, `could potentially`, `it's important to note that`, `to be clear`. Make the point directly.
 - **Missing bridge sentences**: Each paragraph should connect to the last. If paragraphs could be rearranged without the reader noticing, add connective tissue.

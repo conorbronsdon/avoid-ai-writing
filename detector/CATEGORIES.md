@@ -32,7 +32,7 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 | `sycophantic` | Sycophantic tone | Sycophantic tone |
 | `acknowledgment-loop` | Acknowledgment loop | Acknowledgment loops |
 | `filler` | Filler phrase | Filler phrases |
-| `hollow-intensifier` | Hollow intensifier | Filler phrases (intensifiers) |
+| `hollow-intensifier` | Hollow intensifier | Filler phrases (intensifiers), except context-dependent `actually` (see §C) |
 | `generic-conclusion` | Generic conclusion | Generic conclusions |
 | `social-cta-closer` | Engagement-bait closer | Social endorsement closers |
 | `future-narrative` | Generic future narrative | Generic future-narrative closers |
@@ -92,6 +92,7 @@ mistake their absence for a coverage gap:
 - Synonym cycling
 - Copula avoidance
 - Promotional language
+- Context-dependent `actually` as a hollow intensifier *(delete it when it only adds emphasis; keep it when it carries a named correction or expectation gap). The same token performs both jobs, so matching it unconditionally would flag ordinary corrective prose.*
 - Sentence structure: "It's not X — it's Y" / split-sentence form / multi-negation countdown / tailing negation
 - Structural issues / Excessive structure / Inline-header lists / Numbered list inflation
 - Moral-adjective category errors (including ontological slop on assumptions, gratuitous universal quantifiers)

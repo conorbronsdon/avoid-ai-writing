@@ -4,6 +4,22 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.25.0] — 2026-08-12
+
+### Added
+
+- **`Actually` is now a cut-first hollow intensifier.** When it only adds
+  emphasis ("this actually makes the process simpler"), delete it rather than
+  swapping in another word. Keep it when it carries a named correction or
+  expectation gap, though a direct contrast may still be clearer.
+- **The deterministic detector deliberately stays unchanged.** A regex cannot
+  distinguish filler from ordinary corrective prose ("we expected a cache hit;
+  it was actually a miss") without false positives, so this remains an
+  LLM-judgment rule under the repo's precision-over-recall policy. The catalog
+  stays at 62 categories, the engine at 48 `type`s, and the word table at 112.
+
+---
+
 ## [3.24.0] — 2026-08-07
 
 ### Added
