@@ -1,7 +1,7 @@
 ---
 name: avoid-ai-writing
 description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Use this skill when asked to "remove AI-isms," "clean up AI writing," "edit writing for AI patterns," "audit writing for AI tells," or "make this sound less like AI." Supports a detect-only mode, an edit-in-place mode for files, an optional voice profile (casual / professional / technical / warm / blunt), and an iterate-to-convergence pass.
-version: 3.25.0
+version: 3.26.0
 license: MIT
 compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, VS Code Copilot, Hermes Agent, OpenHands, etc.) or OpenClaw. No external tools or APIs required.
 metadata:
@@ -442,6 +442,13 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - Distinct from rhetorical-question openers (which stall before a point) and chatbot artifacts (which perform helpfulness): these are mid-flow teasers that pad the rhythm. The fix is to delete the hook and state the thing. "The catch? It only works on weekends." becomes "It only works on weekends." Adapted from `Aboudjem/humanizer-skill` P41.
 - The same move in a fake-candid register: "Honestly?", "Look,", "Real talk:", "Let's be honest —" as standalone openers that stage a pause before an ordinary point. The tell is the theatrical setup-and-reveal, not the word — "honestly" or "look" mid-sentence in casual prose is ordinary English and stays unflagged. Adapted from `blader/humanizer` P33.
 
+### Paraprosdokians (twist-ending sentences)
+- A paraprosdokian sets up an expectation and reverses it at the last moment, forcing the reader to reinterpret the first half: "We planned for every failure mode. Except the one that happened." / "The migration went smoothly, which is how we knew something was wrong." / "It has every feature you could want, and several you'd pay to remove." LLMs reach for this shape to manufacture wit, and it clusters in the high-visibility slots: opening hooks, section closers, and the final item of a list.
+- The most common variant in product and marketing copy is **scale-then-deflate**: open with a big number or sweeping scope, then puncture it with a narrow personal contrast. "Four steps, and only one of them is yours." / "A thousand integrations, and you'll only ever click one." / "Everything about billing changed. Your invoice didn't." The deflation is meant to read as confident understatement; deployed more than once it reads as a tic, and it usually hides the actual claim (which step is yours? what changed in billing?).
+- Why it's a tell: the twist is structural cleverness, not earned insight. The reversal substitutes a rhythm trick for a claim — delete the pivot and there's usually nothing underneath ("we missed a failure mode" is the entire content). Humans land a paraprosdokian occasionally and deliberately; LLMs deploy it as a default closer whenever they want to sound sharp, so two or more in one piece is a strong signal. Related shapes already flagged separately: the "It's not X — it's Y" pivot (a reversal without the humor) and infomercial engagement hooks ("Plot twist:", which *announces* the reversal this pattern performs).
+- Fix: state the claim straight and let the content carry the weight. "We planned for every failure mode. Except the one that happened." becomes "We planned for disk failures and network partitions, but not for the clock skew that actually took us down." The specific miss is more interesting than the twist.
+- Carve-out: intentional comedy writing, speech openers, and quoted one-liners keep their paraprosdokians — the form exists because it works in humor. Flag it in analytical, technical, and professional prose, where wit-by-reversal reads as performance. Max one per piece even in casual registers, and only if the twist reveals something true.
+
 ### Social endorsement closers
 - The curatorial sign-off LLMs append to LinkedIn and X posts that share or recommend something — usually a colon teeing up a link: "This one is worth your time:", "This one's a must-read:", "I highly recommend giving this a read.", "Do yourself a favor and read this.", "You won't want to miss this one.", "Save this for later.", "Bookmark this.", "Don't sleep on this one.", "Trust me, you'll want to read this.", "Thank me later."
 - Why it's a tell: it performs a recommendation without giving the reader a reason to click. The endorsement is generic and demonstrative-anchored ("THIS one is worth your time") — it could sit under any link, which is exactly why an LLM reaches for it to close a share post.
@@ -601,6 +608,7 @@ Not all AI-isms are equal. When doing a quick pass or triaging a large document,
 - Social endorsement closers ("This one is worth your time:", "thank me later")
 - Lingering-attention claims ("the line I keep coming back to," "I can't stop thinking about this")
 - Narrated candor ("I would rather flag this than let you discover it later", "in the interest of full disclosure")
+- Paraprosdokians (twist-ending sentences: "We planned for every failure mode. Except the one that happened.")
 - Hedge-stacked predictions ("could potentially," "may eventually")
 - Real/actual adjective inflation ("real on-chain tokenomics")
 - Moral-adjective category errors ("honest shape," "flagged honestly")

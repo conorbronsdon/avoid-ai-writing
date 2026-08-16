@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.26.0] — 2026-08-17
+
+### Added
+- **Paraprosdokians (twist-ending sentences)** — sentences that set up an expectation and reverse it at the last moment, forcing a reread of the first half ("We planned for every failure mode. Except the one that happened."). LLMs deploy the shape as a default wit move, clustering in opening hooks, section closers, and list-final items; the reversal substitutes a rhythm trick for a claim. Includes the **scale-then-deflate** variant common in product/marketing copy — a big number or sweeping scope punctured by a narrow personal contrast ("Four steps, and only one of them is yours." / "A thousand integrations, and you'll only ever click one." / "Everything about billing changed. Your invoice didn't."). Catalog goes from 62 to 63 detection categories, P1 severity. LLM-judgment rule, no detector `type` — recognizing a twist requires reading the setup and the payoff together, which a regex can't do; the engine stays at 48 `type`s and the word table at 112. Carve-outs: intentional comedy writing, speech openers, and quoted one-liners; max one per piece in casual registers, and only if the twist reveals something true. Distinct from "It's not X — it's Y" (a reversal without the humor) and infomercial engagement hooks ("Plot twist:", which announces the reversal this pattern performs).
+
+---
+
 ## [3.25.0] — 2026-08-12
 
 ### Added
