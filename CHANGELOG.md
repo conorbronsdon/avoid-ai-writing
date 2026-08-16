@@ -4,6 +4,28 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.27.0] — 2026-08-16
+
+### Added
+
+- **Two judgment-only patterns and the genre-scoped remainder of the
+  [#108](https://github.com/conorbronsdon/avoid-ai-writing/issues/108) batch.**
+  False agency (an active subject that can't own the verb — with operative
+  carve-outs for literal verbs and collective-actor shorthand like "the market
+  rewards shipping", per review) and the transformation crutch ("turns into" /
+  "becomes real" as summary glue, with literal and mechanism-stated
+  transformations carved out) join the catalog as LLM-judgment rules. The
+  ZK/crypto domain-term collision (generic "proof point" / "receipt") lands as
+  two genre-scoped rows in the Tier 3 phrases table — skipped by the
+  deterministic engine, since genre scoping needs judgment — with the
+  generalization held as a note. "This matters because" folds into the
+  persuasive-authority tropes, and the concession-fragment reassurance pair
+  ("Not always. Not perfectly.") joins manufactured punchlines. Catalog moves
+  to 67 categories and the README's Tier 3 phrase count to 12; the engine
+  stays at 51 `type`s and the word table at 112.
+
+---
+
 ## [3.26.0] — 2026-08-16
 
 ### Added

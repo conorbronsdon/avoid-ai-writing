@@ -1,5 +1,5 @@
 ---
-description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Activate whenever editing prose-heavy files (Markdown, documentation, blog posts, READMEs, release notes, emails). Cursor port of the avoid-ai-writing skill v3.26.0. See https://github.com/conorbronsdon/avoid-ai-writing.
+description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Activate whenever editing prose-heavy files (Markdown, documentation, blog posts, READMEs, release notes, emails). Cursor port of the avoid-ai-writing skill v3.27.0. See https://github.com/conorbronsdon/avoid-ai-writing.
 globs: ["**/*.md", "**/*.mdx", "**/*.txt", "**/*.rst", "**/*.adoc"]
 alwaysApply: false
 ---
@@ -258,6 +258,10 @@ Multi-word boilerplate that's individually unobjectionable but stacks heavily in
 | (sustainable) reward emissions | Cite the emission schedule and the sink |
 | tokenized incentive structures | Describe the actual mechanism (vesting, gauge, bonded LP, etc.) |
 | designed for long-term [X] | Cut "designed for" — either it is or it isn't. Then state the property |
+| proof point / proof (as a strategy word — ZK, crypto, post-quantum genre) | Literal cryptographic proof stays. Use: evidence, demo, shipped piece, validation signal |
+| receipt (as a strategy word — same genre) | Name the thing a reader can inspect: working example, public artifact, data point |
+
+**Genre-scoped domain-term collision.** The two rows above apply only where the term is a resident term of art (ZK, crypto, and post-quantum prose) — there the word carries exact meaning to the exact audience, so the generic-strategy use reads as AI lingo where it hurts most. "Evidence" stays fine everywhere when the sentence means support for a claim. The deterministic engine skips both rows, since genre scoping needs judgment it does not have. The general form — any genre where a strategy buzzword collides with a resident term of art — likely travels, and is held here as a note until a second genre instance shows up. Source: `welttowelt/stop-slop-refined` ([#108](https://github.com/conorbronsdon/avoid-ai-writing/issues/108)).
 
 ### Template phrases (avoid)
 
@@ -314,6 +318,12 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - **Related — ontological slop on assumptions:** "The assumption stops being true." Assumptions do not flip from true to false; they degrade in adequacy. Write "the assumption breaks down" or "no longer holds."
 - **Related — gratuitous universal quantifiers:** "Taught in every first-year biochemistry course" instead of "taught in introductory biochemistry." The universal claim ("every") is unverifiable and unnecessary — it borrows authority from a scope the writer cannot check. Replace with the actual scope or drop the quantifier.
 
+### Transformation crutch
+- "Turns into," "becomes real," "it stops being" as summary glue: "the concern turns into panic," "a feature turns into a strategy," "the risk becomes real," "it stops being a pile of notes." A costless transformation verb stands in for the thing that happened — no actor, no mechanism, just X relabeled as Y.
+- The moral-adjective entry's ontological-slop note touches one corner of this ("the assumption stops being true"); this is the general shape.
+- Fix: name the concrete action, threshold, actor, or consequence. "The risk becomes real" becomes "wallets start moving funds." "The concern turns into panic" becomes "the concern forces panic coordination across desks."
+- Carve-out, operative: literal and mechanism-stated transformations stay — "the caterpillar turns into a moth," "water turns into ice at zero," and any sentence that states the threshold in the same breath ("the queue turns into a bottleneck once depth passes 10k"). The tell is the bare relabeling with the mechanism missing. Source: `welttowelt/stop-slop-refined` ([#108](https://github.com/conorbronsdon/avoid-ai-writing/issues/108)).
+
 ### Hashtag stuffing
 - Long trailing hashtag blocks (6+ hashtags on a single short post) are near-universal in LLM-generated social content and rare in thoughtful human posts. The block usually mixes a project-specific tag with broad category tags (#AI #Crypto #Web3 #Innovation #FutureTech #Technology) — the categorical ones do nothing for discoverability and read as bot output.
 - **Why 6?** Empirical floor. LinkedIn and X organic engagement plateaus or declines past 3-5 tags; human posts that exceed 5 are usually launch posts trading reach for engagement, while LLM-generated posts default to 10-15. Six is the threshold where false positives on legitimate human use start dropping below false negatives on AI output. The detector treats 6+ as a hard flag; the spec treats 5+ as a soft tell worth a second look on `linkedin` and `investor-email` profiles.
@@ -334,6 +344,12 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - Sentences with the subject dropped or the actor hidden: "No configuration file needed." "The results are preserved automatically." "Support for nested queries was added." The clipped no-subject form is a shape LLMs reach for when compressing feature descriptions, and the passive hides who does what.
 - Fix: name the actor when it clarifies — "You don't need a configuration file. The CLI preserves results automatically." Prefer active voice unless the actor is irrelevant.
 - Carve-out: terse reference registers where the fragment is the correct form — README feature lists, changelog entries, parameter docs, commit subjects ("No breaking changes"). Flag in flowing prose; skip in docs and casual registers (see the tolerance matrix). A single deliberate fragment for emphasis is rhythm, not a tell. Adapted from `blader/humanizer` P13.
+
+### False agency
+- Active-voice sentences that hand human judgment, intent, or responsibility to an inanimate subject: "the decision emerged after the offsite," "the culture shifted toward accountability," "a bet lives or dies on distribution." The subject is present and the voice is active, but the actor is a thing that can't decide — each sentence reads fine until you ask who did it, and the responsibility has no owner.
+- Third seat in a set of three: agentless passives hide the subject ("support was added"), moral-adjective category errors put character adjectives on non-agents ("an honest shape"), and this one keeps an active subject that can't own the verb.
+- Fix: name the human. "The decision emerged after the offsite" becomes "we decided after the offsite." "The data tells us adoption is early" becomes "the funnel numbers read early to us."
+- Carve-outs, both operative. Ordinary literal verbs stay: a report can show a result, a system can return an error, a paper can argue a position. Established collective-actor shorthand stays too: "the market rewards shipping" and analyst-register metonymy where the collective is the recognized actor are ordinary English, not hidden responsibility. Flag only when a specific person or team exercised judgment, intent, or choice and the sentence's subject can't be the one who exercised it. Source: `welttowelt/stop-slop-refined` ([#108](https://github.com/conorbronsdon/avoid-ai-writing/issues/108)), carve-outs widened in review.
 
 ### Synonym cycling
 - AI rotates synonyms to avoid repeating a word: "developers… engineers… practitioners… builders" in the same paragraph. Human writers repeat the clearest word.
@@ -515,7 +531,7 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - "It's worth noting that," "Interestingly," "Surprisingly," "Importantly," "Significantly," "Notably," "Certainly," "Undoubtedly," "Without a doubt" — AI uses these to signal how the reader should feel about a fact instead of letting the fact speak for itself.
 - "Here's what's interesting," "Here's the interesting part," "Here are the parts I found interesting" — reader-steering cue that pre-interprets importance. Works when followed by genuinely surprising data; fails when it introduces a restatement of something obvious (which is the AI default).
 - One "notably" in a 2,000-word piece is fine. Three in 500 words is AI-style emphasis stacking. Flag by density.
-- Related — **persuasive-authority tropes**: "the real question is," "at its core," "fundamentally," "make no mistake," "the truth is." Same move as the calibration phrases above, but they assert depth or stakes instead of feeling: they announce that what follows is important rather than showing it. Cut the trope and lead with the substance. Adapted from `blader/humanizer` P27.
+- Related — **persuasive-authority tropes**: "the real question is," "at its core," "fundamentally," "make no mistake," "the truth is," "this matters because," "here's why that matters." Same move as the calibration phrases above, but they assert depth or stakes instead of feeling: they announce that what follows is important rather than showing it. Cut the trope and lead with the substance. Adapted from `blader/humanizer` P27.
 
 ### Self-labeling significance
 - After listing or describing several items, the writer points back at one and labels it as contrarian / clever / surprising / counterintuitive / key: "That last move is the contrarian one," "This is the interesting part," "That third bullet is the real story," "Here's where it gets clever," "The last bit is the counterintuitive one."
@@ -560,6 +576,7 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - A run of clipped fragments engineered so every beat lands like a quotable closer: "It had no preference for symmetry. No aesthetic prior. No nostalgia for human taste. The old rules were gone." Each fragment poses as a reveal; stacked, they read as a drumroll.
 - This composes with Rhythm and uniformity below, which encourages fragments and varied lengths: variation is the human signal, and one short sentence that lands a point is exactly that. The tell here is the opposite of variation — three or more same-shape fragments in a row, each carrying manufactured drama.
 - Fix: keep the one fragment that earns its emphasis and fold the rest into ordinary sentences with the claim stated: "AlphaEvolve did not favor symmetry or human-looking designs, which made some of the older assumptions less useful." Adapted from `blader/humanizer` P31.
+- The reassurance pair is the concession flavor of the same move: "Not always. Not perfectly." after a bold claim — two clipped concessions staged as honesty, carrying no information about when the claim fails. Fold the concession into a clause that says when it fails ("it breaks on cold starts"), or cut it. Source: `welttowelt/stop-slop-refined` ([#108](https://github.com/conorbronsdon/avoid-ai-writing/issues/108)).
 
 ### Rhythm and uniformity
 

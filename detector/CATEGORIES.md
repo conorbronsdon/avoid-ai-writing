@@ -27,7 +27,7 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 | `tier1-clarity` | Wordiness | Words and phrases to replace (Tier 1B) |
 | `transition` | AI transition | Transition phrases to remove or rewrite |
 | `template-phrase` | Template phrase | Template phrases (avoid) |
-| `tier3-phrase` / `tier3-phrase-cluster` | Boilerplate phrase / cluster | Template phrases (avoid) |
+| `tier3-phrase` / `tier3-phrase-cluster` | Boilerplate phrase / cluster | Template phrases (avoid) *(the two genre-scoped domain-term-collision rows are LLM-judgment — see the Genre-scoped note in SKILL.md)* |
 | `chatbot` | Chatbot artifact | Chatbot artifacts |
 | `sycophantic` | Sycophantic tone | Sycophantic tone |
 | `acknowledgment-loop` | Acknowledgment loop | Acknowledgment loops |
@@ -99,6 +99,8 @@ mistake their absence for a coverage gap:
 - Sentence structure: "It's not X — it's Y" / split-sentence form / multi-negation countdown / tailing negation
 - Structural issues / Excessive structure / Inline-header lists / Numbered list inflation
 - Moral-adjective category errors (including ontological slop on assumptions, gratuitous universal quantifiers)
+- False agency *(active subject that can't own the verb — literal verbs and collective-actor shorthand like "the market rewards shipping" are carve-outs; judging ownership needs reading)*
+- Transformation crutch *("turns into" / "becomes real" as summary glue — literal and mechanism-stated transformations are carve-outs)*
 - Invented contrast-pair mirroring
 - Hyphenated modifier stacking
 - Unnecessary hyphenation outside the detector's curated subclasses
