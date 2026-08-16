@@ -1,5 +1,5 @@
 ---
-description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Activate whenever editing prose-heavy files (Markdown, documentation, blog posts, READMEs, release notes, emails). Cursor port of the avoid-ai-writing skill v3.25.0. See https://github.com/conorbronsdon/avoid-ai-writing.
+description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Activate whenever editing prose-heavy files (Markdown, documentation, blog posts, READMEs, release notes, emails). Cursor port of the avoid-ai-writing skill v3.26.0. See https://github.com/conorbronsdon/avoid-ai-writing.
 globs: ["**/*.md", "**/*.mdx", "**/*.txt", "**/*.rst", "**/*.adoc"]
 alwaysApply: false
 ---
@@ -437,6 +437,23 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - Distinct from rhetorical-question openers (which stall before a point) and chatbot artifacts (which perform helpfulness): these are mid-flow teasers that pad the rhythm. The fix is to delete the hook and state the thing. "The catch? It only works on weekends." becomes "It only works on weekends." Adapted from `Aboudjem/humanizer-skill` P41.
 - The same move in a fake-candid register: "Honestly?", "Look,", "Real talk:", "Let's be honest —" as standalone openers that stage a pause before an ordinary point. The tell is the theatrical setup-and-reveal, not the word — "honestly" or "look" mid-sentence in casual prose is ordinary English and stays unflagged. Adapted from `blader/humanizer` P33.
 
+### Launch-copy dramatic introductions
+- "Enter Flowdesk." / "Meet Flowdesk, your new favorite treasury dashboard" / "Say hello to Flowdesk" / "Think Notion meets Figma" — the default LLM shape for product and launch posts, near-deterministic in short social copy. The move introduces the product like a game-show contestant instead of saying anything about it. Sits next to the stale social-ad tells (unlock, elevate, link in bio), but no other entry names the introduction move itself.
+- Fix: say what the thing does and for whom. "Meet Flowdesk, your new favorite treasury dashboard" becomes "Flowdesk shows a fund's full treasury position on one screen."
+- The detector catches the sentence-initial imperative surfaces with a capitalized product name: "Enter X.", "Meet X, your new favorite...", "Think X meets Y". Two surfaces stay judgment-only on purpose. "Say hello to X" — "Say hello to Grandma." is ordinary human prose — and the bare "Meet X, your new [role]" form, which is how humans introduce colleagues, pets, and babies ("Meet Sarah, your new account manager"); the detector requires a launch-copy head ("your new favorite", "the new standard"). Known accepted false positives, disclosed here: stage directions in dramatic scripts ("Enter Hamlet.") and column-style narrative ("Enter Rashford."). The engine has no fiction mode, so both calls stay with this carve-out. Source: `welttowelt/stop-slop-refined` ([#108](https://github.com/conorbronsdon/avoid-ai-writing/issues/108)).
+
+### Fake-casual register
+- The register models emit when asked for a lowercase-casual social voice. Infomercial engagement hooks (above) catch "Plot twist:" and the fake-candid openers; the rest of the kit is what survives cleanup, because it sits closest to an actual casual voice:
+  - one-word verdict closers as the whole closing line: "wild." / "insane." / "unhinged."
+  - stage directions: "*checks notes*", "*chef's kiss*", "*mic drop*"
+  - wink asides: "(yes, really)", "(no, seriously)"
+  - label-prefix openers beyond plot twist: "hot take", "fun fact", "pro tip", "PSA", "unpopular opinion" — with or without the colon
+  - "because of course it does"
+  - the self-QA volley: "Is it fast? Yes. Is it cheap? Also yes."
+- The tell across all six props is that the drama is outsourced to the prop instead of carried by the content. A post can clear every vocabulary tier and still be wearing this costume, which is exactly why it slips through cleanup.
+- Fix: delete the label and say the thing. Replace the verdict word with the specific surprise. Cut the wink and the stage business. An observation that lands needs no costume.
+- Carve-out: a writer whose established voice runs on these props keeps them — the register is a tell for *imposed* casualness, not a ban on playfulness. The detector covers only the mechanical props (stage directions, wink asides, "because of course it does"); verdict closers, label-prefix openers, and the self-QA volley need register judgment and stay skill-only. Source: `welttowelt/stop-slop-refined` ([#108](https://github.com/conorbronsdon/avoid-ai-writing/issues/108)).
+
 ### Social endorsement closers
 - The curatorial sign-off LLMs append to LinkedIn and X posts that share or recommend something — usually a colon teeing up a link: "This one is worth your time:", "This one's a must-read:", "I highly recommend giving this a read.", "Do yourself a favor and read this.", "You won't want to miss this one.", "Save this for later.", "Bookmark this.", "Don't sleep on this one.", "Trust me, you'll want to read this.", "Thank me later."
 - Why it's a tell: it performs a recommendation without giving the reader a reason to click. The endorsement is generic and demonstrative-anchored ("THIS one is worth your time") — it could sit under any link, which is exactly why an LLM reaches for it to close a share post.
@@ -507,6 +524,12 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - Significance-adjectives that signal the pattern: contrarian, clever, surprising, counterintuitive, interesting, key, important, unusual, smart, brilliant, real, actual.
 - Fix: cut the labeling sentence and let the explanation that follows do the work directly. Or restructure so the item you wanted to highlight is positioned first or expanded with specifics, making the label redundant.
 - Example. Before: "→ Two separate indexes for tiered storage. That last move is the contrarian one. Co-locating related data usually helps cache locality." After: "→ Two separate indexes for tiered storage. Co-locating related data usually helps cache locality, but splitting the indexes is what makes the hot path cheap." The contrast carries itself; the label is gone.
+
+### Dramatized contrast against the crowd
+- A claim propped on an implied lagging crowd, usually stamped with a date: "shipped it in 2022, while everyone else was still debating timelines," "built it in a weekend, while the industry wrote thinkpieces." A strawman with a timestamp — the crowd is invented, so the contrast costs nothing.
+- The never-inject list guards the rewrite side of this move (forced contrarianism); this entry flags it on input. Adjacent to significance inflation and self-labeling significance, but the detectable surface is its own: the trailing "while everyone else..." clause with a dismissive verb.
+- Fix: state the fact and cut the crowd clause, or name the actual competitor and what they did. If the crowd can't be named, it was invented.
+- Carve-out: literal simultaneity is ordinary narrative and stays unflagged — "she read while everyone else watched the movie," "others debated the amendment." The detector requires a dismissive verb plus the "was still" dramatization marker ("was still debating"), so wire copy, memoir, and fiction using those verbs literally stay clean. The residue — a literal "was still debating" — is an accepted, disclosed false positive. Source: `welttowelt/stop-slop-refined` ([#108](https://github.com/conorbronsdon/avoid-ai-writing/issues/108)).
 
 ### Wall-of-text replies (missing line breaks)
 - In conversational registers — issue and PR comments, chat, DMs, casual email — humans break a reply at thought boundaries: one idea, then a break, then the next. LLMs default to a single dense block regardless of length. The tell: a reply-length text (roughly under 150 words) with four or more sentences delivered as one unbroken paragraph, no line break anywhere in it.

@@ -4,6 +4,25 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.26.0] — 2026-08-16
+
+### Added
+
+- **Three detector-backed patterns from the `welttowelt` merged-system diff
+  ([#108](https://github.com/conorbronsdon/avoid-ai-writing/issues/108)).**
+  Launch-copy dramatic introductions ("Enter X.", "Meet X, your new...",
+  "Think X meets Y" — "Say hello to X" stays judgment-only, since "Say hello
+  to Grandma." is ordinary human prose), dramatized contrast against the crowd
+  (gated on a dismissive verb plus the "was still" dramatization marker, so
+  literal simultaneity — "she read while everyone else watched the movie,"
+  "others debated the amendment" — stays clean; a literal "was still
+  debating" is the accepted, disclosed residue), and the fake-casual register, with its mechanical props detected
+  (stage directions, wink asides, "because of course it does") and the
+  register judgment left to the skill. The catalog moves to 65 categories and
+  the engine to 51 `type`s; the word table stays at 112.
+
+---
+
 ## [3.25.0] — 2026-08-12
 
 ### Added

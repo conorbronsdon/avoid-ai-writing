@@ -320,6 +320,17 @@ const AIDetector = (() => {
     // formulaic-opener: a single strong opener tell the length divisor would
     // otherwise wash out on a short post.
     'speculative-opener': 8,
+    // Launch-copy introduction ("Enter X.", "Meet X, your new...").
+    // Weighted like the other single-hit opener tells: strong on the
+    // short launch posts where it actually appears.
+    'launch-intro': 8,
+    // Dramatized crowd contrast. Gated hard on the dismissive verb, so
+    // a hit is meaningful, but the surface shares words with ordinary
+    // narrative — weighted below the opener tells on purpose.
+    'crowd-contrast': 6,
+    // Fake-casual props (stage directions, wink asides). Near-costume
+    // when present; same class as the opener tells on short posts.
+    'fake-casual-prop': 8,
     'title-case-header': 4,
     'parenthetical-hedge': 3,
     'smart-punct-signature': 6,
@@ -653,6 +664,76 @@ const AIDetector = (() => {
   // a lone hit cannot flip a document's classification).
   const SPECULATIVE_OPENERS = [
     /\b(?:imagine|picture|envision)(?:\s*,[^,\n]{1,30},)?\s+a\s+(?:world|future|reality)\s+(?:where|in\s+which)\b/gi,
+  ];
+
+  // ─── Launch-copy dramatic introductions ────────────────────────────
+  // "Enter Flowdesk." / "Meet Flowdesk, your new treasury dashboard" /
+  // "Think Notion meets Figma" — the LLM-default product-introduction
+  // move in launch and announcement copy. Every surface is gated to the
+  // sentence-initial imperative with a capitalized product name, and
+  // the Meet surface additionally to launch-copy heads ("your new
+  // favorite", "the new standard") — bare "Meet Sarah, your new account
+  // manager" is how humans introduce colleagues, pets, and babies, so
+  // that form stays with the skill's judgment side. "enter the
+  // password" has no capital, and the terminator class has no colon so
+  // doc field labels ("Enter Username: ...") stay clean. "Say hello to
+  // X" from the same family is deliberately NOT detected — "Say hello
+  // to Grandma." is ordinary human prose and no regex separates the
+  // two. Known accepted false positives, disclosed in the skill entry:
+  // stage directions in dramatic scripts ("Enter Hamlet.") and
+  // column-style narrative ("Enter Rashford."). The engine has no
+  // fiction mode, so those calls stay with the skill's carve-out, and a
+  // lone hit cannot push a document past "Minimal AI signals". The
+  // anchors are lookbehinds so adjacent intros each count and the
+  // reported span starts at the tell itself.
+  const LAUNCH_INTROS = [
+    /(?<=^|[.!?]\s|\n)Enter\s+[A-Z][\w'-]{1,29}\s*[.!—–]/g,
+    /(?<=^|[.!?]\s|\n)Meet\s+[A-Z][\w'-]{1,29}\s*,\s*(?:your\s+new\s+(?:favorite|go-to)|the\s+new\s+(?:standard|way|home))\b/g,
+    /(?<=^|[.!?]\s|\n)[Tt]hink\s+[A-Z][\w'-]{1,29}\s+meets\s+[A-Z][\w'-]{1,29}\b/g,
+  ];
+
+  // ─── Dramatized contrast against the crowd ─────────────────────────
+  // "shipped it in 2022, while everyone else was still debating
+  // timelines" — a claim propped on an implied lagging crowd. The gate
+  // is a dismissive verb PLUS the "was still" dramatization marker,
+  // because bare "while everyone else" is ordinary simultaneity ("she
+  // read while everyone else watched the movie") and even the
+  // dismissive verbs are ordinary English in literal use ("others
+  // debated the amendment" in wire copy). Requiring the progressive
+  // still-form keeps the flagship tell ("was still debating
+  // timelines") and clears literal news, memoir, and fiction prose;
+  // the residue — a literal "was still debating" — is an accepted,
+  // disclosed false positive. Verb stems carry explicit inflection
+  // tails so agent nouns ("the market speculators") and adverbs
+  // ("deliberately ignored") never match. Recall is deliberately
+  // sacrificed: "was busy debating" without "still" stays a miss,
+  // per precision-over-recall.
+  const CROWD_CONTRAST = [
+    /\bwhile\s+(?:everyone\s+else|the\s+(?:industry|market|competition)|others)\s+(?:was|were|is|are)\s+still\s+(?:busy\s+)?(?:(?:debat|deliberat|hesitat|theoriz|philosophiz|pontificat|speculat|argu)(?:e|es|ed|ing)|(?:dither|bicker)(?:s|ed|ing)?)\b/gi,
+    /\bwhile\s+(?:everyone\s+else|the\s+(?:industry|market|competition)|others)\s+(?:was\s+|were\s+)?(?:busy\s+)?(?:writing|wrote)\s+think-?\s?pieces\b/gi,
+    /\bwhile\s+(?:everyone\s+else|the\s+(?:industry|market|competition)|others)\s+(?:was\s+|were\s+|is\s+|are\s+)?(?:still\s+)?play(?:ed|ing|s)?\s+catch[-\s]?up\b/gi,
+  ];
+
+  // ─── Fake-casual props (stage directions and wink asides) ──────────
+  // The regexable props from the fake-casual register: theatrical
+  // asterisk stage directions ("*checks notes*", "*chef's kiss*",
+  // "*mic drop*"), wink asides ("(yes, really)", "(no, seriously)"),
+  // and "because of course it does". The rest of the register
+  // (one-word verdict closers, label-prefix openers, the self-QA
+  // volley) needs register judgment and stays skill-only — "wild." is
+  // a word, not a regex target. The because-of-course branch is gated
+  // to present tense plus "did": the wink is characteristically
+  // "because of course it does", while past-tense "because of course
+  // it was raining" is where literal human grumbles live. The kiss
+  // pattern accepts the curly apostrophe (U+2019) — the form smart
+  // punctuation and LLMs actually emit. Known accepted false positive:
+  // a human writer using a wink aside on purpose; the props are
+  // weighted as a strong single hit, not a classification by
+  // themselves.
+  const FAKE_CASUAL_PROPS = [
+    /\*\s?(?:checks\s+notes|chef['\u2019]?s\s+kiss|mic\s+drop|takes\s+a\s+deep\s+breath|sips\s+(?:coffee|tea)|nervous\s+laughter)\s?\*/gi,
+    /\(\s?(?:yes|no)\s?,\s?(?:really|seriously)\s?\)/gi,
+    /\bbecause\s+of\s+course\s+(?:it|he|she|they|you|we)\s+(?:does|do|did|is|are)\b/gi,
   ];
 
   // Function words whose presence MID-title marks the AI section-header shape.
@@ -1295,6 +1376,9 @@ const AIDetector = (() => {
     // ── Tier 1 v2: formulaic openers + parenthetical hedges ──────────
     issues.push(...matchPatterns(text, FORMULAIC_OPENERS, 'formulaic-opener', 'high'));
     issues.push(...matchPatterns(text, SPECULATIVE_OPENERS, 'speculative-opener', 'high'));
+    issues.push(...matchPatterns(text, LAUNCH_INTROS, 'launch-intro', 'high'));
+    issues.push(...matchPatterns(text, CROWD_CONTRAST, 'crowd-contrast', 'medium'));
+    issues.push(...matchPatterns(text, FAKE_CASUAL_PROPS, 'fake-casual-prop', 'high'));
     issues.push(...matchPatterns(text, PARENTHETICAL_HEDGE, 'parenthetical-hedge', 'medium'));
 
     // Title-case headers — gated to marketing/personal/general modes
@@ -2147,6 +2231,9 @@ const AIDetector = (() => {
     'social-cta-closer': 'Engagement-bait closer',
     'formulaic-opener': 'Formulaic opener',
     'speculative-opener': 'Speculative scenario opener',
+    'launch-intro': 'Launch-copy introduction',
+    'crowd-contrast': 'Dramatized crowd contrast',
+    'fake-casual-prop': 'Fake-casual prop',
     'title-case-header': 'Title Case header',
     'parenthetical-hedge': 'Parenthetical hedge',
     'smart-punct-signature': 'Smart-punct signature',

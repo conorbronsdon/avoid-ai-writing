@@ -6,14 +6,14 @@ the skill, decide here whether it's regex-detectable (give it a detector `type`)
 or LLM-only judgment (mark it so). When you add a detector `type`, point it back
 at the skill section it enforces.
 
-The engine exposes 48 issue `type`s (see `TYPE_LABELS` in `patterns.js`). The
+The engine exposes 51 issue `type`s (see `TYPE_LABELS` in `patterns.js`). The
 skill has more `###` sections than that — the gap is **not** missing coverage,
 it's rules that are judgment calls a regex can't make. The three groups below
 account for every entry on both sides.
 
 Three counts coexist on purpose and should not be forced to match: the README's
 **pattern-category count** (the human-facing prose catalog, derived from SKILL.md
-and guarded in CI), the engine's **48 `type`s** (which split the vocabulary tiers
+and guarded in CI), the engine's **51 `type`s** (which split the vocabulary tiers
 and add stylometric signals), and SKILL.md's `###` sections (which also include
 writer-side tests with no detectable form). The
 `categories.test.js` enforces the engine ↔ this-file mapping, and checks every
@@ -63,6 +63,9 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 | `ai-utm-source` | AI-tool URL parameter | AI-tool URL parameters |
 | `smart-punct-signature` | Smart-punct signature | Formatting (curly quotation marks) — *partial* |
 | `unnecessary-hyphenation` | Unnecessary hyphenation | Unnecessary hyphenation *(curated open, closed, and position-dependent subclasses only)* |
+| `launch-intro` | Launch-copy introduction | Launch-copy dramatic introductions *(sentence-initial imperative surfaces only — "Say hello to X" stays LLM-judgment; see the entry)* |
+| `crowd-contrast` | Dramatized crowd contrast | Dramatized contrast against the crowd *(dismissive verb + "was still" marker — ordinary simultaneity stays clean; a literal "was still debating" is the accepted, disclosed residue)* |
+| `fake-casual-prop` | Fake-casual prop | Fake-casual register *(mechanical props only — verdict closers, label-prefix openers, and the self-QA volley stay LLM-judgment)* |
 
 > **Partial map:** `smart-punct-signature` fires only when curly quotes co-occur
 > with an em-dash, an Oxford comma, and clean typing (≥80 words) — never on curly
