@@ -1282,16 +1282,32 @@ test('#62: fences that a parity count gets wrong', () => {
   );
 });
 
-test('#77: a fence with an info string cannot close an outer fence', () => {
-  const f3 = '```';
+test('#77: only spaces and tabs may follow a closing fence', () => {
   const intro = 'Documentation about writing Markdown, long enough to clear the word gate.';
   const title = '## Benefits And Strategic Considerations';
 
-  assert.equal(
-    titleCaseHits([intro, f3, f3 + 'js', title, f3, f3].join('\n') + HEADING_BODY).length,
-    0,
-    'an info string belongs to an opening fence, so the heading remains code',
-  );
+  for (const fence of ['```', '~~~']) {
+    assert.equal(
+      titleCaseHits([intro, fence, fence + 'js', title, fence].join('\n') + HEADING_BODY).length,
+      0,
+      'trailing text cannot close the outer fence',
+    );
+    assert.equal(
+      titleCaseHits([intro, fence, 'code', fence + ' \t', title].join('\n') + HEADING_BODY).length,
+      1,
+      'spaces and tabs may follow a closing fence',
+    );
+    assert.equal(
+      titleCaseHits([intro, fence, 'code', fence + '\u00a0', title].join('\n') + HEADING_BODY).length,
+      0,
+      'non-breaking space is fence content, not an allowed closing-fence suffix',
+    );
+    assert.equal(
+      titleCaseHits([intro, fence, 'code', fence, title].join('\r\n') + HEADING_BODY).length,
+      1,
+      'CRLF line endings still allow a closing fence',
+    );
+  }
 });
 
 test('#62: MD_HEADING_PREFIX accepts what the pattern accepts', () => {

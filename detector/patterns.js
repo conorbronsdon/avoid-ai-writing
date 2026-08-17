@@ -693,7 +693,7 @@ const AIDetector = (() => {
       } else if (
         marker[0] === open.char &&
         marker.length >= open.len &&
-        m[2].trim() === ''
+        /^[ \t]*\r?$/.test(m[2])
       ) {
         ranges.push([open.start, m.index + m[0].length]);
         open = null;
