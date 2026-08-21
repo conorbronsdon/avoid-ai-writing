@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.25.1] — 2026-08-21
+
+### Changed
+
+- **README documents `npx skills add` as the fastest cross-agent install path.** The community [`skills`](https://github.com/vercel-labs/skills) CLI auto-detects installed agents and covers 75+ of them, with `npx skills update` handling future updates. Existing manual per-platform steps (git clone, `clawhub install`, curl) stay as a no-Node fallback; nothing about them changed. No rule, detector, or word-table changes — the catalog stays 62 / 112.
+
+---
+
 ## [3.25.0] — 2026-08-12
 
 ### Added
