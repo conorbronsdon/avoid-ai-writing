@@ -42,9 +42,37 @@ A one-shot "make this sound human" prompt catches the obvious stuff. This skill 
 - **112-entry word replacement table across 3 tiers + 10 Tier 3 phrases** — not vibes-based. Every flagged word has a specific, plainer alternative. "Leverage" → "use." "Commence" → "start." Tier 1 words always flag, Tier 2 words flag when they cluster, Tier 3 words flag only at high density. Tier 1 itself splits into **1A frequency markers** (`delve`, `tapestry`) and **1B clarity edits** (`in order to`, `utilize`) — same fix, but only 1A is evidence about how a passage was produced, and 1B is weighted lower so a wordiness fix cannot push a document toward an AI classification. Tier 3 *phrases* (multi-word boilerplate like "the integration of," "decentralized compute") flag on per-phrase repetition or when 3+ distinct phrases stack in one piece — the LLM-self-varies-boilerplate shape.
 - **62 pattern categories** — representative examples below, each with before/after. Includes structural detection (hashtag stuffing, bare-NP bullet lists, hedge-stacked predictions), AI-tool fingerprints (placeholders, citation markup, UTM params), rhythm/uniformity checks, conversational-register tells, and writer-side tests. The full catalog lives in [`SKILL.md`](./SKILL.md); this count is enforced against it in CI.
 - **Detect mode** — flag patterns without rewriting. See which flags are real problems vs. judgment calls. Useful when patterns might be intentional or you're auditing content you don't want altered.
-- **Works across platforms** — one `SKILL.md` runs in Claude Code, Cowork (as a plugin), OpenClaw, and Cursor (as a ported rule). See the install paths below.
+- **Works across platforms** — one `SKILL.md` runs in Claude Code, Cowork (as a plugin), OpenClaw, and Cursor (as a ported rule), plus 75+ more via `npx skills add`. See the install paths below.
 
 ## Installation & Usage
+
+### Quick install — any agent
+
+The fastest way to install this skill, and later keep it updated, is the community [`skills`](https://github.com/vercel-labs/skills) CLI. It auto-detects which agents you have installed and supports 75+ of them, including every one listed below:
+
+```bash
+npx skills add conorbronsdon/avoid-ai-writing
+```
+
+That pulls the whole repo into the skill directory (matching the git-clone method below). To install just `SKILL.md` instead:
+
+```bash
+npx skills add https://raw.githubusercontent.com/conorbronsdon/avoid-ai-writing/main/SKILL.md
+```
+
+Useful flags:
+
+```bash
+# Target specific agents instead of everything detected
+npx skills add conorbronsdon/avoid-ai-writing -a claude-code -a codex
+
+# Install globally (~/.<agent>/skills/) instead of the current project
+npx skills add conorbronsdon/avoid-ai-writing -g
+```
+
+Later, `npx skills update` refreshes every skill installed this way — see the [`skills update` docs](https://github.com/vercel-labs/skills#skills-update). This is a third-party CLI, not something this repo publishes or maintains; see its own repo for the full command reference.
+
+Prefer to install by hand, or using an agent not covered above? The sections below are manual, per-platform steps that don't need Node or npx.
 
 ### Claude Code
 
