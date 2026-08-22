@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.25.1] — 2026-08-21
+
+### Fixed
+
+- **Voice-profile targets are bound to the Never-inject guardrails (#100).** `casual`, `professional`, and `warm` each had a target that could only be satisfied by adding content the source lacks (a first-person touch, a concrete claim or ask, an acknowledgment). Each target now applies only where the source already has the material, and the section opens with one line stating the guardrails bind voice targets. Wording ported back from the downstream resolution in wshobson/agents#645. Contributed by @mahinNadir (#133).
+
 ## [3.25.0] — 2026-08-12
 
 ### Added

@@ -698,13 +698,14 @@ If auto-detection feels wrong, say which profile you're using and why. The user 
 ## Voice profiles
 
 Context profiles (above) set *how strict* to be for an audience. Voice profiles set *how the prose should sound* — the persona. They're independent axes: you can write blunt for a blog or warm for docs. Voice is **optional** — if the writer doesn't name one, infer it from the input's existing register and don't impose a persona on text that already has one.
- Every target below is bounded by the Never-inject guardrails: a voice profile can bring out what the source already has, never manufacture what it doesn't.
+
+Every target below is bounded by the Never-inject guardrails: a voice profile can bring out what the source already has, never manufacture what it doesn't.
 
 Each profile is a set of concrete targets, not a vibe:
 
 **`casual`** — Contractions throughout; their absence reads stiff. Short sentences (aim for ≤14 words on average); fragments allowed. Keep first-person and concrete touches where the source has them; never add one it lacks. Near-zero jargon. Keep warm hedges ("honestly," "I think") but cut corporate ones ("it's worth noting"). *Blog posts, social, community.*
 
-**`professional`** — Active voice for most sentences. Vary sentence length; avoid three in a row within a few words of each other. Prefer a concrete claim per paragraph (a number, a name, a date) when the source provides one, never "experts say." Keep the ask explicit where the source makes one; never invent facts or an ask. Low tolerance for hedging. *LinkedIn, investor email, sponsor pitches.*
+**`professional`** — Active voice for most sentences. Vary sentence length; avoid three in a row within a few words of each other. Prefer a concrete claim per paragraph (a number, a name, a date) when the source provides one; never "experts say." Keep the ask explicit where the source makes one; never invent facts or an ask. Low tolerance for hedging. *LinkedIn, investor email, sponsor pitches.*
 
 **`technical`** — Prefer plain copulatives ("X is Y") over inflated substitutes ("serves as," "stands as a testament to"). One idea per sentence; imperative mood for instructions. Jargon is fine, but define it on first use. Tables and lists only where the content is genuinely list-shaped, not for decoration. *Docs, technical blog.*
 
