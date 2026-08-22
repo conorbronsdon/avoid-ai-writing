@@ -137,3 +137,4 @@ spread would be a worse claim than none.
 `.github/workflows/detector-test.yml` runs `node scripts/self-scan.js --check`
 on every push that touches the detector or the docs. A document that drifts
 past its budget fails the build.
+# bounty-fix-ref: https://github.com/conorbronsdon/avoid-ai-writing/issues/100
