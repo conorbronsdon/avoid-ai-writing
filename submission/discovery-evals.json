@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "direct": [
+    {"prompt":"Use Avoid AI Writing to clean this draft.","expected":"avoid-ai-writing-router"},
+    {"prompt":"Use the AI Writing Detector and flag only.","expected":"ai-writing-detector"},
+    {"prompt":"Use the Preservation Verifier on these two versions.","expected":"preservation-verifier"}
+  ],
+  "indirect": [
+    {"prompt":"What AI-ish patterns are in this paragraph? Do not change it.","expected":"ai-writing-detector"},
+    {"prompt":"Make this sound less machine-written but keep my voice and every number.","expected":"voice-preserving-rewriter"},
+    {"prompt":"Clean notes.md directly, only the prose that needs it.","expected":"file-edit-in-place"},
+    {"prompt":"Did this rewrite accidentally change any links, code, tables, or figures?","expected":"preservation-verifier"},
+    {"prompt":"These flags look suspicious, but can they be false positives?","expected":"false-positive-reviewer"},
+    {"prompt":"Scan, rewrite, and check that nothing important changed.","expected":"avoid-ai-writing-router"}
+  ],
+  "negative": [
+    {"prompt":"Summarize this paper.","expected":"no_plugin_trigger"},
+    {"prompt":"Refactor this TypeScript API.","expected":"no_plugin_trigger"},
+    {"prompt":"Translate this paragraph to Arabic.","expected":"no_plugin_trigger"}
+  ]
+}

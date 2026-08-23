@@ -5,12 +5,19 @@ on:
     paths:
       - "SKILL.md"
       - "README.md"
-      # CLAUDE.md carries a checked copy of the pattern count; without this
-      # path the count guard never runs on a CLAUDE.md-only edit (PR #106
-      # had zero check runs - review finding on #111).
       - "CLAUDE.md"
       - "plugins/**"
       - ".claude-plugin/**"
+      - ".codex-plugin/**"
+      - ".agents/plugins/**"
+      - "skills/**"
+      - "assets/**"
+      - "submission/**"
+      - "OPENAI_PLUGIN.md"
+      - "PRIVACY.md"
+      - "TERMS.md"
+      - "SUPPORT.md"
+      - "NOTICE.md"
       - "cursor-rules/**"
       - "scripts/**"
   push:
@@ -18,12 +25,19 @@ on:
     paths:
       - "SKILL.md"
       - "README.md"
-      # CLAUDE.md carries a checked copy of the pattern count; without this
-      # path the count guard never runs on a CLAUDE.md-only edit (PR #106
-      # had zero check runs - review finding on #111).
       - "CLAUDE.md"
       - "plugins/**"
       - ".claude-plugin/**"
+      - ".codex-plugin/**"
+      - ".agents/plugins/**"
+      - "skills/**"
+      - "assets/**"
+      - "submission/**"
+      - "OPENAI_PLUGIN.md"
+      - "PRIVACY.md"
+      - "TERMS.md"
+      - "SUPPORT.md"
+      - "NOTICE.md"
       - "cursor-rules/**"
       - "scripts/**"
 
@@ -37,11 +51,17 @@ jobs:
         run: |
           python3 -m json.tool .claude-plugin/marketplace.json > /dev/null
           python3 -m json.tool plugins/avoid-ai-writing/.claude-plugin/plugin.json > /dev/null
+          python3 -m json.tool .agents/plugins/marketplace.json > /dev/null
+          python3 -m json.tool .codex-plugin/plugin.json > /dev/null
+          python3 -m json.tool submission/listing.json > /dev/null
+          python3 -m json.tool submission/reviewer-tests.json > /dev/null
+          python3 -m json.tool submission/discovery-evals.json > /dev/null
+          python3 -m json.tool submission/submission-pack.json > /dev/null
 
       - name: Check README pattern count matches SKILL.md
         run: bash scripts/check-pattern-count.sh
 
-      - name: Regenerate bundled skill + check version
+      - name: Regenerate bundled skills + check versions
         run: bash scripts/sync-plugin-skill.sh
 
       - name: Regenerate cursor rule
@@ -50,9 +70,29 @@ jobs:
       - name: Fail if a generated copy drifted from SKILL.md
         run: |
           if ! git diff --quiet; then
-            echo "::error::A generated copy (plugins/ bundled skill or cursor-rules/avoid-ai-writing.mdc) is out of sync with the root SKILL.md."
+            echo "::error::A generated copy is out of sync with the root SKILL.md."
             echo "Run 'bash scripts/sync-plugin-skill.sh && bash scripts/sync-cursor-rules.sh' and commit the result."
             git --no-pager diff --stat
             exit 1
           fi
           echo "generated copies are in sync"
+
+      - name: Validate ChatGPT and Codex plugin
+        run: python3 scripts/validate-openai-plugin.py . --json
+
+      - name: Run repository tests
+        run: npm test
+
+      - name: Build deterministic plugin archives
+        run: |
+          python3 scripts/package-openai-plugin.py . /tmp/avoid-ai-writing-a.zip --json
+          python3 scripts/package-openai-plugin.py . /tmp/avoid-ai-writing-b.zip --json
+          cmp /tmp/avoid-ai-writing-a.zip /tmp/avoid-ai-writing-b.zip
+          unzip -Z1 /tmp/avoid-ai-writing-a.zip
+
+      - name: Validate clean extraction
+        run: |
+          rm -rf /tmp/avoid-ai-writing-extracted
+          mkdir -p /tmp/avoid-ai-writing-extracted
+          unzip -q /tmp/avoid-ai-writing-a.zip -d /tmp/avoid-ai-writing-extracted
+          python3 scripts/validate-openai-plugin.py /tmp/avoid-ai-writing-extracted --json
