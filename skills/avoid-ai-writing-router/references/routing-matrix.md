@@ -8,7 +8,7 @@
 | rewrite returned text | `voice-preserving-rewriter` | `preservation-verifier` when before/after verification is part of the workflow | rewrite and required verification complete |
 | modify an explicitly named file | `file-edit-in-place` | `preservation-verifier` after a real mutation when a before snapshot exists | authorized mutation and required verification complete |
 | compare original with rewrite | `preservation-verifier` | one repair to the correct owner, then one verification recheck | pass, review accepted, or second failure reported |
-| interpret what detector signals can establish | `false-positive-reviewer` | one fresh detector pass only if additional signal collection is requested | evidence limits explained |
+| interpret what detector signals can establish | `false-positive-reviewer` | return control to router if fresh signal collection or a different action is requested | evidence limits explained |
 | audit plus rewrite plus verify | `avoid-ai-writing-router` | detector -> rewriter/editor -> verifier -> optional one repair -> verifier | requested sequence complete |
 | rewrite a visual prompt or creative brief involving people | normal rewrite/edit owner plus representation guard | verifier may review protected representation details separately | wording cleaned without erasing protected meaning |
 | explicit canonical Skill invocation | `avoid-ai-writing` | remain canonical unless a specialized stage is needed | canonical workflow complete |
