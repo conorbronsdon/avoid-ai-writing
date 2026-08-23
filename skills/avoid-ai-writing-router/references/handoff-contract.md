@@ -42,6 +42,7 @@ pass:
   index: 1
   max: 2
 next_action: optional skill slug
+return_to_router_reason: optional reason
 ```
 
 Do not fabricate fields that were never observed. `executed` requires host execution evidence. Do not copy the full source text into metadata when the next Skill already has access to it.
@@ -55,10 +56,10 @@ Each stage owns one decision class:
 - `voice-preserving-rewriter` owns returned-text rewriting.
 - `file-edit-in-place` owns authorized mutation of a named file.
 - `preservation-verifier` owns before/after preservation status.
-- `false-positive-reviewer` owns interpretation limits for uncertain or consequential authorship claims.
+- `false-positive-reviewer` owns interpretation limits and is terminal in the Skill graph.
 - `avoid-ai-writing` remains the canonical editorial authority for pattern rules, voice behavior, protected content, and pass limits.
 
-No downstream Skill may silently override a decision owned upstream. It may return a structured objection or request a repair.
+No downstream Skill may silently override a decision owned upstream. It may return a structured objection, a repair request, or control to the router when intent changes.
 
 ## Typed handoffs
 
@@ -68,11 +69,11 @@ Router selects a primary Skill and passes intent, source kind, constraints, and 
 
 ### FEED
 
-A detection result can feed a rewriter or reviewer. Findings are evidence inputs, not mandatory edit instructions. The rewriter still preserves clean human passages.
+A detection result can feed a requested rewrite or named-file edit. Findings are evidence inputs, not mandatory edit instructions. The receiving Skill still preserves clean human passages and existing constraints.
 
 ### VERIFY
 
-Rewriter or file editor sends before/after material to `preservation-verifier`. A verifier `FAIL` blocks completion of the mutation/rewrite workflow until repaired or explicitly accepted by the user.
+Rewriter or file editor sends before/after material to `preservation-verifier`. A verifier `FAIL` blocks completion of the mutation/rewrite workflow until the single allowed repair is attempted or the unresolved failure is reported.
 
 ### REPAIR
 
@@ -80,11 +81,13 @@ Verifier returns the blocking items and the correct repair owner. Returned text 
 
 ### RECHECK
 
-After a repair, verification may run once more. Residual AI-pattern re-audit runs only when requested or when convergence is part of the original request.
+After repair, verification may run once more. A residual detector recheck runs only when requested or when convergence is part of the original request.
 
 ### ESCALATE
 
-Any Skill that encounters a request to infer cheating, fraud, dishonesty, hiring suitability, or definitive AI authorship from writing signals escalates interpretation to `false-positive-reviewer`.
+When detector signals are being used for an interpretation the detector does not own, route that interpretation to `false-positive-reviewer`.
+
+`false-positive-reviewer` does not call the detector back directly. If additional signal collection is requested, it returns control to `avoid-ai-writing-router` with `return_to_router_reason: fresh_signal_collection_needed`. This prevents an unbounded reviewer-detector cycle.
 
 ### GUARD
 
@@ -94,17 +97,21 @@ When the source is an image/video prompt or creative brief describing people, pr
 
 - Rewrite/audit convergence follows the canonical maximum of two passes.
 - A verifier repair loop may re-enter the repair owner once, then verify once more.
+- Residual detector recheck may occur once when the original request requires it.
 - If the second verification still fails, stop and report the unresolved preservation error instead of cycling.
-- `false-positive-reviewer` never loops into itself.
+- Terminal Skills have no outgoing Skill edges.
+- Every graph cycle must contain an edge with `max_reentries: 1`.
 
-## Failure semantics
+## Return-to-router semantics
 
-A Skill should return control to the router when:
+A Skill returns control to `avoid-ai-writing-router` instead of directly choosing a new owner when:
 
-- required evidence is missing,
+- required evidence is missing and collecting it would change the stage,
 - requested execution capability is unavailable,
 - the next action changes from read-only to mutation,
-- the request crosses into a consequential authorship conclusion,
-- the source changes from returned text to a named file or vice versa.
+- the request changes from signal collection to interpretation,
+- the source changes from returned text to a named file or vice versa,
+- a terminal interpretation stage needs a fresh audit,
+- the user introduces a new workflow goal after the current owner has completed its job.
 
-The router should preserve the existing envelope and change only the fields affected by the new decision.
+The router preserves the existing envelope and changes only fields affected by the new decision.
