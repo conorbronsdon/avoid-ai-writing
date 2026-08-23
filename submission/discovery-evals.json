@@ -1,17 +1,59 @@
 {
-  "version": 1,
+  "version": 2,
   "direct": [
     {"prompt":"Use Avoid AI Writing to clean this draft.","expected":"avoid-ai-writing-router"},
     {"prompt":"Use the AI Writing Detector and flag only.","expected":"ai-writing-detector"},
     {"prompt":"Use the Preservation Verifier on these two versions.","expected":"preservation-verifier"}
   ],
   "indirect": [
-    {"prompt":"What AI-ish patterns are in this paragraph? Do not change it.","expected":"ai-writing-detector"},
-    {"prompt":"Make this sound less machine-written but keep my voice and every number.","expected":"voice-preserving-rewriter"},
-    {"prompt":"Clean notes.md directly, only the prose that needs it.","expected":"file-edit-in-place"},
-    {"prompt":"Did this rewrite accidentally change any links, code, tables, or figures?","expected":"preservation-verifier"},
-    {"prompt":"These flags look suspicious, but can they be false positives?","expected":"false-positive-reviewer"},
-    {"prompt":"Scan, rewrite, and check that nothing important changed.","expected":"avoid-ai-writing-router"}
+    {"prompt":"What AI-ish patterns are in this paragraph? Do not change it.","expected":"ai-writing-detector","expected_path":["avoid-ai-writing-router","ai-writing-detector"]},
+    {"prompt":"Make this sound less machine-written but keep my voice and every number.","expected":"voice-preserving-rewriter","expected_path":["avoid-ai-writing-router","voice-preserving-rewriter"]},
+    {"prompt":"Clean notes.md directly, only the prose that needs it.","expected":"file-edit-in-place","expected_path":["avoid-ai-writing-router","file-edit-in-place","preservation-verifier"]},
+    {"prompt":"Did this rewrite accidentally change any links, code, tables, or figures?","expected":"preservation-verifier","expected_path":["avoid-ai-writing-router","preservation-verifier"]},
+    {"prompt":"These flags look suspicious, but how much can the text alone really establish?","expected":"false-positive-reviewer","expected_path":["avoid-ai-writing-router","false-positive-reviewer"]},
+    {"prompt":"Scan, rewrite, and check that nothing important changed.","expected":"avoid-ai-writing-router","expected_path":["avoid-ai-writing-router","ai-writing-detector","voice-preserving-rewriter","preservation-verifier"]}
+  ],
+  "handoff": [
+    {
+      "prompt":"First audit this, then rewrite only the flagged prose and verify the result.",
+      "expected_path":["avoid-ai-writing-router","ai-writing-detector","voice-preserving-rewriter","preservation-verifier"],
+      "must_preserve":["context_mode","protected_constraints","execution_evidence"]
+    },
+    {
+      "prompt":"The verifier says the returned rewrite changed a URL. Fix only that preservation error and verify again.",
+      "expected_path":["preservation-verifier","voice-preserving-rewriter","preservation-verifier"],
+      "max_repair_reentries":1
+    },
+    {
+      "prompt":"The verifier says the edited file changed frontmatter. Repair the file itself and verify again.",
+      "expected_path":["preservation-verifier","file-edit-in-place","preservation-verifier"],
+      "max_repair_reentries":1
+    },
+    {
+      "prompt":"After the rewrite, run one residual audit because I asked you to iterate until clean.",
+      "expected_path":["preservation-verifier","ai-writing-detector"],
+      "max_recheck_reentries":1
+    }
+  ],
+  "guards": [
+    {
+      "prompt":"Clean this image-generation prompt, but keep the Saudi setting, wheelchair details, abaya description, skin-tone lighting notes, and anti-stereotype constraints exactly meaningful.",
+      "expected":"voice-preserving-rewriter",
+      "guard":"human_representation_preservation",
+      "review_lens":"agency-inclusive-visuals-specialist",
+      "must_not_route_to_visual_generation":true
+    },
+    {
+      "prompt":"Rewrite this technical detector report without changing its score, context mode, or uncertainty language.",
+      "expected":"voice-preserving-rewriter",
+      "review_lens":"agency-ai-engineer",
+      "must_preserve":["score","context_mode","uncertainty"]
+    }
+  ],
+  "ambiguous": [
+    {"prompt":"Clean this up but only tell me what's wrong, don't rewrite it.","expected":"ai-writing-detector","tie_breaker":"flag_only_wins"},
+    {"prompt":"Rewrite draft.md and save the changes in that file.","expected":"file-edit-in-place","tie_breaker":"named_file_mutation_wins"},
+    {"prompt":"Rewrite this prompt describing a family in Jeddah.","expected":"voice-preserving-rewriter","guard":"human_representation_preservation","tie_breaker":"guard_does_not_change_primary_owner"}
   ],
   "negative": [
     {"prompt":"Summarize this paper.","expected":"no_plugin_trigger"},
