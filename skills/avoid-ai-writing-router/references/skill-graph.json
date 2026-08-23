@@ -50,7 +50,8 @@
       "role": "interpretation_guardrail",
       "implicit": true,
       "terminal": true,
-      "owns": ["uncertainty_interpretation", "consequential_claim_boundary", "additional_evidence_guidance"]
+      "owns": ["uncertainty_interpretation", "consequential_claim_boundary", "additional_evidence_guidance"],
+      "return_control_to_router_when": ["fresh_signal_collection_needed", "intent_changes_to_rewrite_or_edit"]
     }
   },
   "edges": [
@@ -66,8 +67,7 @@
     {"type": "VERIFY", "from": "file-edit-in-place", "to": "preservation-verifier", "when": "before_snapshot_available"},
     {"type": "REPAIR", "from": "preservation-verifier", "to": "voice-preserving-rewriter", "when": "returned_text_failed_preservation", "max_reentries": 1},
     {"type": "REPAIR", "from": "preservation-verifier", "to": "file-edit-in-place", "when": "named_file_failed_preservation", "max_reentries": 1},
-    {"type": "RECHECK", "from": "preservation-verifier", "to": "ai-writing-detector", "when": "convergence_or_residual_audit_requested", "max_reentries": 1},
-    {"type": "FEED", "from": "false-positive-reviewer", "to": "ai-writing-detector", "when": "fresh_signal_collection_requested", "max_reentries": 1}
+    {"type": "RECHECK", "from": "preservation-verifier", "to": "ai-writing-detector", "when": "convergence_or_residual_audit_requested", "max_reentries": 1}
   ],
   "guards": [
     {
@@ -87,7 +87,9 @@
     "canonical_rewrite_pass_max": 2,
     "repair_reentry_max": 1,
     "second_verification_failure": "stop_and_report",
-    "self_loops_allowed": false
+    "self_loops_allowed": false,
+    "terminal_nodes_have_no_outgoing_edges": true,
+    "every_graph_cycle_requires_bounded_edge": true
   },
   "fallback": {
     "skill": "avoid-ai-writing",
