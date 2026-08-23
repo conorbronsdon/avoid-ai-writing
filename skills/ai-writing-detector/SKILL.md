@@ -11,6 +11,48 @@ Run a detect-only review using the original Avoid AI Writing rules. Never rewrit
 
 The canonical rulebook is `../avoid-ai-writing/SKILL.md`. Its cautions about false positives, context, protected material, and authorship claims apply here.
 
+For cross-Skill work, follow `../avoid-ai-writing-router/references/handoff-contract.md` and the typed edges in `../avoid-ai-writing-router/references/skill-graph.json`.
+
+## Connection contract
+
+### Incoming
+
+Accept detector work from:
+
+- `avoid-ai-writing-router` via `ROUTE` for detect-only or the audit stage of a multi-stage request.
+- `false-positive-reviewer` via bounded `FEED` when fresh signal collection is explicitly requested.
+- `preservation-verifier` via bounded `RECHECK` only when convergence or residual auditing was part of the request.
+
+Carry forward the existing `context_mode`, protected constraints, pass state, and risk flags. Do not reset them.
+
+### Produce
+
+Update the handoff envelope with:
+
+- `execution_evidence.detector`: `executed` only if the bundled detector actually ran, otherwise `model_only`.
+- `detector_summary.score` and `label` only when produced by executed detector code.
+- `detector_summary.issue_types` from actual findings.
+- any `consequential_authorship_claim` risk flag observed in the user's request.
+
+### Outgoing
+
+- `FEED` findings to `voice-preserving-rewriter` only when the user also requested returned-text rewriting.
+- `FEED` findings to `file-edit-in-place` only when the user explicitly requested mutation of a named file.
+- `ESCALATE` to `false-positive-reviewer` when the user asks what the findings prove about authorship, cheating, fraud, dishonesty, or another consequential conclusion.
+- Otherwise stop after the detect-only result.
+
+Detector findings are evidence inputs. They are not mandatory edit instructions and they never authorize a mutation.
+
+## AI-engineering evidence lens
+
+Apply the `agency-ai-engineer` lens encoded in `../avoid-ai-writing-router/references/agency-role-lenses.md`:
+
+- keep deterministic output separate from model-only observations,
+- preserve the selected context mode through downstream handoffs,
+- treat score and label as calibrated signals rather than ground truth,
+- consider false positives and genre/register effects,
+- never convert pattern detection into an authorship classifier claim.
+
 ## Preferred path
 
 When the current host can execute Node safely:
@@ -35,10 +77,12 @@ node scripts/detect.js --file path/to/draft.md --context general
 
 If Node or shell execution is unavailable, perform the detect-only workflow from the canonical `avoid-ai-writing` skill and explicitly say the deterministic detector was not run.
 
-## Interpretation
+## Stop conditions
 
-Detector output is a writing-quality signal. It is not proof that a person used AI. If the user asks for a consequential authorship conclusion, hand off to `false-positive-reviewer`.
+Stop here when the request is detect-only. Do not continue into rewrite, file mutation, or interpretation merely because those Skills are available.
+
+A residual `RECHECK` may run once. Respect the canonical two-pass limit and the graph's loop policy.
 
 ## Output
 
-Return the overall label and score when executed, detected patterns grouped by severity, a short contextual assessment of clear issues versus plausible false positives, and no rewritten version.
+Return the overall label and score when executed, detected patterns grouped by severity, a short contextual assessment of clear issues versus plausible false positives, execution status, and no rewritten version unless control has explicitly passed to a rewrite owner.
