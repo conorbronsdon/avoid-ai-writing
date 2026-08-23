@@ -31,7 +31,7 @@
     "nameCharacters": 16,
     "subtitleCharacters": 26,
     "descriptionCharacters": 566,
-    "developerNameCharacters": 15,
+    "developerNameCharacters": 16,
     "starterPromptCharacters": [75,85,75],
     "capabilityCharacters": [16,18,24,21,25,21,26]
   },
