@@ -3,7 +3,4 @@ interface:
   short_description: "Audit and rewrite AI-isms"
   default_prompt: "Audit or rewrite this text using the full Avoid AI Writing rulebook while preserving voice, facts, and protected content."
 policy:
-  products:
-    - CHAT
-    - CODEX
   allow_implicit_invocation: false
