@@ -6,6 +6,7 @@ on:
       - "SKILL.md"
       - "README.md"
       - "CLAUDE.md"
+      - "detector/**"
       - "plugins/**"
       - ".claude-plugin/**"
       - ".codex-plugin/**"
@@ -26,6 +27,7 @@ on:
       - "SKILL.md"
       - "README.md"
       - "CLAUDE.md"
+      - "detector/**"
       - "plugins/**"
       - ".claude-plugin/**"
       - ".codex-plugin/**"
@@ -62,16 +64,16 @@ jobs:
       - name: Check README pattern count matches SKILL.md
         run: bash scripts/check-pattern-count.sh
 
-      - name: Regenerate bundled skills + check versions
+      - name: Regenerate bundled canonical resources
         run: bash scripts/sync-plugin-skill.sh
 
       - name: Regenerate cursor rule
         run: bash scripts/sync-cursor-rules.sh
 
-      - name: Fail if a generated copy drifted from SKILL.md
+      - name: Fail if a generated copy drifted
         run: |
           if ! git diff --quiet; then
-            echo "::error::A generated copy is out of sync with the root SKILL.md."
+            echo "::error::A generated Plugin/Cursor copy is out of sync with its canonical repository source."
             echo "Run 'bash scripts/sync-plugin-skill.sh && bash scripts/sync-cursor-rules.sh' and commit the result."
             git --no-pager diff --stat
             exit 1
