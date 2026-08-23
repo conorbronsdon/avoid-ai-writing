@@ -356,7 +356,7 @@ read-only tools: `score_text` for a compact result and `audit_text` for the full
 list of findings, suggestions, statistics, and highlighted sentence regions.
 
 ```bash
-claude mcp add avoid-ai-writing -- npx -y github:conorbronsdon/avoid-ai-writing-mcp
+claude mcp add avoid-ai-writing -- npx -y avoid-ai-writing-mcp
 ```
 
 The server calls no model and sends no text to a network service. It
