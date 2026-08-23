@@ -3,7 +3,4 @@ interface:
   short_description: "Check rewrite preservation"
   default_prompt: "Compare the original and rewrite and verify that protected content survived. Run the bundled validator when Node execution is available."
 policy:
-  products:
-    - CHAT
-    - CODEX
   allow_implicit_invocation: true
