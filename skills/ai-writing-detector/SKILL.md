@@ -19,9 +19,10 @@ For cross-Skill work, follow `../avoid-ai-writing-router/references/handoff-cont
 
 Accept detector work from:
 
-- `avoid-ai-writing-router` via `ROUTE` for detect-only or the audit stage of a multi-stage request.
-- `false-positive-reviewer` via bounded `FEED` when fresh signal collection is explicitly requested.
+- `avoid-ai-writing-router` via `ROUTE` for detect-only requests, the audit stage of a multi-stage request, or fresh signal collection after another terminal stage returns control to the router.
 - `preservation-verifier` via bounded `RECHECK` only when convergence or residual auditing was part of the request.
+
+Do not accept a direct handoff from `false-positive-reviewer`. That Skill is terminal in the graph and must return control to `avoid-ai-writing-router` when fresh signal collection is needed. This prevents a reviewer-detector cycle.
 
 Carry forward the existing `context_mode`, protected constraints, pass state, and risk flags. Do not reset them.
 
@@ -38,7 +39,7 @@ Update the handoff envelope with:
 
 - `FEED` findings to `voice-preserving-rewriter` only when the user also requested returned-text rewriting.
 - `FEED` findings to `file-edit-in-place` only when the user explicitly requested mutation of a named file.
-- `ESCALATE` to `false-positive-reviewer` when the user asks what the findings prove about authorship, cheating, fraud, dishonesty, or another consequential conclusion.
+- `ESCALATE` to `false-positive-reviewer` when the user asks what the findings can establish about authorship or another consequential conclusion.
 - Otherwise stop after the detect-only result.
 
 Detector findings are evidence inputs. They are not mandatory edit instructions and they never authorize a mutation.
@@ -49,7 +50,7 @@ Apply the `agency-ai-engineer` lens encoded in `../avoid-ai-writing-router/refer
 
 - keep deterministic output separate from model-only observations,
 - preserve the selected context mode through downstream handoffs,
-- treat score and label as calibrated signals rather than ground truth,
+- treat score and label as signals rather than ground truth,
 - consider false positives and genre/register effects,
 - never convert pattern detection into an authorship classifier claim.
 
@@ -75,7 +76,7 @@ For a file:
 node scripts/detect.js --file path/to/draft.md --context general
 ```
 
-If Node or shell execution is unavailable, perform the detect-only workflow from the canonical `avoid-ai-writing` skill and explicitly say the deterministic detector was not run.
+If Node or shell execution is unavailable, perform the detect-only workflow from the canonical `avoid-ai-writing` Skill and explicitly say the deterministic detector was not run.
 
 ## Stop conditions
 
