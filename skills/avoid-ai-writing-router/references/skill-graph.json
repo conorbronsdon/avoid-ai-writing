@@ -1,0 +1,96 @@
+{
+  "version": 2,
+  "canonical_authority": "avoid-ai-writing",
+  "entrypoint": "avoid-ai-writing-router",
+  "handoff_contract": "handoff-contract.md",
+  "review_lenses": [
+    "agency-software-architect",
+    "agency-ai-engineer",
+    "agency-senior-developer",
+    "agency-inclusive-visuals-specialist"
+  ],
+  "nodes": {
+    "avoid-ai-writing": {
+      "role": "canonical_rulebook",
+      "implicit": false,
+      "terminal": true,
+      "owns": ["editorial_rules", "pattern_tiers", "voice_profiles", "protected_content", "pass_limits"]
+    },
+    "avoid-ai-writing-router": {
+      "role": "orchestrator",
+      "implicit": true,
+      "terminal": false,
+      "owns": ["intent_classification", "sequence", "handoff_envelope", "stop_conditions"]
+    },
+    "ai-writing-detector": {
+      "role": "detect_only",
+      "implicit": true,
+      "terminal": false,
+      "owns": ["signal_collection", "execution_status", "detector_summary"]
+    },
+    "voice-preserving-rewriter": {
+      "role": "rewrite",
+      "implicit": true,
+      "terminal": false,
+      "owns": ["returned_text_rewrite", "voice_preservation", "semantic_preservation"]
+    },
+    "file-edit-in-place": {
+      "role": "file_mutation",
+      "implicit": true,
+      "terminal": false,
+      "owns": ["authorized_named_file_mutation", "before_snapshot", "mutation_evidence"]
+    },
+    "preservation-verifier": {
+      "role": "verification",
+      "implicit": true,
+      "terminal": false,
+      "owns": ["preservation_status", "blocking_errors", "repair_target"]
+    },
+    "false-positive-reviewer": {
+      "role": "interpretation_guardrail",
+      "implicit": true,
+      "terminal": true,
+      "owns": ["uncertainty_interpretation", "consequential_claim_boundary", "additional_evidence_guidance"]
+    }
+  },
+  "edges": [
+    {"type": "ROUTE", "from": "avoid-ai-writing-router", "to": "ai-writing-detector", "when": "detect_or_audit_only"},
+    {"type": "ROUTE", "from": "avoid-ai-writing-router", "to": "voice-preserving-rewriter", "when": "rewrite_returned_text"},
+    {"type": "ROUTE", "from": "avoid-ai-writing-router", "to": "file-edit-in-place", "when": "mutate_named_file"},
+    {"type": "ROUTE", "from": "avoid-ai-writing-router", "to": "preservation-verifier", "when": "compare_before_after"},
+    {"type": "ROUTE", "from": "avoid-ai-writing-router", "to": "false-positive-reviewer", "when": "consequential_authorship_interpretation"},
+    {"type": "FEED", "from": "ai-writing-detector", "to": "voice-preserving-rewriter", "when": "user_requests_rewrite_after_audit"},
+    {"type": "FEED", "from": "ai-writing-detector", "to": "file-edit-in-place", "when": "user_requests_named_file_fix_after_audit"},
+    {"type": "ESCALATE", "from": "ai-writing-detector", "to": "false-positive-reviewer", "when": "user_asks_what_flags_prove"},
+    {"type": "VERIFY", "from": "voice-preserving-rewriter", "to": "preservation-verifier", "when": "original_and_rewrite_available"},
+    {"type": "VERIFY", "from": "file-edit-in-place", "to": "preservation-verifier", "when": "before_snapshot_available"},
+    {"type": "REPAIR", "from": "preservation-verifier", "to": "voice-preserving-rewriter", "when": "returned_text_failed_preservation", "max_reentries": 1},
+    {"type": "REPAIR", "from": "preservation-verifier", "to": "file-edit-in-place", "when": "named_file_failed_preservation", "max_reentries": 1},
+    {"type": "RECHECK", "from": "preservation-verifier", "to": "ai-writing-detector", "when": "convergence_or_residual_audit_requested", "max_reentries": 1},
+    {"type": "FEED", "from": "false-positive-reviewer", "to": "ai-writing-detector", "when": "fresh_signal_collection_requested", "max_reentries": 1}
+  ],
+  "guards": [
+    {
+      "name": "human_representation_preservation",
+      "applies_when": "source_kind_is_visual_prompt_or_creative_brief_and_people_are_described",
+      "review_lens": "agency-inclusive-visuals-specialist",
+      "protect": ["identity", "culture", "geography", "age", "body_diversity", "disability", "mobility_aids", "attire", "skin_tone_lighting", "physical_reality", "anti_stereotype_constraints"]
+    },
+    {
+      "name": "authorship_uncertainty",
+      "applies_when": "detector_signals_are_used_for_consequential_authorship_claims",
+      "review_lens": "agency-ai-engineer",
+      "route_to": "false-positive-reviewer"
+    }
+  ],
+  "loop_policy": {
+    "canonical_rewrite_pass_max": 2,
+    "repair_reentry_max": 1,
+    "second_verification_failure": "stop_and_report",
+    "self_loops_allowed": false
+  },
+  "fallback": {
+    "skill": "avoid-ai-writing",
+    "reason": "canonical rulebook owns unmatched editorial edge cases"
+  }
+}
