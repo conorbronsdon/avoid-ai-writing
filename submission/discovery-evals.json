@@ -33,6 +33,14 @@
       "prompt":"After the rewrite, run one residual audit because I asked you to iterate until clean.",
       "expected_path":["preservation-verifier","ai-writing-detector"],
       "max_recheck_reentries":1
+    },
+    {
+      "prompt":"You explained that the existing flags are not enough. Run a fresh audit before we continue the interpretation.",
+      "starts_at":"false-positive-reviewer",
+      "expected_return_to":"avoid-ai-writing-router",
+      "return_to_router_reason":"fresh_signal_collection_needed",
+      "next_expected_owner":"ai-writing-detector",
+      "forbidden_direct_edge":["false-positive-reviewer","ai-writing-detector"]
     }
   ],
   "guards": [
