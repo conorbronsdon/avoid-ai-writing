@@ -3,7 +3,4 @@ interface:
   short_description: "Interpret flags carefully"
   default_prompt: "Review these AI-writing flags for plausible false positives and explain what they do and do not establish."
 policy:
-  products:
-    - CHAT
-    - CODEX
   allow_implicit_invocation: true
