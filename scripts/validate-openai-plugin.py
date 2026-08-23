@@ -138,9 +138,14 @@ def validate(root: Path):
             errors.append(f"{skill_dir}: missing agents/openai.yaml")
         else:
             text = agent.read_text(encoding="utf-8")
-            for token in ("interface:","display_name:","short_description:","policy:","products:","- CHAT","- CODEX","allow_implicit_invocation:"):
+            for token in ("interface:", "display_name:", "short_description:", "policy:", "allow_implicit_invocation:"):
                 if token not in text:
                     errors.append(f"{agent}: missing {token}")
+            # Keep this aligned with the ingestion contract observed by the
+            # actual Plugin validator. Product targeting belongs to host/import
+            # behavior, not this Skill policy mapping.
+            if re.search(r"(?m)^\s*products\s*:", text):
+                errors.append(f"{agent}: unsupported policy.products field")
     canonical = root / "SKILL.md"
     openai_copy = skills_root / "avoid-ai-writing" / "SKILL.md"
     if canonical.is_file():
@@ -151,14 +156,37 @@ def validate(root: Path):
             errors.append(f"canonical SKILL.md version {meta.get('version')!r} does not match manifest {version!r}")
     else:
         warnings.append("root SKILL.md not present in packaged archive; canonical-copy check skipped")
-    graph = skills_root / "avoid-ai-writing-router" / "references" / "skill-graph.yaml"
-    if not graph.is_file():
-        errors.append("missing router skill graph")
+    graph_path = skills_root / "avoid-ai-writing-router" / "references" / "skill-graph.json"
+    graph = load_json(graph_path, errors) if graph_path.is_file() else {}
+    if not graph_path.is_file():
+        errors.append("missing router skill graph v2 JSON")
     else:
-        graph_text = graph.read_text(encoding="utf-8")
-        for name in names:
-            if name not in graph_text:
-                errors.append(f"router graph does not reference public skill {name!r}")
+        if graph.get("version") != 2:
+            errors.append("router skill graph must be version 2")
+        graph_nodes = graph.get("nodes")
+        if not isinstance(graph_nodes, dict):
+            errors.append("router skill graph nodes must be an object")
+            graph_nodes = {}
+        missing_from_graph = sorted(set(names) - set(graph_nodes))
+        extra_graph_nodes = sorted(set(graph_nodes) - set(names))
+        if missing_from_graph:
+            errors.append(f"router graph missing public skills: {missing_from_graph}")
+        if extra_graph_nodes:
+            errors.append(f"router graph references non-public skills: {extra_graph_nodes}")
+        if graph.get("canonical_authority") != "avoid-ai-writing":
+            errors.append("router graph canonical_authority drifted")
+        if graph.get("entrypoint") != "avoid-ai-writing-router":
+            errors.append("router graph entrypoint drifted")
+    # The preservation validator imports ./patterns.js for residual checks.
+    # Both resources must be present in the public archive so that behavior
+    # does not silently degrade after packaging.
+    verifier_scripts = skills_root / "preservation-verifier" / "scripts"
+    for resource in ("validate.js", "patterns.js"):
+        if not (verifier_scripts / resource).is_file():
+            errors.append(f"preservation-verifier missing bundled resource: scripts/{resource}")
+    detector_patterns = skills_root / "ai-writing-detector" / "scripts" / "patterns.js"
+    if not detector_patterns.is_file():
+        errors.append("ai-writing-detector missing bundled scripts/patterns.js")
     submission = root / "submission"
     if submission.is_dir():
         tests = load_json(submission / "reviewer-tests.json", errors)
