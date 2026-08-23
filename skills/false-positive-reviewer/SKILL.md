@@ -36,15 +36,20 @@ Update the handoff envelope only with interpretation-relevant state:
 
 - keep `consequential_authorship_claim: true` when applicable,
 - identify what the existing evidence can and cannot establish,
-- list additional evidence that would materially reduce uncertainty.
+- list additional evidence that would materially reduce uncertainty,
+- set a router-return reason if the user requests fresh signal collection or changes intent.
 
 Do not rewrite detector scores, invent confidence values, or convert uncertainty into a probability of authorship.
 
-### Outgoing
+### Terminal behavior
 
-- `FEED` to `ai-writing-detector` only when the user explicitly requests fresh signal collection and no adequate audit exists.
-- The detector may return once with fresh findings. Do not create a repeated reviewer-detector loop.
-- Do not route directly into rewrite or file mutation. If the user separately asks to clean the text, return control to the router so the new intent is classified independently.
+This Skill has no direct outgoing Skill edge.
+
+If fresh signal collection is genuinely needed, return control to `avoid-ai-writing-router` with `fresh_signal_collection_needed`. The router may run `ai-writing-detector` and then route the updated evidence back for interpretation if the user's request still requires it.
+
+If the user separately asks to rewrite or edit the text, return control to the router with the new intent. Do not jump directly into rewrite or mutation from this Skill.
+
+This keeps interpretation terminal in the Skill graph and prevents reviewer-detector cycles.
 
 ## AI-engineering evidence lens
 
@@ -61,14 +66,14 @@ Apply the `agency-ai-engineer` lens encoded in `../avoid-ai-writing-router/refer
 1. Identify which observations are deterministic detector hits, model-only editorial observations, or contextual facts supplied by the user.
 2. Explain the strongest signals and plausible human reasons they can appear.
 3. Consider genre, second-language writing, technical register, deadline pressure, editing tools, typography software, and the writer's known baseline when those facts are available.
-4. If a fresh audit is genuinely needed, hand off once to `ai-writing-detector` and preserve the current envelope.
+4. If an adequate audit is missing and the user wants one, return control to the router with a fresh-signal request. Do not call the detector directly.
 5. For consequential decisions, do not turn a score or pattern list into a definitive claim of AI use, cheating, fraud, dishonesty, or suitability.
 6. Suggest evidence that is more probative for the legitimate decision, such as source history, drafts, revision logs, direct discussion with the writer, or task-specific process evidence.
 
 ## Stop conditions
 
-Stop when the interpretation question is answered. Do not keep collecting signals after the evidence is sufficient to explain the uncertainty, and do not loop back into detector review more than once.
+Stop when the interpretation question is answered. If more signal collection or a different action is requested, return control to the router rather than opening a direct Skill loop.
 
 ## Output
 
-Distinguish what the text actually shows, what it may suggest, what it cannot establish, which evidence came from executed tooling versus model-only review, and what additional evidence would reduce uncertainty.
+Distinguish what the text actually shows, what it may suggest, what it cannot establish, which evidence came from executed tooling versus model-only review, what additional evidence would reduce uncertainty, and whether control should return to the router for a newly requested stage.
