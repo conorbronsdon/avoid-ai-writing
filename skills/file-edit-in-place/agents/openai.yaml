@@ -1,0 +1,6 @@
+interface:
+  display_name: "File Edit In Place"
+  short_description: "Clean a named file safely"
+  default_prompt: "Edit this named file in place with minimal AI-writing cleanup, then verify protected content when the host can compare before and after."
+policy:
+  allow_implicit_invocation: true

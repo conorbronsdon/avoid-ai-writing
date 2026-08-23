@@ -1,0 +1,6 @@
+interface:
+  display_name: "AI Writing Detector"
+  short_description: "Flag AI patterns only"
+  default_prompt: "Scan this text for AI-writing patterns without rewriting it. Use the bundled deterministic detector when execution is available."
+policy:
+  allow_implicit_invocation: true

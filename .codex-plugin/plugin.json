@@ -1,0 +1,41 @@
+{
+  "name": "avoid-ai-writing",
+  "version": "3.25.1",
+  "description": "Audit AI-writing patterns, rewrite text while preserving voice and facts, edit files carefully, and verify that protected content survives the rewrite.",
+  "author": {
+    "name": "Conor Bronsdon",
+    "url": "https://github.com/conorbronsdon/avoid-ai-writing"
+  },
+  "license": "MIT",
+  "keywords": ["writing", "editing", "ai-writing", "humanize", "voice", "style", "audit", "rewrite"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Avoid AI Writing",
+    "shortDescription": "Detect and rewrite AI-isms",
+    "longDescription": "Audit writing for recurring AI-like patterns, rewrite only what needs changing, preserve the writer's voice and source facts, edit named files with narrow changes, and verify that protected material such as code, quotes, links, numbers, frontmatter, and tables survives the edit. The package keeps the original Avoid AI Writing skill intact and adds focused ChatGPT and Codex routing for detect-only review, voice-preserving rewrites, file edits, preservation checks, and false-positive review. Its signals are writing-quality indicators, not proof of AI authorship.",
+    "developerName": "Mamdouh Aboammar",
+    "category": "Productivity",
+    "capabilities": [
+      "AI-pattern audit",
+      "Detect-only review",
+      "Voice-preserving rewrite",
+      "Targeted file editing",
+      "Preservation verification",
+      "False-positive review",
+      "Multi-step writing cleanup"
+    ],
+    "websiteURL": "https://github.com/imMamdouhaboammar/avoid-ai-writing",
+    "privacyPolicyURL": "https://github.com/imMamdouhaboammar/avoid-ai-writing/blob/main/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/imMamdouhaboammar/avoid-ai-writing/blob/main/TERMS.md",
+    "defaultPrompt": [
+      "Scan this text for AI writing patterns and flag only, without rewriting it.",
+      "Rewrite this draft to remove AI-isms while preserving my voice, facts, and structure.",
+      "Clean this file in place, then verify that protected content was preserved."
+    ],
+    "brandColor": "#171717",
+    "composerIcon": "./assets/mark.svg",
+    "logo": "./assets/logo-light.svg"
+  },
+  "homepage": "https://github.com/imMamdouhaboammar/avoid-ai-writing",
+  "repository": "https://github.com/imMamdouhaboammar/avoid-ai-writing"
+}
