@@ -86,6 +86,9 @@ jobs:
       - name: Validate ChatGPT and Codex plugin
         run: python3 scripts/validate-openai-plugin.py . --json
 
+      - name: Smoke preservation residual detector
+        run: node scripts/test-preservation-package.js .
+
       - name: Run repository tests
         run: npm test
 
@@ -103,3 +106,4 @@ jobs:
           unzip -q /tmp/avoid-ai-writing-a.zip -d /tmp/avoid-ai-writing-extracted
           python3 /tmp/avoid-ai-writing-extracted/skills/avoid-ai-writing-router/scripts/validate_connections.py /tmp/avoid-ai-writing-extracted
           python3 scripts/validate-openai-plugin.py /tmp/avoid-ai-writing-extracted --json
+          node scripts/test-preservation-package.js /tmp/avoid-ai-writing-extracted
