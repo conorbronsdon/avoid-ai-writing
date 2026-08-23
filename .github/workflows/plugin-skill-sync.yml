@@ -79,7 +79,7 @@ jobs:
           echo "generated copies are in sync"
 
       - name: Validate cross-Skill connections
-        run: python3 scripts/validate-skill-connections.py .
+        run: python3 skills/avoid-ai-writing-router/scripts/validate_connections.py .
 
       - name: Validate ChatGPT and Codex plugin
         run: python3 scripts/validate-openai-plugin.py . --json
@@ -99,5 +99,5 @@ jobs:
           rm -rf /tmp/avoid-ai-writing-extracted
           mkdir -p /tmp/avoid-ai-writing-extracted
           unzip -q /tmp/avoid-ai-writing-a.zip -d /tmp/avoid-ai-writing-extracted
-          python3 scripts/validate-skill-connections.py /tmp/avoid-ai-writing-extracted
+          python3 /tmp/avoid-ai-writing-extracted/skills/avoid-ai-writing-router/scripts/validate_connections.py /tmp/avoid-ai-writing-extracted
           python3 scripts/validate-openai-plugin.py /tmp/avoid-ai-writing-extracted --json
