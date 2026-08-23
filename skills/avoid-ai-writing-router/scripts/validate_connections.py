@@ -2,7 +2,8 @@
 """Validate the Avoid AI Writing cross-Skill orchestration graph.
 
 Stdlib only. Fails closed on dangling nodes/edges, missing connection contracts,
-unbounded repair edges, legacy graph references, or a missing canonical fallback.
+unbounded cycles, terminal-node leaks, legacy graph references, or a missing
+canonical fallback.
 """
 
 from __future__ import annotations
@@ -29,6 +30,37 @@ EXPECTED_LENSES = {
 
 def fail(errors: list[str], message: str) -> None:
     errors.append(message)
+
+
+def first_cycle(adjacency: dict[str, list[str]]) -> list[str] | None:
+    """Return one directed cycle if the graph contains one, otherwise None."""
+    state: dict[str, int] = {node: 0 for node in adjacency}
+    stack: list[str] = []
+    positions: dict[str, int] = {}
+
+    def visit(node: str) -> list[str] | None:
+        state[node] = 1
+        positions[node] = len(stack)
+        stack.append(node)
+        for target in adjacency.get(node, []):
+            if state.get(target, 0) == 0:
+                cycle = visit(target)
+                if cycle:
+                    return cycle
+            elif state.get(target) == 1:
+                start = positions[target]
+                return stack[start:] + [target]
+        stack.pop()
+        positions.pop(node, None)
+        state[node] = 2
+        return None
+
+    for node in sorted(adjacency):
+        if state[node] == 0:
+            cycle = visit(node)
+            if cycle:
+                return cycle
+    return None
 
 
 def main() -> int:
@@ -73,11 +105,16 @@ def main() -> int:
     if entrypoint != "avoid-ai-writing-router":
         fail(errors, "entrypoint must be avoid-ai-writing-router")
 
-    skill_dirs = {
-        p.name
-        for p in (root / "skills").iterdir()
-        if p.is_dir() and (p / "SKILL.md").is_file()
-    }
+    skills_root = root / "skills"
+    if not skills_root.is_dir():
+        fail(errors, "skills directory is missing")
+        skill_dirs: set[str] = set()
+    else:
+        skill_dirs = {
+            p.name
+            for p in skills_root.iterdir()
+            if p.is_dir() and (p / "SKILL.md").is_file()
+        }
     graph_nodes = set(nodes)
 
     missing_dirs = sorted(graph_nodes - skill_dirs)
@@ -90,6 +127,7 @@ def main() -> int:
 
     incoming: dict[str, int] = {name: 0 for name in graph_nodes}
     outgoing: dict[str, int] = {name: 0 for name in graph_nodes}
+    unbounded_adjacency: dict[str, list[str]] = {name: [] for name in graph_nodes}
 
     edges = graph.get("edges")
     if not isinstance(edges, list):
@@ -115,34 +153,29 @@ def main() -> int:
             fail(errors, f"edge {index} creates a self-loop on {source}")
         if not isinstance(condition, str) or not condition.strip():
             fail(errors, f"edge {index} requires a non-empty when condition")
+
+        limit = edge.get("max_reentries")
+        if limit is not None and (not isinstance(limit, int) or isinstance(limit, bool) or limit != 1):
+            fail(errors, f"edge {source}->{target} has invalid max_reentries: {limit!r}")
+        if edge_type in {"REPAIR", "RECHECK"} and limit != 1:
+            fail(errors, f"{edge_type} edge {source}->{target} must set max_reentries to 1")
+
         if source in graph_nodes:
             outgoing[source] += 1
         if target in graph_nodes:
             incoming[target] += 1
+        if source in graph_nodes and target in graph_nodes and limit != 1:
+            unbounded_adjacency[source].append(target)
+
         key = (str(edge_type), str(source), str(target), str(condition))
         if key in seen_edges:
             fail(errors, f"duplicate edge: {key}")
         seen_edges.add(key)
-        if edge_type in {"REPAIR", "RECHECK"}:
-            limit = edge.get("max_reentries")
-            if not isinstance(limit, int) or limit != 1:
-                fail(errors, f"{edge_type} edge {source}->{target} must set max_reentries to 1")
-
-    for name in graph_nodes:
-        node = nodes.get(name, {})
-        terminal = bool(node.get("terminal")) if isinstance(node, dict) else False
-        if name not in {entrypoint, canonical} and incoming.get(name, 0) == 0:
-            fail(errors, f"Skill has no incoming orchestration edge: {name}")
-        if not terminal and outgoing.get(name, 0) == 0:
-            fail(errors, f"non-terminal Skill has no outgoing orchestration edge: {name}")
-
-    fallback = graph.get("fallback")
-    if not isinstance(fallback, dict) or fallback.get("skill") != canonical:
-        fail(errors, "fallback must return to the canonical avoid-ai-writing Skill")
 
     loop_policy = graph.get("loop_policy")
     if not isinstance(loop_policy, dict):
         fail(errors, "loop_policy must be present")
+        loop_policy = {}
     else:
         if loop_policy.get("canonical_rewrite_pass_max") != 2:
             fail(errors, "canonical_rewrite_pass_max must remain 2")
@@ -150,6 +183,28 @@ def main() -> int:
             fail(errors, "repair_reentry_max must remain 1")
         if loop_policy.get("self_loops_allowed") is not False:
             fail(errors, "self_loops_allowed must be false")
+        if loop_policy.get("terminal_nodes_have_no_outgoing_edges") is not True:
+            fail(errors, "terminal_nodes_have_no_outgoing_edges must be true")
+        if loop_policy.get("every_graph_cycle_requires_bounded_edge") is not True:
+            fail(errors, "every_graph_cycle_requires_bounded_edge must be true")
+
+    for name in graph_nodes:
+        node = nodes.get(name, {})
+        terminal = bool(node.get("terminal")) if isinstance(node, dict) else False
+        if name not in {entrypoint, canonical} and incoming.get(name, 0) == 0:
+            fail(errors, f"Skill has no incoming orchestration edge: {name}")
+        if terminal and outgoing.get(name, 0) != 0:
+            fail(errors, f"terminal Skill has outgoing orchestration edges: {name}")
+        if not terminal and outgoing.get(name, 0) == 0:
+            fail(errors, f"non-terminal Skill has no outgoing orchestration edge: {name}")
+
+    unbounded_cycle = first_cycle(unbounded_adjacency)
+    if unbounded_cycle:
+        fail(errors, "unbounded orchestration cycle detected: " + " -> ".join(unbounded_cycle))
+
+    fallback = graph.get("fallback")
+    if not isinstance(fallback, dict) or fallback.get("skill") != canonical:
+        fail(errors, "fallback must return to the canonical avoid-ai-writing Skill")
 
     lenses = set(graph.get("review_lenses") or [])
     if lenses != EXPECTED_LENSES:
@@ -196,6 +251,7 @@ def main() -> int:
         print(f"skill connection validation failed with {len(errors)} error(s)")
         return 1
 
+    bounded_edges = sum(1 for edge in edges if isinstance(edge, dict) and edge.get("max_reentries") == 1)
     print(
         json.dumps(
             {
@@ -203,6 +259,7 @@ def main() -> int:
                 "graph_version": graph.get("version"),
                 "skills": len(graph_nodes),
                 "edges": len(edges),
+                "bounded_edges": bounded_edges,
                 "review_lenses": sorted(lenses),
             },
             indent=2,
