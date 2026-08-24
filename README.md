@@ -48,13 +48,13 @@ A one-shot "make this sound human" prompt catches the obvious stuff. This skill 
 
 ### Quick install — any agent
 
-The fastest way to install this skill, and later keep it updated, is the community [`skills`](https://github.com/vercel-labs/skills) CLI. It auto-detects which agents you have installed and supports 75+ of them, including every one listed below. `npx` downloads and runs that package from the npm registry — it's third-party code, not something this repo publishes or maintains. The commands below pin `skills@1.5.23` rather than `@latest` so the version that runs is visible and the install is reproducible; bump the pin yourself once you've checked the [release notes](https://github.com/vercel-labs/skills/releases). It requires Node **>=22.20.0**, a higher floor than this repo's own `>=18` — check with `node --version` if you're not sure which you have.
+The fastest way to install this skill, and later keep it updated, is the community [`skills`](https://github.com/vercel-labs/skills) CLI. It auto-detects which agents you have installed and supports 75+ of them, including every one listed below. `npx` downloads and runs that package from the npm registry. It's third-party code, not something this repo publishes or maintains. The commands below pin `skills@1.5.23` rather than `@latest` so the version that runs is visible and the install is reproducible; bump the pin yourself once you've checked the [release notes](https://github.com/vercel-labs/skills/releases). It requires Node **>=22.20.0**, a higher floor than this repo's own `>=18`; check with `node --version` if you're not sure which you have.
 
 ```bash
 npx skills@1.5.23 add conorbronsdon/avoid-ai-writing
 ```
 
-For a repo where the skill lives at the root, like this one, that installs just `SKILL.md` — not the rest of the repository (the CLI does this deliberately, to avoid dumping unrelated files into your skill directory). For the detector, tests, CI config, and other repository tooling, use `git clone` instead — see the manual steps below.
+For a repo where the skill lives at the root, like this one, that installs just `SKILL.md`, not the rest of the repository — the CLI does this deliberately, to avoid dumping unrelated files into your skill directory. For the detector, tests, CI config, and other repository tooling, use `git clone` instead; see the manual steps below.
 
 Useful flags:
 
@@ -66,7 +66,7 @@ npx skills@1.5.23 add conorbronsdon/avoid-ai-writing -a claude-code -a codex
 npx skills@1.5.23 add conorbronsdon/avoid-ai-writing -g
 ```
 
-Later, `npx skills@1.5.23 update` refreshes installed skills in whichever scope you select (it prompts for project vs. global; pass `-g` or `-p` to choose non-interactively) — see the [`skills update` docs](https://github.com/vercel-labs/skills#skills-update) for the full command reference.
+Later, `npx skills@1.5.23 update` refreshes installed skills in whichever scope you select. It prompts for project vs. global; pass `-g` or `-p` to choose non-interactively. See the [`skills update` docs](https://github.com/vercel-labs/skills#skills-update) for the full command reference.
 
 Prefer to install by hand, or using an agent not covered above? The sections below are manual, per-platform steps that don't need Node or npx.
 
