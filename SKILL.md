@@ -6,6 +6,7 @@ license: MIT
 compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, VS Code Copilot, Hermes Agent, OpenHands, etc.) or OpenClaw. No external tools or APIs required.
 metadata:
   author: Conor Bronsdon
+  repository: https://github.com/conorbronsdon/avoid-ai-writing
   tags: writing editing voice quality
   agentskills_spec: "1.0"
   openclaw:

@@ -19,7 +19,7 @@ A portable writing skill for [Claude Code](https://docs.anthropic.com/en/docs/cl
 **Three modes:**
 - **Rewrite** (default) — flags AI patterns and rewrites the text to fix them. A built-in second pass catches patterns that survived the first edit.
 - **Detect** — flags AI patterns without rewriting. Shows which flags are real problems vs. judgment calls. Useful when patterns might be intentional, when auditing content you don't want altered, or when you just want a quick scan.
-- **Edit** — edits a file in place (via the Edit tool) with minimal, targeted changes, preserving passages that are already human. Returns an edits-made + verification report, not the full file.
+- **Edit** — edits a prose file in place (via the Edit tool) with minimal, targeted changes, preserving passages that are already human. Source code, configuration, and generated data are refused because prose rewrites can corrupt structured content. Returns an edits-made + verification report, not the full file.
 
 An optional **voice profile** (casual / professional / technical / warm / blunt) sets how the prose should sound, independent of the audience context profile.
 
@@ -42,9 +42,33 @@ A one-shot "make this sound human" prompt catches the obvious stuff. This skill 
 - **112-entry word replacement table across 3 tiers + 10 Tier 3 phrases** — not vibes-based. Every flagged word has a specific, plainer alternative. "Leverage" → "use." "Commence" → "start." Tier 1 words always flag, Tier 2 words flag when they cluster, Tier 3 words flag only at high density. Tier 1 itself splits into **1A frequency markers** (`delve`, `tapestry`) and **1B clarity edits** (`in order to`, `utilize`) — same fix, but only 1A is evidence about how a passage was produced, and 1B is weighted lower so a wordiness fix cannot push a document toward an AI classification. Tier 3 *phrases* (multi-word boilerplate like "the integration of," "decentralized compute") flag on per-phrase repetition or when 3+ distinct phrases stack in one piece — the LLM-self-varies-boilerplate shape.
 - **62 pattern categories** — representative examples below, each with before/after. Includes structural detection (hashtag stuffing, bare-NP bullet lists, hedge-stacked predictions), AI-tool fingerprints (placeholders, citation markup, UTM params), rhythm/uniformity checks, conversational-register tells, and writer-side tests. The full catalog lives in [`SKILL.md`](./SKILL.md); this count is enforced against it in CI.
 - **Detect mode** — flag patterns without rewriting. See which flags are real problems vs. judgment calls. Useful when patterns might be intentional or you're auditing content you don't want altered.
-- **Works across platforms** — one `SKILL.md` runs in Claude Code, Cowork (as a plugin), OpenClaw, and Cursor (as a ported rule). See the install paths below.
+- **Works across platforms** — one `SKILL.md` runs in Claude Code, Cowork (as a plugin), OpenClaw, Cursor (as a ported rule), and more via `npx skills add`. See the install paths below.
 
 ## Installation & Usage
+
+### Quick install — any agent
+
+The fastest way to install this skill, and later keep it updated, is the community [`skills`](https://github.com/vercel-labs/skills) CLI. It auto-detects installed coding agents and supports 75+ of them, including Claude Code, Codex, Cursor, OpenClaw, and Hermes. `npx` downloads and runs that package from the npm registry. It's third-party code, not something this repo publishes or maintains. The commands below pin `skills@1.5.23` rather than `@latest` so the installer version that runs is fixed and visible; the skill payload still follows this repository's current default branch. Bump the pin yourself once you've checked the [release notes](https://github.com/vercel-labs/skills/releases). It requires Node **>=22.20.0**, a higher floor than this repo's own `>=18`; check with `node --version` if you're not sure which you have.
+
+```bash
+npx skills@1.5.23 add conorbronsdon/avoid-ai-writing
+```
+
+For this public repository, the CLI normally uses its GitHub blob fast path and installs only `SKILL.md`. If that path is unavailable, it can fall back to cloning and install the full root skill directory. Use `git clone` when you explicitly want the detector, tests, CI config, and other repository tooling; see the manual steps below.
+
+Useful flags:
+
+```bash
+# Target specific agents instead of everything detected
+npx skills@1.5.23 add conorbronsdon/avoid-ai-writing -a claude-code -a codex
+
+# Install globally (~/.<agent>/skills/) instead of the current project
+npx skills@1.5.23 add conorbronsdon/avoid-ai-writing -g
+```
+
+Later, `npx skills@1.5.23 update` refreshes installed skills in whichever scope you select. It prompts for project vs. global; pass `-g` or `-p` to choose non-interactively. See the [`skills update` docs](https://github.com/vercel-labs/skills#skills-update) for the full command reference.
+
+Prefer to install by hand, or using an agent not covered above? The sections below are manual, per-platform steps that don't need Node or npx.
 
 ### Claude Code
 

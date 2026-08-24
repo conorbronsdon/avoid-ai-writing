@@ -12,11 +12,24 @@ All notable changes to this project are documented here.
   configuration, and generated data are refused so prose-oriented edits cannot
   corrupt structured content.
 
+---
+
+## [3.25.2] — 2026-08-24
+
+### Changed
+
+- **README documents `npx skills add` as the fastest cross-agent install path.** The community [`skills`](https://github.com/vercel-labs/skills) CLI auto-detects installed coding agents and covers 75+ of them. Commands pin the installer at `skills@1.5.23`, note its Node `>=22.20.0` requirement, and clarify that the skill payload still follows this repository's current default branch. For this public root-level skill, the GitHub blob fast path normally installs only `SKILL.md`; if that path is unavailable, the CLI can fall back to cloning the full root skill directory. `skills update` refreshes whichever scope you select rather than every install at once. Existing manual per-platform steps (git clone, `clawhub install`, curl) stay as a no-Node fallback; nothing about them changed. No rule, detector, or word-table changes: the catalog stays 62 / 112.
+- **`SKILL.md`'s frontmatter carries a `repository` field.** A copy installed via the `skills` CLI's SKILL.md-only fast path previously had no link back to the project or its contributor community; `metadata.repository` now points to `github.com/conorbronsdon/avoid-ai-writing` alongside the existing `author` field. The generated plugin copy stays in sync via the existing `sync-plugin-skill.sh`.
+
+---
+
 ## [3.25.1] — 2026-08-21
 
 ### Fixed
 
 - **Voice-profile targets are bound to the Never-inject guardrails (#100).** `casual`, `professional`, and `warm` each had a target that could only be satisfied by adding content the source lacks (a first-person touch, a concrete claim or ask, an acknowledgment). Each target now applies only where the source already has the material, and the section opens with one line stating the guardrails bind voice targets. Wording ported back from the downstream resolution in wshobson/agents#645. Contributed by @mahinNadir (#133).
+
+---
 
 ## [3.25.0] — 2026-08-12
 
