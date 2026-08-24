@@ -376,6 +376,23 @@ See [`detector/README.md`](./detector/README.md) for the full `analyzeText` API
 and [`detector/CATEGORIES.md`](./detector/CATEGORIES.md) for the rule ↔ category
 map that keeps `SKILL.md` and the engine in sync.
 
+### Use the detector over MCP
+
+[`avoid-ai-writing-mcp`](https://github.com/conorbronsdon/avoid-ai-writing-mcp)
+wraps the published detector as a local stdio MCP server. It exposes two
+read-only tools: `score_text` for a compact result and `audit_text` for the full
+list of findings, suggestions, statistics, and highlighted sentence regions.
+
+```bash
+claude mcp add avoid-ai-writing -- npx -y avoid-ai-writing-mcp@0.1.0
+```
+
+The server calls no model and sends no text to a network service. It
+intentionally has no rewrite tool; rewriting stays in the skill, where the
+agent can apply the full editorial rules and preservation guardrails. See the
+[MCP repository](https://github.com/conorbronsdon/avoid-ai-writing-mcp) for
+configuration examples for other MCP hosts.
+
 The engine also ships a preservation validator. `detector/validate.js` compares
 a rewrite against its original and fails when the edit touched something it
 shouldn't have: a code block, YAML frontmatter, a blockquote, a table cell,
