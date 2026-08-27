@@ -368,6 +368,11 @@ const AIDetector = require("./detector/patterns.js");
 const { score, label, issues } = AIDetector.analyzeText("Your text here…");
 ```
 
+When the input is a Markdown source file, pass
+`{ sourceMode: "rendered-markdown" }` to exclude initial YAML frontmatter and
+HTML comments from the score while keeping issue offsets aligned with the
+original file. Plain-text behavior remains the default.
+
 See [`detector/README.md`](./detector/README.md) for the full `analyzeText` API
 and [`detector/CATEGORIES.md`](./detector/CATEGORIES.md) for the rule ↔ category
 map that keeps `SKILL.md` and the engine in sync.

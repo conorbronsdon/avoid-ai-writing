@@ -4,6 +4,18 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.27.0] — 2026-08-26
+
+### Added
+
+- **`analyzeText()` can score rendered Markdown instead of source-only
+  metadata (#123).** Pass `sourceMode: "rendered-markdown"` to mask initial
+  YAML frontmatter and HTML comments before pattern and document analysis.
+  Masks preserve source offsets, and `stats` reports the selected mode and
+  masked-span counts. Plain mode remains the default.
+
+---
+
 ## [3.26.0] — 2026-08-24
 
 ### Fixed

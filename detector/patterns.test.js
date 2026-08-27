@@ -83,6 +83,110 @@ test('stats fields sum to issues length', () => {
   assert.equal(sum, r.issues.length, `stats sum (${sum}) != issues (${r.issues.length})`);
 });
 
+test('#123: rendered Markdown ignores frontmatter and multiline HTML comments', () => {
+  const prose = [
+    'A clerk opened the file before sunrise. The names filled three pages.',
+    'He read them twice, signed the order, and passed it down the corridor.',
+  ].join(' ');
+  const comment = [
+    '<!-- ARCHITECTURE',
+    'Furthermore, this is a load-bearing transition. Add comprehensive and pivotal context here.',
+    '-->',
+    prose,
+  ].join('\n');
+  const frontmatter = [
+    '---',
+    'title: Draft',
+    'description: A comprehensive and pivotal exploration of a robust ecosystem',
+    '---',
+    prose,
+  ].join('\n');
+  const baseline = AIDetector.analyzeText(prose);
+
+  for (const [name, text, expected] of [
+    ['comment', comment, { maskedFrontmatter: 0, maskedHtmlComments: 1 }],
+    ['frontmatter', frontmatter, { maskedFrontmatter: 1, maskedHtmlComments: 0 }],
+  ]) {
+    const plain = AIDetector.analyzeText(text);
+    const rendered = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdown' });
+
+    assert.ok(plain.score > baseline.score, `${name}: plain mode must keep inspecting source text`);
+    assert.equal(rendered.score, baseline.score, `${name}: rendered score must match visible prose`);
+    assert.deepEqual(
+      rendered.issues.map((issue) => [issue.type, issue.text]),
+      baseline.issues.map((issue) => [issue.type, issue.text]),
+      `${name}: rendered findings must match visible prose`,
+    );
+    assert.equal(rendered.stats.sourceMode, 'rendered-markdown');
+    assert.equal(rendered.stats.maskedFrontmatter, expected.maskedFrontmatter);
+    assert.equal(rendered.stats.maskedHtmlComments, expected.maskedHtmlComments);
+  }
+});
+
+test('#123: same-line and unclosed HTML comments are source-only', () => {
+  const prose = [
+    'The carpenter measured the door twice before cutting the oak board.',
+    'He shaved one edge, reset the hinges, and checked the latch again.',
+  ].join(' ');
+  const hidden = 'Moreover, this seamless and robust paradigm is a testament to progress.';
+  const baseline = AIDetector.analyzeText(prose);
+
+  for (const [name, text] of [
+    ['same-line', `${prose}\n<!-- ${hidden} -->`],
+    ['unclosed', `${prose}\n<!-- ${hidden}`],
+  ]) {
+    const rendered = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdown' });
+    assert.equal(rendered.score, baseline.score, `${name}: hidden text must not affect the score`);
+    assert.equal(rendered.stats.maskedHtmlComments, 1);
+    assert.equal(rendered.issues.some((issue) => /seamless|robust|testament/i.test(issue.text || '')), false);
+  }
+});
+
+test('#123: rendered Markdown preserves issue offsets after masked source', () => {
+  const sourceOnly = '<!-- This seamless, robust paradigm should stay hidden. -->\r\n';
+  const prose = 'Moreover, the editor checked the original document before changing the published account for the morning edition.';
+  const result = AIDetector.analyzeText(sourceOnly + prose, { sourceMode: 'rendered-markdown' });
+  const transition = result.issues.find((issue) => issue.type === 'transition');
+
+  assert.ok(transition, 'reader-facing prose should still be analyzed');
+  assert.equal(transition.index, sourceOnly.length);
+});
+
+test('#123: multiline blockquote masking preserves later source offsets', () => {
+  const quote = '> This seamless landscape is a testament to progress.\r\n> Moreover, it is a robust paradigm.\r\n';
+  const prose = 'Moreover, the editor checked the original document before changing the published account for the morning edition.';
+  const result = AIDetector.analyzeText(quote + prose, { sourceMode: 'rendered-markdown' });
+  const transition = result.issues.find((issue) => issue.type === 'transition');
+
+  assert.ok(transition, 'reader-facing prose after the quote should still be analyzed');
+  assert.equal(transition.index, quote.length);
+  assert.equal(result.stats.quotedLines, 2);
+});
+
+test('#123: rendered Markdown does not mistake a thematic break for frontmatter', () => {
+  const text = [
+    '---',
+    '',
+    'Moreover, the team described a seamless and robust landscape in the final report.',
+    '',
+    '---',
+  ].join('\n');
+  const result = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdown' });
+
+  assert.equal(result.stats.maskedFrontmatter, 0);
+  assert.ok(result.issues.length > 0, 'prose between thematic breaks should remain visible');
+});
+
+test('#123: unknown source modes fall back visibly to plain', () => {
+  const text = '<!-- Moreover, this seamless and robust paradigm is hidden. -->\nVisible prose has enough words for the detector to score this input normally.';
+  const result = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdonw' });
+
+  assert.equal(result.stats.sourceMode, 'plain');
+  assert.equal(result.stats.sourceModeFallback, 'rendered-markdonw');
+  assert.equal(result.stats.maskedHtmlComments, 0);
+  assert.ok(result.issues.length > 0, 'fallback must retain plain-mode behavior');
+});
+
 test('repeated Tier 1 phrase does not inflate score linearly', () => {
   const single = AIDetector.analyzeText('We delve into the landscape of many things today.');
   const fivefold = AIDetector.analyzeText(

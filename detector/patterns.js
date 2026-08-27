@@ -735,6 +735,57 @@ const AIDetector = (() => {
     return chars.join('');
   }
 
+  // Mask source-only Markdown spans while preserving source offsets. The
+  // detector can then score what a reader sees without making later issue
+  // indexes or sentence highlights point at the wrong source location.
+  function maskRenderedMarkdown(text) {
+    const chars = text.split('');
+    const blank = (start, end) => {
+      for (let i = start; i < end && i < chars.length; i += 1) {
+        if (chars[i] !== '\n' && chars[i] !== '\r') chars[i] = ' ';
+      }
+    };
+
+    let maskedFrontmatter = 0;
+    const frontmatter = /^(?:\uFEFF)?---[ \t]*\r?\n(?=[^\r\n]*\S)[\s\S]*?\r?\n---[ \t]*(?=\r?\n|$)/.exec(text);
+    if (frontmatter) {
+      blank(frontmatter.index, frontmatter.index + frontmatter[0].length);
+      maskedFrontmatter = 1;
+    }
+
+    let maskedHtmlComments = 0;
+    const commentRe = /<!--[\s\S]*?(?:-->|$)/g;
+    let match;
+    while ((match = commentRe.exec(text)) !== null) {
+      blank(match.index, match.index + match[0].length);
+      maskedHtmlComments += 1;
+    }
+
+    return { text: chars.join(''), maskedFrontmatter, maskedHtmlComments };
+  }
+
+  function maskMultilineBlockquotes(text) {
+    const chars = text.split('');
+    const lines = [];
+    const lineRe = /[^\r\n]*(?:\r\n|\n|\r|$)/g;
+    let match;
+    while ((match = lineRe.exec(text)) !== null && match[0]) {
+      const body = match[0].replace(/[\r\n]+$/, '');
+      lines.push({ text: body, start: match.index, end: match.index + body.length });
+    }
+
+    let quotedLines = 0;
+    const isQuote = lines.map((line) => /^\s*>\s/.test(line.text));
+    for (let i = 0; i < lines.length; i += 1) {
+      if (isQuote[i] && ((isQuote[i - 1] && i > 0) || isQuote[i + 1])) {
+        blankRange(chars, lines[i].start, lines[i].end);
+        quotedLines += 1;
+      }
+    }
+
+    return { text: chars.join(''), quotedLines };
+  }
+
   function maskTopLevelIndentedCode(chars) {
     const lines = chars.join('').split('\n');
     let offset = 0;
@@ -1135,22 +1186,32 @@ const AIDetector = (() => {
     const contextMode = VALID_CONTEXT_MODES.has(requestedMode) ? requestedMode : 'general';
     const contextModeFallback = requestedMode !== contextMode ? requestedMode : null;
 
-    // Pre-pass: strip Markdown blockquotes before scoring. A human
+    // Source mode controls which parts of a Markdown file count as prose.
+    // Plain remains the compatibility default. Rendered Markdown masks only
+    // initial YAML frontmatter and HTML comments; source-hygiene checks for
+    // hidden TODO/placeholder comments remain available through plain mode.
+    const VALID_SOURCE_MODES = new Set(['plain', 'rendered-markdown']);
+    const requestedSourceMode = options.sourceMode || 'plain';
+    const sourceMode = VALID_SOURCE_MODES.has(requestedSourceMode) ? requestedSourceMode : 'plain';
+    const sourceModeFallback = requestedSourceMode !== sourceMode ? requestedSourceMode : null;
+    let maskedFrontmatter = 0;
+    let maskedHtmlComments = 0;
+    if (sourceMode === 'rendered-markdown') {
+      const rendered = maskRenderedMarkdown(text);
+      text = rendered.text;
+      maskedFrontmatter = rendered.maskedFrontmatter;
+      maskedHtmlComments = rendered.maskedHtmlComments;
+    }
+
+    // Pre-pass: mask Markdown blockquotes before scoring. A human
     // reacting to AI text by quoting it shouldn't have the quoted block
     // counted against their own writing. Requires ≥2 consecutive `> `
     // lines to count as a blockquote — single-line `> ls -la` shell
-    // prompts in technical docs stay in the text.
-    let quotedLines = 0;
-    const rawLines = text.split(/\r?\n/);
-    const isQuote = rawLines.map((l) => /^\s*>\s/.test(l));
-    const stripIdx = new Set();
-    for (let i = 0; i < rawLines.length; i++) {
-      if (isQuote[i] && ((isQuote[i - 1] && i > 0) || isQuote[i + 1])) {
-        stripIdx.add(i);
-        quotedLines++;
-      }
-    }
-    text = rawLines.filter((_, i) => !stripIdx.has(i)).join('\n');
+    // prompts in technical docs stay in the text. Masking instead of deleting
+    // keeps later issue and highlight offsets aligned with the source file.
+    const blockquotes = maskMultilineBlockquotes(text);
+    text = blockquotes.text;
+    const { quotedLines } = blockquotes;
 
     // Pre-pass: strip bypass-trick chars before pattern matching so
     // "delve" with a Cyrillic 'е' still hits Tier 1. Original text is
@@ -1160,7 +1221,14 @@ const AIDetector = (() => {
 
     const wordCount = countWords(text);
     if (wordCount < 10) {
-      return { ...buildV2Defaults('UNSCORED', 'low'), score: 0, label: 'Too short', issues: [], stats: { wordCount, contextMode, contextModeFallback }, tooShort: true };
+      return {
+        ...buildV2Defaults('UNSCORED', 'low'),
+        score: 0,
+        label: 'Too short',
+        issues: [],
+        stats: { wordCount, contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments },
+        tooShort: true,
+      };
     }
     if (wordCount > MAX_WORDS) {
       return {
@@ -1168,7 +1236,7 @@ const AIDetector = (() => {
         score: 0,
         label: 'Text too long',
         issues: [],
-        stats: { wordCount, contextMode, contextModeFallback },
+        stats: { wordCount, contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments },
         tooLong: true,
       };
     }
@@ -1868,6 +1936,10 @@ const AIDetector = (() => {
         patternCount: deduped.length - tier1Count - tier2Count - tier3Count,
         contextMode,
         contextModeFallback,
+        sourceMode,
+        sourceModeFallback,
+        maskedFrontmatter,
+        maskedHtmlComments,
         normalization: norm.flags,
         quotedLines,
         unmappedHighlights: regions._unmapped ?? 0,

@@ -1,5 +1,5 @@
 ---
-description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Activate whenever editing prose-heavy files (Markdown, documentation, blog posts, READMEs, release notes, emails). Cursor port of the avoid-ai-writing skill v3.26.0. See https://github.com/conorbronsdon/avoid-ai-writing.
+description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Activate whenever editing prose-heavy files (Markdown, documentation, blog posts, READMEs, release notes, emails). Cursor port of the avoid-ai-writing skill v3.27.0. See https://github.com/conorbronsdon/avoid-ai-writing.
 globs: ["**/*.md", "**/*.mdx", "**/*.txt", "**/*.rst", "**/*.adoc"]
 alwaysApply: false
 ---
