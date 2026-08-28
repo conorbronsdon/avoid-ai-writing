@@ -4,6 +4,16 @@ All notable changes to this project are documented here.
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+- **README adds a restrained related-work block.** Links to Conor's public
+  builds, Chain of Thought, and `repo-audit` now sit after the core product and
+  usage documentation.
+
+---
+
 ## [3.27.0] — 2026-08-26
 
 ### Added
