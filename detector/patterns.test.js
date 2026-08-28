@@ -83,6 +83,284 @@ test('stats fields sum to issues length', () => {
   assert.equal(sum, r.issues.length, `stats sum (${sum}) != issues (${r.issues.length})`);
 });
 
+test('#123: rendered Markdown ignores frontmatter and multiline HTML comments', () => {
+  const prose = [
+    'A clerk opened the file before sunrise. The names filled three pages.',
+    'He read them twice, signed the order, and passed it down the corridor.',
+  ].join(' ');
+  const comment = [
+    '<!-- ARCHITECTURE',
+    'Furthermore, this is a load-bearing transition. Add comprehensive and pivotal context here.',
+    '-->',
+    prose,
+  ].join('\n');
+  const frontmatter = [
+    '---',
+    'title: Draft',
+    'description: A comprehensive and pivotal exploration of a robust ecosystem',
+    '---',
+    prose,
+  ].join('\n');
+  const baseline = AIDetector.analyzeText(prose);
+
+  for (const [name, text, expected] of [
+    ['comment', comment, { maskedFrontmatter: 0, maskedHtmlComments: 1 }],
+    ['frontmatter', frontmatter, { maskedFrontmatter: 1, maskedHtmlComments: 0 }],
+  ]) {
+    const plain = AIDetector.analyzeText(text);
+    const rendered = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdown' });
+
+    assert.ok(plain.score > baseline.score, `${name}: plain mode must keep inspecting source text`);
+    assert.equal(rendered.score, baseline.score, `${name}: rendered score must match visible prose`);
+    assert.deepEqual(
+      rendered.issues.map((issue) => [issue.type, issue.text]),
+      baseline.issues.map((issue) => [issue.type, issue.text]),
+      `${name}: rendered findings must match visible prose`,
+    );
+    assert.equal(rendered.stats.sourceMode, 'rendered-markdown');
+    assert.equal(rendered.stats.maskedFrontmatter, expected.maskedFrontmatter);
+    assert.equal(rendered.stats.maskedHtmlComments, expected.maskedHtmlComments);
+  }
+});
+
+test('#123: same-line and unclosed HTML comments are source-only', () => {
+  const prose = [
+    'The carpenter measured the door twice before cutting the oak board.',
+    'He shaved one edge, reset the hinges, and checked the latch again.',
+  ].join(' ');
+  const hidden = 'Moreover, this seamless and robust paradigm is a testament to progress.';
+  const baseline = AIDetector.analyzeText(prose);
+
+  for (const [name, text] of [
+    ['same-line', `${prose}\n<!-- ${hidden} -->`],
+    ['unclosed', `${prose}\n<!-- ${hidden}`],
+  ]) {
+    const rendered = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdown' });
+    assert.equal(rendered.score, baseline.score, `${name}: hidden text must not affect the score`);
+    assert.equal(rendered.stats.maskedHtmlComments, 1);
+    assert.equal(rendered.issues.some((issue) => /seamless|robust|testament/i.test(issue.text || '')), false);
+  }
+});
+
+test('#123: comment markers inside fenced and inline code remain visible', () => {
+  const prose = 'Moreover, the editor checked the original document before changing the published account for the morning edition.';
+  const cases = [
+    ['fenced-unclosed', ['```html', '<!-- example marker stays open', '```', prose].join('\n')],
+    ['inline-unclosed', `The guide shows \`<!-- example marker\` in code before the sample. ${prose}`],
+    ['inline-closed', `The guide shows \`<!-- example -->\` in code before the sample. ${prose}`],
+  ];
+
+  for (const [name, text] of cases) {
+    const result = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdown' });
+    assert.notEqual(result.label, 'Too short', `${name}: code must not hide later prose`);
+    assert.equal(result.stats.maskedHtmlComments, 0, `${name}: code markers are not comments`);
+    assert.ok(result.issues.some((issue) => issue.type === 'transition'), `${name}: later prose must be analyzed`);
+  }
+});
+
+test('#123: comment markers in top-level indented code remain visible', () => {
+  const text = [
+    '    <!-- seamless robust pivotal -->',
+    '',
+    'Moreover, the editor checked the original document before changing the published account for the morning edition.',
+  ].join('\n');
+  const result = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdown' });
+
+  assert.equal(result.stats.maskedHtmlComments, 0, 'an indented code marker is not an HTML comment');
+  assert.deepEqual(
+    result.issues.filter((issue) => issue.type === 'tier1').map((issue) => issue.text),
+    ['seamless', 'robust', 'pivotal'],
+    'reader-visible indented code must still be analyzed',
+  );
+  assert.ok(result.issues.some((issue) => issue.type === 'transition' && issue.text === 'Moreover'));
+});
+
+test('#123: an indented HTML comment under a list item stays hidden', () => {
+  const text = [
+    '- Keep this item.',
+    '',
+    '    <!-- seamless robust pivotal -->',
+    '',
+    'Moreover, the editor checked the original document before changing the published account for the morning edition.',
+  ].join('\n');
+  const result = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdown' });
+
+  assert.equal(result.stats.maskedHtmlComments, 1);
+  assert.equal(result.issues.some((issue) => /seamless|robust|pivotal/i.test(issue.text || '')), false);
+  assert.ok(result.issues.some((issue) => issue.type === 'transition' && issue.text === 'Moreover'));
+});
+
+test('#123: list syntax inside a comment cannot hide later indented code', () => {
+  const text = [
+    '<!--',
+    '- hidden list item',
+    '  hidden continuation -->',
+    '',
+    '    <!-- seamless robust pivotal -->',
+    '',
+    'Moreover, the editor checked the original document before changing the published account for the morning edition.',
+  ].join('\n');
+  const result = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdown' });
+
+  assert.equal(result.stats.maskedHtmlComments, 1, 'the indented code marker is not a real comment');
+  assert.deepEqual(
+    result.issues.filter((issue) => issue.type === 'tier1').map((issue) => issue.text),
+    ['seamless', 'robust', 'pivotal'],
+  );
+  assert.ok(result.issues.some((issue) => issue.type === 'transition' && issue.text === 'Moreover'));
+});
+
+test('#123: backticks inside an HTML comment do not protect its closing delimiter', () => {
+  const commentPrefix = '<!-- plan `-->';
+  const prose = 'Moreover, the editor checked the original document before changing the published account for the morning edition.';
+  const visibleText = `\` Furthermore, seamless robust and pivotal notes stay hidden -->\n${prose}`;
+  const baseline = AIDetector.analyzeText(visibleText);
+  const source = commentPrefix + visibleText;
+  const result = AIDetector.analyzeText(source, { sourceMode: 'rendered-markdown' });
+
+  assert.equal(result.stats.maskedHtmlComments, 1);
+  assert.equal(result.score, 19, 'all reader-visible findings must contribute to the rendered score');
+  assert.equal(result.score, baseline.score, 'the first literal --> must close the comment');
+  assert.ok(result.issues.some((issue) => issue.type === 'transition' && issue.text === 'Furthermore'));
+  assert.deepEqual(
+    result.issues.filter((issue) => issue.type === 'tier1').map((issue) => issue.text),
+    ['seamless', 'robust', 'pivotal'],
+  );
+  assert.deepEqual(
+    result.issues.map((issue) => [issue.type, issue.text]),
+    baseline.issues.map((issue) => [issue.type, issue.text]),
+  );
+  assert.deepEqual(
+    result.issues.filter((issue) => Number.isInteger(issue.index)).map((issue) => issue.index),
+    baseline.issues
+      .filter((issue) => Number.isInteger(issue.index))
+      .map((issue) => issue.index + commentPrefix.length),
+  );
+  for (const issue of result.issues.filter((candidate) => Number.isInteger(candidate.index))) {
+    assert.equal(issue.index, source.indexOf(issue.text), `${issue.text}: source offset must survive masking`);
+  }
+});
+
+test('#123: code delimiters in one comment cannot hide a later comment', () => {
+  const prose = 'Moreover, the editor checked the original document before changing the published account for the morning edition.';
+  const hidden = 'Furthermore, this seamless robust paradigm is a testament to progress.';
+  const text = ['<!--', '```', '-->', prose, `<!-- ${hidden} -->`].join('\n');
+  const result = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdown' });
+
+  assert.equal(result.stats.maskedHtmlComments, 2);
+  assert.equal(result.issues.some((issue) => /seamless|robust|paradigm|testament/i.test(issue.text || '')), false);
+  assert.ok(result.issues.some((issue) => issue.type === 'transition'), 'visible prose must still fire');
+});
+
+test('#123: short HTML comments close at an overlapping delimiter', () => {
+  const prose = 'Moreover, the editor checked the original document before changing the published account for the morning edition.';
+
+  for (const comment of ['<!-->', '<!--->']) {
+    const result = AIDetector.analyzeText(`${comment}\n${prose}`, { sourceMode: 'rendered-markdown' });
+    assert.equal(result.stats.maskedHtmlComments, 1);
+    assert.notEqual(result.label, 'Too short', `${comment}: later prose must remain visible`);
+    assert.equal(result.issues.find((issue) => issue.type === 'transition').index, comment.length + 1);
+  }
+});
+
+test('#123: rendered Markdown preserves issue offsets after masked source', () => {
+  const sourceOnly = '<!-- This seamless, robust paradigm should stay hidden. -->\r\n';
+  const prose = 'Moreover, the editor checked the original document before changing the published account for the morning edition.';
+  const result = AIDetector.analyzeText(sourceOnly + prose, { sourceMode: 'rendered-markdown' });
+  const transition = result.issues.find((issue) => issue.type === 'transition');
+
+  assert.ok(transition, 'reader-facing prose should still be analyzed');
+  assert.equal(transition.index, sourceOnly.length);
+  assert.equal(result.highlight_sentence_for_ai[0].start, sourceOnly.length);
+  assert.equal(result.highlight_sentence_for_ai[0].end, sourceOnly.length + prose.length);
+});
+
+test('#123: multiline blockquote masking preserves later source offsets', () => {
+  const quote = '> This seamless landscape is a testament to progress.\r\n> Moreover, it is a robust paradigm.\r\n';
+  const prose = 'Moreover, the editor checked the original document before changing the published account for the morning edition.';
+  const result = AIDetector.analyzeText(quote + prose, { sourceMode: 'rendered-markdown' });
+  const transition = result.issues.find((issue) => issue.type === 'transition');
+
+  assert.ok(transition, 'reader-facing prose after the quote should still be analyzed');
+  assert.equal(transition.index, quote.length);
+  assert.equal(result.highlight_sentence_for_ai[0].start, quote.length);
+  assert.equal(result.highlight_sentence_for_ai[0].end, quote.length + prose.length);
+  assert.equal(result.stats.quotedLines, 2);
+});
+
+test('#123: plain mode preserves legacy blockquote paragraph scoring', () => {
+  const text = [
+    'We harness practical tools for ordinary work each morning.',
+    '> This quoted material should not count against the author.',
+    '> It contains another quoted line for the detector.',
+    'We navigate routine problems with care before the daily review.',
+  ].join('\n');
+  const result = AIDetector.analyzeText(text);
+
+  assert.equal(result.score, 6);
+  assert.deepEqual(
+    result.issues.filter((issue) => issue.type === 'tier2').map((issue) => issue.text),
+    ['harness', 'navigate'],
+  );
+  assert.equal(result.stats.quotedLines, 2);
+
+  const leadingWhitespace = '\n\nMoreover, the editor checked the original document before changing the published account for the morning edition.';
+  assert.equal(
+    AIDetector.analyzeText(leadingWhitespace).highlight_sentence_for_ai[0].start,
+    0,
+    'plain-mode highlight boundaries must retain their legacy shape',
+  );
+});
+
+test('#123: rendered Markdown recognizes blank-first-line and CR-only frontmatter', () => {
+  const prose = 'Moreover, the editor checked the original document before changing the published account for the morning edition.';
+  const baseline = AIDetector.analyzeText(prose);
+  const cases = [
+    ['blank-first-line', ['---', '', 'title: Draft', 'description: A comprehensive and pivotal exploration', '---', ''].join('\n')],
+    ['CR-only', ['---', '', 'title: Draft', 'description: A comprehensive and pivotal exploration', '---', ''].join('\r')],
+  ];
+
+  for (const [name, sourceOnly] of cases) {
+    const result = AIDetector.analyzeText(sourceOnly + prose, { sourceMode: 'rendered-markdown' });
+    assert.equal(result.stats.maskedFrontmatter, 1, `${name}: frontmatter must be masked`);
+    assert.equal(result.score, baseline.score, `${name}: metadata must not affect the score`);
+    const transition = result.issues.find((issue) => issue.type === 'transition');
+    assert.ok(transition, `${name}: visible prose must still be analyzed`);
+    assert.equal(transition.index, sourceOnly.length);
+    assert.equal(result.highlight_sentence_for_ai[0].start, sourceOnly.length);
+  }
+});
+
+test('#123: rendered Markdown does not mistake a thematic break for frontmatter', () => {
+  for (const text of [
+    ['---', '', 'Moreover, the team described a seamless and robust landscape in the final report.', '', '---'].join('\n'),
+    ['---', 'Moreover, the team described a seamless and robust landscape in the final report.', '---'].join('\n'),
+  ]) {
+    const result = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdown' });
+    assert.equal(result.stats.maskedFrontmatter, 0);
+    assert.ok(result.issues.length > 0, 'prose between thematic breaks should remain visible');
+  }
+});
+
+test('#123: unknown source modes fall back visibly to plain', () => {
+  const text = '<!-- Moreover, this seamless and robust paradigm is hidden. -->\nVisible prose has enough words for the detector to score this input normally.';
+  const result = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdonw' });
+
+  assert.equal(result.stats.sourceMode, 'plain');
+  assert.equal(result.stats.sourceModeFallback, 'rendered-markdonw');
+  assert.equal(result.stats.maskedHtmlComments, 0);
+  assert.ok(result.issues.length > 0, 'fallback must retain plain-mode behavior');
+
+  for (const requested of ['', false, 0, null]) {
+    const fallback = AIDetector.analyzeText(text, { sourceMode: requested });
+    assert.equal(fallback.stats.sourceMode, 'plain');
+    assert.equal(fallback.stats.sourceModeFallback, requested);
+  }
+
+  const omitted = AIDetector.analyzeText(text);
+  assert.equal(omitted.stats.sourceModeFallback, undefined);
+});
+
 test('repeated Tier 1 phrase does not inflate score linearly', () => {
   const single = AIDetector.analyzeText('We delve into the landscape of many things today.');
   const fivefold = AIDetector.analyzeText(

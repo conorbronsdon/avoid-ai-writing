@@ -735,20 +735,132 @@ const AIDetector = (() => {
     return chars.join('');
   }
 
-  function maskTopLevelIndentedCode(chars) {
+  function initialFrontmatterRange(text) {
+    const lines = [];
+    const lineRe = /[^\r\n]*(?:\r\n|\n|\r|$)/g;
+    let match;
+    while ((match = lineRe.exec(text)) !== null && match[0]) {
+      const body = match[0].replace(/(?:\r\n|\n|\r)$/, '');
+      lines.push({ body, start: match.index, end: match.index + body.length });
+    }
+
+    if (lines.length < 3 || !/^---[ \t]*$/.test(lines[0].body.replace(/^\uFEFF/, ''))) return null;
+
+    let closingLine = -1;
+    for (let i = 1; i < lines.length; i += 1) {
+      if (/^---[ \t]*$/.test(lines[i].body)) {
+        closingLine = i;
+        break;
+      }
+    }
+    if (closingLine === -1) return null;
+
+    // A pair of thematic breaks can also surround ordinary Markdown prose.
+    // Require the first substantive line to begin like a YAML mapping entry
+    // before treating the delimited block as frontmatter. Leading blank lines
+    // and YAML comments are valid, and the line parser accepts LF, CRLF, or CR.
+    const yamlKey = /^[ \t]*(?:[A-Za-z0-9_.-]+|"[^"\r\n]+"|'[^'\r\n]+')[ \t]*:/;
+    const firstContent = lines
+      .slice(1, closingLine)
+      .find((line) => line.body.trim() && !/^[ \t]*#/.test(line.body));
+    if (!firstContent || !yamlKey.test(firstContent.body)) return null;
+
+    return { start: 0, end: lines[closingLine].end };
+  }
+
+  // Mask source-only Markdown spans while preserving source offsets. The
+  // detector can then score what a reader sees without making later issue
+  // indexes or sentence highlights point at the wrong source location.
+  function maskRenderedMarkdown(text) {
+    const chars = text.split('');
+
+    let maskedFrontmatter = 0;
+    const frontmatter = initialFrontmatterRange(text);
+    if (frontmatter) {
+      blankRange(chars, frontmatter.start, frontmatter.end);
+      maskedFrontmatter = 1;
+    }
+
+    const maskCommentCode = () => {
+      const codeChars = maskCode(chars.join('')).split('');
+      maskTopLevelIndentedCode(codeChars, { listAware: true });
+      return codeChars.join('');
+    };
+    let maskedHtmlComments = 0;
+    let searchIndex = 0;
+    while (searchIndex < text.length) {
+      const openingIndex = maskCommentCode().indexOf('<!--', searchIndex);
+      if (openingIndex === -1) break;
+      const closingIndex = text.indexOf('-->', openingIndex + 2);
+      const end = closingIndex === -1 ? text.length : closingIndex + 3;
+      blankRange(chars, openingIndex, end);
+      maskedHtmlComments += 1;
+      searchIndex = end;
+    }
+
+    return { text: chars.join(''), maskedFrontmatter, maskedHtmlComments };
+  }
+
+  function maskMultilineBlockquotes(text) {
+    const chars = text.split('');
+    const lines = [];
+    const lineRe = /[^\r\n]*(?:\r\n|\n|\r|$)/g;
+    let match;
+    while ((match = lineRe.exec(text)) !== null && match[0]) {
+      const body = match[0].replace(/[\r\n]+$/, '');
+      lines.push({ text: body, start: match.index, end: match.index + body.length });
+    }
+
+    let quotedLines = 0;
+    const isQuote = lines.map((line) => /^\s*>\s/.test(line.text));
+    for (let i = 0; i < lines.length; i += 1) {
+      if (isQuote[i] && ((isQuote[i - 1] && i > 0) || isQuote[i + 1])) {
+        blankRange(chars, lines[i].start, lines[i].end);
+        quotedLines += 1;
+      }
+    }
+
+    return { text: chars.join(''), quotedLines };
+  }
+
+  // Keep the historical deletion behavior for default plain mode. Paragraph-
+  // scoped rules depend on the surrounding lines being rejoined exactly this
+  // way, so changing this prepass would change scores for existing callers.
+  function stripMultilineBlockquotes(text) {
+    const rawLines = text.split(/\r?\n/);
+    const isQuote = rawLines.map((line) => /^\s*>\s/.test(line));
+    const stripIndexes = new Set();
+    for (let i = 0; i < rawLines.length; i += 1) {
+      if (isQuote[i] && ((isQuote[i - 1] && i > 0) || isQuote[i + 1])) stripIndexes.add(i);
+    }
+    return {
+      text: rawLines.filter((_, i) => !stripIndexes.has(i)).join('\n'),
+      quotedLines: stripIndexes.size,
+    };
+  }
+
+  function maskTopLevelIndentedCode(chars, { listAware = false } = {}) {
     const lines = chars.join('').split('\n');
     let offset = 0;
     let inBlock = false;
+    let previousBlank = true;
+    let listContext = false;
     for (let i = 0; i < lines.length; i += 1) {
       const line = lines[i];
       const indented = /^(?: {4}|\t)\S/.test(line);
-      const previousBlank = i === 0 || lines[i - 1].trim() === '';
-      if (indented && (inBlock || previousBlank)) {
+      const blank = line.trim() === '';
+      const isCode = indented && (inBlock || (previousBlank && (!listAware || !listContext)));
+      if (isCode) {
         blankRange(chars, offset, offset + line.length);
         inBlock = true;
-      } else if (line.trim() !== '') {
+      } else if (!blank) {
         inBlock = false;
       }
+      if (listAware && !blank && !isCode) {
+        if (/^ {0,3}(?:[-*+]|\d{1,9}[.)])(?:\s|$)/.test(line)) listContext = true;
+        else if (/^\S/.test(line)) listContext = false;
+      }
+      previousBlank = blank;
       offset += line.length + 1;
     }
   }
@@ -1135,22 +1247,34 @@ const AIDetector = (() => {
     const contextMode = VALID_CONTEXT_MODES.has(requestedMode) ? requestedMode : 'general';
     const contextModeFallback = requestedMode !== contextMode ? requestedMode : null;
 
-    // Pre-pass: strip Markdown blockquotes before scoring. A human
+    // Source mode controls which parts of a Markdown file count as prose.
+    // Plain remains the compatibility default. Rendered Markdown masks only
+    // initial YAML frontmatter and HTML comments; source-hygiene checks for
+    // hidden TODO/placeholder comments remain available through plain mode.
+    const VALID_SOURCE_MODES = new Set(['plain', 'rendered-markdown']);
+    const requestedSourceMode = options.sourceMode === undefined ? 'plain' : options.sourceMode;
+    const sourceMode = VALID_SOURCE_MODES.has(requestedSourceMode) ? requestedSourceMode : 'plain';
+    const sourceModeFallback = requestedSourceMode !== sourceMode ? requestedSourceMode : undefined;
+    let maskedFrontmatter = 0;
+    let maskedHtmlComments = 0;
+    if (sourceMode === 'rendered-markdown') {
+      const rendered = maskRenderedMarkdown(text);
+      text = rendered.text;
+      maskedFrontmatter = rendered.maskedFrontmatter;
+      maskedHtmlComments = rendered.maskedHtmlComments;
+    }
+
+    // Pre-pass: mask Markdown blockquotes before scoring. A human
     // reacting to AI text by quoting it shouldn't have the quoted block
     // counted against their own writing. Requires ≥2 consecutive `> `
     // lines to count as a blockquote — single-line `> ls -la` shell
-    // prompts in technical docs stay in the text.
-    let quotedLines = 0;
-    const rawLines = text.split(/\r?\n/);
-    const isQuote = rawLines.map((l) => /^\s*>\s/.test(l));
-    const stripIdx = new Set();
-    for (let i = 0; i < rawLines.length; i++) {
-      if (isQuote[i] && ((isQuote[i - 1] && i > 0) || isQuote[i + 1])) {
-        stripIdx.add(i);
-        quotedLines++;
-      }
-    }
-    text = rawLines.filter((_, i) => !stripIdx.has(i)).join('\n');
+    // prompts in technical docs stay in the text. Masking instead of deleting
+    // keeps later issue and highlight offsets aligned with the source file.
+    const blockquotes = sourceMode === 'rendered-markdown'
+      ? maskMultilineBlockquotes(text)
+      : stripMultilineBlockquotes(text);
+    text = blockquotes.text;
+    const { quotedLines } = blockquotes;
 
     // Pre-pass: strip bypass-trick chars before pattern matching so
     // "delve" with a Cyrillic 'е' still hits Tier 1. Original text is
@@ -1160,7 +1284,14 @@ const AIDetector = (() => {
 
     const wordCount = countWords(text);
     if (wordCount < 10) {
-      return { ...buildV2Defaults('UNSCORED', 'low'), score: 0, label: 'Too short', issues: [], stats: { wordCount, contextMode, contextModeFallback }, tooShort: true };
+      return {
+        ...buildV2Defaults('UNSCORED', 'low'),
+        score: 0,
+        label: 'Too short',
+        issues: [],
+        stats: { wordCount, contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments },
+        tooShort: true,
+      };
     }
     if (wordCount > MAX_WORDS) {
       return {
@@ -1168,7 +1299,7 @@ const AIDetector = (() => {
         score: 0,
         label: 'Text too long',
         issues: [],
-        stats: { wordCount, contextMode, contextModeFallback },
+        stats: { wordCount, contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments },
         tooLong: true,
       };
     }
@@ -1816,7 +1947,7 @@ const AIDetector = (() => {
     // merge adjacent flagged sentences into contiguous regions for UI
     // highlighting. Borrowed from GPTZero's sentence-highlighting model
     // — gives users "this paragraph is AI" rather than scattered hits.
-    const regions = buildSentenceRegions(text, deduped);
+    const regions = buildSentenceRegions(text, deduped, sourceMode === 'rendered-markdown');
 
     // Stats derived from the same deduped list so tier counts + patternCount
     // sum to `deduped.length`. Previously patternCount subtracted
@@ -1868,6 +1999,10 @@ const AIDetector = (() => {
         patternCount: deduped.length - tier1Count - tier2Count - tier3Count,
         contextMode,
         contextModeFallback,
+        sourceMode,
+        sourceModeFallback,
+        maskedFrontmatter,
+        maskedHtmlComments,
         normalization: norm.flags,
         quotedLines,
         unmappedHighlights: regions._unmapped ?? 0,
@@ -1884,17 +2019,23 @@ const AIDetector = (() => {
 
   // ═══ Sentence regions + trinary classifier ═════════════════════════
 
-  function buildSentenceRegions(text, issues) {
-    // Split text into sentences with byte offsets preserved so the UI
+  function buildSentenceRegions(text, issues, trimBoundaryWhitespace = false) {
+    // Split text into sentences with source offsets preserved so the UI
     // can highlight spans accurately. Sentence boundaries are coarse
     // (.!?) — fine for highlighting, not for linguistic correctness.
     const sentences = [];
     const sentenceRe = /[^.!?]+[.!?]+|\S[^.!?]*$/g;
     let m;
     while ((m = sentenceRe.exec(text)) !== null) {
-      const trimmed = m[0].trim();
-      if (trimmed.length < 4) continue;
-      sentences.push({ start: m.index, end: m.index + m[0].length, text: trimmed });
+      const sentenceText = m[0].trim();
+      if (sentenceText.length < 4) continue;
+      let start = m.index;
+      let end = m.index + m[0].length;
+      if (trimBoundaryWhitespace) {
+        start += m[0].search(/\S/);
+        end -= m[0].match(/\s*$/)[0].length;
+      }
+      sentences.push({ start, end, text: sentenceText });
     }
     if (sentences.length === 0) return [];
 
