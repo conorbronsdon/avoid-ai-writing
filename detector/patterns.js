@@ -781,15 +781,21 @@ const AIDetector = (() => {
       maskedFrontmatter = 1;
     }
 
-    // Discover comments in a code-masked copy so comment-shaped examples in
-    // fenced or inline code cannot open or close a source-only HTML comment.
+    const maskCommentCode = () => {
+      const codeChars = maskCode(chars.join('')).split('');
+      maskTopLevelIndentedCode(codeChars, { listAware: true });
+      return codeChars.join('');
+    };
     let maskedHtmlComments = 0;
-    const commentSource = maskCode(chars.join(''));
-    const commentRe = /<!--[\s\S]*?(?:-->|$)/g;
-    let match;
-    while ((match = commentRe.exec(commentSource)) !== null) {
-      blankRange(chars, match.index, match.index + match[0].length);
+    let searchIndex = 0;
+    while (searchIndex < text.length) {
+      const openingIndex = maskCommentCode().indexOf('<!--', searchIndex);
+      if (openingIndex === -1) break;
+      const closingIndex = text.indexOf('-->', openingIndex + 2);
+      const end = closingIndex === -1 ? text.length : closingIndex + 3;
+      blankRange(chars, openingIndex, end);
       maskedHtmlComments += 1;
+      searchIndex = end;
     }
 
     return { text: chars.join(''), maskedFrontmatter, maskedHtmlComments };
@@ -833,20 +839,28 @@ const AIDetector = (() => {
     };
   }
 
-  function maskTopLevelIndentedCode(chars) {
+  function maskTopLevelIndentedCode(chars, { listAware = false } = {}) {
     const lines = chars.join('').split('\n');
     let offset = 0;
     let inBlock = false;
+    let previousBlank = true;
+    let listContext = false;
     for (let i = 0; i < lines.length; i += 1) {
       const line = lines[i];
       const indented = /^(?: {4}|\t)\S/.test(line);
-      const previousBlank = i === 0 || lines[i - 1].trim() === '';
-      if (indented && (inBlock || previousBlank)) {
+      const blank = line.trim() === '';
+      const isCode = indented && (inBlock || (previousBlank && (!listAware || !listContext)));
+      if (isCode) {
         blankRange(chars, offset, offset + line.length);
         inBlock = true;
-      } else if (line.trim() !== '') {
+      } else if (!blank) {
         inBlock = false;
       }
+      if (listAware && !blank && !isCode) {
+        if (/^ {0,3}(?:[-*+]|\d{1,9}[.)])(?:\s|$)/.test(line)) listContext = true;
+        else if (/^\S/.test(line)) listContext = false;
+      }
+      previousBlank = blank;
       offset += line.length + 1;
     }
   }

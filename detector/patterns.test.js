@@ -158,19 +158,109 @@ test('#123: comment markers inside fenced and inline code remain visible', () =>
   }
 });
 
-test('#123: a comment delimiter inside inline code cannot close a comment', () => {
-  const prose = 'Moreover, the editor checked the original document before changing the published account for the morning edition.';
-  const sourceOnly = '<!-- plan `-->` Furthermore, seamless robust and pivotal notes stay hidden -->\n';
-  const baseline = AIDetector.analyzeText(prose);
-  const result = AIDetector.analyzeText(sourceOnly + prose, { sourceMode: 'rendered-markdown' });
+test('#123: comment markers in top-level indented code remain visible', () => {
+  const text = [
+    '    <!-- seamless robust pivotal -->',
+    '',
+    'Moreover, the editor checked the original document before changing the published account for the morning edition.',
+  ].join('\n');
+  const result = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdown' });
+
+  assert.equal(result.stats.maskedHtmlComments, 0, 'an indented code marker is not an HTML comment');
+  assert.deepEqual(
+    result.issues.filter((issue) => issue.type === 'tier1').map((issue) => issue.text),
+    ['seamless', 'robust', 'pivotal'],
+    'reader-visible indented code must still be analyzed',
+  );
+  assert.ok(result.issues.some((issue) => issue.type === 'transition' && issue.text === 'Moreover'));
+});
+
+test('#123: an indented HTML comment under a list item stays hidden', () => {
+  const text = [
+    '- Keep this item.',
+    '',
+    '    <!-- seamless robust pivotal -->',
+    '',
+    'Moreover, the editor checked the original document before changing the published account for the morning edition.',
+  ].join('\n');
+  const result = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdown' });
 
   assert.equal(result.stats.maskedHtmlComments, 1);
-  assert.equal(result.score, baseline.score);
+  assert.equal(result.issues.some((issue) => /seamless|robust|pivotal/i.test(issue.text || '')), false);
+  assert.ok(result.issues.some((issue) => issue.type === 'transition' && issue.text === 'Moreover'));
+});
+
+test('#123: list syntax inside a comment cannot hide later indented code', () => {
+  const text = [
+    '<!--',
+    '- hidden list item',
+    '  hidden continuation -->',
+    '',
+    '    <!-- seamless robust pivotal -->',
+    '',
+    'Moreover, the editor checked the original document before changing the published account for the morning edition.',
+  ].join('\n');
+  const result = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdown' });
+
+  assert.equal(result.stats.maskedHtmlComments, 1, 'the indented code marker is not a real comment');
+  assert.deepEqual(
+    result.issues.filter((issue) => issue.type === 'tier1').map((issue) => issue.text),
+    ['seamless', 'robust', 'pivotal'],
+  );
+  assert.ok(result.issues.some((issue) => issue.type === 'transition' && issue.text === 'Moreover'));
+});
+
+test('#123: backticks inside an HTML comment do not protect its closing delimiter', () => {
+  const commentPrefix = '<!-- plan `-->';
+  const prose = 'Moreover, the editor checked the original document before changing the published account for the morning edition.';
+  const visibleText = `\` Furthermore, seamless robust and pivotal notes stay hidden -->\n${prose}`;
+  const baseline = AIDetector.analyzeText(visibleText);
+  const source = commentPrefix + visibleText;
+  const result = AIDetector.analyzeText(source, { sourceMode: 'rendered-markdown' });
+
+  assert.equal(result.stats.maskedHtmlComments, 1);
+  assert.equal(result.score, 19, 'all reader-visible findings must contribute to the rendered score');
+  assert.equal(result.score, baseline.score, 'the first literal --> must close the comment');
+  assert.ok(result.issues.some((issue) => issue.type === 'transition' && issue.text === 'Furthermore'));
+  assert.deepEqual(
+    result.issues.filter((issue) => issue.type === 'tier1').map((issue) => issue.text),
+    ['seamless', 'robust', 'pivotal'],
+  );
   assert.deepEqual(
     result.issues.map((issue) => [issue.type, issue.text]),
     baseline.issues.map((issue) => [issue.type, issue.text]),
   );
-  assert.equal(result.issues.find((issue) => issue.type === 'transition').index, sourceOnly.length);
+  assert.deepEqual(
+    result.issues.filter((issue) => Number.isInteger(issue.index)).map((issue) => issue.index),
+    baseline.issues
+      .filter((issue) => Number.isInteger(issue.index))
+      .map((issue) => issue.index + commentPrefix.length),
+  );
+  for (const issue of result.issues.filter((candidate) => Number.isInteger(candidate.index))) {
+    assert.equal(issue.index, source.indexOf(issue.text), `${issue.text}: source offset must survive masking`);
+  }
+});
+
+test('#123: code delimiters in one comment cannot hide a later comment', () => {
+  const prose = 'Moreover, the editor checked the original document before changing the published account for the morning edition.';
+  const hidden = 'Furthermore, this seamless robust paradigm is a testament to progress.';
+  const text = ['<!--', '```', '-->', prose, `<!-- ${hidden} -->`].join('\n');
+  const result = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdown' });
+
+  assert.equal(result.stats.maskedHtmlComments, 2);
+  assert.equal(result.issues.some((issue) => /seamless|robust|paradigm|testament/i.test(issue.text || '')), false);
+  assert.ok(result.issues.some((issue) => issue.type === 'transition'), 'visible prose must still fire');
+});
+
+test('#123: short HTML comments close at an overlapping delimiter', () => {
+  const prose = 'Moreover, the editor checked the original document before changing the published account for the morning edition.';
+
+  for (const comment of ['<!-->', '<!--->']) {
+    const result = AIDetector.analyzeText(`${comment}\n${prose}`, { sourceMode: 'rendered-markdown' });
+    assert.equal(result.stats.maskedHtmlComments, 1);
+    assert.notEqual(result.label, 'Too short', `${comment}: later prose must remain visible`);
+    assert.equal(result.issues.find((issue) => issue.type === 'transition').index, comment.length + 1);
+  }
 });
 
 test('#123: rendered Markdown preserves issue offsets after masked source', () => {
