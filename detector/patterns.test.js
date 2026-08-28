@@ -142,6 +142,37 @@ test('#123: same-line and unclosed HTML comments are source-only', () => {
   }
 });
 
+test('#123: comment markers inside fenced and inline code remain visible', () => {
+  const prose = 'Moreover, the editor checked the original document before changing the published account for the morning edition.';
+  const cases = [
+    ['fenced-unclosed', ['```html', '<!-- example marker stays open', '```', prose].join('\n')],
+    ['inline-unclosed', `The guide shows \`<!-- example marker\` in code before the sample. ${prose}`],
+    ['inline-closed', `The guide shows \`<!-- example -->\` in code before the sample. ${prose}`],
+  ];
+
+  for (const [name, text] of cases) {
+    const result = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdown' });
+    assert.notEqual(result.label, 'Too short', `${name}: code must not hide later prose`);
+    assert.equal(result.stats.maskedHtmlComments, 0, `${name}: code markers are not comments`);
+    assert.ok(result.issues.some((issue) => issue.type === 'transition'), `${name}: later prose must be analyzed`);
+  }
+});
+
+test('#123: a comment delimiter inside inline code cannot close a comment', () => {
+  const prose = 'Moreover, the editor checked the original document before changing the published account for the morning edition.';
+  const sourceOnly = '<!-- plan `-->` Furthermore, seamless robust and pivotal notes stay hidden -->\n';
+  const baseline = AIDetector.analyzeText(prose);
+  const result = AIDetector.analyzeText(sourceOnly + prose, { sourceMode: 'rendered-markdown' });
+
+  assert.equal(result.stats.maskedHtmlComments, 1);
+  assert.equal(result.score, baseline.score);
+  assert.deepEqual(
+    result.issues.map((issue) => [issue.type, issue.text]),
+    baseline.issues.map((issue) => [issue.type, issue.text]),
+  );
+  assert.equal(result.issues.find((issue) => issue.type === 'transition').index, sourceOnly.length);
+});
+
 test('#123: rendered Markdown preserves issue offsets after masked source', () => {
   const sourceOnly = '<!-- This seamless, robust paradigm should stay hidden. -->\r\n';
   const prose = 'Moreover, the editor checked the original document before changing the published account for the morning edition.';
@@ -150,6 +181,8 @@ test('#123: rendered Markdown preserves issue offsets after masked source', () =
 
   assert.ok(transition, 'reader-facing prose should still be analyzed');
   assert.equal(transition.index, sourceOnly.length);
+  assert.equal(result.highlight_sentence_for_ai[0].start, sourceOnly.length);
+  assert.equal(result.highlight_sentence_for_ai[0].end, sourceOnly.length + prose.length);
 });
 
 test('#123: multiline blockquote masking preserves later source offsets', () => {
@@ -160,21 +193,63 @@ test('#123: multiline blockquote masking preserves later source offsets', () => 
 
   assert.ok(transition, 'reader-facing prose after the quote should still be analyzed');
   assert.equal(transition.index, quote.length);
+  assert.equal(result.highlight_sentence_for_ai[0].start, quote.length);
+  assert.equal(result.highlight_sentence_for_ai[0].end, quote.length + prose.length);
   assert.equal(result.stats.quotedLines, 2);
 });
 
-test('#123: rendered Markdown does not mistake a thematic break for frontmatter', () => {
+test('#123: plain mode preserves legacy blockquote paragraph scoring', () => {
   const text = [
-    '---',
-    '',
-    'Moreover, the team described a seamless and robust landscape in the final report.',
-    '',
-    '---',
+    'We harness practical tools for ordinary work each morning.',
+    '> This quoted material should not count against the author.',
+    '> It contains another quoted line for the detector.',
+    'We navigate routine problems with care before the daily review.',
   ].join('\n');
-  const result = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdown' });
+  const result = AIDetector.analyzeText(text);
 
-  assert.equal(result.stats.maskedFrontmatter, 0);
-  assert.ok(result.issues.length > 0, 'prose between thematic breaks should remain visible');
+  assert.equal(result.score, 6);
+  assert.deepEqual(
+    result.issues.filter((issue) => issue.type === 'tier2').map((issue) => issue.text),
+    ['harness', 'navigate'],
+  );
+  assert.equal(result.stats.quotedLines, 2);
+
+  const leadingWhitespace = '\n\nMoreover, the editor checked the original document before changing the published account for the morning edition.';
+  assert.equal(
+    AIDetector.analyzeText(leadingWhitespace).highlight_sentence_for_ai[0].start,
+    0,
+    'plain-mode highlight boundaries must retain their legacy shape',
+  );
+});
+
+test('#123: rendered Markdown recognizes blank-first-line and CR-only frontmatter', () => {
+  const prose = 'Moreover, the editor checked the original document before changing the published account for the morning edition.';
+  const baseline = AIDetector.analyzeText(prose);
+  const cases = [
+    ['blank-first-line', ['---', '', 'title: Draft', 'description: A comprehensive and pivotal exploration', '---', ''].join('\n')],
+    ['CR-only', ['---', '', 'title: Draft', 'description: A comprehensive and pivotal exploration', '---', ''].join('\r')],
+  ];
+
+  for (const [name, sourceOnly] of cases) {
+    const result = AIDetector.analyzeText(sourceOnly + prose, { sourceMode: 'rendered-markdown' });
+    assert.equal(result.stats.maskedFrontmatter, 1, `${name}: frontmatter must be masked`);
+    assert.equal(result.score, baseline.score, `${name}: metadata must not affect the score`);
+    const transition = result.issues.find((issue) => issue.type === 'transition');
+    assert.ok(transition, `${name}: visible prose must still be analyzed`);
+    assert.equal(transition.index, sourceOnly.length);
+    assert.equal(result.highlight_sentence_for_ai[0].start, sourceOnly.length);
+  }
+});
+
+test('#123: rendered Markdown does not mistake a thematic break for frontmatter', () => {
+  for (const text of [
+    ['---', '', 'Moreover, the team described a seamless and robust landscape in the final report.', '', '---'].join('\n'),
+    ['---', 'Moreover, the team described a seamless and robust landscape in the final report.', '---'].join('\n'),
+  ]) {
+    const result = AIDetector.analyzeText(text, { sourceMode: 'rendered-markdown' });
+    assert.equal(result.stats.maskedFrontmatter, 0);
+    assert.ok(result.issues.length > 0, 'prose between thematic breaks should remain visible');
+  }
 });
 
 test('#123: unknown source modes fall back visibly to plain', () => {
@@ -185,6 +260,15 @@ test('#123: unknown source modes fall back visibly to plain', () => {
   assert.equal(result.stats.sourceModeFallback, 'rendered-markdonw');
   assert.equal(result.stats.maskedHtmlComments, 0);
   assert.ok(result.issues.length > 0, 'fallback must retain plain-mode behavior');
+
+  for (const requested of ['', false, 0, null]) {
+    const fallback = AIDetector.analyzeText(text, { sourceMode: requested });
+    assert.equal(fallback.stats.sourceMode, 'plain');
+    assert.equal(fallback.stats.sourceModeFallback, requested);
+  }
+
+  const omitted = AIDetector.analyzeText(text);
+  assert.equal(omitted.stats.sourceModeFallback, undefined);
 });
 
 test('repeated Tier 1 phrase does not inflate score linearly', () => {

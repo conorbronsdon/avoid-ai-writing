@@ -39,19 +39,26 @@ CommonJS).
 | `document_classification` | string | trinary `HUMAN_ONLY` / `MIXED` / `AI_ONLY` (shape mirrors GPTZero for swap-in) |
 | `class_probabilities` | `{human, mixed, ai}` | sums to exactly 1.0 |
 | `confidence_category` | `low` / `medium` / `high` | |
-| `highlight_sentence_for_ai` | region[] | sentence spans with byte offsets + per-region score, for UI highlighting |
+| `highlight_sentence_for_ai` | region[] | sentence spans with source offsets + per-region score, for UI highlighting |
 
 `options.contextMode` accepts `general` (default) or `technical`; technical mode
 suppresses flags that are legitimate in code-adjacent prose (e.g. Title Case
 headers). Invalid modes fall back to `general` and set `stats.contextModeFallback`.
 
 `options.sourceMode` accepts `plain` (default) or `rendered-markdown`. Rendered
-Markdown mode masks initial YAML frontmatter and HTML comments, including an
-unclosed comment through end of file, before pattern matching and document
-metrics run. Masking preserves the input length and line endings so issue and
+Markdown mode masks initial YAML frontmatter and HTML comments before pattern
+matching and document metrics run. Frontmatter may use LF, CRLF, or CR line
+endings and must begin with a YAML mapping entry after any leading blank or
+comment lines; this keeps ordinary prose between thematic breaks visible.
+Comment markers inside fenced or inline code remain visible code, while an
+actual unclosed comment is masked through end of file.
+
+Masking preserves the input length and line endings so issue and
 sentence-highlight offsets still address the original source. The result
 reports `sourceMode`, `sourceModeFallback`, `maskedFrontmatter`, and
-`maskedHtmlComments` in `stats`.
+`maskedHtmlComments` in `stats`. When an explicit invalid source mode falls
+back to `plain`, `sourceModeFallback` retains the requested value, including
+falsy values; without a fallback it is `undefined`.
 
 Comment contents are fully excluded in rendered mode. Use plain mode or a
 source-hygiene linter when TODO placeholders inside comments should still be
