@@ -1890,6 +1890,54 @@ test('#109 complement: real tier1 vocabulary still fires after the hasOwn guard'
   assert.ok(!tier1Texts.includes('constructor'), 'constructor must not ride along in tier1');
 });
 
+test('performed-insight: essayist tics fire', () => {
+  const r = AIDetector.analyzeText(
+    "Turns out the pricing was never the obstacle for any of the customers. That's not nothing. Sit with that for a moment before the next planning meeting, and remember that distribution is the whole game."
+  );
+  const hits = r.issues.filter((i) => i.type === 'performed-insight').map((i) => i.text);
+  assert.ok(hits.length >= 3, `expected >=3 performed-insight hits, got ${JSON.stringify(hits)}`);
+});
+
+test('performed-insight: ordinary uses do not fire', () => {
+  const r = AIDetector.analyzeText(
+    "She sat with him through the appointment and the long drive home afterward. The whole family gathered for the reunion photos on Saturday. Naming names in the report was the part of the job he liked least of all."
+  );
+  const hits = r.issues.filter((i) => i.type === 'performed-insight');
+  assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
+test('negation-chain: no-chains, didn\'t-chains, and don\'t-verb-it fire', () => {
+  const r = AIDetector.analyzeText(
+    "No fluff, no filler, no jargon anywhere in the course materials. They did not ask for permission, did not wait for the committee. Don't call it a pivot. Call it a correction, plain and simple, colleagues."
+  );
+  const hits = r.issues.filter((i) => i.type === 'negation-chain');
+  assert.equal(hits.length, 3, `expected 3 negation-chain hits, got ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
+test('negation-chain: idiomatic pairs stay clean', () => {
+  const r = AIDetector.analyzeText(
+    "There was no evidence, no matter how hard the auditors looked at it. The vendor shipped no more, no less than the contract required from them. We found no defects in the batch we sampled from the warehouse."
+  );
+  const hits = r.issues.filter((i) => i.type === 'negation-chain');
+  assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
+test('dev-blog-boilerplate: simplicity slogans fire', () => {
+  const r = AIDetector.analyzeText(
+    "The framework ships with sane defaults and batteries included, and honestly it just works from the first install. The whole API is small enough to fit in your head after one afternoon of reading."
+  );
+  const hits = r.issues.filter((i) => i.type === 'dev-blog-boilerplate').map((i) => i.text);
+  assert.ok(hits.length >= 3, `expected >=3 dev-blog-boilerplate hits, got ${JSON.stringify(hits)}`);
+});
+
+test('dev-blog-boilerplate: ordinary prose stays clean', () => {
+  const r = AIDetector.analyzeText(
+    "The configuration file documents every default value we chose and why we chose it. Keep the batteries in the charger overnight so the crew can start the survey work at dawn without any delays."
+  );
+  const hits = r.issues.filter((i) => i.type === 'dev-blog-boilerplate');
+  assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
 if (failed > 0) {
   console.error(`\n${failed} test(s) failed`);
   process.exit(1);

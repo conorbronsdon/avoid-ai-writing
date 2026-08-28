@@ -6,14 +6,14 @@ the skill, decide here whether it's regex-detectable (give it a detector `type`)
 or LLM-only judgment (mark it so). When you add a detector `type`, point it back
 at the skill section it enforces.
 
-The engine exposes 48 issue `type`s (see `TYPE_LABELS` in `patterns.js`). The
+The engine exposes 51 issue `type`s (see `TYPE_LABELS` in `patterns.js`). The
 skill has more `###` sections than that — the gap is **not** missing coverage,
 it's rules that are judgment calls a regex can't make. The three groups below
 account for every entry on both sides.
 
 Three counts coexist on purpose and should not be forced to match: the README's
 **pattern-category count** (the human-facing prose catalog, derived from SKILL.md
-and guarded in CI), the engine's **48 `type`s** (which split the vocabulary tiers
+and guarded in CI), the engine's **51 `type`s** (which split the vocabulary tiers
 and add stylometric signals), and SKILL.md's `###` sections (which also include
 writer-side tests with no detectable form). The
 `categories.test.js` enforces the engine ↔ this-file mapping, and checks every
@@ -63,6 +63,9 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 | `ai-utm-source` | AI-tool URL parameter | AI-tool URL parameters |
 | `smart-punct-signature` | Smart-punct signature | Formatting (curly quotation marks) — *partial* |
 | `unnecessary-hyphenation` | Unnecessary hyphenation | Unnecessary hyphenation *(curated open, closed, and position-dependent subclasses only)* |
+| `performed-insight` | Performed-insight phrase | Performed-insight phrases |
+| `negation-chain` | Negation chain | Negation chains |
+| `dev-blog-boilerplate` | Dev-blog boilerplate | Dev-blog boilerplate |
 
 > **Partial map:** `smart-punct-signature` fires only when curly quotes co-occur
 > with an em-dash, an Oxford comma, and clean typing (≥80 words) — never on curly
@@ -111,6 +114,10 @@ mistake their absence for a coverage gap:
 - Diff-anchored writing *(changelogs, release notes, and migration guides are carve-outs)*
 - Manufactured punchlines / staccato drama
 - Aphorism formulas *(a regex for "X is the Y of Z" would flag ordinary genitive copulas — "Paris is the capital of France")*
+- Stacked rhetorical questions *(interviews, FAQs, and dialogue stack questions legitimately; a regex can't read register)*
+- Same-opener sentence runs *(whether the anaphora is earned is the whole judgment; pronoun-opener runs are ordinary narration)*
+- Stranded auxiliary contrast *(a single instance is legitimate style; only density across a piece distinguishes voice from tic)*
+- Colon into a triple *(three-item lists are often simply true, especially in technical writing — weigh by genre, not per hit)*
 - When to rewrite from scratch vs. patch
 - Severity tiers (P0 / P1 / P2)
 - Self-reference escape hatch
