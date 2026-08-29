@@ -1983,6 +1983,16 @@ test('dev-blog-boilerplate: simplicity slogans fire', () => {
   assert.ok(hits.includes('it just works'), `out-of-the-box slogan must fire: ${JSON.stringify(hits)}`);
 });
 
+test('dev-blog-boilerplate: spaced and hyphenated out-of-the-box slogans fire', () => {
+  for (const phrase of ['it just works out of the box', 'it just works out-of-the-box']) {
+    const r = AIDetector.analyzeText(
+      `The framework claims ${phrase} for every developer who follows the documented installation steps today.`
+    );
+    const hits = r.issues.filter((i) => i.type === 'dev-blog-boilerplate').map((i) => i.text);
+    assert.deepEqual(hits, ['it just works'], `${phrase} must fire with an exact issue span`);
+  }
+});
+
 test('dev-blog-boilerplate: ordinary prose stays clean', () => {
   const r = AIDetector.analyzeText(
     "The configuration file documents every default value we chose and why we chose it. The batteries included with the flashlight were already dead when we opened the sealed package at camp. It just works out to two queries after the optimizer merges identical branches."

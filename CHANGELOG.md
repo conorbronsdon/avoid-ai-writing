@@ -21,12 +21,12 @@ All notable changes to this project are documented here.
 - **Seven rhetorical-tic pattern categories adapted from Simon Willison's
   [LLM cliché highlighter](https://tools.simonwillison.net/llm-cliche-highlighter).**
   Three ship with detector types: `performed-insight` (essayist tics that
-  announce profundity — "sit with that", "that's not nothing", "the punchline
-  is", "worth naming", sentence-initial "Turns out", "is the whole point",
-  "X is dead; long live X"), `negation-chain` ("no fluff, no filler" chains,
+  announce profundity — "sit with that", "that's not nothing", sentence-initial
+  "Turns out", "is the whole point", "X is dead; long live X"),
+  `negation-chain` (three-part "no fluff, no filler, no jargon" chains,
   stacked "didn't …" clauses, "don't call it X — call it Y"), and
-  `dev-blog-boilerplate` ("batteries included", "it just works", "zero
-  config", "sane defaults", "fits in your head"). Four are skill-only
+  `dev-blog-boilerplate` ("it just works", "zero config", "sane defaults",
+  "fits in your head"). Four are skill-only
   judgment rules with the reasons recorded in `CATEGORIES.md`: stacked
   rhetorical questions, same-opener sentence runs, stranded auxiliary
   contrast, and colon into a triple. Negation-chain items carry a stop-list

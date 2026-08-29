@@ -64,7 +64,7 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 | `smart-punct-signature` | Smart-punct signature | Formatting (curly quotation marks) — *partial* |
 | `unnecessary-hyphenation` | Unnecessary hyphenation | Unnecessary hyphenation *(curated open, closed, and position-dependent subclasses only)* |
 | `performed-insight` | Performed-insight phrase | Performed-insight phrases — *partial; literal-sense exclusions documented in SKILL.md* |
-| `negation-chain` | Negation chain | Negation chains |
+| `negation-chain` | Negation chain | Negation chains — *partial; three-item deterministic threshold documented in SKILL.md* |
 | `dev-blog-boilerplate` | Dev-blog boilerplate | Dev-blog boilerplate — *partial; literal-sense exclusion documented in SKILL.md* |
 
 > **Partial map:** `smart-punct-signature` fires only when curly quotes co-occur
@@ -76,6 +76,8 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 > `performed-insight` omits literal "the punchline" and "worth naming" senses;
 > `dev-blog-boilerplate` omits literal "batteries included." Those ambiguous
 > surface forms remain judgment rules rather than deterministic matches.
+> `negation-chain` requires three short sentence-initial "no …" items; two-item
+> chains remain judgment calls.
 
 ## B. Detector-only (stylometric / fingerprint — no skill prose)
 

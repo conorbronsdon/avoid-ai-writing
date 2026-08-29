@@ -708,7 +708,7 @@ const AIDetector = (() => {
   // Stock simplicity slogans from developer marketing. Adapted from
   // Simon Willison's LLM cliché highlighter.
   const DEV_BLOG_BOILERPLATE = [
-    /\bit\s+just\s+works\b(?!\s+out\b(?!\s+of\s+the\s+box\b))/gi,
+    /\bit\s+just\s+works\b(?!\s+out\b(?![-\s]+of[-\s]+the[-\s]+box\b))/gi,
     /\bzero[-\s]config(?:uration)?\b/gi,
     /\bsane\s+defaults\b/gi,
     /\b(?:hold|fit|fits|holds)\s+in\s+your\s+head\b/gi,
