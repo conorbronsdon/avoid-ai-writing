@@ -104,14 +104,31 @@ test('em dashes survive extraction', () => {
   assert.equal((out.match(/—/g) || []).length, 2);
 });
 
-test('script, style, and page chrome never reach the text', () => {
-  const html = '<article><header>Site title</header><nav>Home</nav><script>var delve = 1;</script><style>.a{color:red}</style><p>Body.</p><footer>Copyright</footer></article>';
+test('script and style never reach the text', () => {
+  const html = '<article><script>var delve = 1;</script><style>.a{color:red}</style><p>Body.</p></article>';
   const out = htmlToText(html, { selector: 'article' });
-  assert.ok(!out.includes('Site title'));
-  assert.ok(!out.includes('Home'));
   assert.ok(!out.includes('delve'));
   assert.ok(!out.includes('color:red'));
-  assert.ok(!out.includes('Copyright'));
+  assert.equal(out, 'Body.');
+});
+
+test('authored header, nav, and footer inside the container survive', () => {
+  // Semantic elements that are part of the writing must not be stripped by a
+  // global chrome rule; only the selector decides what is in scope.
+  const html = '<article><header>Site title</header><nav>Home</nav><p>Body.</p><footer>Copyright</footer></article>';
+  const out = htmlToText(html, { selector: 'article' });
+  assert.ok(out.includes('Site title'), 'authored header survived');
+  assert.ok(out.includes('Home'), 'authored nav survived');
+  assert.ok(out.includes('Body.'));
+  assert.ok(out.includes('Copyright'), 'authored footer survived');
+});
+
+test('page chrome outside the container is excluded by the selector', () => {
+  const html = '<header>Site title</header><nav>Home</nav><main><p>Body.</p></main><footer>Copyright</footer>';
+  const out = htmlToText(html, { selector: 'main' });
+  assert.ok(!out.includes('Site title'), 'outer header leaked');
+  assert.ok(!out.includes('Home'), 'outer nav leaked');
+  assert.ok(!out.includes('Copyright'), 'outer footer leaked');
   assert.equal(out, 'Body.');
 });
 

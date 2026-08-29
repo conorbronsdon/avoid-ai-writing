@@ -957,14 +957,14 @@
         "license": "IETF Trust Legal Provisions (TLP) 5.0"
       },
       "slice": {
-        "after": "Abstract",
+        "after": "1.  Introduction",
         "maxWords": 6000
       },
-      "note": "A standards-track technical document with a named editor and a stable, permissive IETF publication policy.",
+      "note": "A standards-track technical document with a named editor and a stable, permissive IETF publication policy. The RFC header, title, and Abstract are front matter; measurement starts at §1 so only the body is hashed.",
       "added": "2026-08-29",
       "class": "human",
-      "sha256": "070f55972b19bb93fa6f517e53f6efc334a75adaf7dbdd7e5bc45431524cce8f",
-      "words": 3967
+      "sha256": "b593bd1763d8f3e506356b1d4c83ec0faf57a133e1a31684a4c693ec27694573",
+      "words": 3601
     },
     {
       "id": "w3c-www-talk-session-tracking-1995",
@@ -977,7 +977,7 @@
       "source": {
         "type": "url",
         "url": "https://lists.w3.org/Archives/Public/www-talk/1995MayJun/0026.html",
-        "license": "W3C public mailing-list archive",
+        "license": "Unverified rights status; author retained; not redistributed",
         "html": {
           "selector": "main"
         }
