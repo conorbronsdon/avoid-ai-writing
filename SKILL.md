@@ -542,18 +542,18 @@ These slot-fill constructions signal that a sentence was generated, not written.
 ### Performed-insight phrases
 - A family of essayist tics that announce profundity instead of delivering it: "sit with that for a moment", "that's not nothing", "you already know the answer", "the punchline is", "worth naming", "don't take my word for it", "that's the whole point", "is the entire business model", "that's the part nobody mentions", "the only metric that matters", "X is dead; long live X", "that's why it mattered", and the sentence-initial "Turns out". Each stages a reveal; none adds a fact.
 - One hit can be a stylistic choice — several in one piece is a tell. Fix: state the claim the phrase was gesturing at. "That's not nothing" becomes the actual size of the thing; "the punchline is" becomes the point, unannounced.
-- Carve-out: quoted speech and genuinely comedic writing, where a punchline is literal. Source: Simon Willison's [LLM cliché highlighter](https://tools.simonwillison.net/llm-cliche-highlighter).
+- Carve-out: quoted speech and genuinely comedic writing, where a punchline is literal. The deterministic detector omits "the punchline" and "worth naming" because their literal senses cannot be separated reliably by regex. Source: Simon Willison's [LLM cliché highlighter](https://tools.simonwillison.net/llm-cliche-highlighter).
 
 ### Negation chains
 - Two or more "no …" items in a row ("No fluff, no filler, no jargon."), two or more "didn't …" clauses stacked for rhythm ("It didn't ask. It didn't wait."), and the negated-then-repeated verb ("Don't call it a pivot. Call it a correction."). The chain performs decisiveness; the items are rarely load-bearing.
 - Fix: say what the thing *is*. One negation earns its place when the reader would otherwise assume the opposite; a chain of them is a drumroll.
 - Distinct from Manufactured punchlines (same-shape *fragments* for drama) — this fires on the negation structure itself, fragments or not. Source: Simon Willison's LLM cliché highlighter.
-- Carve-outs: mid-sentence factual inventories ("the endpoint takes no arguments, no headers, and no body") and sequential narration with restated subjects ("I did not sleep well. I did not eat breakfast.") are ordinary prose. The detector matches only sentence-initial "no …" chains and comma-joined "did not …" chains with the subject elided; everything else is a judgment call.
+- Carve-outs: mid-sentence factual inventories ("the endpoint takes no arguments, no headers, and no body") and sequential narration with restated subjects ("I did not sleep well. I did not eat breakfast.") are ordinary prose. The detector matches only sentence-initial chains of three or more short "no …" items and comma-joined "did not …" chains with the subject elided; two-item chains and everything outside those narrow forms are judgment calls.
 
 ### Dev-blog boilerplate
 - Stock simplicity claims from developer marketing: "batteries included", "it just works", "zero config", "sane defaults", "small enough to fit in your head". Each substitutes a slogan for a property you could demonstrate.
 - Fix: name the concrete behavior — "installs with no config file" beats "zero config"; "the whole API is six functions" beats "fits in your head".
-- Carve-out: quoting a product's own tagline, or discussing the phrase itself. Source: Simon Willison's LLM cliché highlighter.
+- Carve-out: quoting a product's own tagline, or discussing the phrase itself. The deterministic detector omits "batteries included" because a software slogan and literal package contents have the same surface form. Source: Simon Willison's LLM cliché highlighter.
 
 ### Stacked rhetorical questions
 - Two or more questions fired in a row, usually fragments after the first: "Do I know how it works? Where it breaks? Which corners it cut?" Extends Rhetorical question openers (one question stalling before a point) to the chain form, which reads as a performance of curiosity.

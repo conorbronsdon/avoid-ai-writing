@@ -63,9 +63,9 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 | `ai-utm-source` | AI-tool URL parameter | AI-tool URL parameters |
 | `smart-punct-signature` | Smart-punct signature | Formatting (curly quotation marks) — *partial* |
 | `unnecessary-hyphenation` | Unnecessary hyphenation | Unnecessary hyphenation *(curated open, closed, and position-dependent subclasses only)* |
-| `performed-insight` | Performed-insight phrase | Performed-insight phrases |
+| `performed-insight` | Performed-insight phrase | Performed-insight phrases — *partial; literal-sense exclusions documented in SKILL.md* |
 | `negation-chain` | Negation chain | Negation chains |
-| `dev-blog-boilerplate` | Dev-blog boilerplate | Dev-blog boilerplate |
+| `dev-blog-boilerplate` | Dev-blog boilerplate | Dev-blog boilerplate — *partial; literal-sense exclusion documented in SKILL.md* |
 
 > **Partial map:** `smart-punct-signature` fires only when curly quotes co-occur
 > with an em-dash, an Oxford comma, and clean typing (≥80 words) — never on curly
@@ -73,6 +73,9 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 > corroborating signal in plain-text contexts and excludes apostrophes. The two
 > agree in spirit (curly punctuation is never conclusive on its own) but differ in
 > mechanism — so this is a partial map, not 1:1.
+> `performed-insight` omits literal "the punchline" and "worth naming" senses;
+> `dev-blog-boilerplate` omits literal "batteries included." Those ambiguous
+> surface forms remain judgment rules rather than deterministic matches.
 
 ## B. Detector-only (stylometric / fingerprint — no skill prose)
 

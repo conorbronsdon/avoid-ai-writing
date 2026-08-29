@@ -674,8 +674,6 @@ const AIDetector = (() => {
     /\b(?:that|this|it|which)(?:['\u2019]s|\s+(?:is|was))\s+not\s+nothing\b/gi,
     /\byou\s+already\s+know\s+the\s+answer\b/gi,
     /\b(?:do\s+not|don['\u2019]t)\s+(?:have\s+to\s+)?take\s+my\s+word\s+for\s+it\b/gi,
-    /\bthe\s+punchline(?:\s+(?:is|was)\b|\s*:)/gi,
-    /\b(?:is|are|was|were|feels?|felt|seems?|seemed)\s+worth\s+naming\b(?!\s+names\b)/gi,
     /(?<=^|[.!?]\s|\n)Turns\s+out\b/g,
     /(?:['\u2019]s|\b(?:is|was|are|were))\s+the\s+(?:whole|entire)\s+(?:point|game|ballgame|trick|pitch|idea|play|business\s+model|value\s+proposition)\b/gi,
     /\b(?:that|this)(?:['\u2019]s|\s+(?:is|was))\s+the\s+part\s+(?:that|I|you|we|nobody|no\s+one|most\s+people)\b/gi,
@@ -695,10 +693,11 @@ const AIDetector = (() => {
   // ("no more, no less", "no matter what") from firing. Adapted from
   // Simon Willison's LLM cliché highlighter.
   const NO_ITEM_STOP = "(?!matter\\b|one\\b|doubt\\b|longer\\b|way\\b|less\\b|more\\b|such\\b|other\\b|means\\b)";
+  const NO_ITEM_SECOND_STOP = "(?!(?:in|on|at|of|to|for|with|from|by|is|are|was|were|be|been|being|will|would|can|could|should|shall|may|might|must|have|has|had|do|does|did)\\b)";
   const NEGATION_CHAIN = [
     new RegExp(
-      "(?<=^|[.!?]\\s|\\n|[:\\u2013\\u2014]\\s)No\\s+" + NO_ITEM_STOP + "[a-z'\u2019-]+(?:\\s+(?!in\\b|on\\b|at\\b|of\\b|to\\b|for\\b|with\\b|from\\b|by\\b|is\\b|was\\b)[a-z'\u2019-]+)?" +
-      "(?:\\s*,\\s*(?:and\\s+|or\\s+|just\\s+)?no\\s+" + NO_ITEM_STOP + "[a-z'\u2019-]+(?:\\s+(?!in\\b|on\\b|at\\b|of\\b|to\\b|for\\b|with\\b|from\\b|by\\b|is\\b|was\\b)[a-z'\u2019-]+)?)+",
+      "(?<=^|[.!?]\\s|\\n|[:\\u2013\\u2014]\\s)No\\s+" + NO_ITEM_STOP + "[a-z'\u2019-]+(?:\\s+" + NO_ITEM_SECOND_STOP + "[a-z'\u2019-]+)?" +
+      "(?:\\s*,\\s*(?:and\\s+|or\\s+|just\\s+)?no\\s+" + NO_ITEM_STOP + "[a-z'\u2019-]+(?:\\s+" + NO_ITEM_SECOND_STOP + "[a-z'\u2019-]+)?){2,}",
       'gm'
     ),
     /\b(?:did\s+not|didn['\u2019]t)\s+[a-z]+[^,.;!?\n]{0,20},\s*(?:did\s+not|didn['\u2019]t)\s+[a-z]+/gi,
@@ -709,8 +708,7 @@ const AIDetector = (() => {
   // Stock simplicity slogans from developer marketing. Adapted from
   // Simon Willison's LLM cliché highlighter.
   const DEV_BLOG_BOILERPLATE = [
-    /\bbatteries[-\s]included\b/gi,
-    /\bit\s+just\s+works\b(?!\s+out\b)/gi,
+    /\bit\s+just\s+works\b(?!\s+out\b(?!\s+of\s+the\s+box\b))/gi,
     /\bzero[-\s]config(?:uration)?\b/gi,
     /\bsane\s+defaults\b/gi,
     /\b(?:hold|fit|fits|holds)\s+in\s+your\s+head\b/gi,

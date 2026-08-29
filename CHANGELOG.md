@@ -32,6 +32,14 @@ All notable changes to this project are documented here.
   contrast, and colon into a triple. Negation-chain items carry a stop-list
   so idiomatic pairs ("no more, no less", "no matter") stay clean.
 
+### Fixed
+
+- **The deterministic subset stays narrower than the judgment rules.** The
+  `no …` matcher now requires three short items, literal "the punchline",
+  "worth naming", and "batteries included" senses stay out of regex matching,
+  and "it just works out of the box" remains detectable without reviving the
+  ordinary "works out to" false positive.
+
 ---
 
 ## [3.27.0] — 2026-08-26

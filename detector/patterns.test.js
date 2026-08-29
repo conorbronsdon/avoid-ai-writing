@@ -1914,6 +1914,14 @@ test('performed-insight: determiner "sit with that <noun>" and literal "only X I
   assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
 });
 
+test('performed-insight: literal punchline and naming senses stay clean', () => {
+  const r = AIDetector.analyzeText(
+    "The comedian rewrote the punchline: the timing was off and the audience missed the joke completely. The storm was worth naming, the meteorologists agreed after reviewing damage reports from every coastal town."
+  );
+  const hits = r.issues.filter((i) => i.type === 'performed-insight');
+  assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
 test('performed-insight: sentence-initial Turns out keeps a clean text and index', () => {
   const r = AIDetector.analyzeText(
     "A stable introduction goes here. Turns out the service was already running on the host, so the whole incident closed within about fifteen minutes."
@@ -1926,15 +1934,17 @@ test('performed-insight: sentence-initial Turns out keeps a clean text and index
 
 test('negation-chain: no-chains, didn\'t-chains, and don\'t-verb-it fire', () => {
   const r = AIDetector.analyzeText(
-    "No fluff, no filler, no jargon anywhere in the course materials. They did not ask for permission, did not wait for the committee. Don't call it a pivot. Call it a correction, plain and simple, colleagues."
+    "No fluff, no filler, no jargon. No padding, no throat-clearing, no detours will survive this editing pass. They did not ask for permission, did not wait for the committee. Don't call it a pivot. Call it a correction, plain and simple, colleagues."
   );
   const hits = r.issues.filter((i) => i.type === 'negation-chain');
-  assert.equal(hits.length, 3, `expected 3 negation-chain hits, got ${JSON.stringify(hits.map((i) => i.text))}`);
+  assert.equal(hits.length, 4, `expected 4 negation-chain hits, got ${JSON.stringify(hits.map((i) => i.text))}`);
+  assert.equal(hits[0].text, 'No fluff, no filler, no jargon', 'no-chain must stop before trailing prose');
+  assert.equal(hits[1].text, 'No padding, no throat-clearing, no detours', 'no-chain must not consume a trailing auxiliary');
 });
 
 test('negation-chain: idiomatic pairs stay clean', () => {
   const r = AIDetector.analyzeText(
-    "There was no evidence, no matter how hard the auditors looked at it. The vendor shipped no more, no less than the contract required from them. We found no defects in the batch we sampled from the warehouse."
+    "No more, no less, no matter what the final contract required from the vendor after the audit."
   );
   const hits = r.issues.filter((i) => i.type === 'negation-chain');
   assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
@@ -1956,17 +1966,26 @@ test('negation-chain: mid-sentence technical inventories stay clean', () => {
   assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
 });
 
+test('negation-chain: two-item sentence-initial factual inventories stay clean', () => {
+  const r = AIDetector.analyzeText(
+    "No tickets, no badges will be issued at the door for the conference this year. No maps, no lists were handed to the interns before the long field exercise began."
+  );
+  const hits = r.issues.filter((i) => i.type === 'negation-chain');
+  assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
 test('dev-blog-boilerplate: simplicity slogans fire', () => {
   const r = AIDetector.analyzeText(
-    "The framework ships with sane defaults and batteries included, and honestly it just works from the first install. The whole API is small enough to fit in your head after one afternoon of reading."
+    "The framework ships with sane defaults, and honestly it just works out of the box from the first install. The whole API is small enough to fit in your head after one afternoon of reading."
   );
   const hits = r.issues.filter((i) => i.type === 'dev-blog-boilerplate').map((i) => i.text);
   assert.ok(hits.length >= 3, `expected >=3 dev-blog-boilerplate hits, got ${JSON.stringify(hits)}`);
+  assert.ok(hits.includes('it just works'), `out-of-the-box slogan must fire: ${JSON.stringify(hits)}`);
 });
 
 test('dev-blog-boilerplate: ordinary prose stays clean', () => {
   const r = AIDetector.analyzeText(
-    "The configuration file documents every default value we chose and why we chose it. Keep the batteries in the charger overnight so the crew can start the survey work at dawn without any delays. It just works out to two queries after the optimizer merges identical branches."
+    "The configuration file documents every default value we chose and why we chose it. The batteries included with the flashlight were already dead when we opened the sealed package at camp. It just works out to two queries after the optimizer merges identical branches."
   );
   const hits = r.issues.filter((i) => i.type === 'dev-blog-boilerplate');
   assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
