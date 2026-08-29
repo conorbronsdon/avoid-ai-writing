@@ -104,11 +104,15 @@ test('em dashes survive extraction', () => {
   assert.equal((out.match(/—/g) || []).length, 2);
 });
 
-test('script and style contents never reach the text', () => {
-  const html = '<article><script>var delve = 1;</script><style>.a{color:red}</style><p>Body.</p></article>';
+test('script, style, and page chrome never reach the text', () => {
+  const html = '<article><header>Site title</header><nav>Home</nav><script>var delve = 1;</script><style>.a{color:red}</style><p>Body.</p><footer>Copyright</footer></article>';
   const out = htmlToText(html, { selector: 'article' });
+  assert.ok(!out.includes('Site title'));
+  assert.ok(!out.includes('Home'));
   assert.ok(!out.includes('delve'));
   assert.ok(!out.includes('color:red'));
+  assert.ok(!out.includes('Copyright'));
+  assert.equal(out, 'Body.');
 });
 
 // ── Slicing ────────────────────────────────────────────────────────────

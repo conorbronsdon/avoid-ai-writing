@@ -943,6 +943,50 @@
           "single model family (ChatGPT, Dec 2022) — a TPR here is an upper bound, not an estimate for current models"
         ]
       }
+    },
+    {
+      "id": "rfc-8259-json-2017",
+      "title": "The JavaScript Object Notation (JSON) Data Interchange Format",
+      "author": "Tim Bray (editor)",
+      "year": 2017,
+      "register": "docs",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://www.rfc-editor.org/rfc/rfc8259.txt",
+        "license": "IETF Trust Legal Provisions (TLP) 5.0"
+      },
+      "slice": {
+        "after": "Abstract",
+        "maxWords": 6000
+      },
+      "note": "A standards-track technical document with a named editor and a stable, permissive IETF publication policy.",
+      "added": "2026-08-29",
+      "class": "human",
+      "sha256": "070f55972b19bb93fa6f517e53f6efc334a75adaf7dbdd7e5bc45431524cce8f",
+      "words": 3967
+    },
+    {
+      "id": "w3c-www-talk-session-tracking-1995",
+      "title": "Re: Session tracking",
+      "author": "Nathaniel Borenstein",
+      "year": 1995,
+      "date": "1995-05-03",
+      "register": "conversational",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://lists.w3.org/Archives/Public/www-talk/1995MayJun/0026.html",
+        "license": "W3C public mailing-list archive",
+        "html": {
+          "selector": "main"
+        }
+      },
+      "note": "A pre-LLM public mailing-list exchange; the archive preserves the author, date, thread context, and message body.",
+      "added": "2026-08-29",
+      "class": "human",
+      "sha256": "f1cad402e01e77b3e570dd9b6a44828e339d9808f59b20182ca12842e4b53286",
+      "words": 346
     }
   ]
 }

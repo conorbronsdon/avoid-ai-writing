@@ -125,7 +125,7 @@ function htmlToText(html, opts = {}) {
   }
 
   return source
-    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, '')
+    .replace(/<(script|style|header|footer|nav)[\s\S]*?<\/\1>/gi, '')
     .replace(/<\/(p|div|h[1-6]|li|blockquote|section|tr)>/gi, '\n\n')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<[^>]+>/g, '')
