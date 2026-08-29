@@ -443,6 +443,15 @@ nothing here to check it against. The
 [license audit](https://github.com/conorbronsdon/avoid-ai-writing/issues/88)
 behind that line is public.
 
+## More from me
+
+I run agents against my own email, money, and publishing, so I build the
+guardrails first.
+
+- [What I'm building](https://conorbronsdon.com/builds/?utm_source=github&utm_medium=referral&utm_campaign=repo-readme&utm_content=avoid-ai-writing) — public projects across agent skills, MCP servers, creator tools, and Mojo.
+- [Chain of Thought](https://chainofthought.show/?utm_source=github&utm_medium=referral&utm_campaign=repo-readme&utm_content=avoid-ai-writing) — conversations with the people shipping AI systems.
+- [repo-audit](https://github.com/conorbronsdon/repo-audit) — checks whether repository claims are enforced, advisory, or guidance.
+
 ## Credits
 
 Pattern research informed by:
