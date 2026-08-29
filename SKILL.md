@@ -548,6 +548,7 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - Two or more "no …" items in a row ("No fluff, no filler, no jargon."), two or more "didn't …" clauses stacked for rhythm ("It didn't ask. It didn't wait."), and the negated-then-repeated verb ("Don't call it a pivot. Call it a correction."). The chain performs decisiveness; the items are rarely load-bearing.
 - Fix: say what the thing *is*. One negation earns its place when the reader would otherwise assume the opposite; a chain of them is a drumroll.
 - Distinct from Manufactured punchlines (same-shape *fragments* for drama) — this fires on the negation structure itself, fragments or not. Source: Simon Willison's LLM cliché highlighter.
+- Carve-outs: mid-sentence factual inventories ("the endpoint takes no arguments, no headers, and no body") and sequential narration with restated subjects ("I did not sleep well. I did not eat breakfast.") are ordinary prose. The detector matches only sentence-initial "no …" chains and comma-joined "did not …" chains with the subject elided; everything else is a judgment call.
 
 ### Dev-blog boilerplate
 - Stock simplicity claims from developer marketing: "batteries included", "it just works", "zero config", "sane defaults", "small enough to fit in your head". Each substitutes a slogan for a property you could demonstrate.

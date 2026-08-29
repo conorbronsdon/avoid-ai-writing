@@ -669,17 +669,16 @@ const AIDetector = (() => {
   // from Simon Willison's LLM cliché highlighter
   // (tools.simonwillison.net/llm-cliche-highlighter).
   const PERFORMED_INSIGHT = [
-    /\bsit(?:s|ting)?\s+with\s+(?:that|this)\b(?:\s+for\s+a\s+(?:moment|minute|second|beat))?/gi,
+    /\bsit(?:s|ting)?\s+with\s+(?:that|this)(?=\s*(?:[.!?,;:)\u2013\u2014\u2019"']|for\s+a\s+(?:moment|minute|second|beat)\b|$))(?:\s+for\s+a\s+(?:moment|minute|second|beat))?/gi,
     /\bsit(?:s|ting)?\s+with\s+(?:the|your)\s+(?:discomfort|tension|uncertainty|ambiguity|grief|unease)\b/gi,
     /\b(?:that|this|it|which)(?:['\u2019]s|\s+(?:is|was))\s+not\s+nothing\b/gi,
     /\byou\s+already\s+know\s+the\s+answer\b/gi,
     /\b(?:do\s+not|don['\u2019]t)\s+(?:have\s+to\s+)?take\s+my\s+word\s+for\s+it\b/gi,
     /\bthe\s+punchline(?:\s+(?:is|was)\b|\s*:)/gi,
     /\b(?:is|are|was|were|feels?|felt|seems?|seemed)\s+worth\s+naming\b(?!\s+names\b)/gi,
-    /(?:^|[.!?]\s+|\n)Turns\s+out\b/g,
+    /(?<=^|[.!?]\s|\n)Turns\s+out\b/g,
     /(?:['\u2019]s|\b(?:is|was|are|were))\s+the\s+(?:whole|entire)\s+(?:point|game|ballgame|trick|pitch|idea|play|business\s+model|value\s+proposition)\b/gi,
     /\b(?:that|this)(?:['\u2019]s|\s+(?:is|was))\s+the\s+part\s+(?:that|I|you|we|nobody|no\s+one|most\s+people)\b/gi,
-    /\bthe\s+only\s+[\w'\u2019-]+(?:\s+[\w'\u2019-]+)?\s+(?:I|you|we|they)\s+trust\b/gi,
     /\bthe\s+only\s+[\w'\u2019-]+\s+that\s+(?:matters|counts)\b/gi,
     /\bis\s+dead\s*[.;,:\u2013\u2014]\s*long\s+live\b/gi,
     /\b(?:that|this)(?:['\u2019]s|\s+(?:is|was))\s+why\s+[^.!?\n]{0,60}\s+mattered\b/gi,
@@ -687,17 +686,22 @@ const AIDetector = (() => {
 
   // ─── Negation chains ───────────────────────────────────────────────
   // "No fluff, no filler, no jargon" / "It didn't ask, didn't wait" /
-  // "Don't call it X. Call it Y." The stop-list keeps ordinary English
-  // pairs ("no more, no less", "no matter what") from firing. Adapted
-  // from Simon Willison's LLM cliché highlighter.
+  // "Don't call it X. Call it Y." Precision guards, in order: the
+  // "no …" chain must open its sentence (mid-sentence inventories like
+  // "takes no arguments, no headers, and no body" are factual, not
+  // rhetorical); the "did not" chain must be comma-joined with the
+  // subject elided ("I did not sleep. I did not eat" is ordinary
+  // narration and stays clean); the stop-list keeps idiomatic pairs
+  // ("no more, no less", "no matter what") from firing. Adapted from
+  // Simon Willison's LLM cliché highlighter.
   const NO_ITEM_STOP = "(?!matter\\b|one\\b|doubt\\b|longer\\b|way\\b|less\\b|more\\b|such\\b|other\\b|means\\b)";
   const NEGATION_CHAIN = [
     new RegExp(
-      "\\bno\\s+" + NO_ITEM_STOP + "[a-z'\u2019-]+(?:\\s+(?!in\\b|on\\b|at\\b|of\\b|to\\b|for\\b|with\\b|from\\b|by\\b|is\\b|was\\b)[a-z'\u2019-]+)?" +
+      "(?<=^|[.!?]\\s|\\n|[:\\u2013\\u2014]\\s)No\\s+" + NO_ITEM_STOP + "[a-z'\u2019-]+(?:\\s+(?!in\\b|on\\b|at\\b|of\\b|to\\b|for\\b|with\\b|from\\b|by\\b|is\\b|was\\b)[a-z'\u2019-]+)?" +
       "(?:\\s*,\\s*(?:and\\s+|or\\s+|just\\s+)?no\\s+" + NO_ITEM_STOP + "[a-z'\u2019-]+(?:\\s+(?!in\\b|on\\b|at\\b|of\\b|to\\b|for\\b|with\\b|from\\b|by\\b|is\\b|was\\b)[a-z'\u2019-]+)?)+",
-      'gi'
+      'gm'
     ),
-    /\b(?:did\s+not|didn['\u2019]t)\s+[a-z]+[^,.;!?\n]{0,25}[,.;]\s*(?:(?:it|they|he|she|we|I)\s+)?(?:did\s+not|didn['\u2019]t)\s+[a-z]+/gi,
+    /\b(?:did\s+not|didn['\u2019]t)\s+[a-z]+[^,.;!?\n]{0,20},\s*(?:did\s+not|didn['\u2019]t)\s+[a-z]+/gi,
     /\b(?:do\s+not|don['\u2019]t)\s+(?:just\s+)?(\w+)\s+it\b[^.!?\n]{0,60}[.!?;:,][\s'"\u201d\u2019]*(?:just\s+)?\1\s+it\b/gi,
   ];
 
@@ -706,7 +710,7 @@ const AIDetector = (() => {
   // Simon Willison's LLM cliché highlighter.
   const DEV_BLOG_BOILERPLATE = [
     /\bbatteries[-\s]included\b/gi,
-    /\bit\s+just\s+works\b/gi,
+    /\bit\s+just\s+works\b(?!\s+out\b)/gi,
     /\bzero[-\s]config(?:uration)?\b/gi,
     /\bsane\s+defaults\b/gi,
     /\b(?:hold|fit|fits|holds)\s+in\s+your\s+head\b/gi,

@@ -1906,6 +1906,24 @@ test('performed-insight: ordinary uses do not fire', () => {
   assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
 });
 
+test('performed-insight: determiner "sit with that <noun>" and literal "only X I trust" stay clean', () => {
+  const r = AIDetector.analyzeText(
+    "Please sit with that decision overnight before you call the attorney tomorrow morning. This is the only doctor I trust with a procedure this complicated, and the referral took months to arrange."
+  );
+  const hits = r.issues.filter((i) => i.type === 'performed-insight');
+  assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
+test('performed-insight: sentence-initial Turns out keeps a clean text and index', () => {
+  const r = AIDetector.analyzeText(
+    "A stable introduction goes here. Turns out the service was already running on the host, so the whole incident closed within about fifteen minutes."
+  );
+  const hits = r.issues.filter((i) => i.type === 'performed-insight');
+  assert.equal(hits.length, 1, `expected 1 hit, got ${JSON.stringify(hits.map((i) => i.text))}`);
+  assert.equal(hits[0].text, 'Turns out', 'boundary punctuation must not be consumed into the issue text');
+  assert.equal(hits[0].index, 33, 'index must point at the phrase, not the preceding sentence boundary');
+});
+
 test('negation-chain: no-chains, didn\'t-chains, and don\'t-verb-it fire', () => {
   const r = AIDetector.analyzeText(
     "No fluff, no filler, no jargon anywhere in the course materials. They did not ask for permission, did not wait for the committee. Don't call it a pivot. Call it a correction, plain and simple, colleagues."
@@ -1922,6 +1940,22 @@ test('negation-chain: idiomatic pairs stay clean', () => {
   assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
 });
 
+test('negation-chain: ordinary narration with restated subjects stays clean', () => {
+  const r = AIDetector.analyzeText(
+    "I did not sleep well last night. I did not eat breakfast either, so I left home early and caught the first train into the city before sunrise."
+  );
+  const hits = r.issues.filter((i) => i.type === 'negation-chain');
+  assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
+test('negation-chain: mid-sentence technical inventories stay clean', () => {
+  const r = AIDetector.analyzeText(
+    "The endpoint takes no arguments, no headers, and no body when called in health-check mode. The parser accepts no flags, no options, and no positional parameters in its default configuration."
+  );
+  const hits = r.issues.filter((i) => i.type === 'negation-chain');
+  assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
 test('dev-blog-boilerplate: simplicity slogans fire', () => {
   const r = AIDetector.analyzeText(
     "The framework ships with sane defaults and batteries included, and honestly it just works from the first install. The whole API is small enough to fit in your head after one afternoon of reading."
@@ -1932,7 +1966,7 @@ test('dev-blog-boilerplate: simplicity slogans fire', () => {
 
 test('dev-blog-boilerplate: ordinary prose stays clean', () => {
   const r = AIDetector.analyzeText(
-    "The configuration file documents every default value we chose and why we chose it. Keep the batteries in the charger overnight so the crew can start the survey work at dawn without any delays."
+    "The configuration file documents every default value we chose and why we chose it. Keep the batteries in the charger overnight so the crew can start the survey work at dawn without any delays. It just works out to two queries after the optimizer merges identical branches."
   );
   const hits = r.issues.filter((i) => i.type === 'dev-blog-boilerplate');
   assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
