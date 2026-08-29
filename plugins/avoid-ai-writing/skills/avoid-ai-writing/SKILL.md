@@ -1,7 +1,7 @@
 ---
 name: avoid-ai-writing
 description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Use this skill when asked to "remove AI-isms," "clean up AI writing," "edit writing for AI patterns," "audit writing for AI tells," or "make this sound less like AI." Supports a detect-only mode, an edit-in-place mode for files, an optional voice profile (casual / professional / technical / warm / blunt), and an iterate-to-convergence pass.
-version: 3.27.0
+version: 3.28.0
 license: MIT
 compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, VS Code Copilot, Hermes Agent, OpenHands, etc.) or OpenClaw. No external tools or APIs required.
 metadata:
@@ -538,6 +538,38 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - Documentation or comments narrating a change instead of describing the thing as it is: "This function was added to replace the previous approach of iterating through all items." A reader without the commit history gets archaeology, not documentation. The tell comes from how assistants work — they write docs in the context of the edit they just made, so the prose anchors to the diff; a person documenting later writes from the artifact.
 - Fix: describe the current behavior and why it is that way — "This function uses a hash map for O(1) lookups." If the history matters, it belongs in the changelog or the commit message.
 - Carve-out: documents that are inherently version-scoped — changelogs, release notes, migration guides, decision records — narrate change correctly and stay unflagged. Adapted from `blader/humanizer` P30.
+
+### Performed-insight phrases
+- A family of essayist tics that announce profundity instead of delivering it: "sit with that for a moment", "that's not nothing", "you already know the answer", "the punchline is", "worth naming", "don't take my word for it", "that's the whole point", "is the entire business model", "that's the part nobody mentions", "the only metric that matters", "X is dead; long live X", "that's why it mattered", and the sentence-initial "Turns out". Each stages a reveal; none adds a fact.
+- One hit can be a stylistic choice — several in one piece is a tell. Fix: state the claim the phrase was gesturing at. "That's not nothing" becomes the actual size of the thing; "the punchline is" becomes the point, unannounced.
+- Carve-out: quoted speech and genuinely comedic writing, where a punchline is literal. The deterministic detector omits "the punchline" and "worth naming" because their literal senses cannot be separated reliably by regex. Source: Simon Willison's [LLM cliché highlighter](https://tools.simonwillison.net/llm-cliche-highlighter).
+
+### Negation chains
+- Two or more "no …" items in a row ("No fluff, no filler, no jargon."), two or more "didn't …" clauses stacked for rhythm ("It didn't ask. It didn't wait."), and the negated-then-repeated verb ("Don't call it a pivot. Call it a correction."). The chain performs decisiveness; the items are rarely load-bearing.
+- Fix: say what the thing *is*. One negation earns its place when the reader would otherwise assume the opposite; a chain of them is a drumroll.
+- Distinct from Manufactured punchlines (same-shape *fragments* for drama) — this fires on the negation structure itself, fragments or not. Source: Simon Willison's LLM cliché highlighter.
+- Carve-outs: mid-sentence factual inventories ("the endpoint takes no arguments, no headers, and no body") and sequential narration with restated subjects ("I did not sleep well. I did not eat breakfast.") are ordinary prose. The detector matches only sentence-initial chains of three or more short "no …" items and comma-joined "did not …" chains with the subject elided; two-item chains and everything outside those narrow forms are judgment calls.
+
+### Dev-blog boilerplate
+- Stock simplicity claims from developer marketing: "batteries included", "it just works", "zero config", "sane defaults", "small enough to fit in your head". Each substitutes a slogan for a property you could demonstrate.
+- Fix: name the concrete behavior — "installs with no config file" beats "zero config"; "the whole API is six functions" beats "fits in your head".
+- Carve-out: quoting a product's own tagline, or discussing the phrase itself. The deterministic detector omits "batteries included" because a software slogan and literal package contents have the same surface form. Source: Simon Willison's LLM cliché highlighter.
+
+### Stacked rhetorical questions
+- Two or more questions fired in a row, usually fragments after the first: "Do I know how it works? Where it breaks? Which corners it cut?" Extends Rhetorical question openers (one question stalling before a point) to the chain form, which reads as a performance of curiosity.
+- Fix: keep at most one question, answer it, and convert the rest into the statements they were hiding. Judgment call rather than a detector: interviews, FAQs, and dialogue stack questions legitimately, and a regex can't read register. Source: Simon Willison's LLM cliché highlighter.
+
+### Same-opener sentence runs
+- Three or more consecutive sentences opening on the same word ("Maybe nobody needed it. Maybe it solved the wrong problem. Maybe the timing was off."), and its cousin: consecutive sentences built on the same repeated skeleton ("A cart is an object in the system. A chat room is an object in the system."). Deliberate anaphora is a rhetorical device; LLMs reach for it constantly, so a run that isn't doing persuasive work is a tell.
+- Fix: keep the first, vary or merge the rest. Judgment-only: whether the repetition is earned is exactly what a pattern can't read, and pronoun-opener runs ("He… He… He…") are ordinary narration. Source: Simon Willison's LLM cliché highlighter.
+
+### Stranded auxiliary contrast
+- Landing a reversal on a bare auxiliary: "The tool died; the data didn't." / "Reading mostly passed. Writing didn't." One is a fine sentence; as a recurring rhythm it is a signature LLM move — the clipped contrast poses as earned insight.
+- Fix: ration it. If the piece already has one, write the next contrast out in full. Judgment-only: the single instance is legitimate style, and only density across a piece distinguishes voice from tic. Source: Simon Willison's LLM cliché highlighter.
+
+### Colon into a triple
+- A colon opening onto exactly three comma-separated items: "separate ports, processes, and local state." The most common shape LLM prose uses to sound concrete — three is the default rhythm, whether or not the content has three parts.
+- Fix: audit the list. If there are really two things, or four, write that; if the items are padding, cut to the one that matters. Judgment-only, and noisy by design in technical writing, where three-item lists are often just true — weigh it by genre, not per hit. Source: Simon Willison's LLM cliché highlighter.
 
 ### Manufactured punchlines and staccato drama
 - A run of clipped fragments engineered so every beat lands like a quotable closer: "It had no preference for symmetry. No aesthetic prior. No nostalgia for human taste. The old rules were gone." Each fragment poses as a reveal; stacked, they read as a drumroll.

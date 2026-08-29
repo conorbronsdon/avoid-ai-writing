@@ -315,6 +315,12 @@ const AIDetector = (() => {
     // strong single-hit social tell that the length divisor would
     // otherwise wash out on a short LinkedIn-length post.
     'social-cta-closer': 8,
+    // Performed-insight tics: single hits are common in human essays, so
+    // weighted like tier2 vocabulary — density does the classifying.
+    'performed-insight': 3,
+    // Negation chains are a strong single-hit structural tell.
+    'negation-chain': 5,
+    'dev-blog-boilerplate': 3,
     'formulaic-opener': 8,
     // Speculative scenario opener ("Imagine a world where…"). Weighted like
     // formulaic-opener: a single strong opener tell the length divisor would
@@ -653,6 +659,59 @@ const AIDetector = (() => {
   // a lone hit cannot flip a document's classification).
   const SPECULATIVE_OPENERS = [
     /\b(?:imagine|picture|envision)(?:\s*,[^,\n]{1,30},)?\s+a\s+(?:world|future|reality)\s+(?:where|in\s+which)\b/gi,
+  ];
+
+
+  // ─── Performed-insight phrases ─────────────────────────────────────
+  // Essayist tics that announce profundity instead of delivering it.
+  // Curated noun/complement lists keep precision high: "the whole family"
+  // and "sit with him" are ordinary English and must not fire. Adapted
+  // from Simon Willison's LLM cliché highlighter
+  // (tools.simonwillison.net/llm-cliche-highlighter).
+  const PERFORMED_INSIGHT = [
+    /\bsit(?:s|ting)?\s+with\s+(?:that|this)(?=\s*(?:[.!?,;:)\u2013\u2014\u2019"']|for\s+a\s+(?:moment|minute|second|beat)\b|$))(?:\s+for\s+a\s+(?:moment|minute|second|beat))?/gi,
+    /\bsit(?:s|ting)?\s+with\s+(?:the|your)\s+(?:discomfort|tension|uncertainty|ambiguity|grief|unease)\b/gi,
+    /\b(?:that|this|it|which)(?:['\u2019]s|\s+(?:is|was))\s+not\s+nothing\b/gi,
+    /\byou\s+already\s+know\s+the\s+answer\b/gi,
+    /\b(?:do\s+not|don['\u2019]t)\s+(?:have\s+to\s+)?take\s+my\s+word\s+for\s+it\b/gi,
+    /(?<=^|[.!?]\s|\n)Turns\s+out\b/g,
+    /(?:['\u2019]s|\b(?:is|was|are|were))\s+the\s+(?:whole|entire)\s+(?:point|game|ballgame|trick|pitch|idea|play|business\s+model|value\s+proposition)\b/gi,
+    /\b(?:that|this)(?:['\u2019]s|\s+(?:is|was))\s+the\s+part\s+(?:that|I|you|we|nobody|no\s+one|most\s+people)\b/gi,
+    /\bthe\s+only\s+[\w'\u2019-]+\s+that\s+(?:matters|counts)\b/gi,
+    /\bis\s+dead\s*[.;,:\u2013\u2014]\s*long\s+live\b/gi,
+    /\b(?:that|this)(?:['\u2019]s|\s+(?:is|was))\s+why\s+[^.!?\n]{0,60}\s+mattered\b/gi,
+  ];
+
+  // ─── Negation chains ───────────────────────────────────────────────
+  // "No fluff, no filler, no jargon" / "It didn't ask, didn't wait" /
+  // "Don't call it X. Call it Y." Precision guards, in order: the
+  // "no …" chain must open its sentence (mid-sentence inventories like
+  // "takes no arguments, no headers, and no body" are factual, not
+  // rhetorical); the "did not" chain must be comma-joined with the
+  // subject elided ("I did not sleep. I did not eat" is ordinary
+  // narration and stays clean); the stop-list keeps idiomatic pairs
+  // ("no more, no less", "no matter what") from firing. Adapted from
+  // Simon Willison's LLM cliché highlighter.
+  const NO_ITEM_STOP = "(?!matter\\b|one\\b|doubt\\b|longer\\b|way\\b|less\\b|more\\b|such\\b|other\\b|means\\b)";
+  const NO_ITEM_SECOND_STOP = "(?!(?:in|on|at|of|to|for|with|from|by|is|are|was|were|be|been|being|will|would|can|could|should|shall|may|might|must|have|has|had|do|does|did)\\b)";
+  const NEGATION_CHAIN = [
+    new RegExp(
+      "(?<=^|[.!?]\\s|\\n|[:\\u2013\\u2014]\\s)No\\s+" + NO_ITEM_STOP + "[a-z'\u2019-]+(?:\\s+" + NO_ITEM_SECOND_STOP + "[a-z'\u2019-]+)?" +
+      "(?:\\s*,\\s*(?:and\\s+|or\\s+|just\\s+)?no\\s+" + NO_ITEM_STOP + "[a-z'\u2019-]+(?:\\s+" + NO_ITEM_SECOND_STOP + "[a-z'\u2019-]+)?){2,}",
+      'gm'
+    ),
+    /\b(?:did\s+not|didn['\u2019]t)\s+[a-z]+[^,.;!?\n]{0,20},\s*(?:did\s+not|didn['\u2019]t)\s+[a-z]+/gi,
+    /\b(?:do\s+not|don['\u2019]t)\s+(?:just\s+)?(\w+)\s+it\b[^.!?\n]{0,60}[.!?;:,][\s'"\u201d\u2019]*(?:just\s+)?\1\s+it\b/gi,
+  ];
+
+  // ─── Dev-blog boilerplate ──────────────────────────────────────────
+  // Stock simplicity slogans from developer marketing. Adapted from
+  // Simon Willison's LLM cliché highlighter.
+  const DEV_BLOG_BOILERPLATE = [
+    /\bit\s+just\s+works\b(?!\s+out\b(?![-\s]+of[-\s]+the[-\s]+box\b))/gi,
+    /\bzero[-\s]config(?:uration)?\b/gi,
+    /\bsane\s+defaults\b/gi,
+    /\b(?:hold|fit|fits|holds)\s+in\s+your\s+head\b/gi,
   ];
 
   // Function words whose presence MID-title marks the AI section-header shape.
@@ -1425,6 +1484,9 @@ const AIDetector = (() => {
     issues.push(...matchPatterns(text, FUTURE_NARRATIVE, 'future-narrative', 'high'));
     issues.push(...matchPatterns(text, REAL_ACTUAL_INFLATION, 'real-actual-inflation', 'medium'));
     issues.push(...matchPatterns(text, SOCIAL_CTA_CLOSER, 'social-cta-closer', 'high'));
+    issues.push(...matchPatterns(text, PERFORMED_INSIGHT, 'performed-insight', 'medium'));
+    issues.push(...matchPatterns(text, NEGATION_CHAIN, 'negation-chain', 'high'));
+    issues.push(...matchPatterns(text, DEV_BLOG_BOILERPLATE, 'dev-blog-boilerplate', 'medium'));
     issues.push(...findUnnecessaryHyphenation(text));
 
     // ── Tier 1 v2: formulaic openers + parenthetical hedges ──────────
@@ -2304,6 +2366,9 @@ const AIDetector = (() => {
     'ai-citation-markup': 'Chatbot citation markup leak',
     'ai-utm-source': 'AI-tool URL parameter',
     'unnecessary-hyphenation': 'Unnecessary hyphenation',
+    'performed-insight': 'Performed-insight phrase',
+    'negation-chain': 'Negation chain',
+    'dev-blog-boilerplate': 'Dev-blog boilerplate',
   };
 
   return {

@@ -1890,6 +1890,117 @@ test('#109 complement: real tier1 vocabulary still fires after the hasOwn guard'
   assert.ok(!tier1Texts.includes('constructor'), 'constructor must not ride along in tier1');
 });
 
+test('performed-insight: essayist tics fire', () => {
+  const r = AIDetector.analyzeText(
+    "Turns out the pricing was never the obstacle for any of the customers. That's not nothing. Sit with that for a moment before the next planning meeting, and remember that distribution is the whole game."
+  );
+  const hits = r.issues.filter((i) => i.type === 'performed-insight').map((i) => i.text);
+  assert.ok(hits.length >= 3, `expected >=3 performed-insight hits, got ${JSON.stringify(hits)}`);
+});
+
+test('performed-insight: ordinary uses do not fire', () => {
+  const r = AIDetector.analyzeText(
+    "She sat with him through the appointment and the long drive home afterward. The whole family gathered for the reunion photos on Saturday. Naming names in the report was the part of the job he liked least of all."
+  );
+  const hits = r.issues.filter((i) => i.type === 'performed-insight');
+  assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
+test('performed-insight: determiner "sit with that <noun>" and literal "only X I trust" stay clean', () => {
+  const r = AIDetector.analyzeText(
+    "Please sit with that decision overnight before you call the attorney tomorrow morning. This is the only doctor I trust with a procedure this complicated, and the referral took months to arrange."
+  );
+  const hits = r.issues.filter((i) => i.type === 'performed-insight');
+  assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
+test('performed-insight: literal punchline and naming senses stay clean', () => {
+  const r = AIDetector.analyzeText(
+    "The comedian rewrote the punchline: the timing was off and the audience missed the joke completely. The storm was worth naming, the meteorologists agreed after reviewing damage reports from every coastal town."
+  );
+  const hits = r.issues.filter((i) => i.type === 'performed-insight');
+  assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
+test('performed-insight: sentence-initial Turns out keeps a clean text and index', () => {
+  const r = AIDetector.analyzeText(
+    "A stable introduction goes here. Turns out the service was already running on the host, so the whole incident closed within about fifteen minutes."
+  );
+  const hits = r.issues.filter((i) => i.type === 'performed-insight');
+  assert.equal(hits.length, 1, `expected 1 hit, got ${JSON.stringify(hits.map((i) => i.text))}`);
+  assert.equal(hits[0].text, 'Turns out', 'boundary punctuation must not be consumed into the issue text');
+  assert.equal(hits[0].index, 33, 'index must point at the phrase, not the preceding sentence boundary');
+});
+
+test('negation-chain: no-chains, didn\'t-chains, and don\'t-verb-it fire', () => {
+  const r = AIDetector.analyzeText(
+    "No fluff, no filler, no jargon. No padding, no throat-clearing, no detours will survive this editing pass. They did not ask for permission, did not wait for the committee. Don't call it a pivot. Call it a correction, plain and simple, colleagues."
+  );
+  const hits = r.issues.filter((i) => i.type === 'negation-chain');
+  assert.equal(hits.length, 4, `expected 4 negation-chain hits, got ${JSON.stringify(hits.map((i) => i.text))}`);
+  assert.equal(hits[0].text, 'No fluff, no filler, no jargon', 'no-chain must stop before trailing prose');
+  assert.equal(hits[1].text, 'No padding, no throat-clearing, no detours', 'no-chain must not consume a trailing auxiliary');
+});
+
+test('negation-chain: idiomatic pairs stay clean', () => {
+  const r = AIDetector.analyzeText(
+    "No more, no less, no matter what the final contract required from the vendor after the audit."
+  );
+  const hits = r.issues.filter((i) => i.type === 'negation-chain');
+  assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
+test('negation-chain: ordinary narration with restated subjects stays clean', () => {
+  const r = AIDetector.analyzeText(
+    "I did not sleep well last night. I did not eat breakfast either, so I left home early and caught the first train into the city before sunrise."
+  );
+  const hits = r.issues.filter((i) => i.type === 'negation-chain');
+  assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
+test('negation-chain: mid-sentence technical inventories stay clean', () => {
+  const r = AIDetector.analyzeText(
+    "The endpoint takes no arguments, no headers, and no body when called in health-check mode. The parser accepts no flags, no options, and no positional parameters in its default configuration."
+  );
+  const hits = r.issues.filter((i) => i.type === 'negation-chain');
+  assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
+test('negation-chain: two-item sentence-initial factual inventories stay clean', () => {
+  const r = AIDetector.analyzeText(
+    "No tickets, no badges will be issued at the door for the conference this year. No maps, no lists were handed to the interns before the long field exercise began."
+  );
+  const hits = r.issues.filter((i) => i.type === 'negation-chain');
+  assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
+test('dev-blog-boilerplate: simplicity slogans fire', () => {
+  const r = AIDetector.analyzeText(
+    "The framework ships with sane defaults, and honestly it just works out of the box from the first install. The whole API is small enough to fit in your head after one afternoon of reading."
+  );
+  const hits = r.issues.filter((i) => i.type === 'dev-blog-boilerplate').map((i) => i.text);
+  assert.ok(hits.length >= 3, `expected >=3 dev-blog-boilerplate hits, got ${JSON.stringify(hits)}`);
+  assert.ok(hits.includes('it just works'), `out-of-the-box slogan must fire: ${JSON.stringify(hits)}`);
+});
+
+test('dev-blog-boilerplate: spaced and hyphenated out-of-the-box slogans fire', () => {
+  for (const phrase of ['it just works out of the box', 'it just works out-of-the-box']) {
+    const r = AIDetector.analyzeText(
+      `The framework claims ${phrase} for every developer who follows the documented installation steps today.`
+    );
+    const hits = r.issues.filter((i) => i.type === 'dev-blog-boilerplate').map((i) => i.text);
+    assert.deepEqual(hits, ['it just works'], `${phrase} must fire with an exact issue span`);
+  }
+});
+
+test('dev-blog-boilerplate: ordinary prose stays clean', () => {
+  const r = AIDetector.analyzeText(
+    "The configuration file documents every default value we chose and why we chose it. The batteries included with the flashlight were already dead when we opened the sealed package at camp. It just works out to two queries after the optimizer merges identical branches."
+  );
+  const hits = r.issues.filter((i) => i.type === 'dev-blog-boilerplate');
+  assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
 if (failed > 0) {
   console.error(`\n${failed} test(s) failed`);
   process.exit(1);
