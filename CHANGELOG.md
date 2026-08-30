@@ -4,13 +4,18 @@ All notable changes to this project are documented here.
 
 ---
 
-## [Unreleased]
+## [Unreleased] — 2026-08-29
 
 ### Changed
 
 - **README adds a restrained related-work block.** Links to Conor's public
   builds, Chain of Thought, and `repo-audit` now sit after the core product and
   usage documentation.
+- **Corpus manifest documents the register gap with two auditable seed entries.**
+  RFC 8259 provides a pre-LLM `docs` source and a 1995 W3C mailing-list message
+  provides a pre-LLM `conversational` source. The corpus README records that
+  both registers remain under-sampled and that `social` and `email` still have
+  no entries; the additions do not authorize publishing a rate.
 
 ---
 

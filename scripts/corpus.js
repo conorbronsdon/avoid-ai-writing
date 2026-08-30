@@ -98,9 +98,12 @@ function stripGutenberg(raw) {
  * Deliberately crude: take the named container, drop scripts and styles, turn
  * block-level closers into paragraph breaks, strip the rest of the tags, and
  * decode the handful of entities that actually appear. No parser, no
- * dependency. Navigation, titles, and datelines survive as short lines, and
- * the measurement's 50-word paragraph floor discards them, so they never reach
- * a score.
+ * dependency. The container selector is what excludes page chrome: a source
+ * that wants its header, nav, or footer dropped chooses a selector that wraps
+ * only the body (the W3C seed uses `main` for exactly that). Semantic elements
+ * that are part of the authored content survive extraction, and the
+ * measurement's 50-word paragraph floor discards short lines like navigation
+ * and datelines, so they never reach a score.
  */
 function htmlToText(html, opts = {}) {
   const config = typeof opts === 'string' ? { selector: opts } : opts;
