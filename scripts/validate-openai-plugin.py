@@ -12,6 +12,7 @@ SEMVER = re.compile(r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
 FRONTMATTER = re.compile(r"\A---\s*\n(.*?)\n---\s*\n(.*)\Z", re.S)
 TOP_LEVEL_INCLUDE_FILES = ("OPENAI_PLUGIN.md", "NOTICE.md", "PRIVACY.md", "TERMS.md", "SUPPORT.md", "LICENSE")
 CANONICAL_PROJECT_URL = "https://github.com/conorbronsdon/avoid-ai-writing"
+MAX_SVG_BYTES = 256 * 1024
 
 def parse_frontmatter(path: Path):
     text = path.read_text(encoding="utf-8")
@@ -124,7 +125,15 @@ def validate_agent_metadata(path: Path, errors):
 
 def check_square_svg(path: Path, errors):
     try:
-        root = ET.fromstring(path.read_text(encoding="utf-8"))
+        if path.stat().st_size > MAX_SVG_BYTES:
+            errors.append(f"{path}: SVG exceeds 256 KiB size limit")
+            return
+        text = path.read_text(encoding="utf-8")
+        for declaration in ("<!DOCTYPE", "<!ENTITY"):
+            if declaration in text:
+                errors.append(f"{path}: SVG contains forbidden XML declaration: {declaration}")
+                return
+        root = ET.fromstring(text)
     except Exception as exc:
         errors.append(f"{path}: invalid SVG: {exc}")
         return
@@ -237,9 +246,10 @@ def validate(root: Path):
         name, desc = meta.get("name", ""), meta.get("description", "")
         if not name or not desc or not body:
             errors.append(f"{skill_path}: name, description, and body are required")
-        if name in names:
-            errors.append(f"duplicate skill name {name!r}: {names[name]} and {skill_dir.name}")
-        names[name] = skill_dir.name
+        if name:
+            if name in names:
+                errors.append(f"duplicate skill name {name!r}: {names[name]} and {skill_dir.name}")
+            names[name] = skill_dir.name
         agent = skill_dir / "agents" / "openai.yaml"
         if not agent.is_file():
             errors.append(f"{skill_dir}: missing agents/openai.yaml")

@@ -5,8 +5,10 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
+import shutil
 import sys
 import tempfile
+import time
 
 sys.dont_write_bytecode = True
 MODULE_PATH = Path(__file__).with_name("validate-openai-plugin.py")
@@ -27,6 +29,7 @@ PREFIX = """interface:
 policy:
   allow_implicit_invocation: true
 """
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
 def errors_for(policy_tail: str):
@@ -43,6 +46,14 @@ def make_packager_root(root: Path):
         (root / rel).mkdir()
     for rel in PACKAGER.INCLUDE_FILES:
         (root / rel).write_text(f"fixture for {rel}\n", encoding="utf-8")
+
+
+def make_valid_plugin_root(root: Path):
+    for rel in MODULE.TOP_LEVEL_INCLUDE_FILES:
+        shutil.copy2(REPO_ROOT / rel, root / rel)
+    shutil.copy2(REPO_ROOT / "SKILL.md", root / "SKILL.md")
+    for rel in (".codex-plugin", "skills", "assets"):
+        shutil.copytree(REPO_ROOT / rel, root / rel)
 
 
 def validation_errors_for(*, manifest=None, tests=None, listing=None, pack=None):
@@ -78,6 +89,56 @@ assert errors_for("  products: [CHAT, CODEX]\n") == []
 assert errors_for("  products:\n    - CHAT\n") == []
 assert any("CHAT and/or CODEX" in error for error in errors_for("  products: [API]\n"))
 assert any("unknown policy key" in error for error in errors_for("  surprise: true\n"))
+
+with tempfile.TemporaryDirectory() as temp_dir:
+    svg_path = Path(temp_dir) / "entity-expansion.svg"
+    svg_path.write_text(
+        """<?xml version="1.0"?>
+<!DOCTYPE svg [
+  <!ENTITY a "1234567890">
+  <!ENTITY b "&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;">
+  <!ENTITY c "&b;&b;&b;&b;&b;&b;&b;&b;&b;&b;">
+  <!ENTITY d "&c;&c;&c;&c;&c;&c;&c;&c;&c;&c;">
+  <!ENTITY e "&d;&d;&d;&d;&d;&d;&d;&d;&d;&d;">
+  <!ENTITY f "&e;&e;&e;&e;&e;&e;&e;&e;&e;&e;">
+]>
+<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1">&f;</svg>
+""",
+        encoding="utf-8",
+    )
+    started = time.monotonic()
+    errors = []
+    MODULE.check_square_svg(svg_path, errors)
+    elapsed = time.monotonic() - started
+    assert errors == [f"{svg_path}: SVG contains forbidden XML declaration: <!DOCTYPE"]
+    assert elapsed < 1.0, f"entity-expansion SVG validation took {elapsed:.3f}s"
+
+with tempfile.TemporaryDirectory() as temp_dir:
+    svg_path = Path(temp_dir) / "oversized.svg"
+    svg_path.write_bytes(
+        b'<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1">'
+        + b" " * MODULE.MAX_SVG_BYTES
+        + b"</svg>"
+    )
+    errors = []
+    MODULE.check_square_svg(svg_path, errors)
+    assert errors == [f"{svg_path}: SVG exceeds 256 KiB size limit"]
+
+with tempfile.TemporaryDirectory() as temp_dir:
+    root = Path(temp_dir)
+    make_valid_plugin_root(root)
+    skill_dir = root / "skills" / "missing-name"
+    skill_dir.mkdir()
+    skill_path = skill_dir / "SKILL.md"
+    skill_path.write_text(
+        "---\ndescription: Fixture without a name\n---\n# Missing name\n\nTest body.\n",
+        encoding="utf-8",
+    )
+    agents_dir = skill_dir / "agents"
+    agents_dir.mkdir()
+    (agents_dir / "openai.yaml").write_text(PREFIX + "  products: [CHAT]\n", encoding="utf-8")
+    errors, _, _ = MODULE.validate(root)
+    assert errors == [f"{skill_path}: name, description, and body are required"]
 
 for payload in ("[]", "null"):
     with tempfile.TemporaryDirectory() as temp_dir:
