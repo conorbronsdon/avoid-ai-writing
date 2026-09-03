@@ -1,6 +1,6 @@
 {
   "source": {
-    "repository": "imMamdouhaboammar/avoid-ai-writing",
+    "repository": "conorbronsdon/avoid-ai-writing",
     "baseRef": "main",
     "baseCommit": "2e696ead29f9d8f9b320690adcb15683b8d36948",
     "canonicalSkillVersion": "3.28.0"

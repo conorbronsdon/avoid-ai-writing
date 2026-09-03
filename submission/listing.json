@@ -1,6 +1,6 @@
 {
   "source": {
-    "repository": "https://github.com/imMamdouhaboammar/avoid-ai-writing",
+    "repository": "https://github.com/conorbronsdon/avoid-ai-writing",
     "baseCommit": "2e696ead29f9d8f9b320690adcb15683b8d36948",
     "version": "3.28.0",
     "architecture": "skills-only"
@@ -10,11 +10,11 @@
     "subtitle": "Detect and rewrite AI-isms",
     "description": "Audit writing for recurring AI-like patterns, rewrite only what needs changing, preserve the writer's voice and source facts, edit named files with narrow changes, and verify that protected material such as code, quotes, links, numbers, frontmatter, and tables survives the edit. The package keeps the original Avoid AI Writing skill intact and adds focused ChatGPT and Codex routing for detect-only review, voice-preserving rewrites, file edits, preservation checks, and false-positive review. Its signals are writing-quality indicators, not proof of AI authorship.",
     "category": "Productivity",
-    "developerName": "Mamdouh Aboammar",
-    "websiteURL": "https://github.com/imMamdouhaboammar/avoid-ai-writing",
-    "supportURL": "https://github.com/imMamdouhaboammar/avoid-ai-writing/issues",
-    "privacyPolicyURL": "https://github.com/imMamdouhaboammar/avoid-ai-writing/blob/main/PRIVACY.md",
-    "termsOfServiceURL": "https://github.com/imMamdouhaboammar/avoid-ai-writing/blob/main/TERMS.md",
+    "developerName": "Conor Bronsdon",
+    "websiteURL": "https://github.com/conorbronsdon/avoid-ai-writing",
+    "supportURL": "https://github.com/conorbronsdon/avoid-ai-writing/issues",
+    "privacyPolicyURL": "https://github.com/conorbronsdon/avoid-ai-writing/blob/main/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/conorbronsdon/avoid-ai-writing/blob/main/TERMS.md",
     "version": "3.28.0",
     "packageName": "avoid-ai-writing",
     "capabilities": ["AI-pattern audit","Detect-only review","Voice-preserving rewrite","Targeted file editing","Preservation verification","False-positive review","Multi-step writing cleanup"],
@@ -31,13 +31,14 @@
     "nameCharacters": 16,
     "subtitleCharacters": 26,
     "descriptionCharacters": 566,
-    "developerNameCharacters": 16,
+    "developerNameCharacters": 14,
     "starterPromptCharacters": [75,85,75],
     "capabilityCharacters": [16,18,24,21,25,21,26]
   },
   "publisherIdentity": {
-    "packagePublisher": "Mamdouh Aboammar",
+    "packagePublisher": "Conor Bronsdon",
     "originalProjectAuthor": "Conor Bronsdon",
+    "packagingContributor": "Mamdouh Aboammar",
     "openAIVerifiedDeveloperStatus": "must be confirmed in the OpenAI submission portal"
   },
   "listingStatus": "listing_ready_except_platform_identity_confirmation"
