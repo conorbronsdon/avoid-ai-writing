@@ -32,6 +32,39 @@ def fail(errors: list[str], message: str) -> None:
     errors.append(message)
 
 
+def typed_member(
+    mapping: dict[str, object],
+    key: str,
+    expected_type: type,
+    errors: list[str],
+    label: str,
+    default: object,
+) -> object:
+    """Return a typed mapping member, recording an error on type mismatch."""
+    value = mapping.get(key, default)
+    if not isinstance(value, expected_type):
+        kind = {dict: "object", list: "array", str: "string"}[expected_type]
+        article = "an" if kind in {"object", "array"} else "a"
+        fail(errors, f"{label} must be {article} {kind}")
+        return default
+    return value
+
+
+def string_list_member(
+    mapping: dict[str, object], key: str, errors: list[str], label: str
+) -> list[str]:
+    """Return a string-array member, filtering invalid entries after reporting them."""
+    values = typed_member(mapping, key, list, errors, label, [])
+    assert isinstance(values, list)
+    strings: list[str] = []
+    for index, value in enumerate(values):
+        if not isinstance(value, str):
+            fail(errors, f"{label} item {index} must be a string")
+        else:
+            strings.append(value)
+    return strings
+
+
 def first_cycle(adjacency: dict[str, list[str]]) -> list[str] | None:
     """Return one directed cycle if the graph contains one, otherwise None."""
     state: dict[str, int] = {node: 0 for node in adjacency}
@@ -92,21 +125,33 @@ def main() -> int:
         print(f"ERROR: invalid skill graph: {exc}")
         return 1
 
+    if not isinstance(graph, dict):
+        fail(errors, "skill graph JSON root must be an object")
+        graph = {}
+
     if graph.get("version") != 2:
         fail(errors, "skill graph version must be 2")
 
-    nodes = graph.get("nodes")
-    if not isinstance(nodes, dict) or not nodes:
+    nodes = typed_member(graph, "nodes", dict, errors, "nodes", {})
+    assert isinstance(nodes, dict)
+    if not nodes:
         fail(errors, "nodes must be a non-empty object")
-        nodes = {}
 
-    canonical = graph.get("canonical_authority")
-    entrypoint = graph.get("entrypoint")
+    canonical = typed_member(
+        graph, "canonical_authority", str, errors, "canonical_authority", ""
+    )
+    entrypoint = typed_member(graph, "entrypoint", str, errors, "entrypoint", "")
+    handoff_contract = typed_member(
+        graph, "handoff_contract", str, errors, "handoff_contract", ""
+    )
+    assert isinstance(canonical, str)
+    assert isinstance(entrypoint, str)
+    assert isinstance(handoff_contract, str)
     if canonical != "avoid-ai-writing":
         fail(errors, "canonical_authority must be avoid-ai-writing")
     if entrypoint != "avoid-ai-writing-router":
         fail(errors, "entrypoint must be avoid-ai-writing-router")
-    if graph.get("handoff_contract") != "handoff-contract.md":
+    if handoff_contract != "handoff-contract.md":
         fail(errors, "handoff_contract must point to handoff-contract.md")
 
     skills_root = root / "skills"
@@ -133,29 +178,31 @@ def main() -> int:
     outgoing: dict[str, int] = {name: 0 for name in graph_nodes}
     unbounded_adjacency: dict[str, list[str]] = {name: [] for name in graph_nodes}
 
-    edges = graph.get("edges")
-    if not isinstance(edges, list):
-        fail(errors, "edges must be an array")
-        edges = []
+    edges = typed_member(graph, "edges", list, errors, "edges", [])
+    assert isinstance(edges, list)
 
     seen_edges: set[tuple[str, str, str, str]] = set()
     for index, edge in enumerate(edges):
         if not isinstance(edge, dict):
             fail(errors, f"edge {index} must be an object")
             continue
-        edge_type = edge.get("type")
-        source = edge.get("from")
-        target = edge.get("to")
-        condition = edge.get("when")
+        edge_type = typed_member(edge, "type", str, errors, f"edge {index} type", "")
+        source = typed_member(edge, "from", str, errors, f"edge {index} from", "")
+        target = typed_member(edge, "to", str, errors, f"edge {index} to", "")
+        condition = typed_member(edge, "when", str, errors, f"edge {index} when", "")
+        assert isinstance(edge_type, str)
+        assert isinstance(source, str)
+        assert isinstance(target, str)
+        assert isinstance(condition, str)
         if edge_type not in ALLOWED_EDGE_TYPES:
             fail(errors, f"edge {index} has unsupported type: {edge_type!r}")
         if source not in graph_nodes:
             fail(errors, f"edge {index} has unknown source: {source!r}")
         if target not in graph_nodes:
             fail(errors, f"edge {index} has unknown target: {target!r}")
-        if source == target and source is not None:
+        if source == target and source:
             fail(errors, f"edge {index} creates a self-loop on {source}")
-        if not isinstance(condition, str) or not condition.strip():
+        if not condition.strip():
             fail(errors, f"edge {index} requires a non-empty when condition")
 
         limit = edge.get("max_reentries")
@@ -176,10 +223,10 @@ def main() -> int:
             fail(errors, f"duplicate edge: {key}")
         seen_edges.add(key)
 
-    loop_policy = graph.get("loop_policy")
-    if not isinstance(loop_policy, dict):
+    loop_policy = typed_member(graph, "loop_policy", dict, errors, "loop_policy", {})
+    assert isinstance(loop_policy, dict)
+    if not loop_policy:
         fail(errors, "loop_policy must be present")
-        loop_policy = {}
     else:
         if loop_policy.get("canonical_rewrite_pass_max") != 2:
             fail(errors, "canonical_rewrite_pass_max must remain 2")
@@ -206,7 +253,14 @@ def main() -> int:
     if not isinstance(reviewer_node, dict) or reviewer_node.get("terminal") is not True:
         fail(errors, "false-positive-reviewer must remain terminal")
     else:
-        router_reasons = set(reviewer_node.get("return_control_to_router_when") or [])
+        router_reasons = set(
+            string_list_member(
+                reviewer_node,
+                "return_control_to_router_when",
+                errors,
+                "false-positive-reviewer return_control_to_router_when",
+            )
+        )
         expected_reasons = {"fresh_signal_collection_needed", "intent_changes_to_rewrite_or_edit"}
         if router_reasons != expected_reasons:
             fail(errors, "false-positive-reviewer router-return reasons drifted")
@@ -215,11 +269,12 @@ def main() -> int:
     if unbounded_cycle:
         fail(errors, "unbounded orchestration cycle detected: " + " -> ".join(unbounded_cycle))
 
-    fallback = graph.get("fallback")
-    if not isinstance(fallback, dict) or fallback.get("skill") != canonical:
+    fallback = typed_member(graph, "fallback", dict, errors, "fallback", {})
+    assert isinstance(fallback, dict)
+    if fallback.get("skill") != canonical:
         fail(errors, "fallback must return to the canonical avoid-ai-writing Skill")
 
-    lenses = set(graph.get("review_lenses") or [])
+    lenses = set(string_list_member(graph, "review_lenses", errors, "review_lenses"))
     if lenses != EXPECTED_LENSES:
         fail(errors, f"review_lenses mismatch: expected {sorted(EXPECTED_LENSES)}, got {sorted(lenses)}")
 
@@ -228,20 +283,30 @@ def main() -> int:
         if f"`{lens}`" not in lenses_text:
             fail(errors, f"agency-role-lenses.md is missing encoded lens: {lens}")
 
-    guards = graph.get("guards")
-    if not isinstance(guards, list) or not guards:
+    guards = typed_member(graph, "guards", list, errors, "guards", [])
+    assert isinstance(guards, list)
+    if not guards:
         fail(errors, "at least one conditional guard is required")
     else:
-        guard_names = {g.get("name") for g in guards if isinstance(g, dict)}
+        guard_names: set[str] = set()
+        for index, guard in enumerate(guards):
+            if not isinstance(guard, dict):
+                fail(errors, f"guard {index} must be an object")
+                continue
+            name = typed_member(guard, "name", str, errors, f"guard {index} name", "")
+            assert isinstance(name, str)
+            guard_names.add(name)
         if "human_representation_preservation" not in guard_names:
             fail(errors, "human_representation_preservation guard is required")
         if "authorship_uncertainty" not in guard_names:
             fail(errors, "authorship_uncertainty guard is required")
-        for guard in guards:
+        for index, guard in enumerate(guards):
             if not isinstance(guard, dict):
                 continue
             lens = guard.get("review_lens")
-            if lens and lens not in EXPECTED_LENSES:
+            if lens is not None and not isinstance(lens, str):
+                fail(errors, f"guard {index} review_lens must be a string")
+            elif lens and lens not in EXPECTED_LENSES:
                 fail(errors, f"guard references unknown review lens: {lens}")
 
     handoff_text = handoff_path.read_text(encoding="utf-8")

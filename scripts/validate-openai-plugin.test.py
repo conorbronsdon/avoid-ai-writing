@@ -45,7 +45,7 @@ def make_packager_root(root: Path):
         (root / rel).write_text(f"fixture for {rel}\n", encoding="utf-8")
 
 
-def validation_errors_for(*, tests=None, listing=None, pack=None):
+def validation_errors_for(*, manifest=None, tests=None, listing=None, pack=None):
     with tempfile.TemporaryDirectory() as temp_dir:
         root = Path(temp_dir)
         manifest_dir = root / ".codex-plugin"
@@ -53,7 +53,9 @@ def validation_errors_for(*, tests=None, listing=None, pack=None):
         (root / "skills").mkdir()
         submission = root / "submission"
         submission.mkdir()
-        (manifest_dir / "plugin.json").write_text("{}", encoding="utf-8")
+        (manifest_dir / "plugin.json").write_text(
+            json.dumps(manifest if manifest is not None else {}), encoding="utf-8"
+        )
         (submission / "reviewer-tests.json").write_text(
             json.dumps(tests if tests is not None else {"positive": [], "negative": []}),
             encoding="utf-8",
@@ -105,6 +107,26 @@ for key in ("positive", "negative"):
 for invalid in (None, [], "scalar"):
     errors = validation_errors_for(pack={"source": invalid})
     assert any("submission pack source must be an object" in error for error in errors)
+
+fork_url = "https://github.com/example/avoid-ai-writing"
+fork_manifest = {
+    "author": {"url": fork_url},
+    "homepage": fork_url,
+    "repository": fork_url,
+    "interface": {
+        key: fork_url
+        for key in ("websiteURL", "supportURL", "privacyPolicyURL", "termsOfServiceURL")
+    },
+}
+fork_errors = validation_errors_for(manifest=fork_manifest)
+assert any(
+    "author.url" in error and MODULE.CANONICAL_PROJECT_URL in error
+    for error in fork_errors
+)
+assert any(
+    "homepage" in error and MODULE.CANONICAL_PROJECT_URL in error
+    for error in fork_errors
+)
 
 with tempfile.TemporaryDirectory() as temp_dir:
     root = Path(temp_dir)

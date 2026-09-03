@@ -89,7 +89,9 @@ jobs:
           echo "generated copies are in sync"
 
       - name: Validate cross-Skill connections
-        run: python3 skills/avoid-ai-writing-router/scripts/validate_connections.py .
+        run: |
+          python3 skills/avoid-ai-writing-router/scripts/validate_connections.test.py
+          python3 skills/avoid-ai-writing-router/scripts/validate_connections.py .
 
       - name: Validate ChatGPT and Codex plugin
         run: |

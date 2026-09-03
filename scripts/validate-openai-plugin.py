@@ -11,6 +11,7 @@ import xml.etree.ElementTree as ET
 SEMVER = re.compile(r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
 FRONTMATTER = re.compile(r"\A---\s*\n(.*?)\n---\s*\n(.*)\Z", re.S)
 TOP_LEVEL_INCLUDE_FILES = ("OPENAI_PLUGIN.md", "NOTICE.md", "PRIVACY.md", "TERMS.md", "SUPPORT.md", "LICENSE")
+CANONICAL_PROJECT_URL = "https://github.com/conorbronsdon/avoid-ai-writing"
 
 def parse_frontmatter(path: Path):
     text = path.read_text(encoding="utf-8")
@@ -195,21 +196,21 @@ def validate(root: Path):
         if not isinstance(value, str) or not value.startswith("https://") or len(value) > 1024:
             errors.append(f"interface.{key} must be an HTTPS URL")
     # Whoever the published listing points at owns the legal, support and
-    # homepage destinations users land on. Those must be the canonical project,
-    # not a fork: author.url is the canonical root and every public URL in the
-    # manifest has to sit under it. Without this, a packaging contribution can
-    # silently move publication off the canonical repository.
+    # homepage destinations users land on. Those must be the repository-owned
+    # canonical project, not a fork. Every public URL in the manifest has to sit
+    # under that fixed root.
     author = manifest.get("author")
-    canonical_root = author.get("url") if isinstance(author, dict) else None
-    if not isinstance(canonical_root, str) or not canonical_root.startswith("https://"):
-        errors.append("author.url must be the canonical project HTTPS URL")
-    else:
-        prefix = canonical_root.rstrip("/")
-        owned = [("homepage", manifest.get("homepage")), ("repository", manifest.get("repository"))]
-        owned += [(f"interface.{k}", interface.get(k)) for k in ("websiteURL", "supportURL", "privacyPolicyURL", "termsOfServiceURL")]
-        for label, value in owned:
-            if isinstance(value, str) and not (value.rstrip("/") == prefix or value.startswith(prefix + "/")):
-                errors.append(f"{label} does not point at the canonical project {prefix}: {value}")
+    author_url = author.get("url") if isinstance(author, dict) else None
+    if author_url != CANONICAL_PROJECT_URL:
+        errors.append(
+            f"author.url must equal the canonical project URL {CANONICAL_PROJECT_URL}: {author_url!r}"
+        )
+    prefix = CANONICAL_PROJECT_URL.rstrip("/")
+    owned = [("homepage", manifest.get("homepage")), ("repository", manifest.get("repository"))]
+    owned += [(f"interface.{k}", interface.get(k)) for k in ("websiteURL", "supportURL", "privacyPolicyURL", "termsOfServiceURL")]
+    for label, value in owned:
+        if isinstance(value, str) and not (value.rstrip("/") == prefix or value.startswith(prefix + "/")):
+            errors.append(f"{label} does not point at the canonical project {prefix}: {value}")
     for key in ("composerIcon", "logo"):
         value = interface.get(key)
         if not isinstance(value, str) or not value.startswith("./") or not safe_rel(value):
