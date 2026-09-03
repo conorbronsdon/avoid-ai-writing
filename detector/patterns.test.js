@@ -1298,6 +1298,152 @@ test('v2: speculative opener leaves instructional "imagine you have" alone', () 
   }
 });
 
+test('v2: launch-copy introduction fires', () => {
+  const text = 'Meet Flowdesk, your new favorite treasury dashboard. One screen for a full fund position, refreshed every block, with none of the spreadsheet glue that eats an operations hire alive.';
+  const r = AIDetector.analyzeText(text);
+  const types = new Set(r.issues.map((i) => i.type));
+  assert.ok(types.has('launch-intro'), 'expected launch-intro flag');
+
+  // The 'the new home of' head is the launch-copy form the tail
+  // requirement has to keep. It must still fire.
+  const homeOf = AIDetector.analyzeText('Meet Riverside, the new home of our Saturday farmers market, open from seven every weekend through October.');
+  const homeOfTypes = new Set(homeOf.issues.map((i) => i.type));
+  assert.ok(homeOfTypes.has('launch-intro'), 'expected launch-intro on "the new home of"');
+
+  // The mashup pitch is the same move and must also fire.
+  const mashup = AIDetector.analyzeText('Think Notion meets Figma, except the canvas settles on-chain. The team has shipped four releases since March and the changelog reads like a product that knows where it is going.');
+  const mashupTypes = new Set(mashup.issues.map((i) => i.type));
+  assert.ok(mashupTypes.has('launch-intro'), 'expected launch-intro on "Think X meets Y"');
+});
+
+test('v2: launch-copy introduction leaves ordinary narrative alone', () => {
+  // The gate keys on the sentence-initial imperative plus a capitalized
+  // product name, so instructions and narrative must stay clean.
+  const clean = [
+    'Enter the password to continue, then wait for the confirmation code before closing the tab.',
+    "You'll meet Sarah, your new manager, at nine tomorrow in the second-floor conference room.",
+    'I think Marseille meets the sea at its old port, and the walk down from the station proves it.',
+    // The human people/pet introduction is the same surface shape and must
+    // stay clean — only launch-copy heads ("your new favorite") fire.
+    'Quick note before standup this morning. Meet Sarah, your new account manager for the northeast region.',
+    'Meet Buddy, the new face of our shelter this month, and come say hi at the adoption day on Saturday.',
+    // Doc field labels are capitalized by convention, and the bare
+    // 'Enter X.' surface cannot be separated from them by any
+    // terminator or field-name denylist, so it is judgment-only and
+    // every one of these forms stays clean.
+    'Complete each field in order before you submit. Enter Username: your work email address. Enter Password: at least twelve characters.',
+    'Complete each field in order before you submit. Enter Password. Enter Amount. Then press Continue and wait for the confirmation code.',
+    'Complete each field in order before you submit. Enter Username — your work email address. Then press Continue and wait for the code.',
+    'The launch post opened the way every launch post opens now. Enter Flowdesk. The deck said nothing else about what it actually does.',
+    // The 'the new home/way/standard' heads need the tail launch copy
+    // actually has ('of', 'to', 'in|for') or an end of clause. Without
+    // it the head noun swallowed the first word of a compound noun and
+    // both of these fired.
+    'Meet Rosa, the new home secretary, at the town hall on Thursday evening after the council session.',
+    'Meet Emma, the new way station manager for the northern line, starting the first week of April.',
+  ];
+  for (const text of clean) {
+    const r = AIDetector.analyzeText(text);
+    const types = new Set(r.issues.map((i) => i.type));
+    assert.ok(!types.has('launch-intro'), `false positive on ordinary prose: ${text}`);
+  }
+
+  // Adjacent intros each count: the anchors are lookbehinds, so the first
+  // match's terminator still anchors the second.
+  const adjacent = AIDetector.analyzeText('Think Flowdesk meets Ledgerly. Think Notion meets Figma. Two launches, one deck, and the same investor list for both companies this quarter.');
+  const adjacentHits = adjacent.issues.filter((i) => i.type === 'launch-intro');
+  assert.equal(adjacentHits.length, 2, 'expected both adjacent intros to count');
+});
+
+test('v2: dramatized crowd contrast fires on the dismissive clause', () => {
+  const text = 'We shipped it in 2022, while everyone else was still debating timelines. The migration tooling followed six months later and the audit landed before the first competitor published a spec.';
+  const r = AIDetector.analyzeText(text);
+  const types = new Set(r.issues.map((i) => i.type));
+  assert.ok(types.has('crowd-contrast'), 'expected crowd-contrast flag');
+
+  const thinkpieces = AIDetector.analyzeText('They built it in a weekend while the industry wrote thinkpieces about whether the category was even viable, and the launch numbers made the question moot.');
+  const thinkpiecesTypes = new Set(thinkpieces.issues.map((i) => i.type));
+  assert.ok(thinkpiecesTypes.has('crowd-contrast'), 'expected crowd-contrast on the thinkpieces variant');
+
+  // The space form of catch-up is the same tell as the hyphenated form.
+  const catchup = AIDetector.analyzeText('The desk shipped the migration in March while everyone else played catch up on last year\u2019s roadmap and called it strategy.');
+  const catchupTypes = new Set(catchup.issues.map((i) => i.type));
+  assert.ok(catchupTypes.has('crowd-contrast'), 'expected crowd-contrast on the space form of catch-up');
+});
+
+test('v2: crowd contrast leaves literal simultaneity alone', () => {
+  // The dismissive-verb gate exists so ordinary narrative never fires.
+  const clean = [
+    'She read in the kitchen while everyone else watched the movie in the dark.',
+    'The kids played in the yard while the adults talked about the drive home.',
+    'He kept the beat while the rest of the band tuned between songs.',
+    // Literal uses of the dismissive verbs themselves must stay clean —
+    // the "was still" marker is what separates the tell from wire copy,
+    // memoir, and fiction. These three fired before the marker was
+    // required; they are pinned here so the gate cannot regress.
+    'The senator said nothing during the hearing while others debated the amendment late into the evening.',
+    'Stocks drifted sideways on Tuesday while the market speculated about the timing of the next rate cut.',
+    'Thanksgiving got loud this year, so I did the dishes while everyone else argued about politics in the living room.',
+    // Verb stems carry explicit inflection tails, so agent nouns and
+    // adverbs sharing the stem never match.
+    'Retail kept its head down while the market speculators chased the squeeze into Friday expiry.',
+    'She packed the van while everyone else deliberately ignored the checklist taped to the garage door.',
+    // Branch one is restricted to the -ing form. The adjective, the
+    // passive, and the bare present all read as ordinary prose and all
+    // three matched while e/es/ed were allowed.
+    'We shipped it in 2022, while everyone else was still deliberate about the tradeoff between latency and cost.',
+    'We shipped it in 2022, while everyone else was still debated by pundits who had never run the migration themselves.',
+    'We shipped it in 2022, while everyone else was still argued over by a committee that met twice a quarter.',
+  ];
+  for (const text of clean) {
+    const r = AIDetector.analyzeText(text);
+    const types = new Set(r.issues.map((i) => i.type));
+    assert.ok(!types.has('crowd-contrast'), `false positive on literal simultaneity: ${text}`);
+  }
+});
+
+test('v2: fake-casual props fire', () => {
+  const text = '*checks notes* the proposal passed with four abstentions and nobody in the room had read the appendix before the vote.';
+  const r = AIDetector.analyzeText(text);
+  const types = new Set(r.issues.map((i) => i.type));
+  assert.ok(types.has('fake-casual-prop'), 'expected fake-casual-prop flag');
+
+  // The wink aside gets its own case, asserting on the matched text. It
+  // used to share the stage-direction fixture above, which meant a
+  // never-matching wink regex still left this test green.
+  const wink = AIDetector.analyzeText('The fees went up again (yes, really) and nobody sent a notice about it before the billing run.');
+  const winkHits = wink.issues.filter((i) => i.type === 'fake-casual-prop');
+  assert.equal(winkHits.length, 1, 'expected exactly one wink-aside hit');
+  assert.equal(winkHits[0].text, '(yes, really)', 'expected the wink aside itself to be the match');
+
+  // The curly apostrophe (U+2019) is the form smart punctuation and LLMs
+  // actually emit; it must fire the same as the ASCII form.
+  const curly = AIDetector.analyzeText('The ending was *chef\u2019s kiss* and nobody in the room could pretend otherwise by the time the credits rolled.');
+  const curlyTypes = new Set(curly.issues.map((i) => i.type));
+  assert.ok(curlyTypes.has('fake-casual-prop'), 'expected fake-casual-prop on curly-apostrophe chef\u2019s kiss');
+});
+
+test('v2: fake-casual props leave math and plain qualifiers alone', () => {
+  const clean = [
+    'The math checks out: 5 * 3 * 2 gives the same total as the ledger, and yes, really careful review found no rounding drift.',
+    'Multiply the base rate * the utilization factor before applying the cap, because of course fees compound under load.',
+    // 'because of course ...' is judgment-only: no tense gate separates
+    // the wink from the ordinary human grumble, which uses the same
+    // present-tense-plus-did form.
+    // The kiss pattern requires the apostrophe. With it optional, this
+    // ordinary sentence matched.
+    'At midnight, *chefs kiss* their spouses goodbye and head back to the line for the second service.',
+    'We left an hour early and still missed kickoff, because of course it was raining and the bridge was closed.',
+    'The build failed on the last commit of the day, because of course it did, and the on-call engineer had already gone to bed.',
+    'The vendor shipped the patch a week after the window closed, because of course they do, and the invoice arrived on time.',
+  ];
+  for (const text of clean) {
+    const r = AIDetector.analyzeText(text);
+    const types = new Set(r.issues.map((i) => i.type));
+    assert.ok(!types.has('fake-casual-prop'), `false positive on plain prose: ${text}`);
+  }
+});
+
 test('v2: parenthetical hedge fires', () => {
   const text = 'The protocol works as intended (and increasingly, with better latency than competitors). The team has shipped consistently for six months without missing a single release cadence target.';
   const r = AIDetector.analyzeText(text);
