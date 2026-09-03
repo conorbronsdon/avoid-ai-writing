@@ -27,13 +27,23 @@ def collect(root: Path):
         path = root / rel
         if path.is_symlink():
             raise SystemExit(f"symlink not allowed: {rel}")
-        if path.is_file():
-            files.append(path)
+        if not path.is_file():
+            raise SystemExit(f"missing required file: {rel}")
+        files.append(path)
     unique = {p.relative_to(root).as_posix(): p for p in files}
     return [(name, unique[name]) for name in sorted(unique)]
 
 def build(root: Path, output: Path):
+    root = root.resolve()
+    output = output.resolve()
     entries = collect(root)
+    for name, path in entries:
+        if output == path.resolve():
+            raise SystemExit(f"output path is a packaged input: {name}")
+    for rel in INCLUDE_DIRS:
+        included_dir = (root / rel).resolve()
+        if output.is_relative_to(included_dir):
+            raise SystemExit(f"output path is inside included directory: {rel}")
     output.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
         for name, path in entries:

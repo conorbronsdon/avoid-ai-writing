@@ -177,10 +177,11 @@ const AIDetectorValidate = (() => {
     // their protected content becomes invisible here: frontmatter could be
     // rewritten and validate() still returned ok. See the CRLF must-fire cases
     // in validate.test.js. Normalize once, up front, so extraction sees one
-    // line-ending shape. A rewrite that only re-terminates lines is not a
-    // preservation failure, so collapsing that difference is intended.
-    original = original.replace(/\r\n?/g, '\n');
-    rewritten = rewritten.replace(/\r\n?/g, '\n');
+    // line-ending shape. A rewrite that only re-terminates CRLF lines is not a
+    // preservation failure, but a lone carriage return can be meaningful code
+    // content and must remain visible to the exact-content comparisons.
+    original = original.replace(/\r\n/g, '\n');
+    rewritten = rewritten.replace(/\r\n/g, '\n');
 
     // ── Fenced code: exact, in order. Code is never the skill's business. ──
     const origFenced = extractAll(FENCED_CODE, original);

@@ -43,6 +43,15 @@ def load_json(path: Path, errors):
         return {}
     return value
 
+def typed_member(mapping, key, expected_type, errors, label):
+    default = {} if expected_type is dict else []
+    value = mapping.get(key, default)
+    if not isinstance(value, expected_type):
+        kind = "object" if expected_type is dict else "array"
+        errors.append(f"{label} must be an {kind}")
+        return default
+    return value
+
 def validate_agent_metadata(path: Path, errors):
     text = path.read_text(encoding="utf-8")
     for token in ("interface:", "display_name:", "short_description:", "policy:", "allow_implicit_invocation:"):
@@ -133,12 +142,15 @@ def check_square_svg(path: Path, errors):
 def validate(root: Path):
     errors, warnings = [], []
     for rel in TOP_LEVEL_INCLUDE_FILES:
-        if (root / rel).is_symlink():
+        path = root / rel
+        if path.is_symlink():
             errors.append(f"symlink not allowed in plugin surface: {rel}")
+        elif not path.is_file():
+            errors.append(f"missing required top-level file: {rel}")
     manifest_dir = root / ".codex-plugin"
     manifest_path = manifest_dir / "plugin.json"
     if not manifest_path.is_file():
-        return ["missing .codex-plugin/plugin.json"], warnings, {}
+        return errors + ["missing .codex-plugin/plugin.json"], warnings, {}
     extras = [p.name for p in manifest_dir.iterdir() if p.name != "plugin.json"]
     if extras:
         errors.append(f".codex-plugin contains extra entries: {extras}")
@@ -278,14 +290,17 @@ def validate(root: Path):
     submission = root / "submission"
     if submission.is_dir():
         tests = load_json(submission / "reviewer-tests.json", errors)
-        if len(tests.get("positive", [])) < 5:
+        positive_tests = typed_member(tests, "positive", list, errors, "submission reviewer tests positive")
+        negative_tests = typed_member(tests, "negative", list, errors, "submission reviewer tests negative")
+        if len(positive_tests) < 5:
             errors.append("submission reviewer tests need at least five positive cases")
-        if len(tests.get("negative", [])) < 3:
+        if len(negative_tests) < 3:
             errors.append("submission reviewer tests need at least three negative cases")
         listing = load_json(submission / "listing.json", errors)
+        source = typed_member(listing, "source", dict, errors, "submission listing source")
         # baseCommit is the origin/main commit the port was last synced against.
         # It may lag origin/main, but it must remain in this branch's history.
-        base_commit = listing.get("source", {}).get("baseCommit")
+        base_commit = source.get("baseCommit")
         if not isinstance(base_commit, str) or not re.fullmatch(r"[0-9a-f]{40}", base_commit):
             errors.append("submission listing source.baseCommit must be a full lowercase commit SHA")
         else:
@@ -298,7 +313,7 @@ def validate(root: Path):
                 detail = ancestry.stderr.strip()
                 suffix = f": {detail}" if detail else ""
                 errors.append(f"submission listing baseCommit is not an ancestor of HEAD: {base_commit}{suffix}")
-        fields = listing.get("fields", {})
+        fields = typed_member(listing, "fields", dict, errors, "submission listing fields")
         # submission/listing.json restates the manifest. Three fields used to be
         # gated here and the rest were free to drift, which is how a listing can
         # ship a different developer name or support URL than the manifest it
@@ -330,7 +345,7 @@ def validate(root: Path):
         # The "checks" block records character counts as evidence for the
         # submission portal's limits. Hand-maintained counts go stale the first
         # time a field is edited, so derive them instead of trusting them.
-        checks = listing.get("checks", {})
+        checks = typed_member(listing, "checks", dict, errors, "submission listing checks")
         for check_key, source in (
             ("nameCharacters", fields.get("name")),
             ("subtitleCharacters", fields.get("subtitle")),
@@ -347,13 +362,14 @@ def validate(root: Path):
                 actual = [len(item) for item in source if isinstance(item, str)]
                 if checks[check_key] != actual:
                     errors.append(f"submission listing {check_key} says {checks[check_key]}, actual {actual}")
-        identity = listing.get("publisherIdentity", {})
-        if isinstance(identity, dict) and identity.get("packagePublisher") != interface.get("developerName"):
+        identity = typed_member(listing, "publisherIdentity", dict, errors, "submission listing publisherIdentity")
+        if identity.get("packagePublisher") != interface.get("developerName"):
             errors.append("submission listing packagePublisher drifted from manifest interface.developerName")
         pack = load_json(submission / "submission-pack.json", errors)
-        if pack.get("source", {}).get("canonicalSkillVersion") != version:
+        pack_source = typed_member(pack, "source", dict, errors, "submission pack source")
+        if pack_source.get("canonicalSkillVersion") != version:
             errors.append("submission pack canonicalSkillVersion drifted from manifest version")
-        if pack.get("source", {}).get("baseCommit") != base_commit:
+        if pack_source.get("baseCommit") != base_commit:
             errors.append("submission pack baseCommit drifted from submission listing")
     # Scanning the whole checkout means walking .git (thousands of objects, and
     # loose refs that look nothing like the plugin surface). Only the packaged

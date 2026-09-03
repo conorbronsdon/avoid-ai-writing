@@ -143,6 +143,14 @@ test('CRLF and LF forms of the same document compare clean', () => {
   assert.equal(r.ok, true, formatResult(r));
 });
 
+test('lone CR changed to LF inside fenced code -> error', () => {
+  const before = '```text\nline one\rline two\n```';
+  const after = '```text\nline one\nline two\n```';
+  const r = validate(before, after, { skipResidual: true });
+  assert.equal(r.ok, false, formatResult(r));
+  assert.ok(codes(r).includes('code-block-modified'), formatResult(r));
+});
+
 // ── Documented, correct edits must pass ────────────────────────────────
 
 test('stripping an AI utm_source parameter → no error', () => {
