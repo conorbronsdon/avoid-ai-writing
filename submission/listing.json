@@ -1,8 +1,8 @@
 {
   "source": {
     "repository": "https://github.com/imMamdouhaboammar/avoid-ai-writing",
-    "baseCommit": "a8e297c18654af82559f1d29e4d13204a96b3ee3",
-    "version": "3.25.1",
+    "baseCommit": "2e696ead29f9d8f9b320690adcb15683b8d36948",
+    "version": "3.28.0",
     "architecture": "skills-only"
   },
   "fields": {
@@ -15,7 +15,7 @@
     "supportURL": "https://github.com/imMamdouhaboammar/avoid-ai-writing/issues",
     "privacyPolicyURL": "https://github.com/imMamdouhaboammar/avoid-ai-writing/blob/main/PRIVACY.md",
     "termsOfServiceURL": "https://github.com/imMamdouhaboammar/avoid-ai-writing/blob/main/TERMS.md",
-    "version": "3.25.1",
+    "version": "3.28.0",
     "packageName": "avoid-ai-writing",
     "capabilities": ["AI-pattern audit","Detect-only review","Voice-preserving rewrite","Targeted file editing","Preservation verification","False-positive review","Multi-step writing cleanup"],
     "starterPrompts": [

@@ -2,8 +2,8 @@
   "source": {
     "repository": "imMamdouhaboammar/avoid-ai-writing",
     "baseRef": "main",
-    "baseCommit": "a8e297c18654af82559f1d29e4d13204a96b3ee3",
-    "canonicalSkillVersion": "3.25.1"
+    "baseCommit": "2e696ead29f9d8f9b320690adcb15683b8d36948",
+    "canonicalSkillVersion": "3.28.0"
   },
   "architecture": "skills-only",
   "publicSkills": ["avoid-ai-writing","avoid-ai-writing-router","ai-writing-detector","voice-preserving-rewriter","file-edit-in-place","preservation-verifier","false-positive-reviewer"],
