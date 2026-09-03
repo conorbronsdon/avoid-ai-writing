@@ -19,6 +19,29 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.29.0] — 2026-09-03
+
+### Added
+
+- **Three detector-backed patterns from the `welttowelt` merged-system diff
+  ([#108](https://github.com/conorbronsdon/avoid-ai-writing/issues/108)).**
+  Launch-copy dramatic introductions — `Meet X,` followed by one of four
+  launch-copy heads (`your new favorite`, `your new go-to`, or
+  `the new home/way/standard` with its own tail), plus `Think X meets Y`;
+  bare `Enter X.` and `Say hello to X` stay judgment-only, since
+  `Enter Password.` and "Say hello to Grandma." are ordinary human prose. Dramatized contrast against the crowd, in three
+  separately gated branches: the progressive debate/speculation branch
+  (`while everyone else was still debating ...`, restricted to `-ing` forms,
+  so `was still deliberate about` and `was still debated by pundits` stay
+  clean) plus two stereotyped variants matched on their own wording
+  (`writing think-pieces`, `playing catch-up`). And the fake-casual register,
+  with a closed list of mechanical props detected (six asterisk stage
+  directions, the four `(yes|no) x (really|seriously)` parentheticals) and
+  the register judgment — including `because of course it does` — left to
+  the skill. Every entry states its own residue and its own measured misses.
+
+---
+
 ## [3.28.0] — 2026-08-28
 
 ### Added
