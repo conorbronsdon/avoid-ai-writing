@@ -2,7 +2,7 @@
   "source": {
     "repository": "conorbronsdon/avoid-ai-writing",
     "baseRef": "main",
-    "baseCommit": "2e696ead29f9d8f9b320690adcb15683b8d36948",
+    "baseCommit": "58a95fc9971d7af95f1f1324b8a6bc991eb8004d",
     "canonicalSkillVersion": "3.28.0"
   },
   "architecture": "skills-only",
@@ -10,7 +10,8 @@
   "canonicalSkill": {"path":"skills/avoid-ai-writing/SKILL.md","source":"SKILL.md","preservation":"exact generated copy"},
   "bundledDeterministicResources": [
     {"path":"skills/ai-writing-detector/scripts/patterns.js","source":"detector/patterns.js","purpose":"detect-only local analysis"},
-    {"path":"skills/preservation-verifier/scripts/validate.js","source":"detector/validate.js","purpose":"before/after preservation verification"}
+    {"path":"skills/preservation-verifier/scripts/validate.js","source":"detector/validate.js","purpose":"before/after preservation verification"},
+    {"path":"skills/preservation-verifier/scripts/patterns.js","source":"detector/patterns.js","purpose":"residual-pattern verification"}
   ],
   "excludedFromPublicPackage": [
     "external avoid-ai-writing-mcp project",

@@ -1,7 +1,7 @@
 {
   "source": {
     "repository": "https://github.com/conorbronsdon/avoid-ai-writing",
-    "baseCommit": "2e696ead29f9d8f9b320690adcb15683b8d36948",
+    "baseCommit": "58a95fc9971d7af95f1f1324b8a6bc991eb8004d",
     "version": "3.28.0",
     "architecture": "skills-only"
   },

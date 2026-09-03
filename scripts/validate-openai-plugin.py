@@ -5,6 +5,7 @@ import argparse
 import json
 from pathlib import Path, PurePosixPath
 import re
+import subprocess
 import xml.etree.ElementTree as ET
 
 SEMVER = re.compile(r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
@@ -36,6 +37,75 @@ def load_json(path: Path, errors):
     except Exception as exc:
         errors.append(f"{path}: invalid JSON: {exc}")
         return {}
+
+def validate_agent_metadata(path: Path, errors):
+    text = path.read_text(encoding="utf-8")
+    for token in ("interface:", "display_name:", "short_description:", "policy:", "allow_implicit_invocation:"):
+        if token not in text:
+            errors.append(f"{path}: missing {token}")
+
+    lines = text.splitlines()
+    policy_start = next((i for i, line in enumerate(lines) if re.fullmatch(r"policy:\s*(?:#.*)?", line)), None)
+    if policy_start is None:
+        return
+    block = []
+    for line in lines[policy_start + 1:]:
+        if line and not line[0].isspace() and not line.lstrip().startswith("#"):
+            break
+        block.append(line)
+    candidates = []
+    for i, line in enumerate(block):
+        match = re.match(r"^( +)([A-Za-z_][A-Za-z0-9_-]*):\s*(.*?)\s*$", line)
+        if match:
+            candidates.append((i, len(match.group(1)), match.group(2), match.group(3)))
+    if not candidates:
+        errors.append(f"{path}: policy must be a non-empty mapping")
+        return
+    policy_indent = min(item[1] for item in candidates)
+    entries = [(i, key, value) for i, indent, key, value in candidates if indent == policy_indent]
+    seen = set()
+    for _, key, _ in entries:
+        if key in seen:
+            errors.append(f"{path}: duplicate policy key: {key}")
+        seen.add(key)
+    allowed_policy_keys = {"allow_implicit_invocation", "products"}
+    for key in sorted(seen - allowed_policy_keys):
+        errors.append(f"{path}: unknown policy key: {key}")
+
+    entry_map = {key: (i, value) for i, key, value in entries}
+    implicit = entry_map.get("allow_implicit_invocation")
+    if implicit and implicit[1].split("#", 1)[0].strip() not in {"true", "false"}:
+        errors.append(f"{path}: policy.allow_implicit_invocation must be true or false")
+
+    products = entry_map.get("products")
+    if products:
+        product_index, raw = products
+        raw = raw.split("#", 1)[0].strip()
+        if raw.startswith("[") and raw.endswith("]"):
+            values = [item.strip().strip('"').strip("'") for item in raw[1:-1].split(",") if item.strip()]
+        elif not raw:
+            next_entry = min((i for i, _, _ in entries if i > product_index), default=len(block))
+            product_lines = block[product_index + 1:next_entry]
+            values = []
+            malformed = False
+            for line in product_lines:
+                stripped = line.strip()
+                if not stripped or stripped.startswith("#"):
+                    continue
+                match = re.fullmatch(r"-\s*([^#]+?)(?:\s+#.*)?", stripped)
+                if not match:
+                    malformed = True
+                    continue
+                values.append(match.group(1).strip().strip('"').strip("'"))
+            if malformed:
+                errors.append(f"{path}: policy.products must be a YAML list")
+        else:
+            values = []
+            errors.append(f"{path}: policy.products must be a YAML list")
+        # agents/openai.yaml policy schema:
+        # https://developers.openai.com/plugins/build/skills
+        if not values or len(values) != len(set(values)) or not set(values).issubset({"CHAT", "CODEX"}):
+            errors.append(f"{path}: policy.products must contain unique CHAT and/or CODEX values")
 
 def check_square_svg(path: Path, errors):
     try:
@@ -100,7 +170,7 @@ def validate(root: Path):
             normalized.append(" ".join(item.lower().split()) if isinstance(item, str) else str(item))
         if len(normalized) != len(set(normalized)):
             errors.append("starter prompts must be unique after normalization")
-    for key in ("websiteURL", "privacyPolicyURL", "termsOfServiceURL"):
+    for key in ("websiteURL", "supportURL", "privacyPolicyURL", "termsOfServiceURL"):
         value = interface.get(key)
         if not isinstance(value, str) or not value.startswith("https://") or len(value) > 1024:
             errors.append(f"interface.{key} must be an HTTPS URL")
@@ -116,7 +186,7 @@ def validate(root: Path):
     else:
         prefix = canonical_root.rstrip("/")
         owned = [("homepage", manifest.get("homepage")), ("repository", manifest.get("repository"))]
-        owned += [(f"interface.{k}", interface.get(k)) for k in ("websiteURL", "privacyPolicyURL", "termsOfServiceURL")]
+        owned += [(f"interface.{k}", interface.get(k)) for k in ("websiteURL", "supportURL", "privacyPolicyURL", "termsOfServiceURL")]
         for label, value in owned:
             if isinstance(value, str) and not (value.rstrip("/") == prefix or value.startswith(prefix + "/")):
                 errors.append(f"{label} does not point at the canonical project {prefix}: {value}")
@@ -153,15 +223,7 @@ def validate(root: Path):
         if not agent.is_file():
             errors.append(f"{skill_dir}: missing agents/openai.yaml")
         else:
-            text = agent.read_text(encoding="utf-8")
-            for token in ("interface:", "display_name:", "short_description:", "policy:", "allow_implicit_invocation:"):
-                if token not in text:
-                    errors.append(f"{agent}: missing {token}")
-            # Keep this aligned with the ingestion contract observed by the
-            # actual Plugin validator. Product targeting belongs to host/import
-            # behavior, not this Skill policy mapping.
-            if re.search(r"(?m)^\s*products\s*:", text):
-                errors.append(f"{agent}: unsupported policy.products field")
+            validate_agent_metadata(agent, errors)
     canonical = root / "SKILL.md"
     openai_copy = skills_root / "avoid-ai-writing" / "SKILL.md"
     if canonical.is_file():
@@ -213,6 +275,21 @@ def validate(root: Path):
         if len(tests.get("negative", [])) < 3:
             errors.append("submission reviewer tests need at least three negative cases")
         listing = load_json(submission / "listing.json", errors)
+        # baseCommit is the origin/main commit the port was last synced against.
+        # It may lag origin/main, but it must remain in this branch's history.
+        base_commit = listing.get("source", {}).get("baseCommit")
+        if not isinstance(base_commit, str) or not re.fullmatch(r"[0-9a-f]{40}", base_commit):
+            errors.append("submission listing source.baseCommit must be a full lowercase commit SHA")
+        else:
+            ancestry = subprocess.run(
+                ["git", "-C", str(root), "merge-base", "--is-ancestor", base_commit, "HEAD"],
+                capture_output=True,
+                text=True,
+            )
+            if ancestry.returncode != 0:
+                detail = ancestry.stderr.strip()
+                suffix = f": {detail}" if detail else ""
+                errors.append(f"submission listing baseCommit is not an ancestor of HEAD: {base_commit}{suffix}")
         fields = listing.get("fields", {})
         # submission/listing.json restates the manifest. Three fields used to be
         # gated here and the rest were free to drift, which is how a listing can
@@ -226,6 +303,7 @@ def validate(root: Path):
             ("category", "category"),
             ("developerName", "developerName"),
             ("websiteURL", "websiteURL"),
+            ("supportURL", "supportURL"),
             ("privacyPolicyURL", "privacyPolicyURL"),
             ("termsOfServiceURL", "termsOfServiceURL"),
             ("capabilities", "capabilities"),
@@ -261,17 +339,14 @@ def validate(root: Path):
                 actual = [len(item) for item in source if isinstance(item, str)]
                 if checks[check_key] != actual:
                     errors.append(f"submission listing {check_key} says {checks[check_key]}, actual {actual}")
-        support_url = fields.get("supportURL")
-        if isinstance(canonical_root, str) and isinstance(support_url, str):
-            prefix = canonical_root.rstrip("/")
-            if not (support_url.rstrip("/") == prefix or support_url.startswith(prefix + "/")):
-                errors.append(f"submission listing supportURL does not point at the canonical project {prefix}: {support_url}")
         identity = listing.get("publisherIdentity", {})
         if isinstance(identity, dict) and identity.get("packagePublisher") != interface.get("developerName"):
             errors.append("submission listing packagePublisher drifted from manifest interface.developerName")
         pack = load_json(submission / "submission-pack.json", errors)
         if pack.get("source", {}).get("canonicalSkillVersion") != version:
             errors.append("submission pack canonicalSkillVersion drifted from manifest version")
+        if pack.get("source", {}).get("baseCommit") != base_commit:
+            errors.append("submission pack baseCommit drifted from submission listing")
     # Scanning the whole checkout means walking .git (thousands of objects, and
     # loose refs that look nothing like the plugin surface). Only the packaged
     # surface is in scope here; keep this list aligned with
