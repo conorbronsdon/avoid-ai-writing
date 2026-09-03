@@ -56,6 +56,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          # merge-base --is-ancestor in validate-openai-plugin.py needs history
+          fetch-depth: 0
 
       - name: Validate manifest JSON
         run: |
