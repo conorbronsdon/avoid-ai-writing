@@ -2,8 +2,8 @@
   "source": {
     "repository": "conorbronsdon/avoid-ai-writing",
     "baseRef": "main",
-    "baseCommit": "58a95fc9971d7af95f1f1324b8a6bc991eb8004d",
-    "canonicalSkillVersion": "3.28.0"
+    "baseCommit": "d8c235186ff764ac20a0464ca8b1a13993ea37e4",
+    "canonicalSkillVersion": "3.29.0"
   },
   "architecture": "skills-only",
   "publicSkills": ["avoid-ai-writing","avoid-ai-writing-router","ai-writing-detector","voice-preserving-rewriter","file-edit-in-place","preservation-verifier","false-positive-reviewer"],
