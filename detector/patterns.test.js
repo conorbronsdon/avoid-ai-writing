@@ -1299,7 +1299,7 @@ test('v2: speculative opener leaves instructional "imagine you have" alone', () 
 });
 
 test('v2: launch-copy introduction fires', () => {
-  const text = 'Meet Flowdesk, your new favorite treasury dashboard. Enter Flowdesk. One screen for a full fund position, refreshed every block, with none of the spreadsheet glue that eats an operations hire alive.';
+  const text = 'Meet Flowdesk, your new favorite treasury dashboard. One screen for a full fund position, refreshed every block, with none of the spreadsheet glue that eats an operations hire alive.';
   const r = AIDetector.analyzeText(text);
   const types = new Set(r.issues.map((i) => i.type));
   assert.ok(types.has('launch-intro'), 'expected launch-intro flag');
@@ -1321,9 +1321,14 @@ test('v2: launch-copy introduction leaves ordinary narrative alone', () => {
     // stay clean — only launch-copy heads ("your new favorite") fire.
     'Quick note before standup this morning. Meet Sarah, your new account manager for the northeast region.',
     'Meet Buddy, the new face of our shelter this month, and come say hi at the adoption day on Saturday.',
-    // Doc field labels are capitalized by convention; the terminator class
-    // has no colon so instructions stay clean.
+    // Doc field labels are capitalized by convention, and the bare
+    // 'Enter X.' surface cannot be separated from them by any
+    // terminator or field-name denylist, so it is judgment-only and
+    // every one of these forms stays clean.
     'Complete each field in order before you submit. Enter Username: your work email address. Enter Password: at least twelve characters.',
+    'Complete each field in order before you submit. Enter Password. Enter Amount. Then press Continue and wait for the confirmation code.',
+    'Complete each field in order before you submit. Enter Username — your work email address. Then press Continue and wait for the code.',
+    'The launch post opened the way every launch post opens now. Enter Flowdesk. The deck said nothing else about what it actually does.',
   ];
   for (const text of clean) {
     const r = AIDetector.analyzeText(text);
@@ -1333,7 +1338,7 @@ test('v2: launch-copy introduction leaves ordinary narrative alone', () => {
 
   // Adjacent intros each count: the anchors are lookbehinds, so the first
   // match's terminator still anchors the second.
-  const adjacent = AIDetector.analyzeText('Enter Flowdesk. Enter Ledgerly. Two launches, one deck, and the same investor list for both companies this quarter.');
+  const adjacent = AIDetector.analyzeText('Think Flowdesk meets Ledgerly. Think Notion meets Figma. Two launches, one deck, and the same investor list for both companies this quarter.');
   const adjacentHits = adjacent.issues.filter((i) => i.type === 'launch-intro');
   assert.equal(adjacentHits.length, 2, 'expected both adjacent intros to count');
 });
@@ -1371,6 +1376,12 @@ test('v2: crowd contrast leaves literal simultaneity alone', () => {
     // adverbs sharing the stem never match.
     'Retail kept its head down while the market speculators chased the squeeze into Friday expiry.',
     'She packed the van while everyone else deliberately ignored the checklist taped to the garage door.',
+    // Branch one is restricted to the -ing form. The adjective, the
+    // passive, and the bare present all read as ordinary prose and all
+    // three matched while e/es/ed were allowed.
+    'We shipped it in 2022, while everyone else was still deliberate about the tradeoff between latency and cost.',
+    'We shipped it in 2022, while everyone else was still debated by pundits who had never run the migration themselves.',
+    'We shipped it in 2022, while everyone else was still argued over by a committee that met twice a quarter.',
   ];
   for (const text of clean) {
     const r = AIDetector.analyzeText(text);
@@ -1380,7 +1391,7 @@ test('v2: crowd contrast leaves literal simultaneity alone', () => {
 });
 
 test('v2: fake-casual props fire', () => {
-  const text = '*checks notes* the fees went up again (yes, really). The proposal passed with four abstentions and nobody read the appendix, because of course they did.';
+  const text = '*checks notes* the fees went up again (yes, really). The proposal passed with four abstentions and nobody in the room had read the appendix.';
   const r = AIDetector.analyzeText(text);
   const types = new Set(r.issues.map((i) => i.type));
   assert.ok(types.has('fake-casual-prop'), 'expected fake-casual-prop flag');
@@ -1396,9 +1407,12 @@ test('v2: fake-casual props leave math and plain qualifiers alone', () => {
   const clean = [
     'The math checks out: 5 * 3 * 2 gives the same total as the ledger, and yes, really careful review found no rounding drift.',
     'Multiply the base rate * the utilization factor before applying the cap, because of course fees compound under load.',
-    // Past-tense grumbles are literal human idiom, not the wink — the
-    // branch is gated to present tense plus "did".
+    // 'because of course ...' is judgment-only: no tense gate separates
+    // the wink from the ordinary human grumble, which uses the same
+    // present-tense-plus-did form.
     'We left an hour early and still missed kickoff, because of course it was raining and the bridge was closed.',
+    'The build failed on the last commit of the day, because of course it did, and the on-call engineer had already gone to bed.',
+    'The vendor shipped the patch a week after the window closed, because of course they do, and the invoice arrived on time.',
   ];
   for (const text of clean) {
     const r = AIDetector.analyzeText(text);

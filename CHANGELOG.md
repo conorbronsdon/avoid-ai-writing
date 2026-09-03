@@ -25,15 +25,18 @@ All notable changes to this project are documented here.
 
 - **Three detector-backed patterns from the `welttowelt` merged-system diff
   ([#108](https://github.com/conorbronsdon/avoid-ai-writing/issues/108)).**
-  Launch-copy dramatic introductions ("Enter X.", "Meet X, your new...",
-  "Think X meets Y" — "Say hello to X" stays judgment-only, since "Say hello
-  to Grandma." is ordinary human prose), dramatized contrast against the crowd
-  (gated on a dismissive verb plus the "was still" dramatization marker, so
-  literal simultaneity — "she read while everyone else watched the movie,"
-  "others debated the amendment" — stays clean; a literal "was still
-  debating" is the accepted, disclosed residue), and the fake-casual register, with its mechanical props detected
-  (stage directions, wink asides, "because of course it does") and the
-  register judgment left to the skill.
+  Launch-copy dramatic introductions — the `Meet X, your new favorite ...`
+  and `Think X meets Y` surfaces only; bare `Enter X.` and `Say hello to X`
+  stay judgment-only, since `Enter Password.` and "Say hello to Grandma." are
+  ordinary human prose. Dramatized contrast against the crowd, in three
+  separately gated branches: the progressive debate/speculation branch
+  (`while everyone else was still debating ...`, restricted to `-ing` forms,
+  so `was still deliberate about` and `was still debated by pundits` stay
+  clean) plus two stereotyped variants matched on their own wording
+  (`writing think-pieces`, `playing catch-up`). And the fake-casual register,
+  with its mechanical props detected (asterisk stage directions, wink asides)
+  and the register judgment — including `because of course it does` — left to
+  the skill.
 
 ---
 

@@ -673,27 +673,25 @@ const AIDetector = (() => {
   ];
 
   // ─── Launch-copy dramatic introductions ────────────────────────────
-  // "Enter Flowdesk." / "Meet Flowdesk, your new treasury dashboard" /
-  // "Think Notion meets Figma" — the LLM-default product-introduction
-  // move in launch and announcement copy. Every surface is gated to the
+  // "Meet Flowdesk, your new favorite treasury dashboard" / "Think
+  // Notion meets Figma" — the LLM-default product-introduction move
+  // in launch and announcement copy. Both surfaces are gated to the
   // sentence-initial imperative with a capitalized product name, and
   // the Meet surface additionally to launch-copy heads ("your new
   // favorite", "the new standard") — bare "Meet Sarah, your new account
   // manager" is how humans introduce colleagues, pets, and babies, so
-  // that form stays with the skill's judgment side. "enter the
-  // password" has no capital, and the terminator class has no colon so
-  // doc field labels ("Enter Username: ...") stay clean. "Say hello to
-  // X" from the same family is deliberately NOT detected — "Say hello
-  // to Grandma." is ordinary human prose and no regex separates the
-  // two. Known accepted false positives, disclosed in the skill entry:
-  // stage directions in dramatic scripts ("Enter Hamlet.") and
-  // column-style narrative ("Enter Rashford."). The engine has no
-  // fiction mode, so those calls stay with the skill's carve-out, and a
-  // lone hit cannot push a document past "Minimal AI signals". The
-  // anchors are lookbehinds so adjacent intros each count and the
-  // reported span starts at the tell itself.
+  // that form stays with the skill's judgment side. Two surfaces from
+  // the same family are deliberately NOT detected. "Say hello to X",
+  // because "Say hello to Grandma." is ordinary human prose. And bare
+  // "Enter X.", because the sentence-initial capitalized-noun form is
+  // how UI and doc instructions are written: "Enter Password.", "Enter
+  // Amount.", "Enter Username — your work email." Dropping the dash
+  // terminator does not reach the period-terminated class, and neither
+  // does a field-name denylist, so that surface stays with the skill's
+  // judgment side and the UI forms are pinned as must-not-fire
+  // fixtures. The anchors are lookbehinds so adjacent intros each
+  // count and the reported span starts at the tell itself.
   const LAUNCH_INTROS = [
-    /(?<=^|[.!?]\s|\n)Enter\s+[A-Z][\w'-]{1,29}\s*[.!—–]/g,
     /(?<=^|[.!?]\s|\n)Meet\s+[A-Z][\w'-]{1,29}\s*,\s*(?:your\s+new\s+(?:favorite|go-to)|the\s+new\s+(?:standard|way|home))\b/g,
     /(?<=^|[.!?]\s|\n)[Tt]hink\s+[A-Z][\w'-]{1,29}\s+meets\s+[A-Z][\w'-]{1,29}\b/g,
   ];
@@ -705,17 +703,22 @@ const AIDetector = (() => {
   // because bare "while everyone else" is ordinary simultaneity ("she
   // read while everyone else watched the movie") and even the
   // dismissive verbs are ordinary English in literal use ("others
-  // debated the amendment" in wire copy). Requiring the progressive
-  // still-form keeps the flagship tell ("was still debating
-  // timelines") and clears literal news, memoir, and fiction prose;
-  // the residue — a literal "was still debating" — is an accepted,
-  // disclosed false positive. Verb stems carry explicit inflection
-  // tails so agent nouns ("the market speculators") and adverbs
-  // ("deliberately ignored") never match. Recall is deliberately
-  // sacrificed: "was busy debating" without "still" stays a miss,
-  // per precision-over-recall.
+  // debated the amendment" in wire copy). That gate is on this FIRST
+  // branch only. Its stems are restricted to the -ing form, so the
+  // adjective ("was still deliberate about the tradeoff"), the passive
+  // ("was still debated by pundits") and the bare present ("was still
+  // debates timelines") all stay clean — allowing e/es/ed let all
+  // three through. The other two branches carry no "was still"
+  // requirement: they match their own stereotyped wording ("writing
+  // think-pieces", "playing catch-up"), and the skill entry scopes the
+  // claim the same way. Verb stems carry explicit inflection tails so
+  // agent nouns ("the market speculators") and adverbs ("deliberately
+  // ignored") never match. The residue on branch one — a literal
+  // "was still debating" — is an accepted, disclosed false positive.
+  // Recall is deliberately sacrificed: "was busy debating" without
+  // "still" stays a miss, per precision-over-recall.
   const CROWD_CONTRAST = [
-    /\bwhile\s+(?:everyone\s+else|the\s+(?:industry|market|competition)|others)\s+(?:was|were|is|are)\s+still\s+(?:busy\s+)?(?:(?:debat|deliberat|hesitat|theoriz|philosophiz|pontificat|speculat|argu)(?:e|es|ed|ing)|(?:dither|bicker)(?:s|ed|ing)?)\b/gi,
+    /\bwhile\s+(?:everyone\s+else|the\s+(?:industry|market|competition)|others)\s+(?:was|were|is|are)\s+still\s+(?:busy\s+)?(?:(?:debat|deliberat|hesitat|theoriz|philosophiz|pontificat|speculat|argu)ing|(?:dither|bicker)ing)\b/gi,
     /\bwhile\s+(?:everyone\s+else|the\s+(?:industry|market|competition)|others)\s+(?:was\s+|were\s+)?(?:busy\s+)?(?:writing|wrote)\s+think-?\s?pieces\b/gi,
     /\bwhile\s+(?:everyone\s+else|the\s+(?:industry|market|competition)|others)\s+(?:was\s+|were\s+|is\s+|are\s+)?(?:still\s+)?play(?:ed|ing|s)?\s+catch[-\s]?up\b/gi,
   ];
@@ -723,14 +726,15 @@ const AIDetector = (() => {
   // ─── Fake-casual props (stage directions and wink asides) ──────────
   // The regexable props from the fake-casual register: theatrical
   // asterisk stage directions ("*checks notes*", "*chef's kiss*",
-  // "*mic drop*"), wink asides ("(yes, really)", "(no, seriously)"),
-  // and "because of course it does". The rest of the register
-  // (one-word verdict closers, label-prefix openers, the self-QA
-  // volley) needs register judgment and stays skill-only — "wild." is
-  // a word, not a regex target. The because-of-course branch is gated
-  // to present tense plus "did": the wink is characteristically
-  // "because of course it does", while past-tense "because of course
-  // it was raining" is where literal human grumbles live. The kiss
+  // "*mic drop*") and wink asides ("(yes, really)", "(no, seriously)").
+  // The rest of the register (one-word verdict closers, label-prefix
+  // openers, the self-QA volley) needs register judgment and stays
+  // skill-only — "wild." is a word, not a regex target. "because of
+  // course …" joins them: a tense gate does not separate the wink from
+  // the ordinary human grumble, because "The build failed because of
+  // course it did." is that grumble in the same present-tense-plus-did
+  // form the wink uses. Under precision-over-recall the surface is
+  // judgment-only, and the grumble is pinned as a fixture. The kiss
   // pattern accepts the curly apostrophe (U+2019) — the form smart
   // punctuation and LLMs actually emit. Known accepted false positive:
   // a human writer using a wink aside on purpose; the props are
@@ -739,7 +743,6 @@ const AIDetector = (() => {
   const FAKE_CASUAL_PROPS = [
     /\*\s?(?:checks\s+notes|chef['\u2019]?s\s+kiss|mic\s+drop|takes\s+a\s+deep\s+breath|sips\s+(?:coffee|tea)|nervous\s+laughter)\s?\*/gi,
     /\(\s?(?:yes|no)\s?,\s?(?:really|seriously)\s?\)/gi,
-    /\bbecause\s+of\s+course\s+(?:it|he|she|they|you|we)\s+(?:does|do|did|is|are)\b/gi,
   ];
 
   // ─── Performed-insight phrases ─────────────────────────────────────
