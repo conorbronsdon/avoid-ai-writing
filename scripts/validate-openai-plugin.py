@@ -104,6 +104,22 @@ def validate(root: Path):
         value = interface.get(key)
         if not isinstance(value, str) or not value.startswith("https://") or len(value) > 1024:
             errors.append(f"interface.{key} must be an HTTPS URL")
+    # Whoever the published listing points at owns the legal, support and
+    # homepage destinations users land on. Those must be the canonical project,
+    # not a fork: author.url is the canonical root and every public URL in the
+    # manifest has to sit under it. Without this, a packaging contribution can
+    # silently move publication off the canonical repository.
+    author = manifest.get("author")
+    canonical_root = author.get("url") if isinstance(author, dict) else None
+    if not isinstance(canonical_root, str) or not canonical_root.startswith("https://"):
+        errors.append("author.url must be the canonical project HTTPS URL")
+    else:
+        prefix = canonical_root.rstrip("/")
+        owned = [("homepage", manifest.get("homepage")), ("repository", manifest.get("repository"))]
+        owned += [(f"interface.{k}", interface.get(k)) for k in ("websiteURL", "privacyPolicyURL", "termsOfServiceURL")]
+        for label, value in owned:
+            if isinstance(value, str) and not (value.rstrip("/") == prefix or value.startswith(prefix + "/")):
+                errors.append(f"{label} does not point at the canonical project {prefix}: {value}")
     for key in ("composerIcon", "logo"):
         value = interface.get(key)
         if not isinstance(value, str) or not value.startswith("./") or not safe_rel(value):
@@ -149,7 +165,9 @@ def validate(root: Path):
     canonical = root / "SKILL.md"
     openai_copy = skills_root / "avoid-ai-writing" / "SKILL.md"
     if canonical.is_file():
-        if canonical.read_bytes() != openai_copy.read_bytes():
+        if not openai_copy.is_file():
+            errors.append("skills/avoid-ai-writing/SKILL.md missing; cannot check drift from root SKILL.md")
+        elif canonical.read_bytes() != openai_copy.read_bytes():
             errors.append("skills/avoid-ai-writing/SKILL.md drifted from root SKILL.md")
         meta, _ = parse_frontmatter(canonical)
         if meta.get("version") != version:
@@ -196,20 +214,80 @@ def validate(root: Path):
             errors.append("submission reviewer tests need at least three negative cases")
         listing = load_json(submission / "listing.json", errors)
         fields = listing.get("fields", {})
-        if fields.get("name") != interface.get("displayName"):
-            errors.append("submission listing name drifted from manifest")
-        if fields.get("subtitle") != interface.get("shortDescription"):
-            errors.append("submission listing subtitle drifted from manifest")
+        # submission/listing.json restates the manifest. Three fields used to be
+        # gated here and the rest were free to drift, which is how a listing can
+        # ship a different developer name or support URL than the manifest it
+        # claims to describe. The manifest is the source; every duplicated field
+        # is asserted against it.
+        for listing_key, manifest_key in (
+            ("name", "displayName"),
+            ("subtitle", "shortDescription"),
+            ("description", "longDescription"),
+            ("category", "category"),
+            ("developerName", "developerName"),
+            ("websiteURL", "websiteURL"),
+            ("privacyPolicyURL", "privacyPolicyURL"),
+            ("termsOfServiceURL", "termsOfServiceURL"),
+            ("capabilities", "capabilities"),
+            ("logo", "logo"),
+            ("composerIcon", "composerIcon"),
+            ("brandColor", "brandColor"),
+        ):
+            if fields.get(listing_key) != interface.get(manifest_key):
+                errors.append(f"submission listing {listing_key} drifted from manifest interface.{manifest_key}")
+        if fields.get("starterPrompts") != interface.get("defaultPrompt"):
+            errors.append("submission listing starterPrompts drifted from manifest interface.defaultPrompt")
         if fields.get("version") != version:
             errors.append("submission listing version drifted from manifest")
-    for path in root.rglob("*"):
-        if path.is_symlink():
-            errors.append(f"symlink not allowed in plugin surface: {path.relative_to(root)}")
-        lowered = path.name.lower()
-        if lowered in {".env", "id_rsa", "id_ed25519"}:
-            errors.append(f"secret-shaped file not allowed: {path.relative_to(root)}")
-        if "__pycache__" in path.parts or lowered.endswith((".pyc", ".pyo")):
-            errors.append(f"transient Python artifact not allowed: {path.relative_to(root)}")
+        if fields.get("packageName") != manifest.get("name"):
+            errors.append("submission listing packageName drifted from manifest name")
+        # The "checks" block records character counts as evidence for the
+        # submission portal's limits. Hand-maintained counts go stale the first
+        # time a field is edited, so derive them instead of trusting them.
+        checks = listing.get("checks", {})
+        for check_key, source in (
+            ("nameCharacters", fields.get("name")),
+            ("subtitleCharacters", fields.get("subtitle")),
+            ("descriptionCharacters", fields.get("description")),
+            ("developerNameCharacters", fields.get("developerName")),
+        ):
+            if isinstance(source, str) and check_key in checks and checks[check_key] != len(source):
+                errors.append(f"submission listing {check_key} says {checks[check_key]}, actual {len(source)}")
+        for check_key, source in (
+            ("starterPromptCharacters", fields.get("starterPrompts")),
+            ("capabilityCharacters", fields.get("capabilities")),
+        ):
+            if isinstance(source, list) and check_key in checks:
+                actual = [len(item) for item in source if isinstance(item, str)]
+                if checks[check_key] != actual:
+                    errors.append(f"submission listing {check_key} says {checks[check_key]}, actual {actual}")
+        support_url = fields.get("supportURL")
+        if isinstance(canonical_root, str) and isinstance(support_url, str):
+            prefix = canonical_root.rstrip("/")
+            if not (support_url.rstrip("/") == prefix or support_url.startswith(prefix + "/")):
+                errors.append(f"submission listing supportURL does not point at the canonical project {prefix}: {support_url}")
+        identity = listing.get("publisherIdentity", {})
+        if isinstance(identity, dict) and identity.get("packagePublisher") != interface.get("developerName"):
+            errors.append("submission listing packagePublisher drifted from manifest interface.developerName")
+        pack = load_json(submission / "submission-pack.json", errors)
+        if pack.get("source", {}).get("canonicalSkillVersion") != version:
+            errors.append("submission pack canonicalSkillVersion drifted from manifest version")
+    # Scanning the whole checkout means walking .git (thousands of objects, and
+    # loose refs that look nothing like the plugin surface). Only the packaged
+    # surface is in scope here; keep this list aligned with
+    # scripts/package-openai-plugin.py's INCLUDE_DIRS.
+    scan_roots = [root / name for name in (".codex-plugin", "skills", "assets", "submission")]
+    for scan_root in scan_roots:
+        if not scan_root.is_dir():
+            continue
+        for path in scan_root.rglob("*"):
+            if path.is_symlink():
+                errors.append(f"symlink not allowed in plugin surface: {path.relative_to(root)}")
+            lowered = path.name.lower()
+            if lowered in {".env", "id_rsa", "id_ed25519"}:
+                errors.append(f"secret-shaped file not allowed: {path.relative_to(root)}")
+            if "__pycache__" in path.parts or lowered.endswith((".pyc", ".pyo")):
+                errors.append(f"transient Python artifact not allowed: {path.relative_to(root)}")
     return errors, warnings, {"ok": not errors,"plugin": manifest.get("name"),"version": version,"skills": sorted(names),"errors": errors,"warnings": warnings}
 
 def main():

@@ -5,6 +5,9 @@ on:
     paths:
       - "SKILL.md"
       - "README.md"
+      # CLAUDE.md carries a checked copy of the pattern count; without this
+      # path the count guard never runs on a CLAUDE.md-only edit (PR #106
+      # had zero check runs - review finding on #111).
       - "CLAUDE.md"
       - "detector/**"
       - "plugins/**"
@@ -26,6 +29,9 @@ on:
     paths:
       - "SKILL.md"
       - "README.md"
+      # CLAUDE.md carries a checked copy of the pattern count; without this
+      # path the count guard never runs on a CLAUDE.md-only edit (PR #106
+      # had zero check runs - review finding on #111).
       - "CLAUDE.md"
       - "detector/**"
       - "plugins/**"
