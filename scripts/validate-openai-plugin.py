@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ET
 
 SEMVER = re.compile(r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
 FRONTMATTER = re.compile(r"\A---\s*\n(.*?)\n---\s*\n(.*)\Z", re.S)
+TOP_LEVEL_INCLUDE_FILES = ("OPENAI_PLUGIN.md", "NOTICE.md", "PRIVACY.md", "TERMS.md", "SUPPORT.md", "LICENSE")
 
 def parse_frontmatter(path: Path):
     text = path.read_text(encoding="utf-8")
@@ -33,10 +34,14 @@ def safe_rel(value: str) -> bool:
 
 def load_json(path: Path, errors):
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        value = json.loads(path.read_text(encoding="utf-8"))
     except Exception as exc:
         errors.append(f"{path}: invalid JSON: {exc}")
         return {}
+    if not isinstance(value, dict):
+        errors.append(f"{path}: JSON root must be an object")
+        return {}
+    return value
 
 def validate_agent_metadata(path: Path, errors):
     text = path.read_text(encoding="utf-8")
@@ -127,6 +132,9 @@ def check_square_svg(path: Path, errors):
 
 def validate(root: Path):
     errors, warnings = [], []
+    for rel in TOP_LEVEL_INCLUDE_FILES:
+        if (root / rel).is_symlink():
+            errors.append(f"symlink not allowed in plugin surface: {rel}")
     manifest_dir = root / ".codex-plugin"
     manifest_path = manifest_dir / "plugin.json"
     if not manifest_path.is_file():

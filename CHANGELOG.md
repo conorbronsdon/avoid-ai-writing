@@ -23,6 +23,10 @@ All notable changes to this project are documented here.
 
 ### Added
 
+- **A native ChatGPT and Codex plugin package.** The package contains seven
+  Codex Skills, including a router for multi-stage requests, plus the
+  `.codex-plugin/plugin.json` manifest and scripts for packaging and
+  validation. The canonical `SKILL.md` remains the editorial authority.
 - **Three detector-backed patterns from the `welttowelt` merged-system diff
   ([#108](https://github.com/conorbronsdon/avoid-ai-writing/issues/108)).**
   Launch-copy dramatic introductions — `Meet X,` followed by one of four

@@ -25,6 +25,8 @@ def collect(root: Path):
                 files.append(path)
     for rel in INCLUDE_FILES:
         path = root / rel
+        if path.is_symlink():
+            raise SystemExit(f"symlink not allowed: {rel}")
         if path.is_file():
             files.append(path)
     unique = {p.relative_to(root).as_posix(): p for p in files}
