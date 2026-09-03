@@ -713,8 +713,12 @@ const AIDetector = (() => {
   // think-pieces", "playing catch-up"), and the skill entry scopes the
   // claim the same way. Verb stems carry explicit inflection tails so
   // agent nouns ("the market speculators") and adverbs ("deliberately
-  // ignored") never match. The residue on branch one — a literal
-  // "was still debating" — is an accepted, disclosed false positive.
+  // ignored") never match. Measured residue, all accepted: branch one
+  // fires on ANY literal progressive use of its verbs ("while the
+  // market was still speculating about the price"), not only on "was
+  // still debating"; branches two and three fire on literal contrasts
+  // of their own ("while everyone else wrote think-pieces from
+  // Washington", "while everyone else played catch-up in the spring").
   // Recall is deliberately sacrificed: "was busy debating" without
   // "still" stays a miss, per precision-over-recall.
   const CROWD_CONTRAST = [
@@ -726,7 +730,9 @@ const AIDetector = (() => {
   // ─── Fake-casual props (stage directions and wink asides) ──────────
   // The regexable props from the fake-casual register: theatrical
   // asterisk stage directions ("*checks notes*", "*chef's kiss*",
-  // "*mic drop*") and wink asides ("(yes, really)", "(no, seriously)").
+  // "*mic drop*") and wink asides — all four of "(yes, really)",
+  // "(yes, seriously)", "(no, really)", "(no, seriously)", which is
+  // wider than the two forms the skill entry names.
   // The rest of the register (one-word verdict closers, label-prefix
   // openers, the self-QA volley) needs register judgment and stays
   // skill-only — "wild." is a word, not a regex target. "because of
