@@ -1304,6 +1304,12 @@ test('v2: launch-copy introduction fires', () => {
   const types = new Set(r.issues.map((i) => i.type));
   assert.ok(types.has('launch-intro'), 'expected launch-intro flag');
 
+  // The 'the new home of' head is the launch-copy form the tail
+  // requirement has to keep. It must still fire.
+  const homeOf = AIDetector.analyzeText('Meet Riverside, the new home of our Saturday farmers market, open from seven every weekend through October.');
+  const homeOfTypes = new Set(homeOf.issues.map((i) => i.type));
+  assert.ok(homeOfTypes.has('launch-intro'), 'expected launch-intro on "the new home of"');
+
   // The mashup pitch is the same move and must also fire.
   const mashup = AIDetector.analyzeText('Think Notion meets Figma, except the canvas settles on-chain. The team has shipped four releases since March and the changelog reads like a product that knows where it is going.');
   const mashupTypes = new Set(mashup.issues.map((i) => i.type));
@@ -1329,6 +1335,12 @@ test('v2: launch-copy introduction leaves ordinary narrative alone', () => {
     'Complete each field in order before you submit. Enter Password. Enter Amount. Then press Continue and wait for the confirmation code.',
     'Complete each field in order before you submit. Enter Username — your work email address. Then press Continue and wait for the code.',
     'The launch post opened the way every launch post opens now. Enter Flowdesk. The deck said nothing else about what it actually does.',
+    // The 'the new home/way/standard' heads need the tail launch copy
+    // actually has ('of', 'to', 'in|for') or an end of clause. Without
+    // it the head noun swallowed the first word of a compound noun and
+    // both of these fired.
+    'Meet Rosa, the new home secretary, at the town hall on Thursday evening after the council session.',
+    'Meet Emma, the new way station manager for the northern line, starting the first week of April.',
   ];
   for (const text of clean) {
     const r = AIDetector.analyzeText(text);
@@ -1391,10 +1403,18 @@ test('v2: crowd contrast leaves literal simultaneity alone', () => {
 });
 
 test('v2: fake-casual props fire', () => {
-  const text = '*checks notes* the fees went up again (yes, really). The proposal passed with four abstentions and nobody in the room had read the appendix.';
+  const text = '*checks notes* the proposal passed with four abstentions and nobody in the room had read the appendix before the vote.';
   const r = AIDetector.analyzeText(text);
   const types = new Set(r.issues.map((i) => i.type));
   assert.ok(types.has('fake-casual-prop'), 'expected fake-casual-prop flag');
+
+  // The wink aside gets its own case, asserting on the matched text. It
+  // used to share the stage-direction fixture above, which meant a
+  // never-matching wink regex still left this test green.
+  const wink = AIDetector.analyzeText('The fees went up again (yes, really) and nobody sent a notice about it before the billing run.');
+  const winkHits = wink.issues.filter((i) => i.type === 'fake-casual-prop');
+  assert.equal(winkHits.length, 1, 'expected exactly one wink-aside hit');
+  assert.equal(winkHits[0].text, '(yes, really)', 'expected the wink aside itself to be the match');
 
   // The curly apostrophe (U+2019) is the form smart punctuation and LLMs
   // actually emit; it must fire the same as the ASCII form.
@@ -1410,6 +1430,9 @@ test('v2: fake-casual props leave math and plain qualifiers alone', () => {
     // 'because of course ...' is judgment-only: no tense gate separates
     // the wink from the ordinary human grumble, which uses the same
     // present-tense-plus-did form.
+    // The kiss pattern requires the apostrophe. With it optional, this
+    // ordinary sentence matched.
+    'At midnight, *chefs kiss* their spouses goodbye and head back to the line for the second service.',
     'We left an hour early and still missed kickoff, because of course it was raining and the bridge was closed.',
     'The build failed on the last commit of the day, because of course it did, and the on-call engineer had already gone to bed.',
     'The vendor shipped the patch a week after the window closed, because of course they do, and the invoice arrived on time.',

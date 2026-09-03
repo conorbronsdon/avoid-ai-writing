@@ -676,11 +676,19 @@ const AIDetector = (() => {
   // "Meet Flowdesk, your new favorite treasury dashboard" / "Think
   // Notion meets Figma" — the LLM-default product-introduction move
   // in launch and announcement copy. Both surfaces are gated to the
-  // sentence-initial imperative with a capitalized product name, and
-  // the Meet surface additionally to launch-copy heads ("your new
-  // favorite", "the new standard") — bare "Meet Sarah, your new account
-  // manager" is how humans introduce colleagues, pets, and babies, so
-  // that form stays with the skill's judgment side. Two surfaces from
+  // sentence-initial imperative followed by ONE capitalized token of 2
+  // to 30 characters, which is a recall limit: a two-token product name
+  // ("Meet North Star", "Think Google Docs meets Microsoft Word") is a
+  // deliberate miss. The Meet surface additionally requires one of four
+  // launch-copy heads — "your new favorite", "your new go-to", and
+  // "the new home/way/standard", the last three only when followed by
+  // "of" / "to" / "in|for" or by end-of-clause punctuation. Without
+  // that tail the head noun swallows a compound noun and ordinary prose
+  // fires: "Meet Rosa, the new home secretary" and "Meet Emma, the new
+  // way station manager" both matched before the tail was required.
+  // Bare "Meet Sarah, your new account manager" is how humans introduce
+  // colleagues, pets, and babies, so that form stays with the skill's
+  // judgment side. Two surfaces from
   // the same family are deliberately NOT detected. "Say hello to X",
   // because "Say hello to Grandma." is ordinary human prose. And bare
   // "Enter X.", because the sentence-initial capitalized-noun form is
@@ -692,7 +700,7 @@ const AIDetector = (() => {
   // fixtures. The anchors are lookbehinds so adjacent intros each
   // count and the reported span starts at the tell itself.
   const LAUNCH_INTROS = [
-    /(?<=^|[.!?]\s|\n)Meet\s+[A-Z][\w'-]{1,29}\s*,\s*(?:your\s+new\s+(?:favorite|go-to)|the\s+new\s+(?:standard|way|home))\b/g,
+    /(?<=^|[.!?]\s|\n)Meet\s+[A-Z][\w'-]{1,29}\s*,\s*(?:your\s+new\s+(?:favorite|go-to)\b|the\s+new\s+(?:home\s+of\b|way\s+to\b|standard\s+(?:in|for)\b|(?:standard|way|home)(?=\s*(?:[.!?,;:\u2013\u2014]|$))))/g,
     /(?<=^|[.!?]\s|\n)[Tt]hink\s+[A-Z][\w'-]{1,29}\s+meets\s+[A-Z][\w'-]{1,29}\b/g,
   ];
 
@@ -730,9 +738,15 @@ const AIDetector = (() => {
   // ─── Fake-casual props (stage directions and wink asides) ──────────
   // The regexable props from the fake-casual register: theatrical
   // asterisk stage directions ("*checks notes*", "*chef's kiss*",
-  // "*mic drop*") and wink asides — all four of "(yes, really)",
-  // "(yes, seriously)", "(no, really)", "(no, seriously)", which is
-  // wider than the two forms the skill entry names.
+  // "*mic drop*") and wink asides. Both lists are closed and short, and
+  // that is a recall limit: exactly six stage directions ("checks
+  // notes", "chef's kiss", "mic drop", "takes a deep breath", "sips
+  // coffee|tea", "nervous laughter") and exactly four parentheticals,
+  // the full (yes|no) x (really|seriously) grid. Neighbours in the same
+  // register are deliberate misses: "*checks calendar*" and "(yes,
+  // honestly)" do not fire. The kiss pattern requires the apostrophe —
+  // making it optional matched the ordinary sentence "At midnight,
+  // *chefs kiss* their spouses goodbye".
   // The rest of the register (one-word verdict closers, label-prefix
   // openers, the self-QA volley) needs register judgment and stays
   // skill-only — "wild." is a word, not a regex target. "because of
@@ -747,7 +761,7 @@ const AIDetector = (() => {
   // weighted as a strong single hit, not a classification by
   // themselves.
   const FAKE_CASUAL_PROPS = [
-    /\*\s?(?:checks\s+notes|chef['\u2019]?s\s+kiss|mic\s+drop|takes\s+a\s+deep\s+breath|sips\s+(?:coffee|tea)|nervous\s+laughter)\s?\*/gi,
+    /\*\s?(?:checks\s+notes|chef['\u2019]s\s+kiss|mic\s+drop|takes\s+a\s+deep\s+breath|sips\s+(?:coffee|tea)|nervous\s+laughter)\s?\*/gi,
     /\(\s?(?:yes|no)\s?,\s?(?:really|seriously)\s?\)/gi,
   ];
 
