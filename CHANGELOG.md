@@ -4,7 +4,22 @@ All notable changes to this project are documented here.
 
 ---
 
-## [3.26.0] — 2026-08-16
+## [Unreleased] — 2026-08-29
+
+### Changed
+
+- **README adds a restrained related-work block.** Links to Conor's public
+  builds, Chain of Thought, and `repo-audit` now sit after the core product and
+  usage documentation.
+- **Corpus manifest documents the register gap with two auditable seed entries.**
+  RFC 8259 provides a pre-LLM `docs` source and a 1995 W3C mailing-list message
+  provides a pre-LLM `conversational` source. The corpus README records that
+  both registers remain under-sampled and that `social` and `email` still have
+  no entries; the additions do not authorize publishing a rate.
+
+---
+
+## [3.29.0] — 2026-09-03
 
 ### Added
 
@@ -18,8 +33,77 @@ All notable changes to this project are documented here.
   "others debated the amendment" — stays clean; a literal "was still
   debating" is the accepted, disclosed residue), and the fake-casual register, with its mechanical props detected
   (stage directions, wink asides, "because of course it does") and the
-  register judgment left to the skill. The catalog moves to 65 categories and
-  the engine to 51 `type`s; the word table stays at 112.
+  register judgment left to the skill.
+
+---
+
+## [3.28.0] — 2026-08-28
+
+### Added
+
+- **Seven rhetorical-tic pattern categories adapted from Simon Willison's
+  [LLM cliché highlighter](https://tools.simonwillison.net/llm-cliche-highlighter).**
+  Three ship with detector types: `performed-insight` (essayist tics that
+  announce profundity — "sit with that", "that's not nothing", sentence-initial
+  "Turns out", "is the whole point", "X is dead; long live X"),
+  `negation-chain` (three-part "no fluff, no filler, no jargon" chains,
+  stacked "didn't …" clauses, "don't call it X — call it Y"), and
+  `dev-blog-boilerplate` ("it just works", "zero config", "sane defaults",
+  "fits in your head"). Four are skill-only
+  judgment rules with the reasons recorded in `CATEGORIES.md`: stacked
+  rhetorical questions, same-opener sentence runs, stranded auxiliary
+  contrast, and colon into a triple. Negation-chain items carry a stop-list
+  so idiomatic pairs ("no more, no less", "no matter") stay clean.
+
+### Fixed
+
+- **The deterministic subset stays narrower than the judgment rules.** The
+  `no …` matcher now requires three short items, literal "the punchline",
+  "worth naming", and "batteries included" senses stay out of regex matching,
+  and "it just works out of the box" remains detectable without reviving the
+  ordinary "works out to" false positive.
+
+---
+
+## [3.27.0] — 2026-08-26
+
+### Added
+
+- **`analyzeText()` can score rendered Markdown instead of source-only
+  metadata (#123).** Pass `sourceMode: "rendered-markdown"` to mask initial
+  YAML frontmatter and HTML comments before pattern and document analysis.
+  Code-span comment examples remain visible, frontmatter recognition accepts
+  LF, CRLF, and CR without hiding thematic-break sections, and masks preserve
+  issue and sentence-highlight offsets. `stats` reports the selected mode,
+  explicit fallbacks, and masked-span counts. Plain mode remains compatible
+  with its existing scoring behavior.
+
+---
+
+## [3.26.0] — 2026-08-24
+
+### Fixed
+
+- **Edit mode now limits rewrites to prose files (#101).** Source code,
+  configuration, and generated data are refused so prose-oriented edits cannot
+  corrupt structured content.
+
+---
+
+## [3.25.2] — 2026-08-24
+
+### Changed
+
+- **README documents `npx skills add` as the fastest cross-agent install path.** The community [`skills`](https://github.com/vercel-labs/skills) CLI auto-detects installed coding agents and covers 75+ of them. Commands pin the installer at `skills@1.5.23`, note its Node `>=22.20.0` requirement, and clarify that the skill payload still follows this repository's current default branch. For this public root-level skill, the GitHub blob fast path normally installs only `SKILL.md`; if that path is unavailable, the CLI can fall back to cloning the full root skill directory. `skills update` refreshes whichever scope you select rather than every install at once. Existing manual per-platform steps (git clone, `clawhub install`, curl) stay as a no-Node fallback; nothing about them changed. No rule, detector, or word-table changes: the catalog stays 62 / 112.
+- **`SKILL.md`'s frontmatter carries a `repository` field.** A copy installed via the `skills` CLI's SKILL.md-only fast path previously had no link back to the project or its contributor community; `metadata.repository` now points to `github.com/conorbronsdon/avoid-ai-writing` alongside the existing `author` field. The generated plugin copy stays in sync via the existing `sync-plugin-skill.sh`.
+
+---
+
+## [3.25.1] — 2026-08-21
+
+### Fixed
+
+- **Voice-profile targets are bound to the Never-inject guardrails (#100).** `casual`, `professional`, and `warm` each had a target that could only be satisfied by adding content the source lacks (a first-person touch, a concrete claim or ask, an acknowledgment). Each target now applies only where the source already has the material, and the section opens with one line stating the guardrails bind voice targets. Wording ported back from the downstream resolution in wshobson/agents#645. Contributed by @mahinNadir (#133).
 
 ---
 
