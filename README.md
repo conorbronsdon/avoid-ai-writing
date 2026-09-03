@@ -164,6 +164,25 @@ curl -o .agents/skills/avoid-ai-writing/SKILL.md \
   https://raw.githubusercontent.com/conorbronsdon/avoid-ai-writing/main/SKILL.md
 ```
 
+### Native ChatGPT and Codex plugin package
+
+The [plugin package](./OPENAI_PLUGIN.md) keeps the canonical `SKILL.md` as its editorial authority and provides seven focused Skills:
+
+- `avoid-ai-writing` — uses the canonical audit and rewrite instructions
+- `avoid-ai-writing-router` — routes mixed and multi-stage requests
+- `ai-writing-detector` — runs the bundled deterministic detector
+- `voice-preserving-rewriter` — rewrites returned text while retaining voice
+- `file-edit-in-place` — edits only explicitly named files
+- `preservation-verifier` — checks meaning and constraints before and after a rewrite
+- `false-positive-reviewer` — reviews detector findings that need context
+
+Build and validate the package with:
+
+```bash
+python3 scripts/package-openai-plugin.py . /tmp/avoid-ai-writing.zip --json
+python3 scripts/validate-openai-plugin.py . --json
+```
+
 ### Other agents
 
 The same `SKILL.md` (or the Cursor `.mdc` port) drops into most tools' rules/skills location:

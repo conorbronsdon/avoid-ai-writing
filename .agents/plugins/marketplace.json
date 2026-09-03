@@ -1,0 +1,12 @@
+{
+  "name": "avoid-ai-writing",
+  "interface": {"displayName": "Avoid AI Writing"},
+  "plugins": [
+    {
+      "name": "avoid-ai-writing",
+      "source": {"source": "local", "path": "./"},
+      "policy": {"installation": "AVAILABLE", "authentication": "ON_USE"},
+      "category": "Productivity"
+    }
+  ]
+}
