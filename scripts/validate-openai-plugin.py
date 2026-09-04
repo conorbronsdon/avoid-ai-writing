@@ -14,6 +14,10 @@ FRONTMATTER = re.compile(r"\A---\s*\n(.*?)\n---\s*\n(.*)\Z", re.S)
 TOP_LEVEL_INCLUDE_FILES = ("OPENAI_PLUGIN.md", "NOTICE.md", "PRIVACY.md", "TERMS.md", "SUPPORT.md", "LICENSE")
 CANONICAL_PROJECT_URL = "https://github.com/conorbronsdon/avoid-ai-writing"
 MAX_SVG_BYTES = 256 * 1024
+AGENT_METADATA_KEYS = {
+    "interface": {"display_name", "short_description", "default_prompt"},
+    "policy": {"allow_implicit_invocation", "products"},
+}
 
 def parse_frontmatter(path: Path):
     text = path.read_text(encoding="utf-8")
@@ -130,23 +134,84 @@ def validate_agent_metadata(path: Path, errors):
             errors.append(f"{path}: policy.products must contain unique CHAT and/or CODEX values")
 
 
+def supported_yaml_scalar(value: str) -> bool:
+    """Return whether value uses the scalar subset supported by this validator."""
+    value = value.strip()
+    if not value:
+        return False
+    if value.startswith('"'):
+        escaped = False
+        for index, char in enumerate(value[1:], 1):
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                remainder = value[index + 1:].strip()
+                if remainder and not remainder.startswith("#"):
+                    return False
+                try:
+                    return isinstance(json.loads(value[:index + 1]), str)
+                except json.JSONDecodeError:
+                    return False
+        return False
+    if value.startswith("'"):
+        index = 1
+        while index < len(value):
+            if value[index] != "'":
+                index += 1
+                continue
+            if index + 1 < len(value) and value[index + 1] == "'":
+                index += 2
+                continue
+            remainder = value[index + 1:].strip()
+            return not remainder or remainder.startswith("#")
+        return False
+
+    comment = re.search(r"(?:^|\s)#", value)
+    scalar = value[:comment.start()].rstrip() if comment else value
+    if not scalar or any(ord(char) < 32 for char in scalar):
+        return False
+    if scalar[0] in "-?:,[]{}#&*!|>'\"%@`":
+        return False
+    return not re.search(r":(?:\s|$)|[\[\]{}]", scalar)
+
+
+def valid_products_value(value: str) -> bool:
+    """Accept an empty block value or the supported inline products sequence."""
+    value = value.strip()
+    if not value or value.startswith("#"):
+        return True
+    return bool(
+        re.fullmatch(
+            r"\[\s*(?:CHAT|CODEX)(?:\s*,\s*(?:CHAT|CODEX))*\s*\](?:\s+#.*)?",
+            value,
+        )
+    )
+
+
 def validate_yaml_shape(path: Path, text: str, errors):
-    """Reject lines that cannot belong to the deliberately small openai.yaml schema."""
+    """Reject lines outside the deliberately small openai.yaml schema."""
     current_section = None
     current_nested = None
     top_keys = set()
+    nested_keys = {section: set() for section in AGENT_METADATA_KEYS}
     for number, raw in enumerate(text.splitlines(), 1):
-        if not raw.strip() or raw.lstrip().startswith("#"):
+        if not raw.strip():
             continue
-        indent = len(raw) - len(raw.lstrip(" "))
-        stripped = raw.strip()
-        if "\t" in raw[:indent]:
+        leading = re.match(r"^[ \t]*", raw).group(0)
+        if "\t" in leading:
             errors.append(f"{path}: malformed YAML line {number}: tabs are not valid indentation")
+            current_nested = None
             continue
+        if raw.lstrip().startswith("#"):
+            continue
+        indent = len(leading)
+        stripped = raw.strip()
         if indent == 0:
-            match = re.match(r"^([A-Za-z_][A-Za-z0-9_-]*):(?:\s|$)", raw)
+            match = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_-]*):\s*(?:#.*)?", raw)
             if not match:
-                errors.append(f"{path}: malformed YAML line {number}: expected key/value mapping")
+                errors.append(f"{path}: malformed YAML line {number}: expected top-level mapping")
                 current_section = None
                 current_nested = None
                 continue
@@ -154,21 +219,52 @@ def validate_yaml_shape(path: Path, text: str, errors):
             if key in top_keys:
                 errors.append(f"{path}: duplicate top-level key: {key}")
             top_keys.add(key)
-            current_section = key
+            if key not in AGENT_METADATA_KEYS:
+                errors.append(f"{path}: unknown top-level key: {key}")
+                current_section = None
+            else:
+                current_section = key
             current_nested = None
+            continue
+        if indent == 2:
+            current_nested = None
+            if current_section is None:
+                errors.append(f"{path}: malformed YAML line {number}: indented value has no parent mapping")
+                continue
+            match = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_-]*):\s*(.*)", stripped)
+            if not match:
+                errors.append(f"{path}: malformed YAML line {number}: expected key/value mapping")
+                continue
+            key, value = match.groups()
+            if key not in AGENT_METADATA_KEYS[current_section]:
+                errors.append(f"{path}: unknown {current_section} key: {key}")
+                continue
+            if key in nested_keys[current_section]:
+                errors.append(f"{path}: duplicate {current_section} key: {key}")
+            nested_keys[current_section].add(key)
+            if current_section == "policy" and key == "products":
+                if not valid_products_value(value):
+                    errors.append(f"{path}: malformed YAML line {number}: unsupported products value")
+                elif not value.strip() or value.strip().startswith("#"):
+                    current_nested = key
+            elif current_section == "policy" and key == "allow_implicit_invocation":
+                if not re.fullmatch(r"(?:true|false)(?:\s+#.*)?", value.strip()):
+                    errors.append(f"{path}: malformed YAML line {number}: unsupported boolean value")
+            elif not supported_yaml_scalar(value):
+                errors.append(f"{path}: malformed YAML line {number}: unsupported scalar value")
+            continue
+        if indent == 4:
+            if current_section != "policy" or current_nested != "products":
+                errors.append(f"{path}: malformed YAML line {number}: unexpected nested value")
+                continue
+            match = re.fullmatch(r"-\s+(.+)", stripped)
+            if not match or not supported_yaml_scalar(match.group(1)):
+                errors.append(f"{path}: malformed YAML line {number}: invalid products list item")
             continue
         if current_section is None:
             errors.append(f"{path}: malformed YAML line {number}: indented value has no parent mapping")
-            continue
-        if stripped.startswith("-"):
-            if current_section != "policy" or current_nested != "products":
-                errors.append(f"{path}: malformed YAML line {number}: unexpected list item")
-            continue
-        match = re.match(r"^[A-Za-z_][A-Za-z0-9_-]*:", stripped)
-        if not match:
-            errors.append(f"{path}: malformed YAML line {number}: expected key/value mapping")
-            continue
-        current_nested = match.group(0)[:-1]
+        else:
+            errors.append(f"{path}: malformed YAML line {number}: invalid indentation")
 
 
 def graph_sha256(graph: dict) -> str:
@@ -190,10 +286,25 @@ def validate_routing_matrix(graph: dict, path: Path, errors):
         "| Type | From | To | When | Max reentries |",
         "| --- | --- | --- | --- | --- |",
     ]
-    for edge in graph.get("edges", []):
+    edges = graph.get("edges", [])
+    if not isinstance(edges, list):
+        errors.append("router skill graph edges must be an array")
+        return
+    for index, edge in enumerate(edges):
         if not isinstance(edge, dict):
+            errors.append(f"router skill graph edge {index} must be an object")
             continue
+        malformed = False
+        for key in ("type", "from", "to", "when"):
+            if not isinstance(edge.get(key), str) or not edge[key].strip():
+                errors.append(f"router skill graph edge {index} {key} must be a non-empty string")
+                malformed = True
         limit = edge.get("max_reentries", "")
+        if limit != "" and (not isinstance(limit, int) or isinstance(limit, bool)):
+            errors.append(f"router skill graph edge {index} max_reentries must be an integer")
+            malformed = True
+        if malformed:
+            continue
         expected_lines.append(
             f"| {edge.get('type', '')} | `{edge.get('from', '')}` | `{edge.get('to', '')}` | "
             f"`{edge.get('when', '')}` | {limit} |"

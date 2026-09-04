@@ -98,8 +98,32 @@ assert errors_for("  products: [CHAT, CODEX]\n") == []
 assert errors_for("  products:\n    - CHAT\n") == []
 assert any("CHAT and/or CODEX" in error for error in errors_for("  products: [API]\n"))
 assert any("unknown policy key" in error for error in errors_for("  surprise: true\n"))
-assert any("policy must be a non-empty mapping" in error for error in metadata_errors(PREFIX.replace("policy:\n", "policy: true\n")))
-assert any("malformed YAML line" in error for error in errors_for("  products:\n    this is not a list item\n"))
+assert any(
+    "policy must be a non-empty mapping" in error
+    for error in metadata_errors(PREFIX.replace("policy:\n", "policy: true\n"))
+)
+assert any(
+    "malformed YAML line" in error
+    for error in errors_for("  products:\n    this is not a list item\n")
+)
+assert any("tabs are not valid indentation" in error for error in errors_for(" \tproducts: [CHAT]\n"))
+assert any("invalid indentation" in error for error in errors_for("  products:\n - CHAT\n"))
+assert any(
+    "unknown interface key: policy" in error
+    for error in metadata_errors(PREFIX.replace("policy:\n", "  policy:\n"))
+)
+assert any(
+    "unknown interface key: surprise" in error
+    for error in metadata_errors(PREFIX.replace("  short_description: Test metadata\n", "  short_description: Test metadata\n  surprise: value\n"))
+)
+assert any(
+    "unknown top-level key: surprise" in error
+    for error in metadata_errors(PREFIX + "surprise:\n")
+)
+assert any(
+    "unsupported scalar value" in error
+    for error in metadata_errors(PREFIX.replace("display_name: Test", "display_name: [unterminated"))
+)
 
 with tempfile.TemporaryDirectory() as temp_dir:
     svg_path = Path(temp_dir) / "wrong-root.svg"
@@ -118,6 +142,19 @@ with tempfile.TemporaryDirectory() as temp_dir:
     MODULE.validate_routing_matrix({"edges": []}, matrix, errors)
     assert errors == [f"{matrix}: generated graph route inventory drifted from skill-graph.json"]
 
+for invalid_edges, expected_error in (
+    (None, "router skill graph edges must be an array"),
+    (7, "router skill graph edges must be an array"),
+    ([None], "router skill graph edge 0 must be an object"),
+    ([{"type": "ROUTE"}], "router skill graph edge 0 from must be a non-empty string"),
+):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        matrix = Path(temp_dir) / "routing-matrix.md"
+        matrix.write_text("<!-- BEGIN GENERATED GRAPH ROUTES -->\n<!-- END GENERATED GRAPH ROUTES -->\n", encoding="utf-8")
+        errors = []
+        MODULE.validate_routing_matrix({"edges": invalid_edges}, matrix, errors)
+        assert expected_error in errors
+
 with tempfile.TemporaryDirectory() as temp_dir:
     root = Path(temp_dir)
     make_valid_plugin_root(root)
@@ -125,6 +162,21 @@ with tempfile.TemporaryDirectory() as temp_dir:
     matrix.write_text(matrix.read_text(encoding="utf-8").replace("detect_or_audit_only", "changed_route"), encoding="utf-8")
     errors, _, _ = MODULE.validate(root)
     assert any("routing-matrix.md: generated graph route inventory drifted" in error for error in errors)
+
+for invalid_edges, expected_error in (
+    (None, "router skill graph edges must be an array"),
+    ([None], "router skill graph edge 0 must be an object"),
+):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        root = Path(temp_dir)
+        make_valid_plugin_root(root)
+        graph_path = root / "skills/avoid-ai-writing-router/references/skill-graph.json"
+        graph = json.loads(graph_path.read_text(encoding="utf-8"))
+        graph["edges"] = invalid_edges
+        graph_path.write_text(json.dumps(graph), encoding="utf-8")
+        errors, _, summary = MODULE.validate(root)
+        assert expected_error in errors
+        assert summary["ok"] is False
 
 with tempfile.TemporaryDirectory() as temp_dir:
     svg_path = Path(temp_dir) / "entity-expansion.svg"
