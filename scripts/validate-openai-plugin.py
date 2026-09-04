@@ -2,6 +2,7 @@
 """Validate the public ChatGPT and Codex plugin surface with stdlib only."""
 from __future__ import annotations
 import argparse
+import hashlib
 import json
 from pathlib import Path, PurePosixPath
 import re
@@ -13,6 +14,11 @@ FRONTMATTER = re.compile(r"\A---\s*\n(.*?)\n---\s*\n(.*)\Z", re.S)
 TOP_LEVEL_INCLUDE_FILES = ("OPENAI_PLUGIN.md", "NOTICE.md", "PRIVACY.md", "TERMS.md", "SUPPORT.md", "LICENSE")
 CANONICAL_PROJECT_URL = "https://github.com/conorbronsdon/avoid-ai-writing"
 MAX_SVG_BYTES = 256 * 1024
+YAML_MAPPING = re.compile(r"([A-Za-z_][A-Za-z0-9_-]*):(?:[ 	]+(.*)|$)")
+AGENT_METADATA_KEYS = {
+    "interface": {"display_name", "short_description", "default_prompt"},
+    "policy": {"allow_implicit_invocation", "products"},
+}
 
 def parse_frontmatter(path: Path):
     text = path.read_text(encoding="utf-8")
@@ -56,14 +62,28 @@ def typed_member(mapping, key, expected_type, errors, label):
 
 def validate_agent_metadata(path: Path, errors):
     text = path.read_text(encoding="utf-8")
-    for token in ("interface:", "display_name:", "short_description:", "policy:", "allow_implicit_invocation:"):
-        if token not in text:
-            errors.append(f"{path}: missing {token}")
+    top_keys, nested_keys = validate_yaml_shape(path, text, errors)
+    for key in ("interface", "policy"):
+        if key not in top_keys:
+            errors.append(f"{path}: missing {key}:")
+    for section, keys in (("interface", ("display_name", "short_description")), ("policy", ("allow_implicit_invocation",))):
+        for key in keys:
+            if key not in nested_keys.get(section, set()):
+                errors.append(f"{path}: missing {key}:")
 
     lines = text.splitlines()
-    policy_start = next((i for i, line in enumerate(lines) if re.fullmatch(r"policy:\s*(?:#.*)?", line)), None)
-    if policy_start is None:
+    policy_entry = next(
+        ((i, (match.group(2) or "").split("#", 1)[0].strip())
+         for i, line in enumerate(lines)
+         if (match := YAML_MAPPING.fullmatch(line.rstrip())) and match.group(1) == "policy"),
+        None,
+    )
+    if policy_entry and policy_entry[1]:
+        errors.append(f"{path}: policy must be a non-empty mapping")
         return
+    if policy_entry is None:
+        return
+    policy_start = policy_entry[0]
     block = []
     for line in lines[policy_start + 1:]:
         if line and not line[0].isspace() and not line.lstrip().startswith("#"):
@@ -71,9 +91,10 @@ def validate_agent_metadata(path: Path, errors):
         block.append(line)
     candidates = []
     for i, line in enumerate(block):
-        match = re.match(r"^( +)([A-Za-z_][A-Za-z0-9_-]*):\s*(.*?)\s*$", line)
-        if match:
-            candidates.append((i, len(match.group(1)), match.group(2), match.group(3)))
+        leading = re.match(r"^( +)", line)
+        match = YAML_MAPPING.fullmatch(line[len(leading.group(1)):].rstrip()) if leading else None
+        if leading and match:
+            candidates.append((i, len(leading.group(1)), match.group(1), match.group(2) or ""))
     if not candidates:
         errors.append(f"{path}: policy must be a non-empty mapping")
         return
@@ -108,11 +129,12 @@ def validate_agent_metadata(path: Path, errors):
                 stripped = line.strip()
                 if not stripped or stripped.startswith("#"):
                     continue
-                match = re.fullmatch(r"-\s*([^#]+?)(?:\s+#.*)?", stripped)
-                if not match:
+                match = re.fullmatch(r"-\s+(.+)", stripped)
+                value = parse_supported_yaml_scalar(match.group(1)) if match else None
+                if value is None:
                     malformed = True
                     continue
-                values.append(match.group(1).strip().strip('"').strip("'"))
+                values.append(value)
             if malformed:
                 errors.append(f"{path}: policy.products must be a YAML list")
         else:
@@ -122,6 +144,200 @@ def validate_agent_metadata(path: Path, errors):
         # https://developers.openai.com/plugins/build/skills
         if not values or len(values) != len(set(values)) or not set(values).issubset({"CHAT", "CODEX"}):
             errors.append(f"{path}: policy.products must contain unique CHAT and/or CODEX values")
+
+
+def parse_supported_yaml_scalar(value: str):
+    """Decode the deliberately small scalar subset supported by this validator."""
+    value = value.strip()
+    if not value:
+        return None
+    if value.startswith('"'):
+        escaped = False
+        for index, char in enumerate(value[1:], 1):
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                remainder = value[index + 1:].strip()
+                if remainder and not remainder.startswith("#"):
+                    return None
+                try:
+                    decoded = json.loads(value[:index + 1])
+                    return decoded if isinstance(decoded, str) else None
+                except json.JSONDecodeError:
+                    return None
+        return None
+    if value.startswith("'"):
+        index = 1
+        while index < len(value):
+            if value[index] != "'":
+                index += 1
+                continue
+            if index + 1 < len(value) and value[index + 1] == "'":
+                index += 2
+                continue
+            remainder = value[index + 1:].strip()
+            if remainder and not remainder.startswith("#"):
+                return None
+            return value[1:index].replace("''", "'")
+        return None
+
+    comment = re.search(r"(?:^|\s)#", value)
+    scalar = value[:comment.start()].rstrip() if comment else value
+    if not scalar or any(ord(char) < 32 for char in scalar):
+        return None
+    if scalar[0] in "-?:,[]{}#&*!|>'\"%@`":
+        return None
+    return None if re.search(r":(?:\s|$)|[\[\]{}]", scalar) else scalar
+
+
+def supported_yaml_scalar(value: str) -> bool:
+    """Return whether value uses the scalar subset supported by this validator."""
+    return parse_supported_yaml_scalar(value) is not None
+
+
+def valid_products_value(value: str) -> bool:
+    """Accept an empty block value or the supported inline products sequence."""
+    value = value.strip()
+    if not value or value.startswith("#"):
+        return True
+    return bool(
+        re.fullmatch(
+            r"\[\s*(['\"]?)(?:CHAT|CODEX)\1(?:\s*,\s*(['\"]?)(?:CHAT|CODEX)\2)*\s*\](?:\s+#.*)?",
+            value,
+        )
+    )
+
+
+def validate_yaml_shape(path: Path, text: str, errors):
+    """Reject lines outside the deliberately small openai.yaml schema."""
+    current_section = None
+    current_nested = None
+    top_keys = set()
+    nested_keys = {section: set() for section in AGENT_METADATA_KEYS}
+    for number, raw in enumerate(text.splitlines(), 1):
+        if not raw.strip():
+            continue
+        leading = re.match(r"^[ \t]*", raw).group(0)
+        if "\t" in leading:
+            errors.append(f"{path}: malformed YAML line {number}: tabs are not valid indentation")
+            current_nested = None
+            continue
+        if raw.lstrip().startswith("#"):
+            continue
+        indent = len(leading)
+        stripped = raw.strip()
+        if indent == 0:
+            match = YAML_MAPPING.fullmatch(raw.rstrip())
+            if not match:
+                errors.append(f"{path}: malformed YAML line {number}: expected top-level mapping")
+                current_section = None
+                current_nested = None
+                continue
+            key, value = match.groups()
+            value = value or ""
+            if key in top_keys:
+                errors.append(f"{path}: duplicate top-level key: {key}")
+            top_keys.add(key)
+            if key not in AGENT_METADATA_KEYS:
+                errors.append(f"{path}: unknown top-level key: {key}")
+                current_section = None
+            elif value.strip() and not value.strip().startswith("#"):
+                errors.append(f"{path}: malformed YAML line {number}: {key} must be a mapping")
+                current_section = None
+            else:
+                current_section = key
+            current_nested = None
+            continue
+        if indent == 2:
+            current_nested = None
+            if current_section is None:
+                errors.append(f"{path}: malformed YAML line {number}: indented value has no parent mapping")
+                continue
+            match = YAML_MAPPING.fullmatch(stripped)
+            if not match:
+                errors.append(f"{path}: malformed YAML line {number}: expected key/value mapping")
+                continue
+            key, value = match.groups()
+            value = value or ""
+            if key not in AGENT_METADATA_KEYS[current_section]:
+                errors.append(f"{path}: unknown {current_section} key: {key}")
+                continue
+            if key in nested_keys[current_section]:
+                errors.append(f"{path}: duplicate {current_section} key: {key}")
+            nested_keys[current_section].add(key)
+            if current_section == "policy" and key == "products":
+                if not valid_products_value(value):
+                    errors.append(f"{path}: malformed YAML line {number}: unsupported products value")
+                elif not value.strip() or value.strip().startswith("#"):
+                    current_nested = key
+            elif current_section == "policy" and key == "allow_implicit_invocation":
+                if not re.fullmatch(r"(?:true|false)(?:\s+#.*)?", value.strip()):
+                    errors.append(f"{path}: malformed YAML line {number}: unsupported boolean value")
+            elif not supported_yaml_scalar(value):
+                errors.append(f"{path}: malformed YAML line {number}: unsupported scalar value")
+            continue
+        if indent == 4:
+            if current_section != "policy" or current_nested != "products":
+                errors.append(f"{path}: malformed YAML line {number}: unexpected nested value")
+                continue
+            match = re.fullmatch(r"-\s+(.+)", stripped)
+            if not match or not supported_yaml_scalar(match.group(1)):
+                errors.append(f"{path}: malformed YAML line {number}: invalid products list item")
+            continue
+        if current_section is None:
+            errors.append(f"{path}: malformed YAML line {number}: indented value has no parent mapping")
+        else:
+            errors.append(f"{path}: malformed YAML line {number}: invalid indentation")
+    return top_keys, nested_keys
+
+
+def graph_sha256(graph: dict) -> str:
+    payload = json.dumps(graph, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def validate_routing_matrix(graph: dict, path: Path, errors):
+    """Check the generated route inventory so prose cannot silently drift from the graph."""
+    text = path.read_text(encoding="utf-8")
+    begin = "<!-- BEGIN GENERATED GRAPH ROUTES -->"
+    end = "<!-- END GENERATED GRAPH ROUTES -->"
+    if begin not in text or end not in text:
+        errors.append(f"{path}: missing generated graph route inventory")
+        return
+    generated = text.split(begin, 1)[1].split(end, 1)[0].strip()
+    expected_lines = [
+        f"<!-- skill-graph-sha256: {graph_sha256(graph)} -->",
+        "| Type | From | To | When | Max reentries |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    edges = graph.get("edges", [])
+    if not isinstance(edges, list):
+        errors.append("router skill graph edges must be an array")
+        return
+    for index, edge in enumerate(edges):
+        if not isinstance(edge, dict):
+            errors.append(f"router skill graph edge {index} must be an object")
+            continue
+        malformed = False
+        for key in ("type", "from", "to", "when"):
+            if not isinstance(edge.get(key), str) or not edge[key].strip():
+                errors.append(f"router skill graph edge {index} {key} must be a non-empty string")
+                malformed = True
+        limit = edge.get("max_reentries", "")
+        if limit != "" and (not isinstance(limit, int) or isinstance(limit, bool)):
+            errors.append(f"router skill graph edge {index} max_reentries must be an integer")
+            malformed = True
+        if malformed:
+            continue
+        expected_lines.append(
+            f"| {edge.get('type', '')} | `{edge.get('from', '')}` | `{edge.get('to', '')}` | "
+            f"`{edge.get('when', '')}` | {limit} |"
+        )
+    expected = "\n".join(expected_lines)
+    if generated != expected:
+        errors.append(f"{path}: generated graph route inventory drifted from skill-graph.json")
 
 def check_square_svg(path: Path, errors):
     try:
@@ -137,7 +353,7 @@ def check_square_svg(path: Path, errors):
     except Exception as exc:
         errors.append(f"{path}: invalid SVG: {exc}")
         return
-    if not root.tag.endswith("svg"):
+    if root.tag.split("}")[-1] != "svg":
         errors.append(f"{path}: root element is not svg")
         return
     def number(value):
@@ -288,6 +504,11 @@ def validate(root: Path):
             errors.append("router graph canonical_authority drifted")
         if graph.get("entrypoint") != "avoid-ai-writing-router":
             errors.append("router graph entrypoint drifted")
+    routing_path = skills_root / "avoid-ai-writing-router" / "references" / "routing-matrix.md"
+    if not routing_path.is_file():
+        errors.append("missing router routing matrix")
+    elif isinstance(graph, dict) and graph:
+        validate_routing_matrix(graph, routing_path, errors)
     # The preservation validator imports ./patterns.js for residual checks.
     # Both resources must be present in the public archive so that behavior
     # does not silently degrade after packaging.

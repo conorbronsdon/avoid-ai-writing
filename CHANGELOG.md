@@ -4,9 +4,11 @@ All notable changes to this project are documented here.
 
 ---
 
-## [Unreleased] — 2026-08-29
+## [Unreleased] — 2026-09-04
 
 ### Changed
+
+- **Plugin validation now fails closed on deferred port-integrity gaps.** `agents/openai.yaml` rejects scalar policies and malformed mapping/list lines, SVG assets must have an actual `<svg>` root, and the bundled routing matrix carries a checked graph digest plus generated edge inventory so it cannot silently drift from `skill-graph.json`.
 
 - **README adds a restrained related-work block.** Links to Conor's public
   builds, Chain of Thought, and `repo-audit` now sit after the core product and

@@ -2,6 +2,25 @@
 
 `skill-graph.json` is the machine-readable source of truth. This table explains the same routes for human review. Cross-stage state follows `handoff-contract.md`.
 
+<!-- BEGIN GENERATED GRAPH ROUTES -->
+<!-- skill-graph-sha256: 66a3beb7883a580e56810fab5e8e2fc01147ef8f8ee21fb37d66cbd1c7e2ed0b -->
+| Type | From | To | When | Max reentries |
+| --- | --- | --- | --- | --- |
+| ROUTE | `avoid-ai-writing-router` | `ai-writing-detector` | `detect_or_audit_only` |  |
+| ROUTE | `avoid-ai-writing-router` | `voice-preserving-rewriter` | `rewrite_returned_text` |  |
+| ROUTE | `avoid-ai-writing-router` | `file-edit-in-place` | `mutate_named_file` |  |
+| ROUTE | `avoid-ai-writing-router` | `preservation-verifier` | `compare_before_after` |  |
+| ROUTE | `avoid-ai-writing-router` | `false-positive-reviewer` | `consequential_authorship_interpretation` |  |
+| FEED | `ai-writing-detector` | `voice-preserving-rewriter` | `user_requests_rewrite_after_audit` |  |
+| FEED | `ai-writing-detector` | `file-edit-in-place` | `user_requests_named_file_fix_after_audit` |  |
+| ESCALATE | `ai-writing-detector` | `false-positive-reviewer` | `user_asks_what_flags_prove` |  |
+| VERIFY | `voice-preserving-rewriter` | `preservation-verifier` | `original_and_rewrite_available` |  |
+| VERIFY | `file-edit-in-place` | `preservation-verifier` | `before_snapshot_available` |  |
+| REPAIR | `preservation-verifier` | `voice-preserving-rewriter` | `returned_text_failed_preservation` | 1 |
+| REPAIR | `preservation-verifier` | `file-edit-in-place` | `named_file_failed_preservation` | 1 |
+| RECHECK | `preservation-verifier` | `ai-writing-detector` | `convergence_or_residual_audit_requested` | 1 |
+<!-- END GENERATED GRAPH ROUTES -->
+
 | Intent | Primary owner | Allowed follow-up | Stop condition |
 | --- | --- | --- | --- |
 | detect, scan, audit, score, flag only | `ai-writing-detector` | feed findings into a requested rewrite/edit stage, or escalate interpretation when needed | findings returned |
