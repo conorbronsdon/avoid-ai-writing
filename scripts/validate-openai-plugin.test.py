@@ -41,6 +41,15 @@ def errors_for(policy_tail: str):
         return errors
 
 
+def metadata_errors(text: str):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        path = Path(temp_dir) / "openai.yaml"
+        path.write_text(text, encoding="utf-8")
+        errors = []
+        MODULE.validate_agent_metadata(path, errors)
+        return errors
+
+
 def make_packager_root(root: Path):
     for rel in PACKAGER.INCLUDE_DIRS:
         (root / rel).mkdir()
@@ -89,6 +98,33 @@ assert errors_for("  products: [CHAT, CODEX]\n") == []
 assert errors_for("  products:\n    - CHAT\n") == []
 assert any("CHAT and/or CODEX" in error for error in errors_for("  products: [API]\n"))
 assert any("unknown policy key" in error for error in errors_for("  surprise: true\n"))
+assert any("policy must be a non-empty mapping" in error for error in metadata_errors(PREFIX.replace("policy:\n", "policy: true\n")))
+assert any("malformed YAML line" in error for error in errors_for("  products:\n    this is not a list item\n"))
+
+with tempfile.TemporaryDirectory() as temp_dir:
+    svg_path = Path(temp_dir) / "wrong-root.svg"
+    svg_path.write_text(
+        '<not-svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" />',
+        encoding="utf-8",
+    )
+    errors = []
+    MODULE.check_square_svg(svg_path, errors)
+    assert errors == [f"{svg_path}: root element is not svg"]
+
+with tempfile.TemporaryDirectory() as temp_dir:
+    matrix = Path(temp_dir) / "routing-matrix.md"
+    matrix.write_text("<!-- BEGIN GENERATED GRAPH ROUTES -->\n<!-- END GENERATED GRAPH ROUTES -->\n", encoding="utf-8")
+    errors = []
+    MODULE.validate_routing_matrix({"edges": []}, matrix, errors)
+    assert errors == [f"{matrix}: generated graph route inventory drifted from skill-graph.json"]
+
+with tempfile.TemporaryDirectory() as temp_dir:
+    root = Path(temp_dir)
+    make_valid_plugin_root(root)
+    matrix = root / "skills/avoid-ai-writing-router/references/routing-matrix.md"
+    matrix.write_text(matrix.read_text(encoding="utf-8").replace("detect_or_audit_only", "changed_route"), encoding="utf-8")
+    errors, _, _ = MODULE.validate(root)
+    assert any("routing-matrix.md: generated graph route inventory drifted" in error for error in errors)
 
 with tempfile.TemporaryDirectory() as temp_dir:
     svg_path = Path(temp_dir) / "entity-expansion.svg"

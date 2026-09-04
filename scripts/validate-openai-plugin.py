@@ -2,6 +2,7 @@
 """Validate the public ChatGPT and Codex plugin surface with stdlib only."""
 from __future__ import annotations
 import argparse
+import hashlib
 import json
 from pathlib import Path, PurePosixPath
 import re
@@ -56,12 +57,17 @@ def typed_member(mapping, key, expected_type, errors, label):
 
 def validate_agent_metadata(path: Path, errors):
     text = path.read_text(encoding="utf-8")
+    validate_yaml_shape(path, text, errors)
     for token in ("interface:", "display_name:", "short_description:", "policy:", "allow_implicit_invocation:"):
         if token not in text:
             errors.append(f"{path}: missing {token}")
 
     lines = text.splitlines()
+    policy_match = next((re.match(r"policy:\s*(.*?)(?:\s+#.*)?$", line) for line in lines if re.match(r"policy:\s*", line)), None)
     policy_start = next((i for i, line in enumerate(lines) if re.fullmatch(r"policy:\s*(?:#.*)?", line)), None)
+    if policy_match and policy_match.group(1).strip():
+        errors.append(f"{path}: policy must be a non-empty mapping")
+        return
     if policy_start is None:
         return
     block = []
@@ -123,6 +129,79 @@ def validate_agent_metadata(path: Path, errors):
         if not values or len(values) != len(set(values)) or not set(values).issubset({"CHAT", "CODEX"}):
             errors.append(f"{path}: policy.products must contain unique CHAT and/or CODEX values")
 
+
+def validate_yaml_shape(path: Path, text: str, errors):
+    """Reject lines that cannot belong to the deliberately small openai.yaml schema."""
+    current_section = None
+    current_nested = None
+    top_keys = set()
+    for number, raw in enumerate(text.splitlines(), 1):
+        if not raw.strip() or raw.lstrip().startswith("#"):
+            continue
+        indent = len(raw) - len(raw.lstrip(" "))
+        stripped = raw.strip()
+        if "\t" in raw[:indent]:
+            errors.append(f"{path}: malformed YAML line {number}: tabs are not valid indentation")
+            continue
+        if indent == 0:
+            match = re.match(r"^([A-Za-z_][A-Za-z0-9_-]*):(?:\s|$)", raw)
+            if not match:
+                errors.append(f"{path}: malformed YAML line {number}: expected key/value mapping")
+                current_section = None
+                current_nested = None
+                continue
+            key = match.group(1)
+            if key in top_keys:
+                errors.append(f"{path}: duplicate top-level key: {key}")
+            top_keys.add(key)
+            current_section = key
+            current_nested = None
+            continue
+        if current_section is None:
+            errors.append(f"{path}: malformed YAML line {number}: indented value has no parent mapping")
+            continue
+        if stripped.startswith("-"):
+            if current_section != "policy" or current_nested != "products":
+                errors.append(f"{path}: malformed YAML line {number}: unexpected list item")
+            continue
+        match = re.match(r"^[A-Za-z_][A-Za-z0-9_-]*:", stripped)
+        if not match:
+            errors.append(f"{path}: malformed YAML line {number}: expected key/value mapping")
+            continue
+        current_nested = match.group(0)[:-1]
+
+
+def graph_sha256(graph: dict) -> str:
+    payload = json.dumps(graph, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def validate_routing_matrix(graph: dict, path: Path, errors):
+    """Check the generated route inventory so prose cannot silently drift from the graph."""
+    text = path.read_text(encoding="utf-8")
+    begin = "<!-- BEGIN GENERATED GRAPH ROUTES -->"
+    end = "<!-- END GENERATED GRAPH ROUTES -->"
+    if begin not in text or end not in text:
+        errors.append(f"{path}: missing generated graph route inventory")
+        return
+    generated = text.split(begin, 1)[1].split(end, 1)[0].strip()
+    expected_lines = [
+        f"<!-- skill-graph-sha256: {graph_sha256(graph)} -->",
+        "| Type | From | To | When | Max reentries |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    for edge in graph.get("edges", []):
+        if not isinstance(edge, dict):
+            continue
+        limit = edge.get("max_reentries", "")
+        expected_lines.append(
+            f"| {edge.get('type', '')} | `{edge.get('from', '')}` | `{edge.get('to', '')}` | "
+            f"`{edge.get('when', '')}` | {limit} |"
+        )
+    expected = "\n".join(expected_lines)
+    if generated != expected:
+        errors.append(f"{path}: generated graph route inventory drifted from skill-graph.json")
+
 def check_square_svg(path: Path, errors):
     try:
         if path.stat().st_size > MAX_SVG_BYTES:
@@ -137,7 +216,7 @@ def check_square_svg(path: Path, errors):
     except Exception as exc:
         errors.append(f"{path}: invalid SVG: {exc}")
         return
-    if not root.tag.endswith("svg"):
+    if root.tag.split("}")[-1] != "svg":
         errors.append(f"{path}: root element is not svg")
         return
     def number(value):
@@ -288,6 +367,11 @@ def validate(root: Path):
             errors.append("router graph canonical_authority drifted")
         if graph.get("entrypoint") != "avoid-ai-writing-router":
             errors.append("router graph entrypoint drifted")
+    routing_path = skills_root / "avoid-ai-writing-router" / "references" / "routing-matrix.md"
+    if not routing_path.is_file():
+        errors.append("missing router routing matrix")
+    elif isinstance(graph, dict) and graph:
+        validate_routing_matrix(graph, routing_path, errors)
     # The preservation validator imports ./patterns.js for residual checks.
     # Both resources must be present in the public archive so that behavior
     # does not silently degrade after packaging.
