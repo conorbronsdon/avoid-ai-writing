@@ -129,11 +129,12 @@ def validate_agent_metadata(path: Path, errors):
                 stripped = line.strip()
                 if not stripped or stripped.startswith("#"):
                     continue
-                match = re.fullmatch(r"-\s*([^#]+?)(?:\s+#.*)?", stripped)
-                if not match:
+                match = re.fullmatch(r"-\s+(.+)", stripped)
+                value = parse_supported_yaml_scalar(match.group(1)) if match else None
+                if value is None:
                     malformed = True
                     continue
-                values.append(match.group(1).strip().strip('"').strip("'"))
+                values.append(value)
             if malformed:
                 errors.append(f"{path}: policy.products must be a YAML list")
         else:
@@ -145,11 +146,11 @@ def validate_agent_metadata(path: Path, errors):
             errors.append(f"{path}: policy.products must contain unique CHAT and/or CODEX values")
 
 
-def supported_yaml_scalar(value: str) -> bool:
-    """Return whether value uses the scalar subset supported by this validator."""
+def parse_supported_yaml_scalar(value: str):
+    """Decode the deliberately small scalar subset supported by this validator."""
     value = value.strip()
     if not value:
-        return False
+        return None
     if value.startswith('"'):
         escaped = False
         for index, char in enumerate(value[1:], 1):
@@ -160,12 +161,13 @@ def supported_yaml_scalar(value: str) -> bool:
             elif char == '"':
                 remainder = value[index + 1:].strip()
                 if remainder and not remainder.startswith("#"):
-                    return False
+                    return None
                 try:
-                    return isinstance(json.loads(value[:index + 1]), str)
+                    decoded = json.loads(value[:index + 1])
+                    return decoded if isinstance(decoded, str) else None
                 except json.JSONDecodeError:
-                    return False
-        return False
+                    return None
+        return None
     if value.startswith("'"):
         index = 1
         while index < len(value):
@@ -176,16 +178,23 @@ def supported_yaml_scalar(value: str) -> bool:
                 index += 2
                 continue
             remainder = value[index + 1:].strip()
-            return not remainder or remainder.startswith("#")
-        return False
+            if remainder and not remainder.startswith("#"):
+                return None
+            return value[1:index].replace("''", "'")
+        return None
 
     comment = re.search(r"(?:^|\s)#", value)
     scalar = value[:comment.start()].rstrip() if comment else value
     if not scalar or any(ord(char) < 32 for char in scalar):
-        return False
+        return None
     if scalar[0] in "-?:,[]{}#&*!|>'\"%@`":
-        return False
-    return not re.search(r":(?:\s|$)|[\[\]{}]", scalar)
+        return None
+    return None if re.search(r":(?:\s|$)|[\[\]{}]", scalar) else scalar
+
+
+def supported_yaml_scalar(value: str) -> bool:
+    """Return whether value uses the scalar subset supported by this validator."""
+    return parse_supported_yaml_scalar(value) is not None
 
 
 def valid_products_value(value: str) -> bool:

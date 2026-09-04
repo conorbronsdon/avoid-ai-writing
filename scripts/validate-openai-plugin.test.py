@@ -98,6 +98,11 @@ assert errors_for("  products: [CHAT, CODEX]\n") == []
 assert errors_for('  products: ["CHAT", "CODEX"]\n') == []
 assert errors_for("  products: ['CHAT', 'CODEX']\n") == []
 assert errors_for("  products:\n    - CHAT\n") == []
+assert errors_for('  products:\n    - "CHAT" # comment\n') == []
+assert any(
+    "CHAT and/or CODEX" in error
+    for error in errors_for('  products:\n    - "CHAT # comment"\n')
+)
 assert any("CHAT and/or CODEX" in error for error in errors_for("  products: [API]\n"))
 assert any("unknown policy key" in error for error in errors_for("  surprise: true\n"))
 assert any(
