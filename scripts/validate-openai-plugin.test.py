@@ -124,6 +124,18 @@ assert any(
     "unsupported scalar value" in error
     for error in metadata_errors(PREFIX.replace("display_name: Test", "display_name: [unterminated"))
 )
+assert any("expected top-level mapping" in error or "expected key/value mapping" in error for error in errors_for("  products:[CHAT]" + chr(92) + "n"))
+commented_key_errors = metadata_errors(PREFIX.replace("  short_description: Test metadata", "  # short_description: missing"))
+assert any("missing short_description:" in error for error in commented_key_errors)
+quoted_tokens_errors = metadata_errors(
+    """interface:
+  display_name: Test
+  short_description: Test metadata
+  default_prompt: \"policy: allow_implicit_invocation:\"
+"""
+)
+assert any("missing policy:" in error for error in quoted_tokens_errors)
+assert any("missing allow_implicit_invocation:" in error for error in quoted_tokens_errors)
 
 with tempfile.TemporaryDirectory() as temp_dir:
     svg_path = Path(temp_dir) / "wrong-root.svg"

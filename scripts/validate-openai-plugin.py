@@ -14,6 +14,7 @@ FRONTMATTER = re.compile(r"\A---\s*\n(.*?)\n---\s*\n(.*)\Z", re.S)
 TOP_LEVEL_INCLUDE_FILES = ("OPENAI_PLUGIN.md", "NOTICE.md", "PRIVACY.md", "TERMS.md", "SUPPORT.md", "LICENSE")
 CANONICAL_PROJECT_URL = "https://github.com/conorbronsdon/avoid-ai-writing"
 MAX_SVG_BYTES = 256 * 1024
+YAML_MAPPING = re.compile(r"([A-Za-z_][A-Za-z0-9_-]*):(?:[ 	]+(.*)|$)")
 AGENT_METADATA_KEYS = {
     "interface": {"display_name", "short_description", "default_prompt"},
     "policy": {"allow_implicit_invocation", "products"},
@@ -61,19 +62,28 @@ def typed_member(mapping, key, expected_type, errors, label):
 
 def validate_agent_metadata(path: Path, errors):
     text = path.read_text(encoding="utf-8")
-    validate_yaml_shape(path, text, errors)
-    for token in ("interface:", "display_name:", "short_description:", "policy:", "allow_implicit_invocation:"):
-        if token not in text:
-            errors.append(f"{path}: missing {token}")
+    top_keys, nested_keys = validate_yaml_shape(path, text, errors)
+    for key in ("interface", "policy"):
+        if key not in top_keys:
+            errors.append(f"{path}: missing {key}:")
+    for section, keys in (("interface", ("display_name", "short_description")), ("policy", ("allow_implicit_invocation",))):
+        for key in keys:
+            if key not in nested_keys.get(section, set()):
+                errors.append(f"{path}: missing {key}:")
 
     lines = text.splitlines()
-    policy_match = next((re.match(r"policy:\s*(.*?)(?:\s+#.*)?$", line) for line in lines if re.match(r"policy:\s*", line)), None)
-    policy_start = next((i for i, line in enumerate(lines) if re.fullmatch(r"policy:\s*(?:#.*)?", line)), None)
-    if policy_match and policy_match.group(1).strip():
+    policy_entry = next(
+        ((i, (match.group(2) or "").split("#", 1)[0].strip())
+         for i, line in enumerate(lines)
+         if (match := YAML_MAPPING.fullmatch(line.rstrip())) and match.group(1) == "policy"),
+        None,
+    )
+    if policy_entry and policy_entry[1]:
         errors.append(f"{path}: policy must be a non-empty mapping")
         return
-    if policy_start is None:
+    if policy_entry is None:
         return
+    policy_start = policy_entry[0]
     block = []
     for line in lines[policy_start + 1:]:
         if line and not line[0].isspace() and not line.lstrip().startswith("#"):
@@ -81,9 +91,10 @@ def validate_agent_metadata(path: Path, errors):
         block.append(line)
     candidates = []
     for i, line in enumerate(block):
-        match = re.match(r"^( +)([A-Za-z_][A-Za-z0-9_-]*):\s*(.*?)\s*$", line)
-        if match:
-            candidates.append((i, len(match.group(1)), match.group(2), match.group(3)))
+        leading = re.match(r"^( +)", line)
+        match = YAML_MAPPING.fullmatch(line[len(leading.group(1)):].rstrip()) if leading else None
+        if leading and match:
+            candidates.append((i, len(leading.group(1)), match.group(1), match.group(2) or ""))
     if not candidates:
         errors.append(f"{path}: policy must be a non-empty mapping")
         return
@@ -209,7 +220,7 @@ def validate_yaml_shape(path: Path, text: str, errors):
         indent = len(leading)
         stripped = raw.strip()
         if indent == 0:
-            match = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_-]*):\s*(?:#.*)?", raw)
+            match = YAML_MAPPING.fullmatch(raw.rstrip())
             if not match:
                 errors.append(f"{path}: malformed YAML line {number}: expected top-level mapping")
                 current_section = None
@@ -231,11 +242,12 @@ def validate_yaml_shape(path: Path, text: str, errors):
             if current_section is None:
                 errors.append(f"{path}: malformed YAML line {number}: indented value has no parent mapping")
                 continue
-            match = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_-]*):\s*(.*)", stripped)
+            match = YAML_MAPPING.fullmatch(stripped)
             if not match:
                 errors.append(f"{path}: malformed YAML line {number}: expected key/value mapping")
                 continue
             key, value = match.groups()
+            value = value or ""
             if key not in AGENT_METADATA_KEYS[current_section]:
                 errors.append(f"{path}: unknown {current_section} key: {key}")
                 continue
@@ -265,6 +277,7 @@ def validate_yaml_shape(path: Path, text: str, errors):
             errors.append(f"{path}: malformed YAML line {number}: indented value has no parent mapping")
         else:
             errors.append(f"{path}: malformed YAML line {number}: invalid indentation")
+    return top_keys, nested_keys
 
 
 def graph_sha256(graph: dict) -> str:
