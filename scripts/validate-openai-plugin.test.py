@@ -95,6 +95,8 @@ def validation_errors_for(*, manifest=None, tests=None, listing=None, pack=None)
 
 
 assert errors_for("  products: [CHAT, CODEX]\n") == []
+assert errors_for('  products: ["CHAT", "CODEX"]\n') == []
+assert errors_for("  products: ['CHAT', 'CODEX']\n") == []
 assert errors_for("  products:\n    - CHAT\n") == []
 assert any("CHAT and/or CODEX" in error for error in errors_for("  products: [API]\n"))
 assert any("unknown policy key" in error for error in errors_for("  surprise: true\n"))

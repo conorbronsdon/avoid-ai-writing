@@ -195,7 +195,7 @@ def valid_products_value(value: str) -> bool:
         return True
     return bool(
         re.fullmatch(
-            r"\[\s*(?:CHAT|CODEX)(?:\s*,\s*(?:CHAT|CODEX))*\s*\](?:\s+#.*)?",
+            r"\[\s*(['\"]?)(?:CHAT|CODEX)\1(?:\s*,\s*(['\"]?)(?:CHAT|CODEX)\2)*\s*\](?:\s+#.*)?",
             value,
         )
     )
