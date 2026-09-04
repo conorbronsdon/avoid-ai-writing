@@ -226,12 +226,16 @@ def validate_yaml_shape(path: Path, text: str, errors):
                 current_section = None
                 current_nested = None
                 continue
-            key = match.group(1)
+            key, value = match.groups()
+            value = value or ""
             if key in top_keys:
                 errors.append(f"{path}: duplicate top-level key: {key}")
             top_keys.add(key)
             if key not in AGENT_METADATA_KEYS:
                 errors.append(f"{path}: unknown top-level key: {key}")
+                current_section = None
+            elif value.strip() and not value.strip().startswith("#"):
+                errors.append(f"{path}: malformed YAML line {number}: {key} must be a mapping")
                 current_section = None
             else:
                 current_section = key

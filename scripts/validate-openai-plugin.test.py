@@ -124,7 +124,17 @@ assert any(
     "unsupported scalar value" in error
     for error in metadata_errors(PREFIX.replace("display_name: Test", "display_name: [unterminated"))
 )
-assert any("expected top-level mapping" in error or "expected key/value mapping" in error for error in errors_for("  products:[CHAT]" + chr(92) + "n"))
+assert any("expected top-level mapping" in error or "expected key/value mapping" in error for error in errors_for("  products:[CHAT]\n"))
+scalar_interface_errors = metadata_errors(
+    """interface: true
+  display_name: Test
+  short_description: Test metadata
+policy:
+  allow_implicit_invocation: true
+  products: [CHAT]
+"""
+)
+assert any("interface must be a mapping" in error for error in scalar_interface_errors)
 commented_key_errors = metadata_errors(PREFIX.replace("  short_description: Test metadata", "  # short_description: missing"))
 assert any("missing short_description:" in error for error in commented_key_errors)
 quoted_tokens_errors = metadata_errors(
