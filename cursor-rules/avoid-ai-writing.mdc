@@ -158,7 +158,7 @@ Caveat worth keeping visible: the "appears far more often in AI text" claim behi
 
 **Hyphen required:** unhyphenated "load bearing" is ordinary English ("the load bearing down on the bridge") — only the hyphenated compound is the tell.
 
-**Construction carve-out:** `load-bearing` before a literal structural noun (`wall`, `beam`, `column`, `joist`, `truss`, `member`, `footing`, `slab`, `stud`, `partition`, `masonry`, `lintel`, `pier`, `rafter`, `girder`, `capacity`), optionally with one material or position adjective in between (`load-bearing structural wall`), is standard building terminology — don't flag. Abstract-capable nouns (`structure`, `element`, `frame`, `foundation`) are excluded on purpose, so "the load-bearing structure of his argument" still flags. Known gap: predicative use ("the wall is load-bearing") still flags — see issue #56.
+**Abstract-noun boundary:** Flag hyphenated `load-bearing` only when it immediately modifies `assumption`, `claim`, `invariant`, `premise`, `constraint`, `dependency`, `argument`, or `abstraction` (including plurals). Preserve literal building terminology, unlisted nouns, intervening modifiers, and predicative uses such as "the wall in the kitchen is load-bearing" or "that claim is load-bearing." Mixed physical/abstract nouns (`structure`, `element`, `frame`, `foundation`, `test`, `detail`) also pass. This deliberately misses some metaphors to avoid flagging ordinary writing; see issue #56.
 
 ##### Tier 1B — Clarity edits
 
