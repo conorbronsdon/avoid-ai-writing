@@ -443,9 +443,10 @@ entirely and put your guide in your agent's context alongside a
 [voice profile](#triggering-the-skill), as instructions rather than as a checked
 rule set.
 
-After a rewrite, `node scripts/normalize-quotes.js draft.md --quotes curly` prints
-the document with consistent prose marks; add `--write` to save it, or choose
-`straight`. It shares the checker's Markdown protection. See the
+After a rewrite, `node scripts/normalize-quotes.js draft.md --reference original.md`
+prints prose marks normalized to the original document's convention; add `--write`
+to save it. Explicit `--quotes straight|curly` overrides inference. It shares the
+checker's Markdown protection. See the
 [usage and limits](./examples/README.md#normalize-quote-marks-after-a-rewrite).
 
 If you want Google, Microsoft, Red Hat, or Salesforce style checked in CI,

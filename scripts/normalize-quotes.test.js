@@ -6,7 +6,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { normalize } = require('./normalize-quotes.js');
+const { normalize, inferQuotes } = require('./normalize-quotes.js');
 const { check } = require('./check-style.js');
 
 let passed = 0;
@@ -16,7 +16,26 @@ const curly = (s) => normalize(s, 'curly');
 t('explicit targets normalize quotes, contractions and possessives', () => {
   assert.strictEqual(curly('She said "you\'ve got the users\' data."'), 'She said “you’ve got the users’ data.”');
   assert.strictEqual(normalize('“You’ve got ‘it’.”', 'straight'), '"You\'ve got \'it\'."');
-  for (const q of [undefined, null, '', 'auto']) assert.throws(() => normalize('plain', q), /quotes must/);
+  for (const q of [null, '', 'invalid']) assert.throws(() => normalize('plain', q), /quotes must/);
+});
+t('auto infers double and single marks independently from original prose', () => {
+  const original = '“Hello.” “Welcome.” It\'s the users\' choice. `"code"`';
+  assert.deepStrictEqual(inferQuotes(original), { double: 'curly', single: 'straight' });
+  assert.strictEqual(normalize('"New." It’s done.', 'auto', original), '“New.” It\'s done.');
+  assert.strictEqual(normalize('“New.” It’s done.', 'auto', '"Old." It\'s done.'), '"New." It\'s done.');
+  assert.strictEqual(normalize('“Old.” “More.” "New."'), '“Old.” “More.” “New.”');
+});
+t('auto ties use first style and missing evidence preserves that mark family', () => {
+  assert.deepStrictEqual(inferQuotes('"First" “second”'), { double: 'straight', single: null });
+  assert.deepStrictEqual(inferQuotes('“First” "second"'), { double: 'curly', single: null });
+  const draft = '"New" isn’t old.';
+  assert.strictEqual(normalize(draft, 'auto', 'No marks. 5\'11" `"code"`'), draft);
+  assert.strictEqual(normalize(draft, 'auto', '“Original.”'), '“New” isn’t old.');
+});
+t('auto ignores protected syntax in the reference document', () => {
+  const reference = '---\ntitle: "raw"\n---\n[Docs](url "raw") `"raw"`\n\n“Live.”';
+  assert.deepStrictEqual(inferQuotes(reference), { double: 'curly', single: null });
+  assert.strictEqual(normalize('"New" [Docs](url "raw")', 'auto', reference), '“New” [Docs](url "raw")');
 });
 t('nested quotes and interrupted dialogue get their direction', () => {
   assert.strictEqual(curly('She said, "\'Stop,\' he began."'), 'She said, “‘Stop,’ he began.”');
@@ -53,6 +72,8 @@ const protectedCases = [
   ['link destination and title', '[docs](https://x/Foo_(bar) "Raw ‘title’")\n'],
   ['escaped destination and title delimiters', '[docs](a\\)b "Raw \\"title\\" (text)")\n'],
   ['wrapped link title', '[docs](https://x\n  "Raw ‘title’")\n'],
+  ['angle destination and parenthesized title', '[docs](<a b> (Raw ‘title’))\n'],
+  ['nested destination and multiline title', '[docs](a(b(c)) "Raw\n‘title’")\n'],
   ['reference definition and wrapped title', '[ref]: https://x\n  "Raw ‘title’"\n'],
   ['reference identifiers', '[O\'Reilly]\n\n[O\'Reilly]: https://x "Raw ‘title’"\n'],
   ['full and collapsed reference identifiers', '[Read][O\'Reilly] [O\'Reilly][]\n\n[O\'Reilly]: https://x\n'],
@@ -72,6 +93,31 @@ for (const [name, source] of protectedCases) {
 t('unclosed fences remain protected through EOF', () => {
   const source = '"live"\n```\n"raw"';
   assert.strictEqual(curly(source), '“live”\n```\n"raw"');
+});
+t('malformed links cannot hide prose across a single newline or spaces', () => {
+  for (const gap of ['\n', '\r\n', ' ']) {
+    const source = '[x](url' + gap + 'This is "actual prose")';
+    assert.strictEqual(curly(source), source.replace('"actual prose"', '“actual prose”'));
+    assert.strictEqual(normalize(source.replace('"actual prose"', '“actual prose”'), 'straight'), source);
+  }
+  assert.strictEqual(curly('[x](<url\nThis is "prose">)'), '[x](<url\nThis is “prose”>)');
+  assert.strictEqual(curly('[x](url "title" extra "prose")'), '[x](url “title” extra “prose”)');
+  assert.strictEqual(curly('[x](url "title\n\nactual prose")'), '[x](url “title\n\nactual prose”)');
+});
+t('a failed outer candidate does not hide a valid later link', () => {
+  assert.strictEqual(curly('[x](broken [y](url "Title") "live"'), '[x](broken [y](url "Title") “live”');
+});
+t('many unmatched link openers finish within a bounded child process', () => {
+  const result = spawnSync(process.execPath, ['-e', `
+    const assert = require('assert');
+    const { normalize } = require(${JSON.stringify(path.join(__dirname, 'normalize-quotes.js'))});
+    for (const token of ['](', '[x](', '](a(']) {
+      const prefix = token.repeat(50000);
+      assert.strictEqual(normalize(prefix + ' "live"', 'curly'), prefix + ' “live”');
+    }
+  `], { encoding: 'utf8', timeout: 10000 });
+  assert.ifError(result.error);
+  assert.strictEqual(result.status, 0, result.stderr);
 });
 t('thematic breaks and unclosed frontmatter leave prose live', () => {
   assert.strictEqual(curly('---\n\n"live"\n\n---'), '---\n\n“live”\n\n---');
@@ -123,7 +169,10 @@ t('CLI stdout is exact and read-only; --write updates only the requested file', 
 }));
 t('CLI rejects invalid/missing options, extra files and I/O errors with exit 2', () => withCLI((dir, cli) => {
   fs.writeFileSync(path.join(dir, 'a.md'), '"unchanged"');
-  for (const args of [[], ['a.md'], ['a.md', '--quotes'], ['a.md', '--quotes', 'auto'],
+  for (const args of [[], ['a.md', '--quotes'], ['a.md', '--quotes', 'invalid'],
+    ['a.md', '--reference'], ['a.md', '--reference', '--write'],
+    ['a.md', '--reference', 'missing.md'], ['a.md', '--reference', 'a.md', '--quotes', 'curly'],
+    ['a.md', '--reference', 'a.md', '--reference', 'a.md'],
     ['a.md', '--quotes', 'curly', '--bogus'], ['a.md', 'b.md', '--quotes', 'curly'],
     ['a.md', '--quotes', 'curly', '--quotes', 'straight'], ['missing.md', '--quotes', 'curly'],
     ['.', '--quotes', 'curly', '--write']]) {
@@ -133,6 +182,22 @@ t('CLI rejects invalid/missing options, extra files and I/O errors with exit 2',
     assert.strictEqual(r.stdout, '');
   }
   assert.strictEqual(fs.readFileSync(path.join(dir, 'a.md'), 'utf8'), '"unchanged"');
+}));
+
+t('CLI defaults to auto and uses the original reference for preview and write', () => withCLI((dir, cli) => {
+  const original = '“Old.” It\'s done.';
+  const draft = '"New." It’s done.';
+  fs.writeFileSync(path.join(dir, 'original.md'), original);
+  fs.writeFileSync(path.join(dir, 'draft.md'), draft);
+  const preview = cli('draft.md', '--reference', 'original.md');
+  assert.strictEqual(preview.status, 0, preview.stderr);
+  assert.strictEqual(preview.stdout, '“New.” It\'s done.');
+  assert.strictEqual(fs.readFileSync(path.join(dir, 'draft.md'), 'utf8'), draft);
+  const write = cli('draft.md', '--quotes', 'auto', '--reference', 'original.md', '--write');
+  assert.strictEqual(write.status, 0, write.stderr);
+  assert.strictEqual(fs.readFileSync(path.join(dir, 'draft.md'), 'utf8'), preview.stdout);
+  assert.strictEqual(fs.readFileSync(path.join(dir, 'original.md'), 'utf8'), original);
+  assert.strictEqual(cli('draft.md').stdout, preview.stdout);
 }));
 
 console.log(`\nnormalize-quotes: ${passed} passed.`);

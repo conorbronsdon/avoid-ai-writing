@@ -3,7 +3,7 @@
     "repository": "conorbronsdon/avoid-ai-writing",
     "baseRef": "main",
     "baseCommit": "d8c235186ff764ac20a0464ca8b1a13993ea37e4",
-    "canonicalSkillVersion": "3.31.0"
+    "canonicalSkillVersion": "3.32.0"
   },
   "architecture": "skills-only",
   "publicSkills": ["avoid-ai-writing","avoid-ai-writing-router","ai-writing-detector","voice-preserving-rewriter","file-edit-in-place","preservation-verifier","false-positive-reviewer"],

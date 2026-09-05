@@ -6,6 +6,61 @@ const REF_DEF = new RegExp(`^ {0,3}\\[((?:\\\\.|[^\\]\\n])+)\\]:[ \\t]*(?:\\r?\\
 const TAG = /<\/?[a-zA-Z][a-zA-Z0-9-]*(?:\s+[a-zA-Z_:][\w:.-]*(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>`]+))?)*\s*\/?>/g;
 const labelKey = (s) => s.replace(/\\([!"#$%&'()*+,\-./:;<=>?@[\]^_`{|}~\\])/g, '$1').trim().replace(/\s+/g, ' ').toLowerCase();
 
+// Precompute suffix boundaries so even failed, nested candidates take O(1) each.
+// A bare destination has balanced parentheses and no whitespace. Whitespace may
+// separate it from a title, but cannot turn arbitrary following prose into a title.
+function inlineLinkEnds(s) {
+  const n = s.length;
+  const escaped = new Uint8Array(n);
+  for (let i = 0; i < n; i += 1) {
+    if (s[i] === '\\' && /[!"#$%&'()*+,\-./:;<=>?@[\]^_`{|}~\\]/.test(s[i + 1] || '')) {
+      escaped[++i] = 1;
+    }
+  }
+  const bare = new Int32Array(n + 1), space = new Int32Array(n + 1);
+  const lines = new Int32Array(n + 1);
+  const delimiters = ['"', "'", ')', '>'];
+  const closing = Object.fromEntries(delimiters.map((d) => [d, new Int32Array(n + 1).fill(-1)]));
+  bare[n] = space[n] = n;
+  for (let i = n - 1; i >= 0; i -= 1) {
+    const ch = s[i];
+    const ws = /[ \t\r\n]/.test(ch);
+    space[i] = ws ? space[i + 1] : i;
+    lines[i] = ws ? lines[i + 1] + (ch === '\n' ? 1 : 0) : 0;
+    for (const d of delimiters) {
+      const blocked = ch === '\0' || (ch === '\n' && lines[i] > 1)
+        || (d === '>' && /[<>\r\n]/.test(ch) && ch !== '>')
+        || (d === ')' && ch === '(' && !escaped[i]);
+      closing[d][i] = blocked ? -1 : ch === d && !escaped[i] ? i : closing[d][i + 1];
+    }
+    if (ch === '\\' && escaped[i + 1]) bare[i] = bare[i + 2];
+    else if (ch === '(' && !escaped[i]) {
+      const end = bare[i + 1];
+      bare[i] = s[end] === ')' && !escaped[end] ? bare[end + 1] : i;
+    } else bare[i] = /[\s\x00-\x1f<>]/.test(ch) || (ch === ')' && !escaped[i]) ? i : bare[i + 1];
+  }
+  const skipSpace = (i) => lines[i] > 1 ? -1 : space[i];
+  return (start) => {
+    let k = skipSpace(start);
+    if (k < 0) return -1;
+    if (s[k] === '<') {
+      const end = closing['>'][k + 1];
+      if (end < 0) return -1;
+      k = end + 1;
+    } else k = bare[k];
+    if (s[k] === ')') return k;
+    const end = skipSpace(k);
+    if (end < 0 || end === k) return -1;
+    if (s[end] === ')') return end;
+    const delimiter = s[end] === '(' ? ')' : s[end];
+    if (delimiter !== '"' && delimiter !== "'" && s[end] !== '(') return -1;
+    const titleEnd = closing[delimiter][end + 1];
+    if (titleEnd < 0) return -1;
+    k = skipSpace(titleEnd + 1);
+    return k >= 0 && s[k] === ')' ? k : -1;
+  };
+}
+
 /**
  * Return an offset-stable mask and the checker's prose lines / paragraph breaks.
  * A protected character becomes NUL; newlines remain in place. Consumers can remove
@@ -125,21 +180,12 @@ function markdownProse(text) {
   s = chars.join('');
   // Matching parentheses, escaped delimiters, angle destinations and quoted titles.
   // An unclosed ]( is prose; do not swallow the remainder of the document.
+  const linkEnd = inlineLinkEnds(s);
   for (let i = 0; i < s.length; i += 1) {
     if (s[i] === '\\') { i += 1; continue; }
     if (s[i] !== ']' || s[i + 1] !== '(') continue;
-    let depth = 1, quote = '', angle = false, k = i + 2;
-    for (; k < s.length; k += 1) {
-      const ch = s[k];
-      if (ch === '\0' || (ch === '\n' && /^[ \t\r]*\n/.test(s.slice(k + 1)))) break;
-      if (ch === '\\') { k += 1; continue; }
-      if (quote) { if (ch === quote) quote = ''; continue; }
-      if (angle) { if (ch === '>') angle = false; continue; }
-      if ((ch === '"' || ch === "'") && /\s/.test(s[k - 1])) { quote = ch; continue; }
-      if (ch === '<') { angle = true; continue; }
-      if (ch === '(') depth += 1;
-      if (ch === ')' && --depth === 0) { protect(i + 1, k + 1); i = k; break; }
-    }
+    const k = linkEnd(i + 2);
+    if (k >= 0) { protect(i + 1, k + 1); i = k; }
   }
   s = chars.join('');
   const refs = /\[((?:\\.|[^\]\\\n])*)\](?:[ \t]*\[((?:\\.|[^\]\\\n])*)\])?/g;

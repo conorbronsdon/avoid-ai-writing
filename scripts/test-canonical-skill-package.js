@@ -38,6 +38,11 @@ try {
     'Say “hello” in [docs](url "Title").');
   run(['scripts/normalize-quotes.js', styleFixture, '--quotes', 'curly', '--write']);
   const marks = run(['scripts/check-style.js', styleFixture, '--config', 'examples/prose.json']);
+  fs.writeFileSync(styleFixture, 'Say "hello" in [docs](url "Title").\n');
+  const referenceFixture = path.join(fixtureRoot, 'reference.md');
+  fs.writeFileSync(referenceFixture, 'Say “welcome.”\n');
+  run(['scripts/normalize-quotes.js', styleFixture, '--reference', referenceFixture, '--write']);
+  assert.strictEqual(fs.readFileSync(styleFixture, 'utf8'), 'Say “hello” in [docs](url "Title").\n');
   const preservation = run(['detector/validate.js', beforeFixture, afterFixture]);
   console.log(JSON.stringify({ ok: true, cwd: path.relative(root, skillRoot), style, marks, preservation }, null, 2));
 } finally {
