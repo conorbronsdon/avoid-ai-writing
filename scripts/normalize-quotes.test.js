@@ -270,6 +270,13 @@ t('frontmatter delimiters allow trailing spaces without exposing metadata', () =
   assert.strictEqual(curly('---\ntitle: "live"\n---extra'), '---\ntitle: “live”\n---extra');
 });
 t('quoted URL punctuation leaves an enclosing prose parenthesis visible', () => {
+  for (const source of ["(see 'https://example.com/Foo_(bar).').", "(see 'https://example.com/Foo_(bar)')."]) {
+    const expected = source.replace("'https", '‘https').replace("')", '’)');
+    assert.strictEqual(curly(source), expected);
+    assert.strictEqual(normalize(expected, 'straight'), source);
+    assert.strictEqual(curly(expected), expected);
+    assert.deepStrictEqual(check(expected, { quotes: 'curly' }).hard, []);
+  }
   assert.deepStrictEqual(check("(see 'https://example.com).', e.g. outside.", { latinAbbrev: 'parentheses' }).hard,
     [{ line: 1, rule: 'latin-abbrev-outside-parens' }]);
   assert.deepStrictEqual(check("(e.g. see 'https://example.com/Foo_(bar).').", { latinAbbrev: 'parentheses' }).hard, []);

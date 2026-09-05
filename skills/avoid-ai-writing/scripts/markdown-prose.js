@@ -246,14 +246,22 @@ function markdownProse(text) {
   // parentheses inside a URL, but leave an enclosing prose parenthesis visible.
   const urls = /\bhttps?:\/\/[^\s<>"\u201c\u201d\x00]+/g;
   while ((m = urls.exec(s)) !== null) {
-    let url = m[0].replace(/[.,;:!?]+$/, '');
-    // A surrounding single quote is prose; an internal URL apostrophe is data.
-    if (/[‘']/.test(s[m.index - 1] || '') && /[’']$/.test(url)) url = url.slice(0, -1).replace(/[.,;:!?]+$/, '');
+    const url = m[0];
+    let end = url.length;
+    let surroundingQuote = /[‘']/.test(s[m.index - 1] || '');
     let extra = (url.match(/\)/g) || []).length - (url.match(/\(/g) || []).length;
-    while (extra > 0 && url.endsWith(')')) {
-      url = url.slice(0, -1).replace(/[.,;:!?]+$/, ''); extra -= 1;
+    // Peel adjacent prose delimiters in any order. Each iteration removes one
+    // character, retaining balanced URL parentheses and internal apostrophes.
+    while (end > 0) {
+      const last = url[end - 1];
+      if (/[.,;:!?]/.test(last)) end -= 1;
+      else if (surroundingQuote && /[’']/.test(last)) {
+        end -= 1; surroundingQuote = false;
+      } else if (extra > 0 && last === ')') {
+        end -= 1; extra -= 1;
+      } else break;
     }
-    protect(m.index, m.index + url.length);
+    protect(m.index, m.index + end);
   }
   if (text[0] === '\uFEFF') protect(0, 1);
   const masked = chars.join('');
