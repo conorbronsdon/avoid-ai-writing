@@ -4,13 +4,6 @@ description: Audit and rewrite content to remove AI writing patterns ("AI-isms")
 version: 3.29.0
 license: MIT
 compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, VS Code Copilot, Hermes Agent, OpenHands, etc.) or OpenClaw. No external tools or APIs required.
-metadata:
-  author: Conor Bronsdon
-  repository: https://github.com/conorbronsdon/avoid-ai-writing
-  tags: writing editing voice quality
-  agentskills_spec: "1.0"
-  openclaw:
-    emoji: "✍️"
 ---
 
 # Avoid AI Writing — Audit & Rewrite

@@ -33,6 +33,34 @@ def parse_frontmatter(path: Path):
         meta[key.strip()] = value.strip().strip('"').strip("'")
     return meta, match.group(2).strip()
 
+def strip_frontmatter_metadata(text: str) -> str:
+    """Drop the top-level `metadata` block from SKILL.md frontmatter.
+
+    Mirrors scripts/sync-plugin-skill.sh: the OpenAI plugin portal rejects
+    `metadata` in SKILL.md ("Skill interface settings must use
+    agents/openai.yaml"), so the OpenAI copy of the canonical skill omits it.
+    """
+    match = FRONTMATTER.match(text)
+    if not match:
+        return text
+    kept, skip = [], False
+    for line in match.group(1).split("\n"):
+        if line.startswith("metadata:"):
+            skip = True
+            continue
+        if skip and line[:1] in (" ", "\t"):
+            continue
+        skip = False
+        kept.append(line)
+    start, end = match.start(1), match.end(1)
+    return text[:start] + "\n".join(kept) + text[end:]
+
+
+def frontmatter_has_metadata(path: Path) -> bool:
+    match = FRONTMATTER.match(path.read_text(encoding="utf-8"))
+    return bool(match) and any(line.startswith("metadata:") for line in match.group(1).split("\n"))
+
+
 def safe_rel(value: str) -> bool:
     if not value or value != value.strip() or any(ord(ch) < 32 for ch in value):
         return False
@@ -462,6 +490,11 @@ def validate(root: Path):
         name, desc = meta.get("name", ""), meta.get("description", "")
         if not name or not desc or not body:
             errors.append(f"{skill_path}: name, description, and body are required")
+        if frontmatter_has_metadata(skill_path):
+            errors.append(
+                f"{skill_path}: `metadata` in SKILL.md frontmatter is rejected by the OpenAI plugin portal; "
+                "put interface settings under `interface` in agents/openai.yaml"
+            )
         if name:
             if name in names:
                 errors.append(f"duplicate skill name {name!r}: {names[name]} and {skill_dir.name}")
@@ -476,8 +509,8 @@ def validate(root: Path):
     if canonical.is_file():
         if not openai_copy.is_file():
             errors.append("skills/avoid-ai-writing/SKILL.md missing; cannot check drift from root SKILL.md")
-        elif canonical.read_bytes() != openai_copy.read_bytes():
-            errors.append("skills/avoid-ai-writing/SKILL.md drifted from root SKILL.md")
+        elif strip_frontmatter_metadata(canonical.read_text(encoding="utf-8")) != openai_copy.read_text(encoding="utf-8"):
+            errors.append("skills/avoid-ai-writing/SKILL.md drifted from root SKILL.md (expected: root minus the frontmatter `metadata` block)")
         meta, _ = parse_frontmatter(canonical)
         if meta.get("version") != version:
             errors.append(f"canonical SKILL.md version {meta.get('version')!r} does not match manifest {version!r}")

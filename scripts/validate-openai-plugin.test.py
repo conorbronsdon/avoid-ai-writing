@@ -365,4 +365,42 @@ with tempfile.TemporaryDirectory() as temp_dir:
         errors, _, _ = MODULE.validate(root)
         assert any("symlink not allowed in plugin surface: LICENSE" in error for error in errors)
 
+# The OpenAI copy of the canonical skill must drop the frontmatter `metadata`
+# block (the portal rejects it) and otherwise match root SKILL.md exactly.
+ROOT_SKILL = (REPO_ROOT / "SKILL.md").read_text(encoding="utf-8")
+assert "\nmetadata:\n" in ROOT_SKILL, "fixture assumption: root SKILL.md carries a metadata block"
+STRIPPED = MODULE.strip_frontmatter_metadata(ROOT_SKILL)
+ROOT_HEAD, ROOT_BODY = ROOT_SKILL.split("\n---\n", 1)
+STRIPPED_HEAD, STRIPPED_BODY = STRIPPED.split("\n---\n", 1)
+assert "metadata:" not in STRIPPED_HEAD
+assert "\nversion:" in STRIPPED_HEAD and "\nlicense:" in STRIPPED_HEAD and "\ncompatibility:" in STRIPPED_HEAD
+assert STRIPPED_BODY == ROOT_BODY, "body must be untouched"
+assert MODULE.strip_frontmatter_metadata("no frontmatter\nmetadata:\n  x: y\n") == "no frontmatter\nmetadata:\n  x: y\n"
+assert STRIPPED == (REPO_ROOT / "skills" / "avoid-ai-writing" / "SKILL.md").read_text(encoding="utf-8"), (
+    "run bash scripts/sync-plugin-skill.sh; the OpenAI copy is out of date"
+)
+
+with tempfile.TemporaryDirectory() as temp_dir:
+    root = Path(temp_dir)
+    make_valid_plugin_root(root)
+    errors, _, _ = MODULE.validate(root)
+    assert errors == [], errors
+    # red control 1: a byte-identical copy (metadata kept) is rejected on both rules
+    shutil.copy2(root / "SKILL.md", root / "skills" / "avoid-ai-writing" / "SKILL.md")
+    errors, _, _ = MODULE.validate(root)
+    assert any("`metadata` in SKILL.md frontmatter is rejected" in error for error in errors), errors
+    assert any("drifted from root SKILL.md" in error for error in errors), errors
+    # red control 2: a body edit in the copy still counts as drift
+    copy = root / "skills" / "avoid-ai-writing" / "SKILL.md"
+    copy.write_text(STRIPPED.replace("\n---\n", "\n---\n\nextra line\n", 1), encoding="utf-8")
+    errors, _, _ = MODULE.validate(root)
+    assert any("drifted from root SKILL.md" in error for error in errors), errors
+    assert not any("`metadata` in SKILL.md" in error for error in errors), errors
+    # red control 3: metadata in any other skill is rejected too
+    copy.write_text(STRIPPED, encoding="utf-8")
+    other = root / "skills" / "ai-writing-detector" / "SKILL.md"
+    other.write_text(other.read_text(encoding="utf-8").replace("\n---\n", "\nmetadata:\n  author: x\n---\n", 1), encoding="utf-8")
+    errors, _, _ = MODULE.validate(root)
+    assert any("ai-writing-detector" in error and "`metadata` in SKILL.md" in error for error in errors), errors
+
 print("all OpenAI plugin validation tests passed")
