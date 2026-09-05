@@ -12,6 +12,9 @@ import xml.etree.ElementTree as ET
 
 SEMVER = re.compile(r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
 FRONTMATTER = re.compile(r"\A---\s*\n(.*?)\n---\s*\n(.*)\Z", re.S)
+# The top-level `metadata` key only: `metadata:` at column 0 followed by
+# whitespace or end of line, so `metadata:extra:` (a different plain key) is kept.
+METADATA_KEY = re.compile(r"metadata:(?:\s|$)")
 TOP_LEVEL_INCLUDE_FILES = ("OPENAI_PLUGIN.md", "NOTICE.md", "PRIVACY.md", "TERMS.md", "SUPPORT.md", "LICENSE")
 CANONICAL_PROJECT_URL = "https://github.com/conorbronsdon/avoid-ai-writing"
 MAX_SVG_BYTES = 256 * 1024
@@ -49,10 +52,10 @@ def strip_frontmatter_metadata(text: str) -> str:
     inner = match.group(1)
     kept, skip = [], False
     for line in inner.splitlines(keepends=True):
-        if line.startswith("metadata:"):
+        if METADATA_KEY.match(line):
             skip = True
             continue
-        if skip and (line[:1] in (" ", "\t") or line.strip() == ""):
+        if skip and (line[:1] in (" ", "\t", "#") or line.strip() == ""):
             continue
         skip = False
         kept.append(line)
@@ -71,7 +74,7 @@ def strip_frontmatter_metadata(text: str) -> str:
 
 def frontmatter_has_metadata(path: Path) -> bool:
     match = FRONTMATTER.match(path.read_text(encoding="utf-8"))
-    return bool(match) and any(line.startswith("metadata:") for line in match.group(1).split("\n"))
+    return bool(match) and any(METADATA_KEY.match(line) for line in match.group(1).split("\n"))
 
 
 def safe_rel(value: str) -> bool:

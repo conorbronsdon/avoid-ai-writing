@@ -385,6 +385,9 @@ assert STRIP("---\nname: x\nmetadata:\n  author: y\n---\nmetadata:\n  in: body\n
 # blank line before the closing delimiter survives; CRLF with metadata not last
 assert STRIP("---\nname: x\nmetadata:\n  a: b\nlicense: MIT\n\n---\nBody\n") == "---\nname: x\nlicense: MIT\n\n---\nBody\n"
 assert STRIP("---\r\nname: x\r\nmetadata:\r\n  a: b\r\nlicense: MIT\r\n---\r\nBody\r\n") == "---\r\nname: x\r\nlicense: MIT\r\n---\r\nBody\r\n"
+# a column-zero comment inside the block belongs to it; `metadata:extra` is a different key and stays
+assert STRIP("---\nname: x\nmetadata:\n  author: y\n# note\n  repository: z\nlicense: MIT\n---\nBody\n") == "---\nname: x\nlicense: MIT\n---\nBody\n"
+assert STRIP("---\nname: x\nmetadata:extra: keep\n---\nBody\n") == "---\nname: x\nmetadata:extra: keep\n---\nBody\n"
 # missing closing delimiter: not a frontmatter, untouched
 assert STRIP("---\nname: x\nmetadata:\n  author: y\nBody\n") == "---\nname: x\nmetadata:\n  author: y\nBody\n"
 # the CLI path sync-plugin-skill.sh uses must be byte-exact with the function
