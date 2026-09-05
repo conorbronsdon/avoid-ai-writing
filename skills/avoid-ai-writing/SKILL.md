@@ -324,7 +324,7 @@ These slot-fill constructions signal that a sentence was generated, not written.
 
 ### Transformation crutch
 - Flag repeated unexplained relabeling across a passage: "the concern turns into panic," "a feature turns into a strategy," "the risk becomes real." Ask what changed; read the surrounding passage before deciding the explanation is missing. Treat this as a P2 clarity judgment, not evidence of AI authorship.
-- Fix with the action, threshold, or consequence already in the source. If the passage says customers began withdrawing funds, replace "the risk becomes real" with that fact. If the source gives no explanation, flag the gap and ask what happened; never invent a mechanism or actor.
+- For a flagged passage, ask what changed. If the writer supplies the missing action, threshold, or consequence, use those supplied facts in the rewrite; never invent a mechanism or actor. If the explanation was already present, apply the pass conditions below instead of rewriting it under this rule.
 - Preserve literal transformations ("water turns into ice"), supported metaphors, and changes explained anywhere in the passage ("the queue turns into a bottleneck" after a stated capacity limit). Deliberate summaries of explained changes pass, including multiple summaries in one passage. Repeated labels with no explanation still flag. Adapted from `welttowelt/stop-slop-refined` ([#108](https://github.com/conorbronsdon/avoid-ai-writing/issues/108)).
 
 ### Hashtag stuffing
