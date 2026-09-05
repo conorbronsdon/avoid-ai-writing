@@ -48,7 +48,7 @@ Caveat worth keeping visible: the "appears far more often in AI text" claim behi
 | realm | area, field, domain |
 | paradigm | model, approach, framework |
 | embark | start, begin |
-| beacon | (rewrite entirely) |
+| beacon (metaphor) | example, guide, source of hope (name what provides the example or guidance) |
 | testament to | shows, proves, demonstrates |
 | robust | strong, reliable, solid |
 | comprehensive | thorough, complete, full |

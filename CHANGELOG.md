@@ -32,7 +32,7 @@ All notable changes to this project are documented here.
 - Split the entry skill from its pattern and profile reference for directory-aware agents (#52). Generate a complete source artifact and portable paste instructions from both files, with drift checks.
 - Claude bundles include the style checker, quote normalizer, shared Markdown protection, preservation validator, and examples they invoke (#102).
 
-## [3.32.0] ? 2026-09-06
+## [3.32.0] — 2026-09-05
 
 ### Added
 

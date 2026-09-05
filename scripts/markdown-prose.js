@@ -196,6 +196,7 @@ function markdownProse(text) {
     if (blockStarts.has(i) || s[i] === '\0') boundary = i;
   }
   const tickRun = /`+/y, closeTicks = /`+/g;
+  const linkOpeners = [];
   for (let i = 0; i < s.length; i += 1) {
     const definition = definitions.get(i);
     if (definition) {
@@ -226,7 +227,10 @@ function markdownProse(text) {
       }
       if (matched) continue;
     }
-    if (s[i] === ']' && s[i + 1] === '(') {
+    if (s[i] === '[') linkOpeners.push(nextBlock[i]);
+    if (s[i] === ']') {
+      const openerBoundary = linkOpeners.pop();
+      if (openerBoundary === undefined || i >= openerBoundary || s[i + 1] !== '(') continue;
       const end = linkEnd(i + 2);
       if (end >= 0 && end < nextBlock[i]) { protect(i + 1, end + 1); i = end; }
     }
