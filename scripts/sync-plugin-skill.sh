@@ -12,6 +12,8 @@ patterns_src="$repo_root/detector/patterns.js"
 validate_src="$repo_root/detector/validate.js"
 categories_src="$repo_root/detector/CATEGORIES.md"
 check_style_src="$repo_root/scripts/check-style.js"
+markdown_prose_src="$repo_root/scripts/markdown-prose.js"
+normalize_quotes_src="$repo_root/scripts/normalize-quotes.js"
 examples_src="$repo_root/examples"
 canonical_skill_root="$repo_root/skills/avoid-ai-writing"
 canonical_detector_dest="$canonical_skill_root/detector"
@@ -21,7 +23,7 @@ detector_patterns_dest="$repo_root/skills/ai-writing-detector/scripts/patterns.j
 verifier_patterns_dest="$repo_root/skills/preservation-verifier/scripts/patterns.js"
 verifier_validate_dest="$repo_root/skills/preservation-verifier/scripts/validate.js"
 
-for required in "$src" "$patterns_src" "$validate_src" "$categories_src" "$check_style_src"; do
+for required in "$src" "$patterns_src" "$validate_src" "$categories_src" "$check_style_src" "$markdown_prose_src" "$normalize_quotes_src"; do
   if [ ! -f "$required" ]; then
     echo "missing canonical source: $required" >&2
     exit 1
@@ -53,6 +55,8 @@ cp "$patterns_src" "$canonical_detector_dest/patterns.js"
 cp "$validate_src" "$canonical_detector_dest/validate.js"
 cp "$categories_src" "$canonical_detector_dest/CATEGORIES.md"
 cp "$check_style_src" "$canonical_scripts_dest/check-style.js"
+cp "$markdown_prose_src" "$canonical_scripts_dest/markdown-prose.js"
+cp "$normalize_quotes_src" "$canonical_scripts_dest/normalize-quotes.js"
 rm -rf "$canonical_examples_dest"
 cp -R "$examples_src" "$canonical_examples_dest"
 cp "$patterns_src" "$detector_patterns_dest"

@@ -15,19 +15,17 @@
  * See examples/README.md. Skipped before checking: frontmatter (only when it closes), code
  * (fenced and inline), and markdown link destinations, link titles, and reference-definition
  * tails, since a link title is delimited with straight quotes as SYNTAX.
- * HTML tags and their attribute values are masked too. Known limitations: straight
- * feet/inch primes (5'11") after a digit are carved out; an unclosed or multi-line HTML tag
- * still registers, as do quotes inside an HTML comment; and the latinAbbrev parenthesis
- * carve-out tracks depth across wrapped lines but resets at a paragraph break, so an
- * unclosed "(" disables that rule for the rest of its paragraph. A double-backtick code
- * span whose body contains a backtick leaks its body to the quote checks; a reference
- * definition with its title on the following line is read as prose; and indented code
- * inside a LIST item is treated as the item's prose (fence it to skip it).
+ * HTML tags, comments, reference labels, escapes, and indented code are protected by
+ * the same offset-stable Markdown mask as normalize-quotes.js. Straight feet/inch primes
+ * (5'11") after a digit are carved out. The latinAbbrev parenthesis carve-out tracks
+ * depth across wrapped lines but resets at a paragraph break, so an unclosed "("
+ * disables that rule for the rest of its paragraph.
  */
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
+const { markdownProse } = require('./markdown-prose.js');
 
 /**
  * Resolve a --config argument to a file path. The decision is by SHAPE, not by what
@@ -64,50 +62,6 @@ const majorWords = (h) => h.replace(/[*_`]/g, '').trim().split(/\s+/).slice(1)
 const isTitleCase = (h) => majorWords(h).filter((b) => /^[A-Z]/.test(b)).length >= 2;
 const looksSentenceCase = (h) => { const w = majorWords(h); return w.length >= 1 && w.every((b) => /^[a-z]/.test(b)); };
 
-/**
- * Blank a markdown link destination and title, `](...)`, keeping the link text. Walks to
- * the MATCHING paren so a nested one in the URL (a Wikipedia disambiguation link, say)
- * doesn't terminate it early and leave a stray `)` behind to corrupt the paren balance.
- * Scans linearly: a regex here is quadratic on `](`-heavy input. An unclosed `](` is not a
- * link, so the rest of the line is left alone rather than swallowed.
- */
-function maskLinks(s) {
-  let out = '', i = 0;
-  for (;;) {
-    const j = s.indexOf('](', i);
-    if (j < 0) return out + s.slice(i);
-    let depth = 0, k = j + 1, closed = false;
-    for (; k < s.length; k += 1) {
-      if (s[k] === '(') depth += 1;
-      else if (s[k] === ')') { depth -= 1; if (depth === 0) { k += 1; closed = true; break; } }
-    }
-    if (!closed) return out + s.slice(i);
-    out += s.slice(i, j + 1); // keep through the ']'
-    i = k;
-  }
-}
-
-/**
- * Blank the tail of a reference definition (`[1]: https://x "Title"`), whose title also
- * uses straight quotes as syntax. Requires a destination and an optional title and nothing
- * else, so ordinary prose that happens to start `[sic]: he said "hi"` is left alone. Title
- * bodies allow backslash escapes, which is how a title legally contains its own delimiter.
- * MUST run before maskLinks: masking `[a](url): x` down to `[a]: x` would otherwise make an
- * ordinary link-led definition list line look like a reference definition and blank it.
- */
-const TITLE = '"(?:\\\\.|[^"\\\\])*"|\'(?:\\\\.|[^\'\\\\])*\'|\\((?:\\\\.|[^)\\\\])*\\)';
-const REF_DEF = new RegExp(`^(\\s*\\[[^\\]]+\\]:\\s*)(?:<[^>]*>|\\S+)(?:\\s+(?:${TITLE}))?\\s*$`);
-const maskRefDef = (s) => s.replace(REF_DEF, '$1');
-
-/**
- * Blank HTML tags, whose attribute values are straight-quoted as syntax. The shape follows
- * CommonMark's raw-HTML grammar (tag name, then attribute-shaped pairs) rather than
- * "<letter ... >": the loose form swallowed ordinary prose containing a comparison, such as
- * `For n<N, the "tail" sum > epsilon`, hiding real violations between the two brackets.
- */
-const maskTags = (s) => s.replace(
-  /<\/?[a-zA-Z][a-zA-Z0-9-]*(?:\s+[a-zA-Z_:][\w:.-]*(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>`]+))?)*\s*\/?>/g, '');
-
 /** Returns { hard, advisory, warnings } for the config's mechanics; register is not checked. */
 function check(text, mechanics) {
   const m = mechanics || {};
@@ -119,61 +73,7 @@ function check(text, mechanics) {
     else if (typeof v !== spec) warnings.push({ rule: 'unknown-value', detail: `${k}: ${JSON.stringify(v)} (expected ${spec})` });
   }
 
-  const lines = text.replace(/^\uFEFF/, '').split('\n'); // a BOM would hide the frontmatter
-  const bare = (s) => s.replace(/\r$/, '');
-  // Frontmatter: skip a leading --- ... --- block only when it actually closes.
-  let fmEnd = -1;
-  // Only an opener with content on the next line is frontmatter: a document that OPENS
-  // with a thematic break (`---`, blank line after) would otherwise be swallowed to the
-  // next `---` anywhere in the file, silently hiding everything between.
-  if (bare(lines[0]) === '---' && lines.length > 1 && !/^\s*$/.test(bare(lines[1]))) {
-    for (let k = 1; k < lines.length; k += 1) { if (bare(lines[k]) === '---') { fmEnd = k; break; } }
-  }
-  // Fences track their character and length, so an inner ``` doesn't close an outer ````
-  // and a ~~~ doesn't close a ``` block. A bare toggle desyncs on a nested fence and then
-  // checks the code inside it as prose, which is a hard violation on a correct document.
-  let inFence = false, fenceChar = '', fenceLen = 0;
-  // Indented code (4+ spaces or a tab) opens only after a blank line and outside a list:
-  // a 4-space line directly under a paragraph is lazy continuation (prose), and inside a
-  // list item it is the item's own content (prose), so both stay checked. List tracking is
-  // approximate (a marker line enters list context, a flush-left non-marker line leaves
-  // it); a code block nested inside a list item needs a fence to be skipped.
-  let inIndent = false, prevBlank = true, listCtx = false;
-  // A paragraph break is a blank line in the ORIGINAL that is not inside frontmatter or a
-  // fence. Masked-empty lines aren't breaks (that would cut a parenthetical at a code
-  // block), and a blank line inside a fence isn't either.
-  const paraBreak = [];
-  const prose = lines.map((l, i) => {
-    if (i <= fmEnd) { paraBreak.push(false); return ''; }
-    const b = bare(l);
-    const fm = b.match(/^\s*(`{3,}|~{3,})(.*)$/);
-    if (fm) {
-      const ch = fm[1][0], len = fm[1].length;
-      if (!inFence) { inFence = true; fenceChar = ch; fenceLen = len; }
-      else if (ch === fenceChar && len >= fenceLen && /^\s*$/.test(fm[2])) inFence = false;
-      paraBreak.push(false);
-      inIndent = false; prevBlank = false;
-      return '';
-    }
-    if (inFence) { paraBreak.push(false); prevBlank = false; return ''; }
-    const blank = /^\s*$/.test(b);
-    const ind4 = /^(?: {4}|\t)/.test(b);
-    if (blank) inIndent = false;
-    else if (!inIndent && ind4 && prevBlank && !listCtx) inIndent = true;
-    else if (!ind4) inIndent = false;
-    const isCode = !blank && inIndent;
-    if (!blank && !isCode) {
-      if (/^ {0,3}(?:[-*+]|\d{1,9}[.)])(?:\s|$)/.test(b)) listCtx = true;
-      else if (/^\S/.test(b)) listCtx = false;
-    }
-    prevBlank = blank;
-    paraBreak.push(blank);
-    if (isCode) return '';
-    // Strip inline code, then link destinations and reference-definition tails. Markdown
-    // link titles are delimited with STRAIGHT quotes as syntax, so leaving them in makes
-    // quotes:curly hard-fail an ordinary titled link on a correct document.
-    return maskTags(maskLinks(maskRefDef(b.replace(/`+[^`]*`+/g, ''))));
-  });
+  const { prose, paraBreak } = markdownProse(text);
   const joined = prose.join('\n');
   const words = (joined.match(/\b\w+\b/g) || []).length;
   const hard = [];
