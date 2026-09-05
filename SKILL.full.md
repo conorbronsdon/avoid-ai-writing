@@ -164,7 +164,7 @@ Caveat worth keeping visible: the "appears far more often in AI text" claim behi
 
 **Hyphen required:** unhyphenated "load bearing" is ordinary English ("the load bearing down on the bridge") — only the hyphenated compound is the tell.
 
-**Abstract-noun boundary:** Flag hyphenated `load-bearing` only when it immediately modifies `assumption`, `claim`, `invariant`, `premise`, `constraint`, `dependency`, `argument`, or `abstraction` (including plurals). Preserve literal building terminology, unlisted nouns, intervening modifiers, and predicative uses such as "the wall in the kitchen is load-bearing" or "that claim is load-bearing." Mixed physical/abstract nouns (`structure`, `element`, `frame`, `foundation`, `test`, `detail`) also pass. This deliberately misses some metaphors to avoid flagging ordinary writing; see issue #56.
+**Abstract-noun boundary:** Flag hyphenated `load-bearing` only when it immediately modifies, on the same line, `assumption`, `claim`, `invariant`, `premise`, `constraint`, `dependency`, `argument`, or `abstraction` (including plurals). Preserve literal building terminology, unlisted nouns, intervening modifiers, and predicative uses such as "the wall in the kitchen is load-bearing" or "that claim is load-bearing." Mixed physical/abstract nouns (`structure`, `element`, `frame`, `foundation`, `test`, `detail`) also pass. This deliberately misses some metaphors to avoid flagging ordinary writing; see issue #56.
 
 ##### Tier 1B — Clarity edits
 
