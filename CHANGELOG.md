@@ -22,7 +22,7 @@ All notable changes to this project are documented here.
 
 ---
 
-## [3.32.0] ? 2026-09-06
+## [3.32.0] — 2026-09-05
 
 ### Added
 

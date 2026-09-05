@@ -282,4 +282,15 @@ t('quoted URL punctuation leaves an enclosing prose parenthesis visible', () => 
   assert.deepStrictEqual(check("(e.g. see 'https://example.com/Foo_(bar).').", { latinAbbrev: 'parentheses' }).hard, []);
 });
 
+t('inline destinations require a matching unescaped link-text opener in the same block', () => {
+  for (const source of ['This ](url "actual prose")', '\\[x](url "actual prose")', '[x] text ](url "actual prose")', '[x\n\n](url "actual prose")']) {
+    assert.strictEqual(curly(source), source.replace('"actual prose"', '“actual prose”'));
+    assert.ok(check(source, { quotes: 'curly' }).hard.length);
+  }
+  for (const source of ['[x](url "title")', '![x](url "title")', '[outer [inner] text](url "title")', '[`[code]`](url "title")', '[x\\]](url "title")']) {
+    assert.strictEqual(curly(source + ' "live"'), source + ' “live”');
+    assert.deepStrictEqual(check(source, { quotes: 'curly' }).hard, []);
+  }
+});
+
 console.log(`\nnormalize-quotes: ${passed} passed.`);
