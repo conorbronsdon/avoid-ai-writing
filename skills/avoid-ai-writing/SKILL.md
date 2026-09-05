@@ -325,7 +325,7 @@ These slot-fill constructions signal that a sentence was generated, not written.
 ### Transformation crutch
 - Flag repeated unexplained relabeling across a passage: "the concern turns into panic," "a feature turns into a strategy," "the risk becomes real." Ask what changed; read the surrounding passage before deciding the explanation is missing. Treat this as a P2 clarity judgment, not evidence of AI authorship.
 - Fix with the action, threshold, or consequence already in the source. If the passage says customers began withdrawing funds, replace "the risk becomes real" with that fact. If the source gives no explanation, flag the gap and ask what happened; never invent a mechanism or actor.
-- Preserve literal transformations ("water turns into ice"), supported metaphors, and changes explained anywhere in the passage ("the queue turns into a bottleneck" after a stated capacity limit). One deliberate summary of an explained change passes. Repeated labels with no explanation still flag. Adapted from `welttowelt/stop-slop-refined` ([#108](https://github.com/conorbronsdon/avoid-ai-writing/issues/108)).
+- Preserve literal transformations ("water turns into ice"), supported metaphors, and changes explained anywhere in the passage ("the queue turns into a bottleneck" after a stated capacity limit). Deliberate summaries of explained changes pass, including multiple summaries in one passage. Repeated labels with no explanation still flag. Adapted from `welttowelt/stop-slop-refined` ([#108](https://github.com/conorbronsdon/avoid-ai-writing/issues/108)).
 
 ### Hashtag stuffing
 - Long trailing hashtag blocks (6+ hashtags on a single short post) are near-universal in LLM-generated social content and rare in thoughtful human posts. The block usually mixes a project-specific tag with broad category tags (#AI #Crypto #Web3 #Innovation #FutureTech #Technology) — the categorical ones do nothing for discoverability and read as bot output.
@@ -536,7 +536,7 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - One "notably" in a 2,000-word piece is fine. Three in 500 words is AI-style emphasis stacking. Flag by density.
 - Related — **persuasive-authority tropes**: "the real question is," "at its core," "fundamentally," "make no mistake," "the truth is." Same move as the calibration phrases above, but they assert depth or stakes instead of feeling: they announce that what follows is important rather than showing it. Cut the trope and lead with the substance. Adapted from `blader/humanizer` P27.
 
-- **Consequence-free explanation:** "This matters because" and "here's why that matters" flag only when they introduce a restatement of importance: "This matters because it is important." Preserve a concrete consequence: "This matters because retries can charge the customer twice." Cut an empty restatement or use an explanation already present; never invent stakes. This addition is judgment-only.
+- **Consequence-free explanation:** "This matters because" and "here's why that matters" flag only when they introduce a restatement of importance: "This matters because it is important." Preserve a concrete consequence: "This matters because retries can charge the customer twice." Cut an empty restatement or use an explanation already present; never invent stakes. This addition is a P2 judgment-only clarity check.
 
 ### Self-labeling significance
 - After listing or describing several items, the writer points back at one and labels it as contrarian / clever / surprising / counterintuitive / key: "That last move is the contrarian one," "This is the interesting part," "That third bullet is the real story," "Here's where it gets clever," "The last bit is the counterintuitive one."
@@ -689,6 +689,7 @@ Not all AI-isms are equal. When doing a quick pass or triaging a large document,
 ### P2 — Stylistic polish (fix when time allows)
 - Generic conclusions ("The future looks bright")
 - Repeated setup/reversal punchlines when they replace concrete claims (isolated or supported reversals pass)
+- Judgment-only clarity checks: false agency, transformation crutch, ambiguous domain terminology, consequence-free explanations, and repeated empty concessions (apply each entry's pass conditions)
 - Compulsive rule of three
 - Uniform paragraph length
 - Copula avoidance (serves as, features, boasts)
