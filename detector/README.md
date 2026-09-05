@@ -4,7 +4,7 @@
 zero-dependency, build-step-free detection engine that scores text for
 AI-writing tells. It runs identically in Node (`>=18`) and in the browser.
 
-The skill's `SKILL.md` is the human-readable catalog of rules; this engine is
+The skill's `references/patterns.md` is the human-readable catalog of rules; this engine is
 the deterministic, testable implementation of the regex-detectable subset, plus
 stylometric and AI-tool-fingerprint detectors that don't make sense as prose.
 See [`CATEGORIES.md`](./CATEGORIES.md) for the rule ↔ category mapping that keeps
@@ -66,7 +66,7 @@ reported.
 
 ## `validate(original, rewritten, options?)` → result
 
-`validate.js` checks that a rewrite kept its hands off the things `SKILL.md`
+`validate.js` checks that a rewrite kept its hands off the things `references/patterns.md`
 says not to touch. Edit mode writes to files, so a violation there is silent
 and destructive.
 

@@ -44,7 +44,7 @@ const ROOT = path.resolve(__dirname, '..');
  */
 const BUDGETS = {
   'README.md': 30,
-  'SKILL.md': 25,
+  'SKILL.full.md': 25,
   'CONTRIBUTING.md': 15,
   'detector/README.md': 15,
   'detector/CATEGORIES.md': 15,

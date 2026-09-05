@@ -4,6 +4,9 @@ on:
   pull_request:
     paths:
       - "SKILL.md"
+      - "SKILL.full.md"
+      - "references/**"
+      - "dist/**"
       - "README.md"
       # CLAUDE.md carries a checked copy of the pattern count; without this
       # path the count guard never runs on a CLAUDE.md-only edit (PR #106
@@ -29,6 +32,9 @@ on:
     branches: [main]
     paths:
       - "SKILL.md"
+      - "SKILL.full.md"
+      - "references/**"
+      - "dist/**"
       - "README.md"
       # CLAUDE.md carries a checked copy of the pattern count; without this
       # path the count guard never runs on a CLAUDE.md-only edit (PR #106

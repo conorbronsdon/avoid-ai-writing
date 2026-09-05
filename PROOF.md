@@ -16,7 +16,7 @@ node scripts/self-scan.js
 | Document | Words | Raw score | Exempt score | Budget |
 |---|---:|---:|---:|---:|
 | `README.md` | 3,977 | 65 | **21** | 30 |
-| `SKILL.md` | 14,008 | 89 | **12** | 25 |
+| `SKILL.full.md` | 14,008 | 89 | **12** | 25 |
 | `CONTRIBUTING.md` | 527 | 3 | **1** | 15 |
 | `detector/README.md` | 593 | 2 | **2** | 15 |
 | `detector/CATEGORIES.md` | 1,064 | 1 | **1** | 15 |

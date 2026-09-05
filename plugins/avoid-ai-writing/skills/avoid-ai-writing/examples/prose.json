@@ -1,0 +1,16 @@
+{
+  "name": "Long-form prose (example)",
+  "genre": "published prose",
+  "register": [
+    "Consistent, flowing authorial voice.",
+    "Formal but not stiff; contractions are acceptable."
+  ],
+  "mechanics": {
+    "quotes": "curly",
+    "headings": "title",
+    "emDash": "deliberate",
+    "latinAbbrev": "parentheses",
+    "serialComma": true,
+    "spellNumbersUpTo": 100
+  }
+}

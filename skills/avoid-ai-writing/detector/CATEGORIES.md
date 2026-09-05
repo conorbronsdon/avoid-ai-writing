@@ -1,7 +1,7 @@
-# Category map: SKILL.md ↔ detector
+# Category map: references/patterns.md ↔ detector
 
 This table is the anti-drift contract between the human-readable rules in
-`../SKILL.md` and the executable engine in `patterns.js`. When you add a rule to
+`../references/patterns.md` and the executable engine in `patterns.js`. When you add a rule to
 the skill, decide here whether it's regex-detectable (give it a detector `type`)
 or LLM-only judgment (mark it so). When you add a detector `type`, point it back
 at the skill section it enforces.
@@ -12,16 +12,16 @@ it's rules that are judgment calls a regex can't make. The three groups below
 account for every entry on both sides.
 
 Three counts coexist on purpose and should not be forced to match: the README's
-**pattern-category count** (the human-facing prose catalog, derived from SKILL.md
+**pattern-category count** (the human-facing prose catalog, derived from references/patterns.md
 and guarded in CI), the engine's **54 `type`s** (which split the vocabulary tiers
-and add stylometric signals), and SKILL.md's `###` sections (which also include
+and add stylometric signals), and references/patterns.md's `###` sections (which also include
 writer-side tests with no detectable form). The
 `categories.test.js` enforces the engine ↔ this-file mapping, and checks every
 prose statement of the engine `type` total against `TYPE_LABELS`.
 
 ## A. Direct mapping (skill rule → detector `type`)
 
-| Detector `type` | Label | SKILL.md section |
+| Detector `type` | Label | references/patterns.md section |
 |---|---|---|
 | `tier1` / `tier2` / `tier3` | AI vocabulary / Word cluster / Overused word | Words and phrases to replace |
 | `tier1-clarity` | Wordiness | Words and phrases to replace (Tier 1B) |
@@ -66,13 +66,13 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 | `launch-intro` | Launch-copy introduction | Launch-copy dramatic introductions *("Meet X," plus one of "your new favorite", "your new go-to", "the new home of", "the new way to", "the new standard in/for", or a bare home/way/standard at end of clause; and "Think X meets Y". X is ONE capitalized 2-30 character token, so two-token names miss. Bare "Enter X.", bare "Meet X, your new [role]" and "Say hello to X" stay LLM-judgment; person-name variants are disclosed residue — see the entry)* |
 | `crowd-contrast` | Dramatized crowd contrast | Dramatized contrast against the crowd *(three branches: "was\|were\|is\|are" + "still" + a dismissive verb in **-ing**, plus the stereotyped "writing\|wrote think-pieces" and "play\|plays\|played\|playing catch-up" wordings, which need no marker; the crowd is the closed list "everyone else\|others\|the industry\|the market\|the competition", so "every competitor" and "our rivals" miss — ordinary simultaneity without those verbs stays clean; every literal progressive use of them is accepted, disclosed residue, and so are literal "wrote think-pieces" / "played catch-up" contrasts — see the entry)* |
 | `fake-casual-prop` | Fake-casual prop | Fake-casual register *(six asterisk stage directions and the four (yes\|no) x (really\|seriously) parentheticals, nothing else. "chef's kiss" requires its apostrophe, and neighbours like "*checks calendar*" and "(yes, honestly)" are disclosed misses. Verdict closers, label-prefix openers, the self-QA volley and "because of course it does" stay LLM-judgment)* |
-| `performed-insight` | Performed-insight phrase | Performed-insight phrases — *partial; literal-sense exclusions documented in SKILL.md* |
-| `negation-chain` | Negation chain | Negation chains — *partial; three-item deterministic threshold documented in SKILL.md* |
-| `dev-blog-boilerplate` | Dev-blog boilerplate | Dev-blog boilerplate — *partial; literal-sense exclusion documented in SKILL.md* |
+| `performed-insight` | Performed-insight phrase | Performed-insight phrases — *partial; literal-sense exclusions documented in references/patterns.md* |
+| `negation-chain` | Negation chain | Negation chains — *partial; three-item deterministic threshold documented in references/patterns.md* |
+| `dev-blog-boilerplate` | Dev-blog boilerplate | Dev-blog boilerplate — *partial; literal-sense exclusion documented in references/patterns.md* |
 
 > **Partial map:** `smart-punct-signature` fires only when curly quotes co-occur
 > with an em-dash, an Oxford comma, and clean typing (≥80 words) — never on curly
-> punctuation alone. The SKILL.md Formatting rule treats curly quotes as a weak,
+> punctuation alone. The references/patterns.md Formatting rule treats curly quotes as a weak,
 > corroborating signal in plain-text contexts and excludes apostrophes. The two
 > agree in spirit (curly punctuation is never conclusive on its own) but differ in
 > mechanism — so this is a partial map, not 1:1.
