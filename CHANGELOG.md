@@ -30,6 +30,8 @@ All notable changes to this project are documented here.
 
 ### Fixed
 
+- Preserve inline HTML attributes and raw HTML code during quote normalization. Stop code masks at heading and list boundaries; keep escaped reference text and URL-adjacent prose visible to checks.
+
 - Validate inline link destinations and titles so malformed links cannot hide following prose. Precomputed boundaries prevent repeated unmatched link openers from scanning the same suffix quadratically. Regression tests cover normalization, style checks, CLI behavior and the bundled command.
 
 ---

@@ -200,4 +200,62 @@ t('CLI defaults to auto and uses the original reference for preview and write', 
   assert.strictEqual(cli('draft.md').stdout, preview.stdout);
 }));
 
+
+t('inline syntax follows source order and never rewrites protected attributes', () => {
+  const cases = [
+    ['<span title="`">"live"</span> and `code`', '<span title="`">“live”</span> and `code`'],
+    ['`<span title="raw">` and "live"', '`<span title="raw">` and “live”'],
+    ['[docs](url "a `tick` and <b>title</b>") "live"', '[docs](url "a `tick` and <b>title</b>") “live”'],
+    ['`[docs](url "title")` and "live"', '`[docs](url "title")` and “live”'],
+    ['`start\n[ref]: url "title"\nend` and "live"', '`start\n[ref]: url "title"\nend` and “live”'],
+    ['<!-- `raw --> "live" `code`', '<!-- `raw --> “live” `code`'],
+  ];
+  for (const [source, expected] of cases) {
+    assert.strictEqual(curly(source), expected);
+    assert.strictEqual(normalize(expected, 'straight'), source);
+    assert.strictEqual(curly(expected), expected);
+  }
+});
+t('literal HTML blocks stay untouched while ordinary HTML body prose changes', () => {
+  for (const tag of ['script', 'style', 'pre', 'textarea', 'SCRIPT']) {
+    const source = `<${tag}>\nconst x = "raw";\n\n'raw'\n</${tag}>\n\n"live"`;
+    const expected = source.replace('"live"', '“live”');
+    assert.strictEqual(curly(source), expected);
+    assert.strictEqual(normalize(expected, 'straight'), source);
+    assert.deepStrictEqual(check(expected, { quotes: 'curly' }).hard, []);
+  }
+  assert.strictEqual(curly('<b>"live"</b>'), '<b>“live”</b>');
+  assert.strictEqual(curly('`<script>` "live"'), '`<script>` “live”');
+});
+t('inline code cannot hide a heading or another list item', () => {
+  for (const source of ['`one\n# "live"\nend`', '- `one\n- "live" end`', '`one\n---\n"live" end`']) {
+    assert.strictEqual(curly(source), source.replace('"live"', '“live”'));
+    assert.ok(check(source, { quotes: 'curly' }).hard.length);
+  }
+  assert.strictEqual(curly('`one\n"code"\nend` "live"'), '`one\n"code"\nend` “live”');
+});
+t('a list fence ends when its container ends, including sibling items', () => {
+  for (const suffix of ['"live"', '- "live"']) {
+    const source = '- ```\n  "code"\n\n' + suffix;
+    assert.strictEqual(curly(source), source.replace('"live"', '“live”'));
+    assert.deepStrictEqual(check(source, { quotes: 'curly' }).hard.map(x => x.line), [4]);
+  }
+  const source = '- ```\n  "code"\n\n  "still code"';
+  assert.strictEqual(curly(source), source);
+});
+t('escaped reference openers stay prose while actual references retain identifiers', () => {
+  const source = "\\[O'Reilly]\n\n[O'Reilly]: /url";
+  assert.strictEqual(curly(source), "\\[O’Reilly]\n\n[O'Reilly]: /url");
+  assert.ok(check(source, { quotes: 'curly' }).hard.length);
+  assert.strictEqual(curly("[O'Reilly]\n\n[O'Reilly]: /url"), "[O'Reilly]\n\n[O'Reilly]: /url");
+});
+t('bare URLs retain balanced parentheses but leave prose quotes and delimiters live', () => {
+  assert.strictEqual(curly('See https://x/Foo_(bar), "live".'), 'See https://x/Foo_(bar), “live”.');
+  assert.strictEqual(curly('"https://x/path"'), '“https://x/path”');
+  assert.strictEqual(curly("https://x/O'Reilly"), "https://x/O'Reilly");
+  assert.deepStrictEqual(check('(see https://x/Foo_(bar)), e.g. outside.', { latinAbbrev: 'parentheses' }).hard,
+    [{ line: 1, rule: 'latin-abbrev-outside-parens' }]);
+  assert.deepStrictEqual(check('(e.g. see https://x/Foo_(bar)).', { latinAbbrev: 'parentheses' }).hard, []);
+});
+
 console.log(`\nnormalize-quotes: ${passed} passed.`);

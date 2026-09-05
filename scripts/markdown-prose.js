@@ -90,6 +90,8 @@ function markdownProse(text) {
   let fence = null, inIndent = false, prevBlank = true, offset = 0, quoteDepth = 0;
   const listIndents = [];
   const paraBreak = [];
+  const blockStarts = new Set();
+  let rawHtml = null;
   lines.forEach((line, i) => {
     const start = offset;
     offset += line.length + 1;
@@ -101,12 +103,18 @@ function markdownProse(text) {
       : b.match(/^(?: {0,3}>[ \t]?)+/);
     const depth = quote ? (quote[0].match(/>/g) || []).length : 0;
     if (depth !== quoteDepth) {
-      fence = null; inIndent = false; prevBlank = true; listIndents.length = 0;
+      fence = null; rawHtml = null; inIndent = false; prevBlank = true; listIndents.length = 0;
+      blockStarts.add(start);
       quoteDepth = depth;
     }
     if (quote) b = b.slice(quote[0].length);
     const blank = !b.trim();
     const indent = (b.match(/^[ \t]*/) || [''])[0].replace(/\t/g, '    ').length;
+    // A fenced block belongs to its list item; dedenting leaves that container.
+    if (fence && fence.listIndent && !blank && indent < fence.listIndent) {
+      fence = null; prevBlank = true; blockStarts.add(start);
+    }
+    if (rawHtml && rawHtml.listIndent && !blank && indent < rawHtml.listIndent) rawHtml = null;
     if (!blank && !fence) {
       while (listIndents.length && indent < listIndents[listIndents.length - 1]) listIndents.pop();
     }
@@ -117,6 +125,7 @@ function markdownProse(text) {
       const padding = marker[2].length > 4 ? 1 : Math.max(1, marker[2].length);
       const contentIndent = marker[0].length - marker[2].length + padding;
       listIndents.push(contentIndent);
+      blockStarts.add(start);
       b = b.slice(Math.min(contentIndent, b.length));
       prevBlank = true; inIndent = false;
     } else if (base) {
@@ -134,9 +143,21 @@ function markdownProse(text) {
       protect(start, offset - 1); paraBreak.push(false); prevBlank = false; return;
     }
     if (fm && !(fm[2][0] === '`' && fm[3].includes('`'))) {
-      fence = { char: fm[2][0], length: fm[2].length };
+      fence = { char: fm[2][0], length: fm[2].length, listIndent: listIndents[listIndents.length - 1] || 0 };
       protect(start, offset - 1); paraBreak.push(false); inIndent = false; prevBlank = false; return;
     }
+    const rawStart = b.match(/^ {0,3}<(script|style|pre|textarea)(?:[ \t>]|$)/i);
+    if (!rawHtml && rawStart) rawHtml = { name: rawStart[1], listIndent: listIndents[listIndents.length - 1] || 0 };
+    if (rawHtml) {
+      if (new RegExp('</' + rawHtml.name + '[ \t]*>', 'i').test(b)) rawHtml = null;
+      protect(start, offset - 1); paraBreak.push(false); prevBlank = false; return;
+    }
+    // Inline spans cannot consume headings, thematic breaks, or a following block.
+    if (/^ {0,3}#{1,6}(?:[ \t]|$)/.test(b) || /^ {0,3}(?:=+|-+)[ \t]*$/.test(b)
+        || /^ {0,3}(?:(?:\*[ \t]*){3,}|(?:_[ \t]*){3,}|(?:-[ \t]*){3,})$/.test(b)) {
+      blockStarts.add(start); blockStarts.add(offset);
+    }
+    if (blank) { blockStarts.add(start); blockStarts.add(offset); }
     const ind4 = /^(?: {4}| *\t)/.test(b);
     if (!blank) {
       if (ind4 && (prevBlank || inIndent)) inIndent = true;
@@ -147,45 +168,68 @@ function markdownProse(text) {
     prevBlank = blank;
   });
 
-  // Exact-length backtick runs; a longer run or an embedded single tick cannot close
-  // a span. Spans may wrap lines, but cannot cross a block or paragraph boundary.
   let s = chars.join('');
-  const ticks = /`+|\\[\s\S]/g;
   let m;
-  while ((m = ticks.exec(s)) !== null) {
-    if (m[0][0] !== '`') continue;
-    const close = /`+/g;
-    close.lastIndex = ticks.lastIndex;
-    let end;
-    while ((end = close.exec(s)) !== null) {
-      if (/\0|\n[ \t\r]*\n/.test(s.slice(ticks.lastIndex, end.index))) break;
-      if (end[0].length !== m[0].length) continue;
-      protect(m.index, close.lastIndex);
-      ticks.lastIndex = close.lastIndex;
-      break;
-    }
-  }
-
   // Reference definitions must precede link masking: [Docs](url): "Note" is prose,
   // not a definition manufactured by removing the destination. Protect labels too;
   // changing an apostrophe in an identifier can disconnect its references.
   s = chars.join('');
-  const labels = new Set();
+  const labels = new Set(), definitions = new Map();
   REF_DEF.lastIndex = 0;
   while ((m = REF_DEF.exec(s)) !== null) {
     if (m[0].includes('\0') || /\n[ \t\r]*\n/.test(m[0])) continue;
-    labels.add(labelKey(m[1]));
-    protect(m.index, m.index + m[0].length);
+    definitions.set(m.index, { end: m.index + m[0].length, label: labelKey(m[1]) });
   }
   s = chars.join('');
-  // Matching parentheses, escaped delimiters, angle destinations and quoted titles.
-  // An unclosed ]( is prose; do not swallow the remainder of the document.
+  // Consume competing inline constructs in source order. HTML before a backtick
+  // protects its attributes; a backtick before HTML protects the whole code span.
+  // The same ordering keeps code-like text inside link titles literal.
   const linkEnd = inlineLinkEnds(s);
+  const html = [new RegExp(TAG.source, 'y'), /<!--[\s\S]*?(?:-->|$)/y,
+    /<\?[\s\S]*?(?:\?>|$)/y, /<!\[CDATA\[[\s\S]*?(?:\]\]>|$)/y,
+    /<![A-Z][^>]*>/y,
+    /<(?:[a-zA-Z][a-zA-Z0-9+.-]{1,31}:[^<>\s]*|[^<>\s@]+@[^<>\s@]+)>/y];
+  const nextBlock = new Int32Array(s.length + 1);
+  let boundary = s.length;
+  for (let i = s.length; i >= 0; i -= 1) {
+    nextBlock[i] = boundary;
+    if (blockStarts.has(i) || s[i] === '\0') boundary = i;
+  }
+  const tickRun = /`+/y, closeTicks = /`+/g;
   for (let i = 0; i < s.length; i += 1) {
-    if (s[i] === '\\') { i += 1; continue; }
-    if (s[i] !== ']' || s[i + 1] !== '(') continue;
-    const k = linkEnd(i + 2);
-    if (k >= 0) { protect(i + 1, k + 1); i = k; }
+    const definition = definitions.get(i);
+    if (definition) {
+      labels.add(definition.label); protect(i, definition.end); i = definition.end - 1; continue;
+    }
+    if (s[i] === '\\' && /[!"#$%&'()*+,\-./:;<=>?@[\]^_`{|}~\\\u201c\u201d\u2018\u2019]/.test(s[i + 1] || '')) {
+      protect(i, i + 2); i += 1; continue;
+    }
+    if (s[i] === '`') {
+      tickRun.lastIndex = i;
+      const run = tickRun.exec(s)[0];
+      closeTicks.lastIndex = i + run.length;
+      let end, found = false;
+      while ((end = closeTicks.exec(s)) !== null && end.index < nextBlock[i]) {
+        if (end[0].length !== run.length) continue;
+        protect(i, closeTicks.lastIndex); i = closeTicks.lastIndex - 1; found = true; break;
+      }
+      if (!found) i += run.length - 1;
+      continue;
+    }
+    if (s[i] === '<') {
+      let matched = false;
+      for (const re of html) {
+        re.lastIndex = i;
+        m = re.exec(s);
+        if (!m || m[0].includes('\0')) continue;
+        protect(i, re.lastIndex, re === html[0]); i = re.lastIndex - 1; matched = true; break;
+      }
+      if (matched) continue;
+    }
+    if (s[i] === ']' && s[i + 1] === '(') {
+      const end = linkEnd(i + 2);
+      if (end >= 0 && end < nextBlock[i]) { protect(i + 1, end + 1); i = end; }
+    }
   }
   s = chars.join('');
   const refs = /\[((?:\\.|[^\]\\\n])*)\](?:[ \t]*\[((?:\\.|[^\]\\\n])*)\])?/g;
@@ -198,16 +242,16 @@ function markdownProse(text) {
   }
 
   s = chars.join('');
-  // Tags follow links, so title contents cannot masquerade as tags. Comments and
-  // multi-line attributes are protected as source, while comparison prose stays live.
-  const syntax = [TAG, /<!--[\s\S]*?(?:-->|$)/g, /<\?[\s\S]*?(?:\?>|$)/g,
-    /<!\[CDATA\[[\s\S]*?(?:\]\]>|$)/g, /<![A-Z][^>]*>/g,
-    /<(?:[a-zA-Z][a-zA-Z0-9+.-]{1,31}:[^<>\s]*|[^<>\s@]+@[^<>\s@]+)>/g,
-    /\bhttps?:\/\/[^\s<>]+/g, /\\[!"#$%&'()*+,\-./:;<=>?@[\]^_`{|}~\\“”‘’]/g];
-  for (const re of syntax) {
-    re.lastIndex = 0;
-    while ((m = re.exec(s)) !== null) protect(m.index, m.index + m[0].length, re === TAG);
-    s = chars.join('');
+  // Bare URLs exclude prose quotes and terminal punctuation. Retain balanced
+  // parentheses inside a URL, but leave an enclosing prose parenthesis visible.
+  const urls = /\bhttps?:\/\/[^\s<>"\u201c\u201d\x00]+/g;
+  while ((m = urls.exec(s)) !== null) {
+    let url = m[0].replace(/[.,;:!?]+$/, '');
+    let extra = (url.match(/\)/g) || []).length - (url.match(/\(/g) || []).length;
+    while (extra > 0 && url.endsWith(')')) {
+      url = url.slice(0, -1).replace(/[.,;:!?]+$/, ''); extra -= 1;
+    }
+    protect(m.index, m.index + url.length);
   }
   if (text[0] === '\uFEFF') protect(0, 1);
   const masked = chars.join('');
