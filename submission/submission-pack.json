@@ -33,10 +33,7 @@
     "Fresh-install smoke test in Codex",
     "Upload the exact final ZIP and rerun portal validation"
   ],
-  "state": "not_ready",
-  "blockers": [
-    "OpenAI verified developer identity is not available from repository metadata",
-    "Fresh ChatGPT and Codex install smoke tests are host-side checks",
-    "CI validation and deterministic archive hash must be observed for the exact PR commit"
-  ]
+  "state": "published",
+  "published": {"date":"2026-09-04","pluginId":"plugins_6a9b77b18b8881918efa9c1255868164","directoryUrl":"https://chatgpt.com/plugins/plugins_6a9b77b18b8881918efa9c1255868164","version":"3.29.0","archiveSha256":"f1d4087433d7270d0f94fdb3c592df0a0dc87c15cafa2cd747e12b750fad1440","note":"Archive built from PR #146 before its second commit; differs from main only in the exact-copy wording of NOTICE.md and OPENAI_PLUGIN.md. All seven skill scans passed."},
+  "blockers": []
 }

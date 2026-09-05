@@ -8,6 +8,7 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- **Published in the OpenAI Plugins Directory** as [Avoid AI Writing](https://chatgpt.com/plugins/plugins_6a9b77b18b8881918efa9c1255868164) (version 3.29.0, approved 2026-09-04). The bundled canonical skill now omits the frontmatter `metadata` block, which the portal rejects (#146); TERMS.md and PRIVACY.md state the plugin's scope and data handling in the terms OpenAI's plugin guidelines ask for (#147).
 - **Plugin validation now fails closed on deferred port-integrity gaps.** `agents/openai.yaml` rejects scalar policies and malformed mapping/list lines, SVG assets must have an actual `<svg>` root, and the bundled routing matrix carries a checked graph digest plus generated edge inventory so it cannot silently drift from `skill-graph.json`.
 
 - **README adds a restrained related-work block.** Links to Conor's public

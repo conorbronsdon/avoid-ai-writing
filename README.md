@@ -166,6 +166,8 @@ curl -o .agents/skills/avoid-ai-writing/SKILL.md \
 
 ### Native ChatGPT and Codex plugin package
 
+Published in the [OpenAI Plugins Directory](https://chatgpt.com/plugins/plugins_6a9b77b18b8881918efa9c1255868164); install it there for ChatGPT or Codex.
+
 The [plugin package](./OPENAI_PLUGIN.md) keeps the canonical `SKILL.md` as its editorial authority and provides seven focused Skills:
 
 - `avoid-ai-writing` — uses the canonical audit and rewrite instructions
