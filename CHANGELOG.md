@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.30.0] — 2026-09-05
+
+### Added
+
+- **Repeated setup/reversal punchlines as a judgment-only subtype of manufactured punchlines.** Complete [cland4449's contribution (#130)](https://github.com/conorbronsdon/avoid-ai-writing/pull/130) with a P2 test for repeated reversals that replace concrete claims. Supported contrasts, isolated intentional lines, comedy, fiction, speeches, and quotations pass. Rewrites preserve source facts and ask for missing details instead of inventing failure modes. The deterministic detector is unchanged.
+
+---
+
 ## [Unreleased] — 2026-09-04
 
 ### Changed

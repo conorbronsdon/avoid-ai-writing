@@ -120,7 +120,7 @@ mistake their absence for a coverage gap:
 - Immaculate typography in casual registers *(folded into the Formatting section — same weak-signal tier as curly quotes, not a standalone category)*
 - Subjectless fragments and agentless passives *(docs and changelog registers are carve-outs — the fragment is the correct form there)*
 - Diff-anchored writing *(changelogs, release notes, and migration guides are carve-outs)*
-- Manufactured punchlines / staccato drama
+- Manufactured punchlines / staccato drama (including repeated setup/reversal punchlines: P2 only when repetition replaces concrete claims; supported reversals and intentional comedy, fiction, speeches, and quotations pass)
 - Aphorism formulas *(a regex for "X is the Y of Z" would flag ordinary genitive copulas — "Paris is the capital of France")*
 - Stacked rhetorical questions *(interviews, FAQs, and dialogue stack questions legitimately; a regex can't read register)*
 - Same-opener sentence runs *(whether the anaphora is earned is the whole judgment; pronoun-opener runs are ordinary narration)*
