@@ -1,11 +1,17 @@
 ---
-description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Activate whenever editing prose-heavy files (Markdown, documentation, blog posts, READMEs, release notes, emails). Cursor port of the avoid-ai-writing skill v3.33.0. See https://github.com/conorbronsdon/avoid-ai-writing.
-globs: ["**/*.md", "**/*.mdx", "**/*.txt", "**/*.rst", "**/*.adoc"]
-alwaysApply: false
+name: avoid-ai-writing
+description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Use this skill when asked to "remove AI-isms," "clean up AI writing," "edit writing for AI patterns," "audit writing for AI tells," or "make this sound less like AI." Supports a detect-only mode, an edit-in-place mode for files, an optional voice profile (casual / professional / technical / warm / blunt), and an iterate-to-convergence pass.
+version: 3.33.0
+license: MIT
+compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, VS Code Copilot, Hermes Agent, OpenHands, etc.) or OpenClaw. No external tools or APIs required.
+metadata:
+  author: Conor Bronsdon
+  repository: https://github.com/conorbronsdon/avoid-ai-writing
+  tags: writing editing voice quality
+  agentskills_spec: "1.0"
+  openclaw:
+    emoji: "✍️"
 ---
-
-<!-- GENERATED FILE — do not edit by hand. Regenerated from ../SKILL.md and ../references/patterns.md by
-     scripts/sync-cursor-rules.sh; CI fails when the two drift. -->
 
 # Avoid AI Writing — Audit & Rewrite
 
@@ -47,7 +53,7 @@ In **rewrite** mode, your job is to:
 2. **Rewrite it**: return a clean version with every editable AI-ism removed — the flag-don't-fix exemptions above (quotes, code, tables, attributed text) bind here too, so a tell left standing inside one of them belongs in section 1 as a flag, not against the rewrite as unfinished work
 3. **Show a diff summary**: briefly list what you changed and why
 
-**Automatic marks pass (rewrite and edit).** Keep a copy of the original document before rewriting. After each rewrite, normalize quotes and apostrophes in the editable prose against that original, before the second-pass audit or delivery. The command processes all prose it receives; it does not recognize attribution or table semantics. Copy only the editable paragraphs you changed into a scratch file named `<rewritten-prose>`; exclude quoted material, tables, attributed text, and untouched paragraphs. Never pass the complete target document to `--write` when it contains any of those regions. Apply the convention manually; this standalone rule does not bundle the upstream normalization command. Double quotes and single quotes/apostrophes are inferred independently from unprotected original prose: majority wins, ties use the first observed style, and no evidence leaves that family unchanged. An explicit house-style quote setting overrides inference with `--quotes straight` or `--quotes curly` (omit `--reference`). Apply the result only to editable spans; quoted material, code, tables and attributed text retain the exemptions above. If the bundled command cannot run, apply the same convention manually and report that the marks pass was not mechanically verified. Detect mode never runs this pass.
+**Automatic marks pass (rewrite and edit).** Keep a copy of the original document before rewriting. After each rewrite, normalize quotes and apostrophes in the editable prose against that original, before the second-pass audit or delivery. The command processes all prose it receives; it does not recognize attribution or table semantics. Copy only the editable paragraphs you changed into a scratch file named `<rewritten-prose>`; exclude quoted material, tables, attributed text, and untouched paragraphs. Never pass the complete target document to `--write` when it contains any of those regions. Run `node scripts/normalize-quotes.js <rewritten-prose> --reference <original> --write` from the installed skill directory; no explicit quote target is needed. Double quotes and single quotes/apostrophes are inferred independently from unprotected original prose: majority wins, ties use the first observed style, and no evidence leaves that family unchanged. An explicit house-style quote setting overrides inference with `--quotes straight` or `--quotes curly` (omit `--reference`). Apply the result only to editable spans; quoted material, code, tables and attributed text retain the exemptions above. If the bundled command cannot run, apply the same convention manually and report that the marks pass was not mechanically verified. Detect mode never runs this pass.
 
 In **detect** mode, your job is to:
 
@@ -100,7 +106,7 @@ Tier 1 splits into two bands. **Both are always replaced**; the edit is the same
 
 In `detect` mode, report the two bands separately. Presenting a wordiness fix as authorship evidence is the error this split exists to prevent.
 
-Caveat worth keeping visible: the "appears far more often in AI text" claim behind 1A is **inherited, not measured here**. It traces to [brandonwise/humanizer](https://github.com/brandonwise/humanizer), which states a 5–20x ratio without publishing a method or dataset. Treat 1A as a well-supported convention rather than a verified statistic until the ratios are measured against a machine-written corpus.
+Caveat worth keeping visible: the "appears far more often in AI text" claim behind 1A is **inherited, not measured here**. It traces to [brandonwise/humanizer](https://github.com/brandonwise/humanizer), which states a 5–20x ratio without publishing a method or dataset. Treat 1A as a well-supported convention rather than a verified statistic until this repo measures the ratios itself against a machine-written corpus.
 
 ##### Tier 1A — AI frequency markers
 
@@ -560,7 +566,7 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - Fix: break at thought boundaries. One idea per line-group, the way a person actually types a reply.
 - Observed in the wild: a maintainer on a GitHub issue called out an assisted-sounding reply with "I prefer to talk human to human" — the dense block-paragraph shape was the tell, not any single word in it.
 - Distinct from paragraph-length uniformity (which is about long-form prose where every paragraph is the same size): this rule is about short, reply-length text having *zero* breaks at all, not uneven ones.
-- Carve-out: a single dense paragraph is the *correct* shape in formal, long-form registers — a blog intro, a docs paragraph, a deliberately tight one-paragraph email. This rule fires only in conversational reply registers; never flag continuous long-form prose just because it lacks internal breaks. That false-positive class is exactly why an automated structural detector for this rule was reverted upstream, and why the tolerance matrix below is the wrong home for it: a plain issue comment auto-detects to the `blog` profile, so the scoping has to live in this rule's judgment, not in a per-profile strictness cell.
+- Carve-out: a single dense paragraph is the *correct* shape in formal, long-form registers — a blog intro, a docs paragraph, a deliberately tight one-paragraph email. This rule fires only in conversational reply registers; never flag continuous long-form prose just because it lacks internal breaks. That false-positive class is exactly why the structural detector was reverted (see `detector/CATEGORIES.md` §C), and why the tolerance matrix below is the wrong home for it: a plain issue comment auto-detects to the `blog` profile, so the scoping has to live in this rule's judgment, not in a per-profile strictness cell.
 
 ### Recap-flattery opener
 - Replying to a person by summarizing their own work back at them with praise before getting to the point: "Thanks for all the legwork here — the migration script and the rollback plan you worked through are what made this possible." The reader already knows what they did; the recap performs appreciation instead of conveying information.
@@ -806,13 +812,13 @@ Each profile is a set of concrete targets, not a vibe:
 
 `--style` copyedits to a house style on top of the de-AI pass (which always runs). No bundled guides. This layer is not a guide registry: it applies **register/voice** directives and removes AI tells, on top of whatever **mechanics** you enforce.
 
-**Preferred: a config file.** `--style ./house.json` applies a user-supplied JSON config: **`register`** (voice directives you apply as written) plus **`mechanics`** (`quotes`, `latinAbbrev`, `headings`, `emDash`, `spellNumbersUpTo`, `serialComma`). Apply the register and enforce the mechanics as written. The upstream repo ships a deterministic checker for the checkable ones; without it, treat the mechanics as applied but unverified. Open the output by naming the config you applied, the way the fallback below names its guide, so which mode ran is never ambiguous.
+**Preferred: a config file.** `--style ./house.json` (or a bare name matching `examples/<name>.json`) applies a user-supplied JSON config and verifies the checkable subset of its mechanics with `node scripts/check-style.js <file> --config <path>` (exit 0 clean / 1 hard violation / 2 tool error). A config is JSON: **`register`** (voice directives you apply as written) plus **`mechanics`** (`quotes` and `latinAbbrev` hard-checkable; `headings`, `emDash`, `spellNumbersUpTo` advisory; `serialComma` model-applied). Schema and rationale: `examples/README.md`. Open the output by naming the resolved config (`Applying config examples/technical.json; checkable mechanics verified.`), the way the fallback below names its guide, so which mode ran is never ambiguous.
 
 **How `--style` composes.** It is a third axis alongside `--voice` and `--context`, and the narrowest wins: `mechanics` beat everything (they're checkable), then `--voice`, then a config's `register`, then `--context`. So `--voice blunt` with a config asking for warmth stays blunt, while that config's `emDash: deliberate` still governs dashes.
 
 **Fallback: a named guide from memory.** If someone passes `--style "APA"` or `"Chicago"` with no config, you may apply it from general knowledge as best-effort, not as a feature. Open with a status line such as `Applying APA from general knowledge (not verified; no compliance claim).`, apply the register and mechanics you know, and make no compliance claim. Do **not** reproduce the guide's copyrighted text, and note that your knowledge may reflect an older edition. Paywalled guides (Chicago, APA, MLA, AP) are never bundled in any form.
 
-**Resolving `--style <arg>`.** A path to a JSON config loads it, and you apply it as written; anything else is the named-guide fallback above. When a guide's mechanics conflict with the AI-ism catalog the guide wins the mechanic (for example, CMOS keeps deliberate em dashes); still flag the AI *habit* such as em-dash stacking. A bare de-AI request (no `--style`) is unchanged; don't apply a guide to a genre it wasn't written for.
+**Resolving `--style <arg>`.** A path, or a bare name matching `examples/<name>.json`, loads that config (apply and verify); anything else is the named-guide fallback above. When a guide's mechanics conflict with the AI-ism catalog the guide wins the mechanic (for example, CMOS keeps deliberate em dashes); still flag the AI *habit* such as em-dash stacking. A bare de-AI request (no `--style`) is unchanged; don't apply a guide to a genre it wasn't written for.
 
 ## Output format
 
@@ -852,8 +858,13 @@ A bulleted list of the changes, each with the file location and the before → a
 **2. Verification**
 Confirm you re-read the file and the flagged patterns are resolved. Note anything you deliberately left alone because it was already human or intentional.
 
-**3. Preservation check**
-Confirm the rewrite did not alter a fenced code block, YAML frontmatter, a blockquote, a table cell, inline code, a URL, a file path, or the heading structure, and that it did not introduce more flagged patterns than it removed. Those are the promises made above. Rewording a heading to fix Title Case and stripping an AI tracking parameter from a URL are the two carve-outs, because this skill instructs both.
+**Mechanical check (optional, recommended for edit mode).** If the repo ships the detector engine, run the preservation validator against the before and after text:
+
+```bash
+node detector/validate.js <original> <rewritten>
+```
+
+It exits non-zero when a rewrite altered a fenced code block, YAML frontmatter, a blockquote, a table cell, inline code, a URL, a file path, or the heading structure, and when the rewrite introduced more flagged patterns than it removed. Those are the promises made above; this is what checks them. Rewording a heading to fix Title Case and stripping an AI tracking parameter from a URL are carved out, because this skill instructs both.
 
 ---
 

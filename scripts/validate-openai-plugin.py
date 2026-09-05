@@ -532,6 +532,14 @@ def validate(root: Path):
             errors.append(f"canonical SKILL.md version {meta.get('version')!r} does not match manifest {version!r}")
     else:
         warnings.append("root SKILL.md not present in packaged archive; canonical-copy check skipped")
+    canonical_bundle = skills_root / "avoid-ai-writing"
+    for rel in ("references/patterns.md", "detector/patterns.js", "detector/validate.js", "detector/CATEGORIES.md", "scripts/check-style.js", "scripts/normalize-quotes.js", "scripts/markdown-prose.js", "examples/README.md", "examples/technical.json", "examples/prose.json"):
+        bundled = canonical_bundle / rel
+        if not bundled.is_file():
+            errors.append(f"avoid-ai-writing missing bundled resource: {rel}")
+        source = root / rel
+        if source.is_file() and bundled.is_file() and source.read_bytes() != bundled.read_bytes():
+            errors.append(f"avoid-ai-writing bundled resource drifted from canonical: {rel}")
     graph_path = skills_root / "avoid-ai-writing-router" / "references" / "skill-graph.json"
     graph = load_json(graph_path, errors) if graph_path.is_file() else {}
     if not graph_path.is_file():

@@ -39,36 +39,18 @@ A one-shot "make this sound human" prompt catches the obvious stuff. This skill 
 
 - **Structured audit** — returns identified issues with quoted text, the rewrite, a change summary, and a second-pass audit in four discrete sections. You see exactly what changed and why.
 - **Two-pass detection** — the second pass re-reads the rewrite and catches patterns that survive the first edit: recycled transitions, lingering inflation, copula swaps that snuck through.
-- **112-entry word replacement table across 3 tiers + 10 Tier 3 phrases** — not vibes-based. Every flagged word has a specific, plainer alternative. "Leverage" → "use." "Commence" → "start." Tier 1 words always flag, Tier 2 words flag when they cluster, Tier 3 words flag only at high density. Tier 1 itself splits into **1A frequency markers** (`delve`, `tapestry`) and **1B clarity edits** (`in order to`, `utilize`) — same fix, but only 1A is evidence about how a passage was produced, and 1B is weighted lower so a wordiness fix cannot push a document toward an AI classification. Tier 3 *phrases* (multi-word boilerplate like "the integration of," "decentralized compute") flag on per-phrase repetition or when 3+ distinct phrases stack in one piece — the LLM-self-varies-boilerplate shape.
-- **74 pattern categories** — representative examples below, each with before/after. Includes structural detection (hashtag stuffing, bare-NP bullet lists, hedge-stacked predictions), AI-tool fingerprints (placeholders, citation markup, UTM params), rhythm/uniformity checks, conversational-register tells, and writer-side tests. The full catalog lives in [`SKILL.md`](./SKILL.md); this count is enforced against it in CI.
+- **112-entry word replacement table across 3 tiers + 10 Tier 3 phrases** — not vibes-based. Every flagged word has a specific, plainer alternative. "Leverage" → "use." "Commence" → "start." Tier 1 matches flag unless a listed exception applies, Tier 2 words flag when they cluster, Tier 3 words flag only at high density. Tier 1 itself splits into **1A frequency markers** (`delve`, `tapestry`) and **1B clarity edits** (`in order to`, `utilize`) — same fix, but only 1A is evidence about how a passage was produced, and 1B is weighted lower so a wordiness fix cannot push a document toward an AI classification. Tier 3 *phrases* (multi-word boilerplate like "the integration of," "decentralized compute") flag on per-phrase repetition or when 3+ distinct phrases stack in one piece — the LLM-self-varies-boilerplate shape.
+- **74 pattern categories** — representative examples below, each with before/after. Includes structural detection (hashtag stuffing, bare-NP bullet lists, hedge-stacked predictions), AI-tool fingerprints (placeholders, citation markup, UTM params), rhythm/uniformity checks, conversational-register tells, and writer-side tests. The full catalog lives in [`references/patterns.md`](./references/patterns.md); this count is enforced against it in CI.
 - **Detect mode** — flag patterns without rewriting. See which flags are real problems vs. judgment calls. Useful when patterns might be intentional or you're auditing content you don't want altered.
-- **Works across platforms** — one `SKILL.md` runs in Claude Code, Cowork (as a plugin), OpenClaw, Cursor (as a ported rule), and more via `npx skills add`. See the install paths below.
+- **Works across platforms** — a directory-based skill runs in Claude Code, Cowork (as a plugin), OpenClaw, Cursor (as a ported rule), and other directory-aware agents. See the install paths below.
 
 ## Installation & Usage
 
-### Quick install — any agent
+### Install the complete skill directory
 
-The fastest way to install this skill, and later keep it updated, is the community [`skills`](https://github.com/vercel-labs/skills) CLI. It auto-detects installed coding agents and supports 75+ of them, including Claude Code, Codex, Cursor, OpenClaw, and Hermes. `npx` downloads and runs that package from the npm registry. It's third-party code, not something this repo publishes or maintains. The commands below pin `skills@1.5.23` rather than `@latest` so the installer version that runs is fixed and visible; the skill payload still follows this repository's current default branch. Bump the pin yourself once you've checked the [release notes](https://github.com/vercel-labs/skills/releases). It requires Node **>=22.20.0**, a higher floor than this repo's own `>=18`; check with `node --version` if you're not sure which you have.
+Use the plugin install below or clone the repository into your agent's skills directory. Keep `SKILL.md` with `references/patterns.md`: the entry file loads the catalog before auditing. The bundled `scripts/`, `detector/`, and `examples/` provide optional mechanical verification.
 
-```bash
-npx skills@1.5.23 add conorbronsdon/avoid-ai-writing
-```
-
-For this public repository, the CLI normally uses its GitHub blob fast path and installs only `SKILL.md`. If that path is unavailable, it can fall back to cloning and install the full root skill directory. Use `git clone` when you explicitly want the detector, tests, CI config, and other repository tooling; see the manual steps below.
-
-Useful flags:
-
-```bash
-# Target specific agents instead of everything detected
-npx skills@1.5.23 add conorbronsdon/avoid-ai-writing -a claude-code -a codex
-
-# Install globally (~/.<agent>/skills/) instead of the current project
-npx skills@1.5.23 add conorbronsdon/avoid-ai-writing -g
-```
-
-Later, `npx skills@1.5.23 update` refreshes installed skills in whichever scope you select. It prompts for project vs. global; pass `-g` or `-p` to choose non-interactively. See the [`skills update` docs](https://github.com/vercel-labs/skills#skills-update) for the full command reference.
-
-Prefer to install by hand, or using an agent not covered above? The sections below are manual, per-platform steps that don't need Node or npx.
+For a single-file rules field, use [`dist/avoid-ai-writing.md`](./dist/avoid-ai-writing.md). It includes every rule and profile, with manual fallbacks for commands unavailable outside the bundle. Do not copy the slim entry file alone. Older installers that fetch only root `SKILL.md` omit its required reference; use a directory install instead.
 
 ### Claude Code
 
@@ -78,12 +60,12 @@ Prefer to install by hand, or using an agent not covered above? The sections bel
 git clone https://github.com/conorbronsdon/avoid-ai-writing ~/.claude/skills/avoid-ai-writing
 ```
 
-**Option 2: Copy the file directly**
+**Option 2: Copy a self-contained file**
 
-Download `SKILL.md` and place it in any directory that Claude Code can read. Reference it in your `CLAUDE.md`:
+Download `dist/avoid-ai-writing.md` and place it in any directory that Claude Code can read. Reference it in your `CLAUDE.md`:
 
 ```markdown
-- Editing for AI patterns → read `path/to/avoid-ai-writing/SKILL.md`
+- Editing for AI patterns → read `path/to/avoid-ai-writing.md`
 ```
 
 **Option 3: Use as a slash command**
@@ -116,7 +98,7 @@ In the Cowork desktop app, do the same from **Customize → Plugins → Add mark
 
 The same plugin install works in Claude Code if you'd rather have a versioned, updatable plugin than the file clone above.
 
-> Prefer not to install a plugin? Copy `SKILL.md` into a folder connected to your Cowork session and tell the agent to follow `./SKILL.md` — works as a one-off, no auto-trigger.
+> Prefer not to install a plugin? Copy `dist/avoid-ai-writing.md` into a folder connected to your Cowork session and tell the agent to follow `./avoid-ai-writing.md` — works as a one-off, no auto-trigger.
 
 ### OpenClaw
 
@@ -149,9 +131,7 @@ See [`cursor-rules/README.md`](./cursor-rules/README.md) for activation globs an
 Drop the skill into Hermes's skills directory — it then appears automatically as `/avoid-ai-writing`, no registration needed:
 
 ```bash
-mkdir -p ~/.hermes/skills/writing/avoid-ai-writing
-curl -o ~/.hermes/skills/writing/avoid-ai-writing/SKILL.md \
-  https://raw.githubusercontent.com/conorbronsdon/avoid-ai-writing/main/SKILL.md
+git clone https://github.com/conorbronsdon/avoid-ai-writing ~/.hermes/skills/writing/avoid-ai-writing
 ```
 
 ### OpenAI Codex
@@ -159,9 +139,7 @@ curl -o ~/.hermes/skills/writing/avoid-ai-writing/SKILL.md \
 Codex reads [Agent Skills](https://developers.openai.com/codex/skills) in the same `SKILL.md` format. Put it in `.agents/skills/` at the repo root, or `~/.agents/skills/` to use it across all your projects:
 
 ```bash
-mkdir -p .agents/skills/avoid-ai-writing
-curl -o .agents/skills/avoid-ai-writing/SKILL.md \
-  https://raw.githubusercontent.com/conorbronsdon/avoid-ai-writing/main/SKILL.md
+git clone https://github.com/conorbronsdon/avoid-ai-writing .agents/skills/avoid-ai-writing
 ```
 
 ### Native ChatGPT and Codex plugin package
@@ -187,15 +165,15 @@ python3 scripts/validate-openai-plugin.py . --json
 
 ### Other agents
 
-The same `SKILL.md` (or the Cursor `.mdc` port) drops into most tools' rules/skills location:
+The generated `dist/avoid-ai-writing.md` (or the Cursor `.mdc` port) drops into most tools' rules/skills location:
 
 | Tool | Where to put it |
 |------|-----------------|
 | **Windsurf** | `.windsurf/rules/avoid-ai-writing.md` |
 | **Cline** | `.clinerules/avoid-ai-writing.md` |
 | **GitHub Copilot** (VS Code) | paste into `.github/copilot-instructions.md` |
-| **Claude.ai Projects** | paste `SKILL.md` into the project's custom instructions |
-| **ChatGPT Custom GPTs** | paste `SKILL.md` into the GPT's Instructions field |
+| **Claude.ai Projects** | paste `dist/avoid-ai-writing.md` into the project's custom instructions |
+| **ChatGPT Custom GPTs** | paste `dist/avoid-ai-writing.md` into the GPT's Instructions field |
 
 ### Triggering the skill
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Guard against count drift in the README. Both counts are derived facts, so each
-# lives in exactly one user-facing place and is asserted against SKILL.md here:
+# lives in exactly one user-facing place and is asserted against references/patterns.md here:
 #
 #   "**NN pattern categories**"        <- the detection catalog
 #   "**NN-entry word replacement table"  <- the Tier 1/2/3 word tables
@@ -10,7 +10,7 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-skill="$repo_root/SKILL.md"
+skill="$repo_root/references/patterns.md"
 readme="$repo_root/README.md"
 
 # Detection categories = the `###` entries under "## What to remove or fix",
@@ -37,8 +37,8 @@ if [ -z "$readme_count" ]; then
 fi
 
 if [ "$detection_count" != "$readme_count" ]; then
-  echo "pattern-count drift: SKILL.md has $detection_count detection categories, README says $readme_count" >&2
-  echo "Update the '**NN pattern categories**' bullet in README.md to $detection_count (or fix SKILL.md)." >&2
+  echo "pattern-count drift: references/patterns.md has $detection_count detection categories, README says $readme_count" >&2
+  echo "Update the '**NN pattern categories**' bullet in README.md to $detection_count (or fix references/patterns.md)." >&2
   exit 1
 fi
 
@@ -68,7 +68,7 @@ if [ -z "$claude_count" ]; then
 fi
 
 if [ "$claude_count" != "$detection_count" ]; then
-  echo "pattern-count drift: CLAUDE.md quotes $claude_count, SKILL.md derives $detection_count" >&2
+  echo "pattern-count drift: CLAUDE.md quotes $claude_count, references/patterns.md derives $detection_count" >&2
   echo "Update the count in CLAUDE.md's pattern-count sentence to $detection_count." >&2
   exit 1
 fi
@@ -112,7 +112,7 @@ for tier in 1 2 3; do
   eval "count=\$t$tier"
   if [ "$count" -eq 0 ]; then
     echo "word-table counter found 0 entries in Tier $tier — it has stopped matching" >&2
-    echo "that tier's '#### Tier N — ...' heading in SKILL.md." >&2
+    echo "that tier's '#### Tier N — ...' heading in references/patterns.md." >&2
     echo "Fix the counter in $0, do not edit README.md." >&2
     exit 1
   fi
@@ -128,8 +128,8 @@ if [ -z "$readme_words" ]; then
 fi
 
 if [ "$word_count" != "$readme_words" ]; then
-  echo "word-table drift: SKILL.md has $word_count word entries ($t1 + $t2 + $t3), README says $readme_words" >&2
-  echo "Update the '**NN-entry word replacement table**' bullet in README.md to $word_count (or fix SKILL.md)." >&2
+  echo "word-table drift: references/patterns.md has $word_count word entries ($t1 + $t2 + $t3), README says $readme_words" >&2
+  echo "Update the '**NN-entry word replacement table**' bullet in README.md to $word_count (or fix references/patterns.md)." >&2
   exit 1
 fi
 

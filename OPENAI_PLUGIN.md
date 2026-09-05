@@ -1,6 +1,6 @@
 # ChatGPT and Codex plugin package
 
-This repository contains a native ChatGPT and Codex plugin package while keeping the existing Claude plugin and the canonical root `SKILL.md`.
+This repository contains a native ChatGPT and Codex plugin package while keeping the existing Claude plugin and the canonical `SKILL.md` and `references/patterns.md`.
 
 The package is published as [Avoid AI Writing](https://chatgpt.com/plugins/plugins_6a9b77b18b8881918efa9c1255868164) in the OpenAI Plugins Directory (version 3.29.0, approved and published 2026-09-04).
 
@@ -8,7 +8,7 @@ The package is published as [Avoid AI Writing](https://chatgpt.com/plugins/plugi
 
 The public package is skills-only. The separate `avoid-ai-writing-mcp` project remains optional and is not bundled or required.
 
-The canonical root `SKILL.md` remains the editorial authority. The OpenAI package adds focused workflow Skills around it:
+The canonical `SKILL.md` and `references/patterns.md` remains the editorial authority. The OpenAI package adds focused workflow Skills around it:
 
 - `avoid-ai-writing`: generated copy of the original Skill, identical except that the frontmatter `metadata` block (agentskills.io/OpenClaw fields) is omitted because the OpenAI portal rejects it
 - `avoid-ai-writing-router`: orchestration for mixed and multi-stage requests
@@ -84,7 +84,7 @@ The archive does not include repository CI, corpus data, development-only utilit
 
 ## Source of truth
 
-After changing the root `SKILL.md`, run:
+After changing `SKILL.md` or `references/patterns.md`, run:
 
 ```bash
 bash scripts/sync-plugin-skill.sh

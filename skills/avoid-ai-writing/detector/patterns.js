@@ -147,17 +147,10 @@ const AIDetector = (() => {
     // "the load bearing down on the bridge" — where `bearing` is a participle,
     // not part of a compound modifier. The tell is always hyphenated.
     //
-    // Construction carve-out: exempt attributive `load-bearing` before a literal
-    // structural noun, with one optional material/position adjective in between
-    // ("load-bearing structural wall"). The noun list is limited to commonly
-    // physical nouns; the abstract-capable ones most likely to carry the
-    // metaphor (structure, element, frame, foundation) are omitted so "the
-    // load-bearing structure of the argument" still fires. Some listed nouns
-    // (member, column, partition) can still be used metaphorically and are
-    // silently exempt — a recall loss in the safe direction, tracked in #56.
-    // Predicative use ("the wall is load-bearing") is NOT exempt: the tell
-    // lives in the subject, which a lookahead cannot reach. Also #56.
-    { pattern: /\bload-bearing\b(?!\s+(?:(?:structural|exterior|interior|internal|external|concrete|steel|timber|wooden|brick|masonry|perimeter|basement|main|primary|existing|original)\s+)?(?:walls?|beams?|columns?|joists?|truss(?:es)?|members?|footings?|slabs?|studs?|partitions?|masonry|lintels?|piers?|rafters?|girders?|capacity|capacities)\b)/gi, replace: 'essential, critical, or say what breaks if you remove it' },
+    // Only match an immediately following abstract noun from this seed list.
+    // Unknown nouns, mixed physical/abstract nouns, and predicative uses pass:
+    // precision over recall (#56). Keep the lookahead out of the matched span.
+    { pattern: /\bload-bearing\b(?=[ \t]+(?:assumptions?|claims?|invariants?|premises?|constraints?|dependenc(?:y|ies)|arguments?|abstractions?)\b)/gi, replace: 'essential, critical, or say what breaks if you remove it' },
   ];
 
   // ─── Tier 2: Flag in clusters (2+ per paragraph) ──────────────────

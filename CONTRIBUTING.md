@@ -8,9 +8,10 @@ keep the project coherent.
 
 | Path | What it holds |
 |------|---------------|
-| `SKILL.md` | The human-readable catalog of rules. The source of truth for what counts as an AI tell. |
+| `SKILL.md` | Entry instructions, severity tiers, output formats, and guardrails. |
+| `references/patterns.md` | Canonical pattern catalog, word tiers, context and voice profiles. |
 | `detector/patterns.js` | The deterministic engine — the executable subset of the rules. |
-| `detector/CATEGORIES.md` | The map between SKILL.md rules and detector `type`s. Keep it current. |
+| `detector/CATEGORIES.md` | The map between references/patterns.md rules and detector `type`s. Keep it current. |
 | `README.md` | The pitch and the numbered prose-pattern list. |
 | `cursor-rules/`, `plugins/` | Editor and tool integrations. |
 
@@ -19,12 +20,12 @@ keep the project coherent.
 First decide which kind of rule it is:
 
 - **Regex-detectable** (a phrase, a character, a structural shape) → add it to
-  `SKILL.md`, add the detection to `detector/patterns.js` with a new `type`, and
+  `references/patterns.md`, add the detection to `detector/patterns.js` with a new `type`, and
   add a row to `detector/CATEGORIES.md`. Cover it with a fixture in
   `detector/patterns.test.js` (both a true positive and a case that must *not*
   fire).
 - **Judgment-only** (needs reading for meaning — tone, structure, name-dropping)
-  → add it to `SKILL.md` prose and list it under "Skill-only" in
+  → add it to `references/patterns.md` prose and list it under "Skill-only" in
   `detector/CATEGORIES.md`. There is no detector type for these.
 
 If you are unsure which it is, open an issue first and we will sort it out.
@@ -78,3 +79,5 @@ its own.
 Add an entry to `CHANGELOG.md` under a dated, versioned heading
 (`## [X.Y.Z] — YYYY-MM-DD`), matching the existing entries. A new rule is a minor
 version bump; update the `version:` field in the `SKILL.md` frontmatter to match.
+
+After changing either canonical file, run `bash scripts/sync-plugin-skill.sh && bash scripts/sync-cursor-rules.sh`. This regenerates both bundles, `SKILL.full.md`, and the portable paste/Cursor artifacts; CI checks parity. Do not edit generated copies.

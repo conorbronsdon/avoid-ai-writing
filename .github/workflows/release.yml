@@ -109,8 +109,25 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          # Node 22 ships npm 10, which cannot authenticate with npm OIDC.
+          # https://docs.npmjs.com/trusted-publishers/
+          node-version: 24
           registry-url: https://registry.npmjs.org
+
+      - name: Verify npm supports trusted publishing
+        run: |
+          npm --version | node -e '
+            const version = require("node:fs").readFileSync(0, "utf8").trim();
+            const parts = /^(\d+)\.(\d+)\.(\d+)$/.exec(version);
+            const supported = parts && (Number(parts[1]) > 11 ||
+              (Number(parts[1]) === 11 && (Number(parts[2]) > 5 ||
+                (Number(parts[2]) === 5 && Number(parts[3]) >= 1))));
+            if (!supported) {
+              console.error("::error::npm " + version + " cannot use trusted publishing; npm >=11.5.1 is required.");
+              process.exit(1);
+            }
+            console.log("npm " + version + " supports trusted publishing.");
+          '
 
       - name: Refuse to publish a version that disagrees with CHANGELOG.md
         run: |

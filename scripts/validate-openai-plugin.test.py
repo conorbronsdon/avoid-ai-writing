@@ -61,6 +61,7 @@ def make_valid_plugin_root(root: Path):
     for rel in MODULE.TOP_LEVEL_INCLUDE_FILES:
         shutil.copy2(REPO_ROOT / rel, root / rel)
     shutil.copy2(REPO_ROOT / "SKILL.md", root / "SKILL.md")
+    shutil.copytree(REPO_ROOT / "references", root / "references")
     for rel in (".codex-plugin", "skills", "assets"):
         shutil.copytree(REPO_ROOT / rel, root / rel)
 
@@ -425,3 +426,13 @@ with tempfile.TemporaryDirectory() as temp_dir:
     assert any("ai-writing-detector" in error and "`metadata` in SKILL.md" in error for error in errors), errors
 
 print("all OpenAI plugin validation tests passed")
+
+# Missing split references and transitive imports must fail packaged validation.
+for rel in ("references/patterns.md", "scripts/markdown-prose.js", "scripts/normalize-quotes.js"):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        root = Path(temp_dir)
+        make_valid_plugin_root(root)
+        (root / "skills/avoid-ai-writing" / rel).unlink()
+        errors, _, _ = MODULE.validate(root)
+        assert any(f"missing bundled resource: {rel}" in e for e in errors), errors
+print("split reference and transitive dependency negative controls passed")

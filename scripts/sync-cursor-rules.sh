@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Regenerate cursor-rules/avoid-ai-writing.mdc from the canonical root SKILL.md.
-# Root SKILL.md is the single source of truth; the Cursor rule is generated.
+# SKILL.md and references/patterns.md are canonical; Cursor and paste files are generated.
 # Run this after editing SKILL.md. CI fails if the copy is out of sync.
 #
 # The rule is a copy-out artifact: users curl it into their own project's
@@ -24,8 +24,10 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-python3 - "$repo_root/SKILL.md" "$repo_root/cursor-rules/avoid-ai-writing.mdc" <<'PY'
+node "$repo_root/scripts/flatten-skill.js"
+python3 - "$repo_root/SKILL.full.md" "$repo_root/cursor-rules/avoid-ai-writing.mdc" <<'PY'
 import io
+from pathlib import Path
 import re
 import sys
 
@@ -107,7 +109,7 @@ globs: ["**/*.md", "**/*.mdx", "**/*.txt", "**/*.rst", "**/*.adoc"]
 alwaysApply: false
 ---
 
-<!-- GENERATED FILE — do not edit by hand. Regenerated from ../SKILL.md by
+<!-- GENERATED FILE — do not edit by hand. Regenerated from ../SKILL.md and ../references/patterns.md by
      scripts/sync-cursor-rules.sh; CI fails when the two drift. -->
 """
 
@@ -133,7 +135,7 @@ alwaysApply: false
 #     form the error message recommends, so the gate must not block it
 #   - a right boundary, so "patterns.json" cannot block via its patterns.js
 #     prefix
-REPO_DIRS = ("detector", "scripts", "examples", "plugins", "cursor-rules", "corpus")
+REPO_DIRS = ("references", "detector", "scripts", "examples", "plugins", "cursor-rules", "corpus")
 # Distinctive enough to block unqualified; README.md and friends are omitted on
 # purpose, since every project has them and this skill's prose names them.
 REPO_FILES = ("check-style.js", "validate.js", "patterns.js", "self-scan.js",
@@ -162,6 +164,7 @@ def scan_line(line):
 # script for the drift check, so the matrix rides along with no extra wiring.
 MUST_BLOCK = (
     "run scripts/check-style.js against the draft",
+    "read references/patterns.md",
     "see detector/CATEGORIES.md for the tiers",
     "bare validate.js and PROOF.md mentions",
     "plugins/avoid-ai-writing/SKILL.md",                # nested — the #110 hole
@@ -221,5 +224,8 @@ if leaks:
     )
 
 io.open(dst, "w", encoding="utf-8", newline="\n").write(cursor_fm + body)
+paste = Path(dst).parent.parent / "dist" / "avoid-ai-writing.md"
+paste.parent.mkdir(exist_ok=True)
+paste.write_text(fm + "\n<!-- GENERATED portable paste artifact; edit SKILL.md and references/patterns.md. -->\n" + body, encoding="utf-8", newline="\n")
 print(f"synced: cursor rule (v{version}); no repo references in the ported body")
 PY

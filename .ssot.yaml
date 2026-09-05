@@ -27,7 +27,7 @@ facts:
     type: integer
     note: >
       The human-facing prose-catalog category count. Canonical is the README
-      bullet, which check-pattern-count.sh derives from SKILL.md's `###` entries
+      bullet, which check-pattern-count.sh derives from references/patterns.md's `###` entries
       under "What to remove or fix". This is NOT the detector engine's `type`
       category count — that number is deliberately different and the mapping
       lives in detector/CATEGORIES.md. Never reconcile the two.
@@ -49,7 +49,7 @@ facts:
     note: >
       Word replacement table entry count (Tier 1 + 2 + 3 data rows; the Tier 3
       *phrases* table is counted separately in the README bullet and excluded
-      here). Canonical is the README bullet, derived from SKILL.md by
+      here). Canonical is the README bullet, derived from references/patterns.md by
       check-pattern-count.sh. agent-skills is absent below on purpose: it cites
       the pattern count but not this one.
     canonical:

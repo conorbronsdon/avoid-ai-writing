@@ -574,7 +574,7 @@ test('hashtag-stuff does not fire on prose with 2-3 hashtags', () => {
   assert.ok(!types.has('hashtag-stuff'), 'should not flag 2 hashtags as hashtag-stuff');
 });
 
-test('"load-bearing" (metaphor) flags tier1; construction nouns exempt', () => {
+test('"load-bearing" flags only allowlisted attributive abstractions (#56)', () => {
   // Every fixture is padded past the wordCount < 10 gate in analyzeText, which
   // returns zero issues before any pattern runs. A shorter fixture asserts
   // nothing: it would pass with the carve-out deleted entirely.
@@ -588,19 +588,41 @@ test('"load-bearing" (metaphor) flags tier1; construction nouns exempt', () => {
     'The load-bearing assumption here is that users will migrate to the platform voluntarily.',
     'That load-bearing claim never gets defended anywhere in the entire twelve page document.',
     'The whole load-bearing invariant rests on a cache that nobody has actually measured.',
-    // Abstract-capable nouns are deliberately absent from the carve-out so the
-    // metaphor still fires on them.
-    'The load-bearing structure of his argument collapses once you check the second citation.',
   ];
   for (const text of metaphors) {
     const { hits, types } = lbHits(text);
     assert.ok(types.has('tier1'), `expected tier1 flag for metaphor: ${text}`);
-    assert.ok(hits.length > 0, `expected a load-bearing tier1 hit: ${text}`);
+    assert.deepEqual(hits.map((h) => [h.type, h.text]), [['tier1', 'load-bearing']],
+      `expected only the modifier in the matched span: ${text}`);
   }
 
-  // One fixture per carve-out noun: dropping any single noun from the lookahead
-  // must fail this test. Previously only `wall` was pinned.
+  // Preserve existing construction controls while removing the noun denylist.
+  for (const noun of ['assumption', 'claim', 'invariant', 'premise', 'constraint',
+    'dependency', 'argument', 'abstraction', 'assumptions', 'claims', 'invariants',
+    'premises', 'constraints', 'dependencies', 'arguments', 'abstractions']) {
+    const text = `The load-bearing ${noun} remained central to the proposal throughout the entire review.`;
+    assert.deepEqual(lbHits(text).hits.map((h) => [h.type, h.text]), [['tier1', 'load-bearing']], noun);
+  }
+  assert.deepEqual(lbHits('The LOAD-BEARING claim remained central to the proposal throughout the entire review.')
+    .hits.map((h) => [h.type, h.text]), [['tier1', 'LOAD-BEARING']]);
+
   const literals = [
+    'The wall in the kitchen is load-bearing and must stay in place.',
+    'That claim is load-bearing for the argument presented in the final chapter.',
+    'The crew inspected the load-bearing structure before work resumed on the bridge.',
+    'The load-bearing structure of his argument collapses once you check the second citation.',
+    'The load-bearing element supports the roof above the entire second floor.',
+    'The load-bearing frame was installed after the concrete had cured completely.',
+    'The load-bearing foundation was reinforced before the next floor was added.',
+    'The load-bearing test measured the force required to deform the panel.',
+    'The load-bearing detail on the drawing specifies the new steel bracket.',
+    'The load-bearing corbel was inspected before the crew removed the scaffolding.',
+    'The load-bearing insight was repeated throughout the proposal without any supporting evidence.',
+    'The load-bearing hidden assumption remained central to the proposal throughout the entire review.',
+    'The load-bearing claimants waited outside the courtroom while their lawyer reviewed the evidence.',
+    'The panel is load-bearing. Claims about its capacity require an engineering report.',
+    'The panel is load-bearing\nClaims about its capacity require an engineering report.',
+
     'Install a load-bearing wall between the kitchen and the garage today.',
     'The steel load-bearing beam spans twelve feet across the finished basement ceiling.',
     'The concrete load-bearing column in the parking garage was inspected last week.',
@@ -629,7 +651,7 @@ test('"load-bearing" (metaphor) flags tier1; construction nouns exempt', () => {
   ];
   for (const text of literals) {
     const { hits } = lbHits(text);
-    assert.equal(hits.length, 0, `literal construction use should not fire tier1: ${text}`);
+    assert.equal(hits.length, 0, `out-of-scope use should not fire tier1: ${text}`);
   }
 });
 

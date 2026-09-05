@@ -8,7 +8,10 @@ const { spawnSync } = require('node:child_process');
 const assert = require('node:assert');
 
 const root = path.resolve(process.argv[2] || '.');
-const skillRoot = path.join(root, 'skills', 'avoid-ai-writing');
+const bundleRoots = [path.join(root, 'skills', 'avoid-ai-writing')];
+const claudeRoot = path.join(root, 'plugins', 'avoid-ai-writing', 'skills', 'avoid-ai-writing');
+if (fs.existsSync(claudeRoot)) bundleRoots.push(claudeRoot);
+let skillRoot;
 const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'avoid-ai-writing-skill-'));
 
 function run(args) {
@@ -25,6 +28,8 @@ function run(args) {
 }
 
 try {
+ for (skillRoot of bundleRoots) {
+  assert.ok(fs.readFileSync(path.join(skillRoot, "references/patterns.md"), "utf8").includes("## What to remove or fix"));
   const styleFixture = path.join(fixtureRoot, 'technical.md');
   const beforeFixture = path.join(fixtureRoot, 'before.md');
   const afterFixture = path.join(fixtureRoot, 'after.md');
@@ -45,6 +50,7 @@ try {
   assert.strictEqual(fs.readFileSync(styleFixture, 'utf8'), 'Say “hello” in [docs](url "Title").\n');
   const preservation = run(['detector/validate.js', beforeFixture, afterFixture]);
   console.log(JSON.stringify({ ok: true, cwd: path.relative(root, skillRoot), style, marks, preservation }, null, 2));
+ }
 } finally {
   fs.rmSync(fixtureRoot, { recursive: true, force: true });
 }
