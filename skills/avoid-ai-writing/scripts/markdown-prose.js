@@ -247,6 +247,8 @@ function markdownProse(text) {
   const urls = /\bhttps?:\/\/[^\s<>"\u201c\u201d\x00]+/g;
   while ((m = urls.exec(s)) !== null) {
     let url = m[0].replace(/[.,;:!?]+$/, '');
+    // A surrounding single quote is prose; an internal URL apostrophe is data.
+    if (/[‘']/.test(s[m.index - 1] || '') && /[’']$/.test(url)) url = url.slice(0, -1);
     let extra = (url.match(/\)/g) || []).length - (url.match(/\(/g) || []).length;
     while (extra > 0 && url.endsWith(')')) {
       url = url.slice(0, -1).replace(/[.,;:!?]+$/, ''); extra -= 1;

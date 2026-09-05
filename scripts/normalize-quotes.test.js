@@ -253,6 +253,8 @@ t('bare URLs retain balanced parentheses but leave prose quotes and delimiters l
   assert.strictEqual(curly('See https://x/Foo_(bar), "live".'), 'See https://x/Foo_(bar), “live”.');
   assert.strictEqual(curly('"https://x/path"'), '“https://x/path”');
   assert.strictEqual(curly("https://x/O'Reilly"), "https://x/O'Reilly");
+  assert.strictEqual(curly("Read 'https://x/O'Reilly' today."), "Read ‘https://x/O'Reilly’ today.");
+  assert.strictEqual(normalize("Read ‘https://x/O'Reilly’ today.", 'straight'), "Read 'https://x/O'Reilly' today.");
   assert.deepStrictEqual(check('(see https://x/Foo_(bar)), e.g. outside.', { latinAbbrev: 'parentheses' }).hard,
     [{ line: 1, rule: 'latin-abbrev-outside-parens' }]);
   assert.deepStrictEqual(check('(e.g. see https://x/Foo_(bar)).', { latinAbbrev: 'parentheses' }).hard, []);
