@@ -4,44 +4,134 @@ All notable changes to this project are documented here.
 
 ---
 
-## [3.27.0] — 2026-08-16
+## [3.31.0] — 2026-09-05
 
 ### Added
 
-- **Two judgment-only patterns and the genre-scoped remainder of the
-  [#108](https://github.com/conorbronsdon/avoid-ai-writing/issues/108) batch.**
-  False agency (an active subject that can't own the verb — with operative
-  carve-outs for literal verbs and collective-actor shorthand like "the market
-  rewards shipping", per review) and the transformation crutch ("turns into" /
-  "becomes real" as summary glue, with literal and mechanism-stated
-  transformations carved out) join the catalog as LLM-judgment rules. The
-  ZK/crypto domain-term collision (generic "proof point" / "receipt") lands as
-  two genre-scoped rows in the Tier 3 phrases table — skipped by the
-  deterministic engine, since genre scoping needs judgment — with the
-  generalization held as a note. "This matters because" folds into the
-  persuasive-authority tropes, and the concession-fragment reassurance pair
-  ("Not always. Not perfectly.") joins manufactured punchlines. Catalog moves
-  to 67 categories and the README's Tier 3 phrase count to 12; the engine
-  stays at 51 `type`s and the word table at 112.
+- **Judgment-only clarity rules from [odinfree's contribution (#129)](https://github.com/conorbronsdon/avoid-ai-writing/pull/129).** Flag obscured accountable decision-makers and repeated unexplained relabeling while preserving conventional personification, collective actors, and changes explained elsewhere in a passage. Add an audience-fit note for ambiguous proof terminology in cryptography, outside the vocabulary tiers. Narrow consequence-free restatements and repeated empty concession pairs; preserve concrete consequences and meaningful limitations. Rewrites use source facts or ask for missing details. The deterministic detector is unchanged.
 
 ---
 
-## [3.26.0] — 2026-08-16
+## [3.30.0] — 2026-09-05
 
 ### Added
 
+- **Repeated setup/reversal punchlines as a judgment-only subtype of manufactured punchlines.** Complete [cland4449's contribution (#130)](https://github.com/conorbronsdon/avoid-ai-writing/pull/130) with a P2 test for repeated reversals that replace concrete claims. Supported contrasts, isolated intentional lines, comedy, fiction, speeches, and quotations pass. Rewrites preserve source facts and ask for missing details instead of inventing failure modes. The deterministic detector is unchanged.
+
+---
+
+## [Unreleased] — 2026-09-04
+
+### Changed
+
+- **Published in the OpenAI Plugins Directory** as [Avoid AI Writing](https://chatgpt.com/plugins/plugins_6a9b77b18b8881918efa9c1255868164) (version 3.29.0, approved 2026-09-04). The bundled canonical skill now omits the frontmatter `metadata` block, which the portal rejects (#146); TERMS.md and PRIVACY.md state the plugin's scope and data handling in the terms OpenAI's plugin guidelines ask for (#147).
+- **Plugin validation now fails closed on deferred port-integrity gaps.** `agents/openai.yaml` rejects scalar policies and malformed mapping/list lines, SVG assets must have an actual `<svg>` root, and the bundled routing matrix carries a checked graph digest plus generated edge inventory so it cannot silently drift from `skill-graph.json`.
+
+- **README adds a restrained related-work block.** Links to Conor's public
+  builds, Chain of Thought, and `repo-audit` now sit after the core product and
+  usage documentation.
+- **Corpus manifest documents the register gap with two auditable seed entries.**
+  RFC 8259 provides a pre-LLM `docs` source and a 1995 W3C mailing-list message
+  provides a pre-LLM `conversational` source. The corpus README records that
+  both registers remain under-sampled and that `social` and `email` still have
+  no entries; the additions do not authorize publishing a rate.
+
+---
+
+## [3.29.0] — 2026-09-03
+
+### Added
+
+- **A native ChatGPT and Codex plugin package.** The package contains seven
+  Codex Skills, including a router for multi-stage requests, plus the
+  `.codex-plugin/plugin.json` manifest and scripts for packaging and
+  validation. The canonical `SKILL.md` remains the editorial authority.
 - **Three detector-backed patterns from the `welttowelt` merged-system diff
   ([#108](https://github.com/conorbronsdon/avoid-ai-writing/issues/108)).**
-  Launch-copy dramatic introductions ("Enter X.", "Meet X, your new...",
-  "Think X meets Y" — "Say hello to X" stays judgment-only, since "Say hello
-  to Grandma." is ordinary human prose), dramatized contrast against the crowd
-  (gated on a dismissive verb plus the "was still" dramatization marker, so
-  literal simultaneity — "she read while everyone else watched the movie,"
-  "others debated the amendment" — stays clean; a literal "was still
-  debating" is the accepted, disclosed residue), and the fake-casual register, with its mechanical props detected
-  (stage directions, wink asides, "because of course it does") and the
-  register judgment left to the skill. The catalog moves to 65 categories and
-  the engine to 51 `type`s; the word table stays at 112.
+  Launch-copy dramatic introductions — `Meet X,` followed by one of four
+  launch-copy heads (`your new favorite`, `your new go-to`, or
+  `the new home/way/standard` with its own tail), plus `Think X meets Y`;
+  bare `Enter X.` and `Say hello to X` stay judgment-only, since
+  `Enter Password.` and "Say hello to Grandma." are ordinary human prose. Dramatized contrast against the crowd, in three
+  separately gated branches: the progressive debate/speculation branch
+  (`while everyone else was still debating ...`, restricted to `-ing` forms,
+  so `was still deliberate about` and `was still debated by pundits` stay
+  clean) plus two stereotyped variants matched on their own wording
+  (`writing think-pieces`, `playing catch-up`). And the fake-casual register,
+  with a closed list of mechanical props detected (six asterisk stage
+  directions, the four `(yes|no) x (really|seriously)` parentheticals) and
+  the register judgment — including `because of course it does` — left to
+  the skill. Every entry states its own residue and its own measured misses.
+
+---
+
+## [3.28.0] — 2026-08-28
+
+### Added
+
+- **Seven rhetorical-tic pattern categories adapted from Simon Willison's
+  [LLM cliché highlighter](https://tools.simonwillison.net/llm-cliche-highlighter).**
+  Three ship with detector types: `performed-insight` (essayist tics that
+  announce profundity — "sit with that", "that's not nothing", sentence-initial
+  "Turns out", "is the whole point", "X is dead; long live X"),
+  `negation-chain` (three-part "no fluff, no filler, no jargon" chains,
+  stacked "didn't …" clauses, "don't call it X — call it Y"), and
+  `dev-blog-boilerplate` ("it just works", "zero config", "sane defaults",
+  "fits in your head"). Four are skill-only
+  judgment rules with the reasons recorded in `CATEGORIES.md`: stacked
+  rhetorical questions, same-opener sentence runs, stranded auxiliary
+  contrast, and colon into a triple. Negation-chain items carry a stop-list
+  so idiomatic pairs ("no more, no less", "no matter") stay clean.
+
+### Fixed
+
+- **The deterministic subset stays narrower than the judgment rules.** The
+  `no …` matcher now requires three short items, literal "the punchline",
+  "worth naming", and "batteries included" senses stay out of regex matching,
+  and "it just works out of the box" remains detectable without reviving the
+  ordinary "works out to" false positive.
+
+---
+
+## [3.27.0] — 2026-08-26
+
+### Added
+
+- **`analyzeText()` can score rendered Markdown instead of source-only
+  metadata (#123).** Pass `sourceMode: "rendered-markdown"` to mask initial
+  YAML frontmatter and HTML comments before pattern and document analysis.
+  Code-span comment examples remain visible, frontmatter recognition accepts
+  LF, CRLF, and CR without hiding thematic-break sections, and masks preserve
+  issue and sentence-highlight offsets. `stats` reports the selected mode,
+  explicit fallbacks, and masked-span counts. Plain mode remains compatible
+  with its existing scoring behavior.
+
+---
+
+## [3.26.0] — 2026-08-24
+
+### Fixed
+
+- **Edit mode now limits rewrites to prose files (#101).** Source code,
+  configuration, and generated data are refused so prose-oriented edits cannot
+  corrupt structured content.
+
+---
+
+## [3.25.2] — 2026-08-24
+
+### Changed
+
+- **README documents `npx skills add` as the fastest cross-agent install path.** The community [`skills`](https://github.com/vercel-labs/skills) CLI auto-detects installed coding agents and covers 75+ of them. Commands pin the installer at `skills@1.5.23`, note its Node `>=22.20.0` requirement, and clarify that the skill payload still follows this repository's current default branch. For this public root-level skill, the GitHub blob fast path normally installs only `SKILL.md`; if that path is unavailable, the CLI can fall back to cloning the full root skill directory. `skills update` refreshes whichever scope you select rather than every install at once. Existing manual per-platform steps (git clone, `clawhub install`, curl) stay as a no-Node fallback; nothing about them changed. No rule, detector, or word-table changes: the catalog stays 62 / 112.
+- **`SKILL.md`'s frontmatter carries a `repository` field.** A copy installed via the `skills` CLI's SKILL.md-only fast path previously had no link back to the project or its contributor community; `metadata.repository` now points to `github.com/conorbronsdon/avoid-ai-writing` alongside the existing `author` field. The generated plugin copy stays in sync via the existing `sync-plugin-skill.sh`.
+
+---
+
+## [3.25.1] — 2026-08-21
+
+### Fixed
+
+- **Voice-profile targets are bound to the Never-inject guardrails (#100).** `casual`, `professional`, and `warm` each had a target that could only be satisfied by adding content the source lacks (a first-person touch, a concrete claim or ask, an acknowledgment). Each target now applies only where the source already has the material, and the section opens with one line stating the guardrails bind voice targets. Wording ported back from the downstream resolution in wshobson/agents#645. Contributed by @mahinNadir (#133).
 
 ---
 

@@ -1,0 +1,46 @@
+{
+  "source": {
+    "repository": "https://github.com/conorbronsdon/avoid-ai-writing",
+    "baseCommit": "d8c235186ff764ac20a0464ca8b1a13993ea37e4",
+    "version": "3.31.0",
+    "architecture": "skills-only"
+  },
+  "fields": {
+    "name": "Avoid AI Writing",
+    "subtitle": "Detect and rewrite AI-isms",
+    "description": "Audit writing for recurring AI-like patterns, rewrite only what needs changing, preserve the writer's voice and source facts, edit named files with narrow changes, and verify that protected material such as code, quotes, links, numbers, frontmatter, and tables survives the edit. The package keeps the original Avoid AI Writing skill intact and adds focused ChatGPT and Codex routing for detect-only review, voice-preserving rewrites, file edits, preservation checks, and false-positive review. Its signals are writing-quality indicators, not proof of AI authorship.",
+    "category": "Productivity",
+    "developerName": "Conor Bronsdon",
+    "websiteURL": "https://github.com/conorbronsdon/avoid-ai-writing",
+    "supportURL": "https://github.com/conorbronsdon/avoid-ai-writing/issues",
+    "privacyPolicyURL": "https://github.com/conorbronsdon/avoid-ai-writing/blob/main/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/conorbronsdon/avoid-ai-writing/blob/main/TERMS.md",
+    "version": "3.31.0",
+    "packageName": "avoid-ai-writing",
+    "capabilities": ["AI-pattern audit","Detect-only review","Voice-preserving rewrite","Targeted file editing","Preservation verification","False-positive review","Multi-step writing cleanup"],
+    "starterPrompts": [
+      "Scan this text for AI writing patterns and flag only, without rewriting it.",
+      "Rewrite this draft to remove AI-isms while preserving my voice, facts, and structure.",
+      "Clean this file in place, then verify that protected content was preserved."
+    ],
+    "logo": "./assets/logo-light.svg",
+    "composerIcon": "./assets/mark.svg",
+    "brandColor": "#171717"
+  },
+  "checks": {
+    "nameCharacters": 16,
+    "subtitleCharacters": 26,
+    "descriptionCharacters": 566,
+    "developerNameCharacters": 14,
+    "starterPromptCharacters": [75,85,75],
+    "capabilityCharacters": [16,18,24,21,25,21,26]
+  },
+  "publisherIdentity": {
+    "packagePublisher": "Conor Bronsdon",
+    "originalProjectAuthor": "Conor Bronsdon",
+    "packagingContributor": "Mamdouh Aboammar",
+    "openAIVerifiedDeveloperStatus": "verified individual identity, confirmed in the portal 2026-09-04"
+  },
+  "listingStatus": "update_prepared",
+  "directoryUrl": "https://chatgpt.com/plugins/plugins_6a9b77b18b8881918efa9c1255868164"
+}

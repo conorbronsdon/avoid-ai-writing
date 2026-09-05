@@ -1,0 +1,6 @@
+interface:
+  display_name: "Avoid AI Writing Router"
+  short_description: "Route multi-step cleanup"
+  default_prompt: "Route this request through the right Avoid AI Writing workflow, including audit, rewrite or file edit, and preservation verification when needed."
+policy:
+  allow_implicit_invocation: true
