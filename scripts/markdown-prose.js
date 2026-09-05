@@ -81,9 +81,9 @@ function markdownProse(text) {
   const bare = (s) => s.replace(/\r$/, '');
   let fmEnd = -1;
   // A leading thematic break followed by a blank is not frontmatter.
-  if (bare(lines[0]).replace(/^\uFEFF/, '') === '---' && lines.length > 1 && lines[1].trim()) {
+  if (/^---[ \t]*$/.test(bare(lines[0]).replace(/^\uFEFF/, '')) && lines.length > 1 && lines[1].trim()) {
     for (let k = 1; k < lines.length; k += 1) {
-      if (/^(?:---|\.\.\.)$/.test(bare(lines[k]))) { fmEnd = k; break; }
+      if (/^(?:---|\.\.\.)[ \t]*$/.test(bare(lines[k]))) { fmEnd = k; break; }
     }
   }
 
@@ -248,7 +248,7 @@ function markdownProse(text) {
   while ((m = urls.exec(s)) !== null) {
     let url = m[0].replace(/[.,;:!?]+$/, '');
     // A surrounding single quote is prose; an internal URL apostrophe is data.
-    if (/[‘']/.test(s[m.index - 1] || '') && /[’']$/.test(url)) url = url.slice(0, -1);
+    if (/[‘']/.test(s[m.index - 1] || '') && /[’']$/.test(url)) url = url.slice(0, -1).replace(/[.,;:!?]+$/, '');
     let extra = (url.match(/\)/g) || []).length - (url.match(/\(/g) || []).length;
     while (extra > 0 && url.endsWith(')')) {
       url = url.slice(0, -1).replace(/[.,;:!?]+$/, ''); extra -= 1;

@@ -260,4 +260,19 @@ t('bare URLs retain balanced parentheses but leave prose quotes and delimiters l
   assert.deepStrictEqual(check('(e.g. see https://x/Foo_(bar)).', { latinAbbrev: 'parentheses' }).hard, []);
 });
 
+t('frontmatter delimiters allow trailing spaces without exposing metadata', () => {
+  for (const end of ['---  ', '...\t']) {
+    const source = '--- \t\ntitle: "raw"\n' + end + '\n"live"';
+    assert.strictEqual(curly(source), source.replace('"live"', '“live”'));
+    assert.deepStrictEqual(check(source, { quotes: 'curly' }).hard.map(x => x.line), [4]);
+  }
+  assert.strictEqual(curly('---  \n\n"live"\n---'), '---  \n\n“live”\n---');
+  assert.strictEqual(curly('---\ntitle: "live"\n---extra'), '---\ntitle: “live”\n---extra');
+});
+t('quoted URL punctuation leaves an enclosing prose parenthesis visible', () => {
+  assert.deepStrictEqual(check("(see 'https://example.com).', e.g. outside.", { latinAbbrev: 'parentheses' }).hard,
+    [{ line: 1, rule: 'latin-abbrev-outside-parens' }]);
+  assert.deepStrictEqual(check("(e.g. see 'https://example.com/Foo_(bar).').", { latinAbbrev: 'parentheses' }).hard, []);
+});
+
 console.log(`\nnormalize-quotes: ${passed} passed.`);
