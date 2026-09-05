@@ -106,6 +106,51 @@ test('frontmatter touched → error', () => {
   assert.ok(codes(r).includes('frontmatter-modified'));
 });
 
+// ── CRLF input must not bypass the extractors ────────────────────
+//
+// The extractors anchor on \n. A Windows-authored document reaches this
+// validator with CRLF, and before validate() normalized line endings these
+// three cases all returned ok:true with an empty errors array - protected
+// frontmatter and table cells could be rewritten silently. These must fire.
+
+const crlf = (s) => s.replace(/\n/g, '\r\n');
+
+test('CRLF frontmatter touched -> error', () => {
+  const before = crlf('---\ntitle: one\n---\n\nBody.\n');
+  const after = crlf('---\ntitle: two\n---\n\nBody.\n');
+  const r = validate(before, after, { skipResidual: true });
+  assert.equal(r.ok, false, formatResult(r));
+  assert.ok(codes(r).includes('frontmatter-modified'), formatResult(r));
+});
+
+test('CRLF frontmatter removed -> error', () => {
+  const before = crlf('---\ntitle: one\n---\n\nBody.\n');
+  const after = crlf('Body.\n');
+  const r = validate(before, after, { skipResidual: true });
+  assert.ok(codes(r).includes('frontmatter-modified'), formatResult(r));
+});
+
+test('CRLF table cell changed -> error', () => {
+  const before = crlf('Intro.\n\n| a | b |\n|---|---|\n| 1 | 2 |\n\nOutro.\n');
+  const after = crlf('Intro.\n\n| a | b |\n|---|---|\n| 1 | 9 |\n\nOutro.\n');
+  const r = validate(before, after, { skipResidual: true });
+  assert.equal(r.ok, false, formatResult(r));
+});
+
+test('CRLF and LF forms of the same document compare clean', () => {
+  const lf = '---\ntitle: one\n---\n\n# Heading\n\nBody.\n';
+  const r = validate(lf, crlf(lf), { skipResidual: true });
+  assert.equal(r.ok, true, formatResult(r));
+});
+
+test('lone CR changed to LF inside fenced code -> error', () => {
+  const before = '```text\nline one\rline two\n```';
+  const after = '```text\nline one\nline two\n```';
+  const r = validate(before, after, { skipResidual: true });
+  assert.equal(r.ok, false, formatResult(r));
+  assert.ok(codes(r).includes('code-block-modified'), formatResult(r));
+});
+
 // ── Documented, correct edits must pass ────────────────────────────────
 
 test('stripping an AI utm_source parameter → no error', () => {

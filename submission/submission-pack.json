@@ -1,0 +1,39 @@
+{
+  "source": {
+    "repository": "conorbronsdon/avoid-ai-writing",
+    "baseRef": "main",
+    "baseCommit": "d8c235186ff764ac20a0464ca8b1a13993ea37e4",
+    "canonicalSkillVersion": "3.30.0"
+  },
+  "architecture": "skills-only",
+  "publicSkills": ["avoid-ai-writing","avoid-ai-writing-router","ai-writing-detector","voice-preserving-rewriter","file-edit-in-place","preservation-verifier","false-positive-reviewer"],
+  "canonicalSkill": {"path":"skills/avoid-ai-writing/SKILL.md","source":"SKILL.md","preservation":"generated copy, identical except the frontmatter metadata block is omitted (OpenAI portal rejects it)"},
+  "bundledDeterministicResources": [
+    {"path":"skills/ai-writing-detector/scripts/patterns.js","source":"detector/patterns.js","purpose":"detect-only local analysis"},
+    {"path":"skills/preservation-verifier/scripts/validate.js","source":"detector/validate.js","purpose":"before/after preservation verification"},
+    {"path":"skills/preservation-verifier/scripts/patterns.js","source":"detector/patterns.js","purpose":"residual-pattern verification"}
+  ],
+  "excludedFromPublicPackage": [
+    "external avoid-ai-writing-mcp project",
+    "corpus datasets and corpus tooling",
+    "repository CI and release automation",
+    "Claude marketplace metadata",
+    "Cursor rule copy",
+    "development-only detector tests"
+  ],
+  "brand": {"logoLight":"assets/logo-light.svg","logoDark":"assets/logo-dark.svg","composerIcon":"assets/mark.svg"},
+  "listing": "submission/listing.json",
+  "reviewerTests": "submission/reviewer-tests.json",
+  "discoveryEvals": "submission/discovery-evals.json",
+  "localValidation": {"script":"scripts/validate-openai-plugin.py","status":"must run in CI or a local checkout after this change"},
+  "deterministicPackage": {"script":"scripts/package-openai-plugin.py","status":"must run twice in CI or a local checkout after this change"},
+  "platformChecks": [
+    "Confirm verified OpenAI developer identity matches the listing developer name",
+    "Fresh-install smoke test in ChatGPT",
+    "Fresh-install smoke test in Codex",
+    "Upload the exact final ZIP and rerun portal validation"
+  ],
+  "state": "update_prepared",
+  "published": {"date":"2026-09-04","pluginId":"plugins_6a9b77b18b8881918efa9c1255868164","directoryUrl":"https://chatgpt.com/plugins/plugins_6a9b77b18b8881918efa9c1255868164","version":"3.29.0","archiveSha256":"f1d4087433d7270d0f94fdb3c592df0a0dc87c15cafa2cd747e12b750fad1440","note":"Archive built from PR #146 before its second commit; differs from main only in the exact-copy wording of NOTICE.md and OPENAI_PLUGIN.md. All seven skill scans passed."},
+  "blockers": []
+}

@@ -1,25 +1,72 @@
 #!/usr/bin/env bash
-# Regenerate the plugin's bundled skill from the canonical root SKILL.md.
-# Root SKILL.md is the single source of truth; the plugin copy is generated.
-# Run this after editing SKILL.md. CI fails if the copy is out of sync.
+# Regenerate plugin copies from canonical repository sources.
+# Root SKILL.md, detector resources, scripts/check-style.js, and examples/ are
+# sources of truth.
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 src="$repo_root/SKILL.md"
-dest="$repo_root/plugins/avoid-ai-writing/skills/avoid-ai-writing/SKILL.md"
+claude_dest="$repo_root/plugins/avoid-ai-writing/skills/avoid-ai-writing/SKILL.md"
+openai_dest="$repo_root/skills/avoid-ai-writing/SKILL.md"
+patterns_src="$repo_root/detector/patterns.js"
+validate_src="$repo_root/detector/validate.js"
+categories_src="$repo_root/detector/CATEGORIES.md"
+check_style_src="$repo_root/scripts/check-style.js"
+examples_src="$repo_root/examples"
+canonical_skill_root="$repo_root/skills/avoid-ai-writing"
+canonical_detector_dest="$canonical_skill_root/detector"
+canonical_scripts_dest="$canonical_skill_root/scripts"
+canonical_examples_dest="$canonical_skill_root/examples"
+detector_patterns_dest="$repo_root/skills/ai-writing-detector/scripts/patterns.js"
+verifier_patterns_dest="$repo_root/skills/preservation-verifier/scripts/patterns.js"
+verifier_validate_dest="$repo_root/skills/preservation-verifier/scripts/validate.js"
 
-cp "$src" "$dest"
+for required in "$src" "$patterns_src" "$validate_src" "$categories_src" "$check_style_src"; do
+  if [ ! -f "$required" ]; then
+    echo "missing canonical source: $required" >&2
+    exit 1
+  fi
+done
+if [ ! -d "$examples_src" ]; then
+  echo "missing canonical source directory: $examples_src" >&2
+  exit 1
+fi
 
-# Keep plugin.json's version in lockstep with the SKILL.md frontmatter version.
-# Read the version only from the first YAML frontmatter block, and strip any CR
-# so a CRLF checkout can't forge a mismatch on visually-identical strings.
+mkdir -p \
+  "$(dirname "$claude_dest")" \
+  "$(dirname "$openai_dest")" \
+  "$canonical_detector_dest" \
+  "$canonical_scripts_dest" \
+  "$(dirname "$detector_patterns_dest")" \
+  "$(dirname "$verifier_patterns_dest")" \
+  "$(dirname "$verifier_validate_dest")"
+
+cp "$src" "$claude_dest"
+# The OpenAI plugin portal rejects a `metadata` key in SKILL.md frontmatter
+# ("Skill interface settings must use agents/openai.yaml"); that block carries
+# agentskills.io/OpenClaw fields, so the OpenAI copy omits it and every other
+# byte stays identical. The transform lives in validate-openai-plugin.py so the
+# sync and the drift check cannot diverge.
+python_bin="$(command -v python3 || command -v python)"
+"$python_bin" "$repo_root/scripts/validate-openai-plugin.py" --strip-frontmatter-metadata "$src" > "$openai_dest"
+cp "$patterns_src" "$canonical_detector_dest/patterns.js"
+cp "$validate_src" "$canonical_detector_dest/validate.js"
+cp "$categories_src" "$canonical_detector_dest/CATEGORIES.md"
+cp "$check_style_src" "$canonical_scripts_dest/check-style.js"
+rm -rf "$canonical_examples_dest"
+cp -R "$examples_src" "$canonical_examples_dest"
+cp "$patterns_src" "$detector_patterns_dest"
+cp "$patterns_src" "$verifier_patterns_dest"
+cp "$validate_src" "$verifier_validate_dest"
+
 skill_version="$(sed -n '/^---[[:space:]]*$/,/^---[[:space:]]*$/ s/^version:[[:space:]]*//p' "$src" | head -n1 | tr -d '\r')"
 if [ -z "$skill_version" ]; then
   echo "could not parse 'version:' from SKILL.md frontmatter" >&2
   exit 1
 fi
-plugin_version="$(
-  python3 - "$repo_root/plugins/avoid-ai-writing/.claude-plugin/plugin.json" <<'PY'
+
+read_manifest_version() {
+  python3 - "$1" <<'PY'
 import json
 import sys
 
@@ -38,15 +85,20 @@ version = data.get("version")
 if not isinstance(version, str) or not version:
     print(f'Invalid or missing "version" in plugin manifest: {path}', file=sys.stderr)
     sys.exit(1)
-
 print(version)
 PY
-)"
+}
 
-if [ "$skill_version" != "$plugin_version" ]; then
-  echo "version mismatch: SKILL.md=$skill_version plugin.json=$plugin_version" >&2
-  echo "Update plugin.json \"version\" to match SKILL.md frontmatter." >&2
+claude_version="$(read_manifest_version "$repo_root/plugins/avoid-ai-writing/.claude-plugin/plugin.json")"
+openai_version="$(read_manifest_version "$repo_root/.codex-plugin/plugin.json")"
+
+if [ "$skill_version" != "$claude_version" ]; then
+  echo "version mismatch: SKILL.md=$skill_version Claude plugin=$claude_version" >&2
+  exit 1
+fi
+if [ "$skill_version" != "$openai_version" ]; then
+  echo "version mismatch: SKILL.md=$skill_version OpenAI plugin=$openai_version" >&2
   exit 1
 fi
 
-echo "synced: plugin skill + version ($skill_version)"
+echo "synced: canonical Skill + bundled commands/examples + detector + preservation resources + plugin versions ($skill_version)"

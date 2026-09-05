@@ -1,0 +1,6 @@
+interface:
+  display_name: "Voice-Preserving Rewriter"
+  short_description: "Rewrite without losing voice"
+  default_prompt: "Rewrite this draft to remove AI-isms while preserving the writer's voice, facts, register, and protected material."
+policy:
+  allow_implicit_invocation: true

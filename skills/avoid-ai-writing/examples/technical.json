@@ -1,0 +1,18 @@
+{
+  "name": "Technical documentation (example)",
+  "genre": "technical documentation",
+  "register": [
+    "Second person (\"you\"), active voice, present tense.",
+    "Imperative mood for steps.",
+    "One idea per sentence; lead with what the reader can do.",
+    "No marketing language or hype; cut dismissive words (simply, easily, just, obviously)."
+  ],
+  "mechanics": {
+    "quotes": "straight",
+    "headings": "sentence",
+    "emDash": "sparing",
+    "latinAbbrev": "never",
+    "serialComma": true,
+    "spellNumbersUpTo": 9
+  }
+}

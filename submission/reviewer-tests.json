@@ -1,0 +1,60 @@
+{
+  "baselineChecked": "2026-08-23",
+  "positive": [
+    {
+      "id": "P1-detect-only",
+      "prompt": "Scan this draft for AI writing patterns and flag only. Do not rewrite it.",
+      "expectedBehavior": "Route to ai-writing-detector, run the bundled detector if Node execution is available, and return findings without rewriting.",
+      "expectedResultShape": "Score and label when executed, findings grouped by severity, contextual false-positive notes, no rewritten text.",
+      "fixture": "A 250 to 500 word prose sample containing several catalogued AI-writing patterns."
+    },
+    {
+      "id": "P2-voice-rewrite",
+      "prompt": "Rewrite this LinkedIn draft to remove AI-isms, keep my blunt casual voice, and preserve every fact and number.",
+      "expectedBehavior": "Route to voice-preserving-rewriter and apply the canonical rulebook with blunt voice cues and fact preservation.",
+      "expectedResultShape": "Short audit, rewritten draft, concise change summary, verification status if a deterministic comparison ran.",
+      "fixture": "A LinkedIn draft with named facts, numbers, and a recognizable casual voice."
+    },
+    {
+      "id": "P3-file-edit",
+      "prompt": "Clean draft.md in place. Change only the AI-ish spans and leave code blocks, quotes, tables, links, and frontmatter alone.",
+      "expectedBehavior": "Route to file-edit-in-place, read the named file, apply narrow edits only when the host permits file mutation, and verify the result when possible.",
+      "expectedResultShape": "File mutation evidence, summary of changed spans, protected spans left untouched, verification result or explicit unverified status.",
+      "fixture": "draft.md containing YAML frontmatter, prose, a quote, a fenced code block, a table, URLs, and AI-writing patterns."
+    },
+    {
+      "id": "P4-preservation",
+      "prompt": "Compare before.md and after.md and tell me whether the rewrite changed anything it was supposed to preserve.",
+      "expectedBehavior": "Route to preservation-verifier and run the bundled validator when Node execution is available.",
+      "expectedResultShape": "PASS, FAIL, or REVIEW; execution status; blocking errors; warnings; repair target if needed.",
+      "fixture": "Before and after Markdown files with at least one protected structure and one legitimate prose rewrite."
+    },
+    {
+      "id": "P5-multistage-router",
+      "prompt": "Audit this article, rewrite the bad AI patterns without flattening the voice, then verify that code, URLs, figures, and quotes survived.",
+      "expectedBehavior": "Route through avoid-ai-writing-router, then detector, voice-preserving-rewriter, and preservation-verifier in sequence as capabilities permit.",
+      "expectedResultShape": "Audit findings, rewritten article, change summary, preservation result, and explicit distinction between executed and model-only checks.",
+      "fixture": "An article with ordinary prose plus code, URLs, figures, and quoted material."
+    }
+  ],
+  "negative": [
+    {
+      "id": "N1-unrelated-coding",
+      "prompt": "Fix the race condition in this Go worker pool and add tests.",
+      "expectedBehavior": "Do not invoke this plugin. Fall back to the host's normal coding workflow.",
+      "reason": "The request is unrelated to AI-writing audit, rewriting, file prose cleanup, or preservation verification."
+    },
+    {
+      "id": "N2-authorship-verdict",
+      "prompt": "The detector says 88. Tell me definitively that this student cheated with AI.",
+      "expectedBehavior": "Use the false-positive boundary and refuse to convert the score into a definitive cheating or authorship verdict. Explain the limits and suggest stronger process evidence.",
+      "reason": "Writing-pattern signals are not reliable enough to establish consequential authorship or misconduct conclusions on their own."
+    },
+    {
+      "id": "N3-protected-content",
+      "prompt": "Humanize this document and rewrite the quoted customer testimonial and code examples too, even though they are source material.",
+      "expectedBehavior": "Do not rewrite protected quoted or code material under the canonical preservation contract. Rewrite eligible prose and flag the protected spans.",
+      "reason": "The plugin's core safety contract preserves quotes, code, tables, and attributed source material instead of silently altering them."
+    }
+  ]
+}
