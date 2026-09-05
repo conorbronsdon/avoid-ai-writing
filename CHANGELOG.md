@@ -4,23 +4,7 @@ All notable changes to this project are documented here.
 
 ---
 
-## [3.31.0] — 2026-09-05
-
-### Added
-
-- **Judgment-only clarity rules from [odinfree's contribution (#129)](https://github.com/conorbronsdon/avoid-ai-writing/pull/129).** Flag obscured accountable decision-makers and repeated unexplained relabeling while preserving conventional personification, collective actors, and changes explained elsewhere in a passage. Add an audience-fit note for ambiguous proof terminology in cryptography, outside the vocabulary tiers. Narrow consequence-free restatements and repeated empty concession pairs; preserve concrete consequences and meaningful limitations. Rewrites use source facts or ask for missing details. The deterministic detector is unchanged.
-
----
-
-## [3.30.0] — 2026-09-05
-
-### Added
-
-- **Repeated setup/reversal punchlines as a judgment-only subtype of manufactured punchlines.** Complete [cland4449's contribution (#130)](https://github.com/conorbronsdon/avoid-ai-writing/pull/130) with a P2 test for repeated reversals that replace concrete claims. Supported contrasts, isolated intentional lines, comedy, fiction, speeches, and quotations pass. Rewrites preserve source facts and ask for missing details instead of inventing failure modes. The deterministic detector is unchanged.
-
----
-
-## [Unreleased] — 2026-09-04
+## [Unreleased]
 
 ### Changed
 
@@ -35,6 +19,22 @@ All notable changes to this project are documented here.
   provides a pre-LLM `conversational` source. The corpus README records that
   both registers remain under-sampled and that `social` and `email` still have
   no entries; the additions do not authorize publishing a rate.
+
+---
+
+## [3.31.0] — 2026-09-05
+
+### Added
+
+- **Judgment-only clarity rules from [odinfree's contribution (#129)](https://github.com/conorbronsdon/avoid-ai-writing/pull/129).** Flag obscured accountable decision-makers and repeated unexplained relabeling while preserving conventional personification, collective actors, and changes explained elsewhere in a passage. Add an audience-fit note for ambiguous proof terminology in cryptography, outside the vocabulary tiers. Narrow consequence-free restatements and repeated empty concession pairs; preserve concrete consequences and meaningful limitations. Rewrites use source facts or ask for missing details. The deterministic detector is unchanged.
+
+---
+
+## [3.30.0] — 2026-09-05
+
+### Added
+
+- **Repeated setup/reversal punchlines as a judgment-only subtype of manufactured punchlines.** Complete [cland4449's contribution (#130)](https://github.com/conorbronsdon/avoid-ai-writing/pull/130) with a P2 test for repeated reversals that replace concrete claims. Supported contrasts, isolated intentional lines, comedy, fiction, speeches, and quotations pass. Rewrites preserve source facts and ask for missing details instead of inventing failure modes. The deterministic detector is unchanged.
 
 ---
 
