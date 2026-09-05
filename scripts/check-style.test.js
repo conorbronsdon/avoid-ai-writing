@@ -232,6 +232,15 @@ t('CLI: a file named like the config value is still reachable (not filtered by v
   assert.strictEqual(cliRaw({ technical: '# ok\n\nplain text' }, ['technical', '--config', 'technical']), 0);
 });
 
+t('malformed inline links leave following prose visible to style checks', () => {
+  for (const gap of ['\n', '\r\n', ' ']) {
+    assert.ok(check('[x](url' + gap + 'This is "actual prose")', { quotes: 'curly' }).hard.length > 0);
+    assert.ok(check('[x](url' + gap + 'This is “actual prose”)', { quotes: 'straight' }).hard.length > 0);
+    assert.ok(check('[x](url' + gap + 'This is prose, e.g., this)', { latinAbbrev: 'never' }).hard.length > 0);
+  }
+  assert.strictEqual(check('[x](url\n "Title")', { quotes: 'curly' }).hard.length, 0);
+});
+
 // --- indented code blocks (masked) vs lazy continuation and list content (prose) ---
 t('4-space indented code after a blank line is masked (must-not-fire)', () => {
   assert.strictEqual(check('Para.\n\n    code with "straight" quotes\n\nMore.', { quotes: 'curly' }).hard.length, 0);

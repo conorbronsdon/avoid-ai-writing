@@ -72,16 +72,41 @@ A config is JSON with two parts:
 Unrecognized keys or values are reported as **warnings** (a config the tool couldn't fully
 apply) rather than silently ignored; omitted keys do nothing.
 
-Before checking, the checker skips YAML frontmatter (only when it closes), code (fenced and
-inline), and markdown link destinations, link titles, and reference-definition tails, so
-identifiers, examples, and link syntax don't false-positive. It also masks HTML tags, whose
-attribute values are straight-quoted. Link titles matter here because they are delimited with
-straight quotes as *syntax*, which `quotes: curly` would otherwise read as a violation. Some
-limits worth knowing: an unclosed or multi-line HTML tag still registers, as do quotes inside
-an HTML comment; and the `latinAbbrev` parenthesis carve-out tracks depth across wrapped
-lines but resets at a paragraph break, so an unclosed `(` disables that rule for the rest of
-its paragraph. Indented code blocks are masked, with a list exception: 4-space content
-inside a list item is the item's own prose (use a fence there). A double-backtick code span
-whose body contains a backtick leaks to the quote checks; a reference definition with its
-title on the next line is read as prose; and a document opening with a thematic break is
-prose, not frontmatter.
+Before checking, the checker skips closed YAML frontmatter, fenced/inline/indented code,
+link destinations and titles, reference identifiers, HTML tags and comments, and escaped
+punctuation. Link titles use straight quotes as *syntax*. List paragraph continuations stay
+checked; extra indentation can start code inside an item. A leading thematic break followed
+by a blank line is prose, not frontmatter. The `latinAbbrev` parenthesis carve-out carries
+across wrapped lines but resets at a paragraph break, so an unclosed `(` disables that rule
+for the rest of its paragraph.
+
+## Normalize quote marks after a rewrite
+
+Rewrite and edit mode run this pass before delivery. Keep the original document as
+the reference so generated marks cannot override its existing convention:
+
+```bash
+node scripts/normalize-quotes.js draft.md --reference original.md
+node scripts/normalize-quotes.js draft.md --reference original.md --write
+node scripts/check-style.js draft.md --config ./house.json
+```
+
+The default `--quotes auto` infers double quotes and single quotes/apostrophes
+independently from unprotected reference prose. Each family's majority wins; ties
+use its first observed style. With no evidence, that family stays unchanged. Without
+`--reference`, inference uses the input itself. Explicit house style takes precedence:
+use `--quotes straight` or `--quotes curly` without `--reference`.
+
+Without `--write`, stdout contains
+only the resulting document and the file stays unchanged. The command exits 0 on success
+or 2 for invalid arguments or file errors. It also exports
+`normalize(text, quotes = 'auto', reference = text)` and `inferQuotes(text)`.
+For skill rewrites, normalize only editable prose and retain exempt quotations,
+tables and attributed text when inserting the result into the document.
+
+The normalizer shares the checker's Markdown protection and changes only quotation marks
+and apostrophes in prose. Protected source, whitespace, BOM and line endings survive
+verbatim. Dashes and heading case stay as written. This pass does not claim guide
+compliance. Curly education
+uses neighboring characters, so leading elisions such as `'twas` and `rock 'n' roll` need
+review. Straight marks after digits follow the checker's feet/inch carve-out.

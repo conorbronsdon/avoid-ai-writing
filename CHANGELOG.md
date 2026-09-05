@@ -22,6 +22,20 @@ All notable changes to this project are documented here.
 
 ---
 
+## [3.32.0] — 2026-09-05
+
+### Added
+
+- **Automatic quote normalization after rewrites (#104).** The bundled normalizer defaults to automatic convention inference and accepts the original document with `--reference`. Rewrite and edit workflows normalize editable prose before delivery; explicit straight/curly targets remain available.
+
+### Fixed
+
+- Preserve inline HTML attributes and raw HTML code during quote normalization. Stop code masks at heading and list boundaries; keep escaped reference text and URL-adjacent prose visible to checks.
+
+- Validate inline link destinations and titles so malformed links cannot hide following prose. Precomputed boundaries prevent repeated unmatched link openers from scanning the same suffix quadratically. Regression tests cover normalization, style checks, CLI behavior and the bundled command.
+
+---
+
 ## [3.31.0] — 2026-09-05
 
 ### Added

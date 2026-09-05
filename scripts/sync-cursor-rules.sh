@@ -4,7 +4,7 @@
 # Run this after editing SKILL.md. CI fails if the copy is out of sync.
 #
 # The rule is a copy-out artifact: users curl it into their own project's
-# .cursor/rules/, where nothing else from this repo exists. Five spans in
+# .cursor/rules/, where nothing else from this repo exists. Six spans in
 # SKILL.md point at files in this repo, so the generator rewrites them the
 # same way the claude-code-templates vendoring did (davila7/claude-code-templates#773):
 #   1. "this repo measures the ratios" -> passive form (no repo to measure)
@@ -12,6 +12,7 @@
 #   3. the node detector/validate.js mechanical check -> a manual prose check
 #   4. the --style config path (scripts/check-style.js, examples/) -> apply, unverified
 #   5. --style resolution by bare name out of examples/ -> a path only
+#   6. the automatic marks command -> manual convention pass, unverified
 # Each rewrite is anchored on the exact upstream text and FAILS LOUDLY if the
 # anchor stops matching exactly once — so an upstream edit to one of those
 # spans breaks CI here instead of silently shipping a wrong Cursor rule.
@@ -91,6 +92,13 @@ body = replace_once(
     """**Resolving `--style <arg>`.** A path, or a bare name matching `examples/<name>.json`, loads that config (apply and verify); anything else is the named-guide fallback above.""",
     """**Resolving `--style <arg>`.** A path to a JSON config loads it, and you apply it as written; anything else is the named-guide fallback above.""",
     "span 5 (--style resolution)",
+)
+
+body = replace_once(
+    body,
+    "Run `node scripts/normalize-quotes.js <rewritten-prose> --reference <original> --write` from the installed skill directory; no explicit quote target is needed.",
+    "Apply the convention manually; this standalone rule does not bundle the upstream normalization command.",
+    "span 6 (automatic marks command)",
 )
 
 cursor_fm = f"""---

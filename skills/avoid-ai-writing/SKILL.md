@@ -1,7 +1,7 @@
 ---
 name: avoid-ai-writing
 description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Use this skill when asked to "remove AI-isms," "clean up AI writing," "edit writing for AI patterns," "audit writing for AI tells," or "make this sound less like AI." Supports a detect-only mode, an edit-in-place mode for files, an optional voice profile (casual / professional / technical / warm / blunt), and an iterate-to-convergence pass.
-version: 3.31.0
+version: 3.32.0
 license: MIT
 compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, VS Code Copilot, Hermes Agent, OpenHands, etc.) or OpenClaw. No external tools or APIs required.
 ---
@@ -45,6 +45,8 @@ In **rewrite** mode, your job is to:
 1. **Audit it**: identify every AI-ism present, citing the specific text
 2. **Rewrite it**: return a clean version with every editable AI-ism removed — the flag-don't-fix exemptions above (quotes, code, tables, attributed text) bind here too, so a tell left standing inside one of them belongs in section 1 as a flag, not against the rewrite as unfinished work
 3. **Show a diff summary**: briefly list what you changed and why
+
+**Automatic marks pass (rewrite and edit).** Keep a copy of the original document before rewriting. After each rewrite, normalize quotes and apostrophes in the editable prose against that original, before the second-pass audit or delivery. The command processes all prose it receives; it does not recognize attribution or table semantics. Copy only the editable paragraphs you changed into a scratch file named `<rewritten-prose>`; exclude quoted material, tables, attributed text, and untouched paragraphs. Never pass the complete target document to `--write` when it contains any of those regions. Run `node scripts/normalize-quotes.js <rewritten-prose> --reference <original> --write` from the installed skill directory; no explicit quote target is needed. Double quotes and single quotes/apostrophes are inferred independently from unprotected original prose: majority wins, ties use the first observed style, and no evidence leaves that family unchanged. An explicit house-style quote setting overrides inference with `--quotes straight` or `--quotes curly` (omit `--reference`). Apply the result only to editable spans; quoted material, code, tables and attributed text retain the exemptions above. If the bundled command cannot run, apply the same convention manually and report that the marks pass was not mechanically verified. Detect mode never runs this pass.
 
 In **detect** mode, your job is to:
 
