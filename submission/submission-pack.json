@@ -7,7 +7,7 @@
   },
   "architecture": "skills-only",
   "publicSkills": ["avoid-ai-writing","avoid-ai-writing-router","ai-writing-detector","voice-preserving-rewriter","file-edit-in-place","preservation-verifier","false-positive-reviewer"],
-  "canonicalSkill": {"path":"skills/avoid-ai-writing/SKILL.md","source":"SKILL.md","preservation":"exact generated copy"},
+  "canonicalSkill": {"path":"skills/avoid-ai-writing/SKILL.md","source":"SKILL.md","preservation":"generated copy, identical except the frontmatter metadata block is omitted (OpenAI portal rejects it)"},
   "bundledDeterministicResources": [
     {"path":"skills/ai-writing-detector/scripts/patterns.js","source":"detector/patterns.js","purpose":"detect-only local analysis"},
     {"path":"skills/preservation-verifier/scripts/validate.js","source":"detector/validate.js","purpose":"before/after preservation verification"},

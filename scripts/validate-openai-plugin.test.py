@@ -365,4 +365,63 @@ with tempfile.TemporaryDirectory() as temp_dir:
         errors, _, _ = MODULE.validate(root)
         assert any("symlink not allowed in plugin surface: LICENSE" in error for error in errors)
 
+# The OpenAI copy of the canonical skill must drop the frontmatter `metadata`
+# block (the portal rejects it) and otherwise match root SKILL.md exactly.
+ROOT_SKILL = (REPO_ROOT / "SKILL.md").read_text(encoding="utf-8")
+assert "\nmetadata:\n" in ROOT_SKILL, "fixture assumption: root SKILL.md carries a metadata block"
+STRIPPED = MODULE.strip_frontmatter_metadata(ROOT_SKILL)
+ROOT_HEAD, ROOT_BODY = ROOT_SKILL.split("\n---\n", 1)
+STRIPPED_HEAD, STRIPPED_BODY = STRIPPED.split("\n---\n", 1)
+assert "metadata:" not in STRIPPED_HEAD
+assert "\nversion:" in STRIPPED_HEAD and "\nlicense:" in STRIPPED_HEAD and "\ncompatibility:" in STRIPPED_HEAD
+assert STRIPPED_BODY == ROOT_BODY, "body must be untouched"
+assert MODULE.strip_frontmatter_metadata("no frontmatter\nmetadata:\n  x: y\n") == "no frontmatter\nmetadata:\n  x: y\n"
+STRIP = MODULE.strip_frontmatter_metadata
+# metadata not last; a blank line inside the block; CRLF preserved; no trailing newline preserved
+assert STRIP("---\nname: x\nmetadata:\n  author: y\n\n  repository: z\nlicense: MIT\n---\nBody\n") == "---\nname: x\nlicense: MIT\n---\nBody\n"
+assert STRIP("---\r\nname: x\r\nmetadata:\r\n  author: y\r\n---\r\nBody\r\n") == "---\r\nname: x\r\n---\r\nBody\r\n"
+assert STRIP("---\nname: x\nmetadata:\n  author: y\n---\nBody") == "---\nname: x\n---\nBody"
+assert STRIP("---\nname: x\nmetadata:\n  author: y\n---\nmetadata:\n  in: body\n") == "---\nname: x\n---\nmetadata:\n  in: body\n"
+# blank line before the closing delimiter survives; CRLF with metadata not last
+assert STRIP("---\nname: x\nmetadata:\n  a: b\nlicense: MIT\n\n---\nBody\n") == "---\nname: x\nlicense: MIT\n\n---\nBody\n"
+assert STRIP("---\r\nname: x\r\nmetadata:\r\n  a: b\r\nlicense: MIT\r\n---\r\nBody\r\n") == "---\r\nname: x\r\nlicense: MIT\r\n---\r\nBody\r\n"
+# a column-zero comment inside the block belongs to it; `metadata:extra` is a different key and stays
+assert STRIP("---\nname: x\nmetadata:\n  author: y\n# note\n  repository: z\nlicense: MIT\n---\nBody\n") == "---\nname: x\nlicense: MIT\n---\nBody\n"
+assert STRIP("---\nname: x\nmetadata:extra: keep\n---\nBody\n") == "---\nname: x\nmetadata:extra: keep\n---\nBody\n"
+# missing closing delimiter: not a frontmatter, untouched
+assert STRIP("---\nname: x\nmetadata:\n  author: y\nBody\n") == "---\nname: x\nmetadata:\n  author: y\nBody\n"
+# the CLI path sync-plugin-skill.sh uses must be byte-exact with the function
+import subprocess
+cli = subprocess.run(
+    [sys.executable, str(MODULE_PATH), "--strip-frontmatter-metadata", str(REPO_ROOT / "SKILL.md")],
+    capture_output=True, check=True,
+)
+assert cli.stdout == STRIPPED.encode("utf-8"), "CLI output differs from strip_frontmatter_metadata"
+assert STRIPPED == (REPO_ROOT / "skills" / "avoid-ai-writing" / "SKILL.md").read_text(encoding="utf-8"), (
+    "run bash scripts/sync-plugin-skill.sh; the OpenAI copy is out of date"
+)
+
+with tempfile.TemporaryDirectory() as temp_dir:
+    root = Path(temp_dir)
+    make_valid_plugin_root(root)
+    errors, _, _ = MODULE.validate(root)
+    assert errors == [], errors
+    # red control 1: a byte-identical copy (metadata kept) is rejected on both rules
+    shutil.copy2(root / "SKILL.md", root / "skills" / "avoid-ai-writing" / "SKILL.md")
+    errors, _, _ = MODULE.validate(root)
+    assert any("`metadata` in SKILL.md frontmatter is rejected" in error for error in errors), errors
+    assert any("drifted from root SKILL.md" in error for error in errors), errors
+    # red control 2: a body edit in the copy still counts as drift
+    copy = root / "skills" / "avoid-ai-writing" / "SKILL.md"
+    copy.write_text(STRIPPED.replace("\n---\n", "\n---\n\nextra line\n", 1), encoding="utf-8")
+    errors, _, _ = MODULE.validate(root)
+    assert any("drifted from root SKILL.md" in error for error in errors), errors
+    assert not any("`metadata` in SKILL.md" in error for error in errors), errors
+    # red control 3: metadata in any other skill is rejected too
+    copy.write_text(STRIPPED, encoding="utf-8")
+    other = root / "skills" / "ai-writing-detector" / "SKILL.md"
+    other.write_text(other.read_text(encoding="utf-8").replace("\n---\n", "\nmetadata:\n  author: x\n---\n", 1), encoding="utf-8")
+    errors, _, _ = MODULE.validate(root)
+    assert any("ai-writing-detector" in error and "`metadata` in SKILL.md" in error for error in errors), errors
+
 print("all OpenAI plugin validation tests passed")
