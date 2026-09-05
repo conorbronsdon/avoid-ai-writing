@@ -376,6 +376,24 @@ assert "metadata:" not in STRIPPED_HEAD
 assert "\nversion:" in STRIPPED_HEAD and "\nlicense:" in STRIPPED_HEAD and "\ncompatibility:" in STRIPPED_HEAD
 assert STRIPPED_BODY == ROOT_BODY, "body must be untouched"
 assert MODULE.strip_frontmatter_metadata("no frontmatter\nmetadata:\n  x: y\n") == "no frontmatter\nmetadata:\n  x: y\n"
+STRIP = MODULE.strip_frontmatter_metadata
+# metadata not last; a blank line inside the block; CRLF preserved; no trailing newline preserved
+assert STRIP("---\nname: x\nmetadata:\n  author: y\n\n  repository: z\nlicense: MIT\n---\nBody\n") == "---\nname: x\nlicense: MIT\n---\nBody\n"
+assert STRIP("---\r\nname: x\r\nmetadata:\r\n  author: y\r\n---\r\nBody\r\n") == "---\r\nname: x\r\n---\r\nBody\r\n"
+assert STRIP("---\nname: x\nmetadata:\n  author: y\n---\nBody") == "---\nname: x\n---\nBody"
+assert STRIP("---\nname: x\nmetadata:\n  author: y\n---\nmetadata:\n  in: body\n") == "---\nname: x\n---\nmetadata:\n  in: body\n"
+# blank line before the closing delimiter survives; CRLF with metadata not last
+assert STRIP("---\nname: x\nmetadata:\n  a: b\nlicense: MIT\n\n---\nBody\n") == "---\nname: x\nlicense: MIT\n\n---\nBody\n"
+assert STRIP("---\r\nname: x\r\nmetadata:\r\n  a: b\r\nlicense: MIT\r\n---\r\nBody\r\n") == "---\r\nname: x\r\nlicense: MIT\r\n---\r\nBody\r\n"
+# missing closing delimiter: not a frontmatter, untouched
+assert STRIP("---\nname: x\nmetadata:\n  author: y\nBody\n") == "---\nname: x\nmetadata:\n  author: y\nBody\n"
+# the CLI path sync-plugin-skill.sh uses must be byte-exact with the function
+import subprocess
+cli = subprocess.run(
+    [sys.executable, str(MODULE_PATH), "--strip-frontmatter-metadata", str(REPO_ROOT / "SKILL.md")],
+    capture_output=True, check=True,
+)
+assert cli.stdout == STRIPPED.encode("utf-8"), "CLI output differs from strip_frontmatter_metadata"
 assert STRIPPED == (REPO_ROOT / "skills" / "avoid-ai-writing" / "SKILL.md").read_text(encoding="utf-8"), (
     "run bash scripts/sync-plugin-skill.sh; the OpenAI copy is out of date"
 )

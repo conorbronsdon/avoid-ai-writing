@@ -44,16 +44,11 @@ mkdir -p \
 cp "$src" "$claude_dest"
 # The OpenAI plugin portal rejects a `metadata` key in SKILL.md frontmatter
 # ("Skill interface settings must use agents/openai.yaml"); that block carries
-# agentskills.io/OpenClaw fields, so the OpenAI copy omits it and everything
-# else stays byte-identical. validate-openai-plugin.py applies the same
-# transform before its drift check.
-awk '
-  NR == 1 && $0 == "---" { fm = 1; print; next }
-  fm && $0 == "---" { fm = 0; print; next }
-  fm && /^metadata:/ { skip = 1; next }
-  fm && skip && /^[[:blank:]]/ { next }
-  { skip = 0; print }
-' "$src" > "$openai_dest"
+# agentskills.io/OpenClaw fields, so the OpenAI copy omits it and every other
+# byte stays identical. The transform lives in validate-openai-plugin.py so the
+# sync and the drift check cannot diverge.
+python_bin="$(command -v python3 || command -v python)"
+"$python_bin" "$repo_root/scripts/validate-openai-plugin.py" --strip-frontmatter-metadata "$src" > "$openai_dest"
 cp "$patterns_src" "$canonical_detector_dest/patterns.js"
 cp "$validate_src" "$canonical_detector_dest/validate.js"
 cp "$categories_src" "$canonical_detector_dest/CATEGORIES.md"

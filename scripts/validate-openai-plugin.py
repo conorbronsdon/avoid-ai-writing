@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import sys
 from pathlib import Path, PurePosixPath
 import re
 import subprocess
@@ -34,26 +35,38 @@ def parse_frontmatter(path: Path):
     return meta, match.group(2).strip()
 
 def strip_frontmatter_metadata(text: str) -> str:
-    """Drop the top-level `metadata` block from SKILL.md frontmatter.
+    """Drop the top-level `metadata` block from SKILL.md frontmatter, byte-exact otherwise.
 
-    Mirrors scripts/sync-plugin-skill.sh: the OpenAI plugin portal rejects
-    `metadata` in SKILL.md ("Skill interface settings must use
-    agents/openai.yaml"), so the OpenAI copy of the canonical skill omits it.
+    Mirrors the OpenAI copy written by scripts/sync-plugin-skill.sh (which calls
+    this function): the OpenAI plugin portal rejects `metadata` in SKILL.md
+    ("Skill interface settings must use agents/openai.yaml"). Line endings are
+    preserved; a blank line inside the metadata block does not end it; text
+    without a well-formed frontmatter is returned unchanged.
     """
     match = FRONTMATTER.match(text)
     if not match:
         return text
+    inner = match.group(1)
     kept, skip = [], False
-    for line in match.group(1).split("\n"):
+    for line in inner.splitlines(keepends=True):
         if line.startswith("metadata:"):
             skip = True
             continue
-        if skip and line[:1] in (" ", "\t"):
+        if skip and (line[:1] in (" ", "\t") or line.strip() == ""):
             continue
         skip = False
         kept.append(line)
+    joined = "".join(kept)
+    if skip and joined:
+        # The block ran to the end of the frontmatter, so the last kept line
+        # still carries the terminator that used to separate it from the block.
+        # Drop exactly that terminator and keep the delimiter's own line ending
+        # (the regex leaves a trailing "\r" inside the group for CRLF files).
+        joined = joined[:-2] if joined.endswith("\r\n") else joined[:-1]
+        if inner.endswith("\r"):
+            joined += "\r"
     start, end = match.start(1), match.end(1)
-    return text[:start] + "\n".join(kept) + text[end:]
+    return text[:start] + joined + text[end:]
 
 
 def frontmatter_has_metadata(path: Path) -> bool:
@@ -509,7 +522,7 @@ def validate(root: Path):
     if canonical.is_file():
         if not openai_copy.is_file():
             errors.append("skills/avoid-ai-writing/SKILL.md missing; cannot check drift from root SKILL.md")
-        elif strip_frontmatter_metadata(canonical.read_text(encoding="utf-8")) != openai_copy.read_text(encoding="utf-8"):
+        elif strip_frontmatter_metadata(canonical.read_bytes().decode("utf-8")).encode("utf-8") != openai_copy.read_bytes():
             errors.append("skills/avoid-ai-writing/SKILL.md drifted from root SKILL.md (expected: root minus the frontmatter `metadata` block)")
         meta, _ = parse_frontmatter(canonical)
         if meta.get("version") != version:
@@ -658,7 +671,16 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("root", nargs="?", default=".")
     parser.add_argument("--json", action="store_true")
+    parser.add_argument(
+        "--strip-frontmatter-metadata",
+        metavar="SKILL_MD",
+        help="print SKILL_MD with the frontmatter `metadata` block removed (used by sync-plugin-skill.sh) and exit",
+    )
     args = parser.parse_args()
+    if args.strip_frontmatter_metadata:
+        data = Path(args.strip_frontmatter_metadata).read_bytes().decode("utf-8")
+        sys.stdout.buffer.write(strip_frontmatter_metadata(data).encode("utf-8"))
+        return 0
     errors, warnings, summary = validate(Path(args.root).resolve())
     if args.json:
         print(json.dumps(summary, indent=2))

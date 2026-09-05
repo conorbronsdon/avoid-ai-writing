@@ -8,7 +8,7 @@ The public package is skills-only. The separate `avoid-ai-writing-mcp` project r
 
 The canonical root `SKILL.md` remains the editorial authority. The OpenAI package adds focused workflow Skills around it:
 
-- `avoid-ai-writing`: exact copy of the original Skill
+- `avoid-ai-writing`: generated copy of the original Skill, identical except that the frontmatter `metadata` block (agentskills.io/OpenClaw fields) is omitted because the OpenAI portal rejects it
 - `avoid-ai-writing-router`: orchestration for mixed and multi-stage requests
 - `ai-writing-detector`: detect-only workflow with the bundled deterministic detector
 - `voice-preserving-rewriter`: returned-text rewrite owner
