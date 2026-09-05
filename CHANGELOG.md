@@ -26,6 +26,9 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- Restrict `load-bearing` detection to an explicit abstract-noun allowlist. Literal construction language, predicative uses, and unlisted nouns now pass (#56).
+- Publish with an OIDC-capable npm runtime and fail early when npm is too old for trusted publishing.
+
 - Split the entry skill from its pattern and profile reference for directory-aware agents (#52). Generate a complete source artifact and portable paste instructions from both files, with drift checks.
 - Claude bundles include the style checker, quote normalizer, shared Markdown protection, preservation validator, and examples they invoke (#102).
 
