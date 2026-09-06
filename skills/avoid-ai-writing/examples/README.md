@@ -11,7 +11,7 @@ format*; copy one and edit it.
 ## Where encoded guides live
 
 For a real published guide, don't reach for a bare name or expect a bundled config: see the
-README's [**House style is a different job**](../README.md#house-style-is-a-different-job)
+README's [**House style is a different job**](https://github.com/conorbronsdon/avoid-ai-writing/blob/main/README.md#house-style-is-a-different-job)
 section, which points at [Vale](https://github.com/vale-cli/vale) (where licensed, attributed
 guide packages live) and records the licensing decision in
 [#88](https://github.com/conorbronsdon/avoid-ai-writing/issues/88). In short: Vale enforces a
