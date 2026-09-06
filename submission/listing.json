@@ -2,7 +2,7 @@
   "source": {
     "repository": "https://github.com/conorbronsdon/avoid-ai-writing",
     "baseCommit": "d8c235186ff764ac20a0464ca8b1a13993ea37e4",
-    "version": "3.33.0",
+    "version": "3.33.1",
     "architecture": "skills-only"
   },
   "fields": {
@@ -15,7 +15,7 @@
     "supportURL": "https://github.com/conorbronsdon/avoid-ai-writing/issues",
     "privacyPolicyURL": "https://github.com/conorbronsdon/avoid-ai-writing/blob/main/PRIVACY.md",
     "termsOfServiceURL": "https://github.com/conorbronsdon/avoid-ai-writing/blob/main/TERMS.md",
-    "version": "3.33.0",
+    "version": "3.33.1",
     "packageName": "avoid-ai-writing",
     "capabilities": ["AI-pattern audit","Detect-only review","Voice-preserving rewrite","Targeted file editing","Preservation verification","False-positive review","Multi-step writing cleanup"],
     "starterPrompts": [

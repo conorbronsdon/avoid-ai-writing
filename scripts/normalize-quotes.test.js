@@ -293,4 +293,26 @@ t('inline destinations require a matching unescaped link-text opener in the same
   }
 });
 
+t('explicit quotes bound bare URLs even when URL parentheses are unmatched', () => {
+  for (const suffix of ["').", "').,", "');", "'!", "'"] ) {
+    const source = "(see 'https://example.com/(unclosed" + suffix;
+    const expected = source.replace("'https", '\u2018https').replace(/'(?=[).,;!]*$)/, '\u2019');
+    assert.strictEqual(curly(source), expected);
+    assert.strictEqual(normalize(expected, 'straight'), source);
+    assert.strictEqual(curly(expected), expected);
+    assert.deepStrictEqual(check(expected, { quotes: 'curly' }).hard, []);
+    assert.ok(check(source, { quotes: 'curly' }).hard.length);
+  }
+  for (const url of ["https://example.com/O'Reilly", "https://example.com/(O'Reilly)", "https://example.com/(unclosed/O'Reilly"]) {
+    const source = "(see '" + url + "').";
+    const expected = '(see \u2018' + url + '\u2019).';
+    assert.strictEqual(curly(source), expected);
+    assert.strictEqual(normalize(expected, 'straight'), source);
+    assert.deepStrictEqual(check(expected, { quotes: 'curly' }).hard, []);
+  }
+  for (const source of ["https://example.com/(O'Reilly", "<https://example.com/(O'Reilly>", "[docs](<https://example.com/(O'Reilly> \"title\")"]) {
+    assert.strictEqual(curly(source + ' "live"'), source + ' \u201clive\u201d');
+  }
+});
+
 console.log(`\nnormalize-quotes: ${passed} passed.`);

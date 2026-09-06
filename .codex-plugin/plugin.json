@@ -1,6 +1,6 @@
 {
   "name": "avoid-ai-writing",
-  "version": "3.33.0",
+  "version": "3.33.1",
   "description": "Audit AI-writing patterns, rewrite text while preserving voice and facts, edit files carefully, and verify that protected content survives the rewrite.",
   "author": {
     "name": "Conor Bronsdon",
