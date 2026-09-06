@@ -289,7 +289,9 @@ const AIDetector = (() => {
     'false-concession': 2,
     'rhetorical-question': 2,
     'confidence-calibration': 2,
-    'em-dash': 4,
+    // Writing-quality guidance whose authorship polarity changes across model
+    // generations. Keep the flag visible without moving authorship outputs.
+    'em-dash': 0,
     uniformity: 5,
     formatting: 3,
     'tier3-phrase': 3,
@@ -1388,8 +1390,8 @@ const AIDetector = (() => {
 
     // Context mode gates rules that are noisy in technical writing. Modes:
     //   'general' (default) — full ruleset
-    //   'technical' — skip title-case headers, formulaic openers gated to
-    //                 prose-only structures; lower em-dash + formatting weights
+    //   'technical' — skip title-case headers; individual prose-only rules
+    //                 apply their own technical-context gates
     //   'marketing' — full ruleset + boost on formulaic-opener / future-narrative
     //   'personal'  — full ruleset, normal weights
     // Mode is purely a soft gate; nothing is silently suppressed without

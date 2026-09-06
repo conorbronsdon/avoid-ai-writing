@@ -477,6 +477,22 @@ test('em-dash detector still fires on mid-sentence splices at the same density',
   assert.ok(emDashIssues.length >= 1, 'prose splices should still flag');
 });
 
+test('#73: em-dash overuse remains a P2 edit without affecting authorship output', () => {
+  const shared = 'The team reviewed the release notes carefully. '.repeat(40);
+  const baseline = AIDetector.analyzeText(`${shared}One point, another point, and a final point.`);
+  const result = AIDetector.analyzeText(`${shared}One point — another point — and a final point.`);
+  const emDashIssues = result.issues.filter((i) => i.type === 'em-dash');
+
+  assert.equal(emDashIssues.length, 1, 'over-limit em dashes must remain visible');
+  assert.equal(AIDetector.SEVERITY_LABELS[emDashIssues[0].severity], 'P2');
+  assert.equal(result.score, baseline.score, 'em-dash style edits must not change the AI score');
+  assert.equal(result.label, baseline.label, 'em-dash style edits must not change the AI label');
+  assert.equal(result.document_classification, baseline.document_classification);
+  assert.equal(result.confidence_category, baseline.confidence_category);
+  assert.deepEqual(result.class_probabilities, baseline.class_probabilities);
+  assert.deepEqual(result.highlight_sentence_for_ai, []);
+});
+
 test('em-dash detector ignores CLI flags like --save-dev', () => {
   const text = 'Run npm install --save-dev and then npm run build --no-verify --silent. Takes about ten seconds on this machine. The package is installed into node_modules directly after the install command completes successfully.';
   const r = AIDetector.analyzeText(text);
