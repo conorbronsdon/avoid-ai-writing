@@ -1390,8 +1390,8 @@ const AIDetector = (() => {
 
     // Context mode gates rules that are noisy in technical writing. Modes:
     //   'general' (default) — full ruleset
-    //   'technical' — skip title-case headers, formulaic openers gated to
-    //                 prose-only structures; lower em-dash + formatting weights
+    //   'technical' — skip title-case headers; individual prose-only rules
+    //                 apply their own technical-context gates
     //   'marketing' — full ruleset + boost on formulaic-opener / future-narrative
     //   'personal'  — full ruleset, normal weights
     // Mode is purely a soft gate; nothing is silently suppressed without
