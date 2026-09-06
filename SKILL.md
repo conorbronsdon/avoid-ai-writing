@@ -1,7 +1,7 @@
 ---
 name: avoid-ai-writing
 description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Use this skill when asked to "remove AI-isms," "clean up AI writing," "edit writing for AI patterns," "audit writing for AI tells," or "make this sound less like AI." Supports a detect-only mode, an edit-in-place mode for files, an optional voice profile (casual / professional / technical / warm / blunt), and an iterate-to-convergence pass.
-version: 3.33.1
+version: 3.33.2
 license: MIT
 compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, VS Code Copilot, Hermes Agent, OpenHands, etc.) or OpenClaw. No external tools or APIs required.
 metadata:
@@ -92,7 +92,6 @@ Not all AI-isms are equal. When doing a quick pass or triaging a large document,
 - Synonym cycling within a paragraph
 - Formulaic openings ("In the rapidly evolving world of...")
 - Bold overuse
-- Em dash frequency (above 1 per 1,000 words)
 - Generic future-narrative closers ("may become one of the most important narratives…")
 - Social endorsement closers ("This one is worth your time:", "thank me later")
 - Lingering-attention claims ("the line I keep coming back to," "I can't stop thinking about this")
@@ -105,6 +104,7 @@ Not all AI-isms are equal. When doing a quick pass or triaging a large document,
 - Tier 3 phrase clustering (≥3 distinct boilerplate phrases in one piece)
 
 ### P2 — Stylistic polish (fix when time allows)
+- Em dash frequency (above 1 per 1,000 words). This is writing-quality guidance, not evidence of machine authorship: usage has varied by model generation and vendor, so do not score or invert it as an authorship signal.
 - Generic conclusions ("The future looks bright")
 - Repeated setup/reversal punchlines when they replace concrete claims (isolated or supported reversals pass)
 - Judgment-only clarity checks: false agency, transformation crutch, ambiguous domain terminology, consequence-free explanations, and repeated empty concessions (apply each entry's pass conditions)

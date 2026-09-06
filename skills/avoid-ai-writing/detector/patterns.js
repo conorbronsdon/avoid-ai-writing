@@ -289,7 +289,9 @@ const AIDetector = (() => {
     'false-concession': 2,
     'rhetorical-question': 2,
     'confidence-calibration': 2,
-    'em-dash': 4,
+    // Writing-quality guidance whose authorship polarity changes across model
+    // generations. Keep the flag visible without moving authorship outputs.
+    'em-dash': 0,
     uniformity: 5,
     formatting: 3,
     'tier3-phrase': 3,
