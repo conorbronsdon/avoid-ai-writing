@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- 2026-09-06: Keep paired prose quotes around bare URLs visible to quote normalization even when the URL contains an unmatched opening parenthesis. Preserve internal URL apostrophes and explicit Markdown link destinations.
 - 2026-09-05: Add a GitHub follow invitation to the README's maintainer section.
 
 All notable changes to this project are documented here.

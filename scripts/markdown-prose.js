@@ -253,7 +253,13 @@ function markdownProse(text) {
     const url = m[0];
     let end = url.length;
     let surroundingQuote = /[‘']/.test(s[m.index - 1] || '');
-    let extra = (url.match(/\)/g) || []).length - (url.match(/\(/g) || []).length;
+    // An explicit prose quote wins over URL parenthesis balancing when its
+    // closing mark is followed only by terminal punctuation. Otherwise an
+    // unmatched URL '(' can consume the prose ')' and hide the closing quote.
+    const quotedEnd = surroundingQuote && /[’'][).,;:!?]*$/.exec(url);
+    if (quotedEnd) end = quotedEnd.index + 1;
+    const bounded = url.slice(0, end);
+    let extra = (bounded.match(/\)/g) || []).length - (bounded.match(/\(/g) || []).length;
     // Peel adjacent prose delimiters in any order. Each iteration removes one
     // character, retaining balanced URL parentheses and internal apostrophes.
     while (end > 0) {
