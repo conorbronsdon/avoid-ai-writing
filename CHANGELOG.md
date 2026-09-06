@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- 2026-09-05: Add a GitHub follow invitation to the README's maintainer section.
+
 All notable changes to this project are documented here.
 
 ---

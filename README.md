@@ -453,6 +453,8 @@ behind that line is public.
 I run agents against my own email, money, and publishing, so I build the
 guardrails first.
 
+[Follow me on GitHub](https://github.com/conorbronsdon) for new tools and practical examples from maintaining them.
+
 - [What I'm building](https://conorbronsdon.com/builds/?utm_source=github&utm_medium=referral&utm_campaign=repo-readme&utm_content=avoid-ai-writing) — public projects across agent skills, MCP servers, creator tools, and Mojo.
 - [Chain of Thought](https://chainofthought.show/?utm_source=github&utm_medium=referral&utm_campaign=repo-readme&utm_content=avoid-ai-writing) — conversations with the people shipping AI systems.
 - [repo-audit](https://github.com/conorbronsdon/repo-audit) — checks whether repository claims are enforced, advisory, or guidance.
