@@ -203,7 +203,10 @@ A reproducible run on the current corpus found zero detector hits in both
 classes at document level (0/376 human, 0/530 machine) and again at paragraph
 level (0/889 human, 0/779 machine). With no observed hits, lift is not
 estimable: this corpus cannot tell whether the rule separates human from
-machine writing. That matters because StoryScope reports the opposite direction
+machine writing. Every machine unit predates 2025, so any measured detector
+performance on that leg is at best an upper bound for current models; the
+zero-hit result cannot estimate current-model behavior. That matters because
+StoryScope reports the opposite direction
 in narrative fiction — machine text more often performs emotion through bodily
 cues while human text more often names the feeling outright. Fiction does not
 automatically transfer to this repo's target registers, so the conservative
