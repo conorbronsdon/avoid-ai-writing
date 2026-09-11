@@ -1,0 +1,39 @@
+name: sync-issue-82-generated-copies
+
+on:
+  push:
+    branches:
+      - fix/issue-82-emotional-flatline-evidence
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: fix/issue-82-emotional-flatline-evidence
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+
+      - name: Regenerate canonical copies
+        run: |
+          bash scripts/sync-plugin-skill.sh
+          bash scripts/sync-cursor-rules.sh
+
+      - name: Commit generated drift
+        run: |
+          if git diff --quiet; then
+            echo "No generated drift."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add SKILL.full.md plugins skills cursor-rules dist
+          git commit -m "chore: sync generated emotional-flatline copies"
+          git push origin HEAD:fix/issue-82-emotional-flatline-evidence
