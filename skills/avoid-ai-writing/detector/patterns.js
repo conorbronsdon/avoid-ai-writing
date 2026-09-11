@@ -281,7 +281,11 @@ const AIDetector = (() => {
     'significance-inflation': 4,
     'vague-attribution': 5,
     'hollow-intensifier': 2,
-    'emotional-flatline': 2,
+    // Style-only until evidence supports an authorship direction. Targeted
+    // corpus measurement for #82 produced zero hits in both classes, while
+    // StoryScope reports the opposite direction in narrative fiction. Keep
+    // the flag visible without moving authorship scores or probabilities.
+    'emotional-flatline': 0,
     'lingering-attention': 3,
     'novelty-inflation': 3,
     'cutoff-disclaimer': 10,
