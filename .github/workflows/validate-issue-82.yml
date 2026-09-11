@@ -1,0 +1,27 @@
+name: validate-issue-82
+
+on:
+  push:
+    branches:
+      - fix/issue-82-emotional-flatline-evidence
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+      - name: Run repository tests
+        run: npm test
+      - name: Run self-scan
+        run: npm run self-scan:check
+      - name: Verify generated copies are current
+        run: |
+          bash scripts/sync-plugin-skill.sh
+          bash scripts/sync-cursor-rules.sh
+          git diff --exit-code
