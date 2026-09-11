@@ -1,0 +1,113 @@
+name: Pattern proposal
+description: Propose a new AI-writing pattern for the detector
+title: "Pattern proposal: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Propose a new pattern for the detector. The two examples are the heart
+        of the proposal: one that should fire, and one that must stay clean.
+        Proposals without both are hard to evaluate.
+
+        Please do not paste anything you would mind seeing in a public repo.
+
+  - type: input
+    id: name
+    attributes:
+      label: Short name for the pattern
+      description: A few words, e.g. "em-dash overuse" or "vague authority claim".
+      placeholder: em-dash overuse
+    validations:
+      required: true
+
+  - type: textarea
+    id: should_fire
+    attributes:
+      label: Example that should be flagged
+      description: The shortest passage that should trigger this pattern.
+      placeholder: Paste the exact text here.
+    validations:
+      required: true
+
+  - type: textarea
+    id: must_not_fire
+    attributes:
+      label: Contrasting example that must stay clean
+      description: Legitimate writing that looks similar but must not be flagged.
+      placeholder: Paste the exact text here.
+    validations:
+      required: true
+
+  - type: textarea
+    id: why_it_matters
+    attributes:
+      label: Why this pattern matters
+      description: What does it signal about the writing, and how often does it appear?
+    validations:
+      required: true
+
+  - type: textarea
+    id: false_positives
+    attributes:
+      label: Known legitimate uses or false-positive risks
+      description: When would this fire on something a person wrote on purpose?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: detectability
+    attributes:
+      label: Detectability
+      description: Could the engine detect this with a regex, or does it need judgment?
+      options:
+        - Regex-detectable
+        - Judgment-only
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources for factual claims
+      description: Links supporting any claim about model or human writing made above.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: register
+    attributes:
+      label: Register where it appears
+      description: Where have you seen it? False-positive rates differ sharply by register.
+      options:
+        - Blog or essay
+        - Technical documentation or README
+        - Technical blog or architecture writeup
+        - Academic or research writing
+        - Social post (LinkedIn, X)
+        - Email or DM
+        - Issue, PR, or code comment
+        - Changelog or release notes
+        - Fiction or creative
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: fixture
+    attributes:
+      label: May we use these examples as public test fixtures?
+      description: Fixtures live in the repo and run in CI. If you say no, the proposal is still useful.
+      options:
+        - "Yes, use them as public fixtures"
+        - "No, keep the text out of the repo"
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        **What happens next.** Proposals are triaged into a new rule, a
+        documented decision to skip it, or a request for more detail. First-time
+        contributors are welcome to ask for a review in the issue.

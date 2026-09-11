@@ -28,7 +28,7 @@ First decide which kind of rule it is:
   → add it to `references/patterns.md` prose and list it under "Skill-only" in
   `detector/CATEGORIES.md`. There is no detector type for these.
 
-If you are unsure which it is, open an issue first and we will sort it out.
+If you are unsure which it is — or you want to propose a brand-new pattern — [use the pattern proposal form](https://github.com/conorbronsdon/avoid-ai-writing/issues/new?template=pattern_proposal.yml) so the proposal arrives with what we need to triage it.
 
 ## Precision over recall
 
