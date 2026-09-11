@@ -6,6 +6,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Changed
+
+- Reframe `emotional-flatline` as style guidance rather than authorship evidence after a targeted corpus run found zero hits in both classes (0/376 human vs. 0/530 machine documents; paragraph cross-check 0/889 vs. 0/779). Keep the detector flag visible but give it zero authorship weight until direct evidence establishes a direction (#82).
+
 ### Fixed
 
 - Include every observed corpus register in `corpus.js list`; preserve the preferred accepted-register order and sort additional registers deterministically.
