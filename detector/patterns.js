@@ -281,10 +281,10 @@ const AIDetector = (() => {
     'significance-inflation': 4,
     'vague-attribution': 5,
     'hollow-intensifier': 2,
-    // Style-only until evidence supports an authorship direction. Targeted
-    // corpus measurement for #82 produced zero hits in both classes, while
-    // StoryScope reports the opposite direction in narrative fiction. Keep
-    // the flag visible without moving authorship scores or probabilities.
+    // Precision-first evidence policy: a style rule with no observed examples
+    // in either corpus class has no measured authorship direction. Keep the
+    // finding visible, but do not move authorship scores or probabilities until
+    // a relevant positive evaluation set supports a direction.
     'emotional-flatline': 0,
     'lingering-attention': 3,
     'novelty-inflation': 3,
@@ -2438,7 +2438,9 @@ const AIDetector = (() => {
     'significance-inflation': 'Significance inflation',
     'vague-attribution': 'Vague attribution',
     'hollow-intensifier': 'Hollow intensifier',
-    'emotional-flatline': 'Emotional flatline',
+    // Keep the public type stable for API consumers; the user-facing name now
+    // describes the stock framing that the regexes actually match.
+    'emotional-flatline': 'Stock reaction framing',
     'lingering-attention': 'Lingering-attention claim',
     'novelty-inflation': 'Novelty inflation',
     'cutoff-disclaimer': 'Cutoff disclaimer',

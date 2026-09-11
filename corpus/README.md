@@ -199,19 +199,28 @@ deliberately cut back on em dashes since. But as an authorship signal, on this
 evidence, it points the wrong way.
 
 **Targeted check: `emotional-flatline` is currently unmeasured, not validated.**
-A reproducible run on the current corpus found zero detector hits in both
-classes at document level (0/376 human, 0/530 machine) and again at paragraph
-level (0/889 human, 0/779 machine). With no observed hits, lift is not
-estimable: this corpus cannot tell whether the rule separates human from
-machine writing. Every machine unit predates 2025, so any measured detector
-performance on that leg is at best an upper bound for current models; the
-zero-hit result cannot estimate current-model behavior. That matters because
-StoryScope reports the opposite direction
-in narrative fiction — machine text more often performs emotion through bodily
-cues while human text more often names the feeling outright. Fiction does not
-automatically transfer to this repo's target registers, so the conservative
-treatment is to keep `emotional-flatline` as style guidance while removing it
-from authorship scoring until there is direct evidence.
+A reproducible run found no detector hits in either class at document or
+paragraph level. A raw-text scan found none either, so the result was not caused
+by measurement preprocessing. With no positive observations, lift is undefined:
+the corpus cannot tell whether the rule separates human from machine writing.
+
+StoryScope motivated the question but does not test this rule. It studies how
+fictional characters' emotions are conveyed through bodily cues or explicit
+labels. The detector matches stock first-person introductions in expository and
+social prose. Those are different constructs in different registers, so the
+paper supplies no direction for this category's authorship weight.
+
+The measurement did uncover a separate defect: `fp-measure.js` collapsed line
+breaks before analysis, making line-anchored header rules unobservable through
+that path. The measurement now preserves line boundaries, with should-fire and
+must-not-fire mutation controls. That defect does not explain this category's
+absence because the raw-text scan also found no matches.
+
+**Policy for an unobserved category.** Zero hits on both sides select no branch
+of a lift-based decision rule. Because this detector prioritizes precision over
+recall, an unvalidated style category remains visible to writers but contributes
+zero authorship weight. Restoring a nonzero weight requires a relevant positive
+evaluation set that establishes direction; the current corpus result cannot.
 
 ### What this does not license
 

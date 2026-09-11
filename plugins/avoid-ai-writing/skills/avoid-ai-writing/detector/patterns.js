@@ -281,7 +281,11 @@ const AIDetector = (() => {
     'significance-inflation': 4,
     'vague-attribution': 5,
     'hollow-intensifier': 2,
-    'emotional-flatline': 2,
+    // Precision-first evidence policy: a style rule with no observed examples
+    // in either corpus class has no measured authorship direction. Keep the
+    // finding visible, but do not move authorship scores or probabilities until
+    // a relevant positive evaluation set supports a direction.
+    'emotional-flatline': 0,
     'lingering-attention': 3,
     'novelty-inflation': 3,
     'cutoff-disclaimer': 10,
@@ -2206,10 +2210,9 @@ const AIDetector = (() => {
     // kinds of issue stay out of the AI-highlight regions. Summary signals
     // like "Punctuation density uniform across paragraphs" have no sentence
     // anchor — they contribute to the document-level signal but not to
-    // highlights. Zero-weight style copyedits (unnecessary-hyphenation) do
-    // have an anchor, but they are P2 grammar cleanup rather than evidence
-    // of machine authorship, so they belong in issues[] and nowhere near a
-    // field reserved for AI sentence highlights.
+    // highlights. Any category with authorship weight 0 is style-only by
+    // definition, so it belongs in issues[] but never in a field reserved
+    // for AI sentence highlights.
     // Filter by issue TYPE not text-regex: text-based filtering used to
     // drop legitimate phrase issues containing "across" / "density".
     const NON_HIGHLIGHT_TYPES = new Set([
@@ -2234,6 +2237,7 @@ const AIDetector = (() => {
     for (const issue of issues) {
       if (!issue.text || issue.text.length > 200) continue;
       if (NON_HIGHLIGHT_TYPES.has(issue.type)) continue;
+      if ((ISSUE_WEIGHTS[issue.type] ?? 2) === 0) continue;
       const needle = issue.text.toLowerCase();
       let idx = 0;
       let matched = false;
@@ -2434,7 +2438,9 @@ const AIDetector = (() => {
     'significance-inflation': 'Significance inflation',
     'vague-attribution': 'Vague attribution',
     'hollow-intensifier': 'Hollow intensifier',
-    'emotional-flatline': 'Emotional flatline',
+    // Keep the public type stable for API consumers; the user-facing name now
+    // describes the stock framing that the regexes actually match.
+    'emotional-flatline': 'Stock reaction framing',
     'lingering-attention': 'Lingering-attention claim',
     'novelty-inflation': 'Novelty inflation',
     'cutoff-disclaimer': 'Cutoff disclaimer',

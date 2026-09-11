@@ -18,6 +18,16 @@ All notable changes to this project are documented here.
 - Correct the `analyzeText()` result table in `detector/README.md`: the six score labels the
   engine returns, the `UNSCORED` classification on early-exit paths, and all four accepted `contextMode` values.
 
+## [3.35.0] — 2026-09-11
+
+### Changed
+
+- Rename the user-facing "Emotional flatline" category to "Stock reaction framing" while preserving its `emotional-flatline` API type. Keep specific reactions, flag empty framing, and make the style finding neutral in authorship scoring under the precision-first evidence policy (#82).
+
+### Fixed
+
+- Preserve line boundaries in corpus measurement units so line-anchored detector rules remain observable. Add should-fire and must-not-fire mutation controls for both document and paragraph preprocessing.
+
 ## [3.34.0] — 2026-09-11
 
 ### Added

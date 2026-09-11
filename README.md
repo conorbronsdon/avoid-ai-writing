@@ -249,7 +249,7 @@ Trigger detect mode with: "detect," "flag only," "audit only," "just flag," "sca
 | 25 | **"Let's" constructions** | "Let's explore," "Let's break this down" | Just start with the point |
 | 26 | **Cutoff disclaimers** | "While details are limited in available sources..." | Find sources or remove |
 | 27 | **Generic conclusions** | "The future looks bright," "Only time will tell" | Specific closing thought or cut |
-| 28 | **Emotional flatline** | "What surprised me most," "I was fascinated to discover" | Keep specific, authentic reactions; cut empty stock framing or make the reaction concrete |
+| 28 | **Stock reaction framing** | "What surprised me most," "I was fascinated to discover" | Keep specific, authentic reactions; cut empty stock framing or make the reaction concrete |
 | 29 | **Reasoning chain artifacts** | "Let me think step by step," "Breaking this down" | State conclusion, then evidence |
 | 30 | **Sycophantic tone** | "Great question!", "You're absolutely right!" | Remove entirely |
 | 31 | **Acknowledgment loops** | "You're asking about," "To answer your question" | Just answer directly |

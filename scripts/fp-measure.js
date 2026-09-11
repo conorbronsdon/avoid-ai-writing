@@ -76,14 +76,29 @@ function rocAuc(posScores, negScores) {
   return (rankSum - (n1 * (n1 + 1)) / 2) / (n1 * n0);
 }
 
+// Preserve line boundaries because some detector rules intentionally anchor to
+// headings. Collapsing all whitespace made those rules impossible to observe
+// through this measurement path even when they were present in the source.
+function normalizeUnit(text) {
+  return text
+    .replace(/\r\n?/g, '\n')
+    .replace(/[^\S\n]+/g, ' ')
+    .replace(/ *\n */g, '\n')
+    .trim();
+}
+
 function splitUnits(text) {
   return text
     .split(/\n\s*\n/)
-    .map((p) => p.replace(/\s+/g, ' ').trim())
+    .map(normalizeUnit)
     .filter((p) => {
       const n = (p.match(/\S+/g) || []).length;
       return n >= MIN_WORDS && n <= MAX_WORDS;
     });
+}
+
+function unitsForText(text, unit) {
+  return unit === 'document' ? [normalizeUnit(text)] : splitUnits(text);
 }
 
 const pct = (x) => `${(x * 100).toFixed(1)}%`;
@@ -98,9 +113,7 @@ function measure(opts = {}) {
     const rows = loadRows(doc);
     if (rows === null) { skipped.push(doc.id); continue; }
     for (const row of rows) {
-      const chunks = unit === 'document'
-        ? [row.text.replace(/\s+/g, ' ').trim()]
-        : splitUnits(row.text);
+      const chunks = unitsForText(row.text, unit);
       for (const [i, chunk] of chunks.entries()) {
         const r = AIDetector.analyzeText(chunk);
         if (r.tooShort || r.label === 'Text too long') continue;
@@ -267,4 +280,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { measure, summarize, wilson, rocAuc, THRESHOLDS };
+module.exports = { measure, summarize, wilson, rocAuc, normalizeUnit, splitUnits, unitsForText, THRESHOLDS };
