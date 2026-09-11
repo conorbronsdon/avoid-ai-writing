@@ -24,6 +24,25 @@ const result = AIDetector.analyzeText("Your text here…");
 console.log(result.score, result.label, result.issues.length);
 ```
 
+### Use it from npm
+
+The engine is published as
+[`avoid-ai-writing-detector`](https://www.npmjs.com/package/avoid-ai-writing-detector),
+so it can be consumed in another project without cloning this repo:
+
+```bash
+npm install avoid-ai-writing-detector
+```
+
+```js
+const AIDetector = require("avoid-ai-writing-detector");
+const result = AIDetector.analyzeText("Your text here…");
+console.log(result.score, result.label, result.issues.length);
+```
+
+The published package is the same `patterns.js` engine described on this page —
+the local-checkout example above needs no changes.
+
 In the browser, load `patterns.js` as a plain script — it self-registers as a
 global `AIDetector` (the `module.exports` block is guarded and only runs under
 CommonJS).

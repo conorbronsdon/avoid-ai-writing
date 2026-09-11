@@ -367,6 +367,24 @@ const AIDetector = require("./detector/patterns.js");
 const { score, label, issues } = AIDetector.analyzeText("Your text here…");
 ```
 
+### Install from npm
+
+The detector is also published on npm as
+[`avoid-ai-writing-detector`](https://www.npmjs.com/package/avoid-ai-writing-detector),
+so you can use it in another project without cloning this repo:
+
+```bash
+npm install avoid-ai-writing-detector
+```
+
+```js
+const AIDetector = require("avoid-ai-writing-detector");
+const result = AIDetector.analyzeText("Your text here…");
+console.log(result.score, result.label, result.issues.length);
+```
+
+The local-checkout example above and the browser usage below keep working unchanged.
+
 When the input is a Markdown source file, pass
 `{ sourceMode: "rendered-markdown" }` to exclude initial YAML frontmatter and
 HTML comments from the score while keeping issue offsets aligned with the
