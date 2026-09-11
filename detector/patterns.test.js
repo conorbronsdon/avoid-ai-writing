@@ -1047,6 +1047,22 @@ test('emotional-flatline opener fires at position 0 (no leading newline)', () =>
   assert.ok(types.has('emotional-flatline'), 'expected emotional-flatline at position 0');
 });
 
+test('emotional-flatline stays visible without moving the authorship score', () => {
+  // #82: the current corpus has zero emotional-flatline hits in either class,
+  // so there is no measured authorship direction. Keep the style flag, but a
+  // lone hit must not move the detector score until evidence supports it.
+  const text = 'What surprised me most was the rollback time: eleven seconds across all three production hosts after the database migration completed without retries.';
+  const r = AIDetector.analyzeText(text);
+  const hits = r.issues.filter((i) => i.type === 'emotional-flatline');
+  assert.equal(hits.length, 1, `expected one emotional-flatline hit, got ${JSON.stringify(hits)}`);
+  assert.equal(r.score, 0, `style-only emotional-flatline should not move score, got ${r.score}`);
+  assert.deepEqual(
+    r.highlight_sentence_for_ai,
+    [],
+    `style-only emotional-flatline must not create AI sentence highlights: ${JSON.stringify(r.highlight_sentence_for_ai)}`,
+  );
+});
+
 test('bullet-np-list ignores bullets inside fenced code blocks', () => {
   // CLI flag docs / option dumps inside ``` fences are not prose AI
   // scaffolding. False-positive that would fire on most READMEs.
