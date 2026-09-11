@@ -198,6 +198,18 @@ are not. The rule is not wrong as *writing* advice, and the maintainer has
 deliberately cut back on em dashes since. But as an authorship signal, on this
 evidence, it points the wrong way.
 
+**Targeted check: `emotional-flatline` is currently unmeasured, not validated.**
+A reproducible run on the current corpus found zero detector hits in both
+classes at document level (0/376 human, 0/530 machine) and again at paragraph
+level (0/889 human, 0/779 machine). With no observed hits, lift is not
+estimable: this corpus cannot tell whether the rule separates human from
+machine writing. That matters because StoryScope reports the opposite direction
+in narrative fiction — machine text more often performs emotion through bodily
+cues while human text more often names the feeling outright. Fiction does not
+automatically transfer to this repo's target registers, so the conservative
+treatment is to keep `emotional-flatline` as style guidance while removing it
+from authorship scoring until there is direct evidence.
+
 ### What this does not license
 
 It does not license "the detector does not work". It measures one thing: how
