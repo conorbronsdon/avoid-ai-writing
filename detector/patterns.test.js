@@ -1056,6 +1056,11 @@ test('emotional-flatline stays visible without moving the authorship score', () 
   const hits = r.issues.filter((i) => i.type === 'emotional-flatline');
   assert.equal(hits.length, 1, `expected one emotional-flatline hit, got ${JSON.stringify(hits)}`);
   assert.equal(r.score, 0, `style-only emotional-flatline should not move score, got ${r.score}`);
+  assert.deepEqual(
+    r.highlight_sentence_for_ai,
+    [],
+    `style-only emotional-flatline must not create AI sentence highlights: ${JSON.stringify(r.highlight_sentence_for_ai)}`,
+  );
 });
 
 test('bullet-np-list ignores bullets inside fenced code blocks', () => {
