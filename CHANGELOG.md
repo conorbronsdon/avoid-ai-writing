@@ -10,15 +10,8 @@ All notable changes to this project are documented here.
 
 - Package the deterministic detector as a composite GitHub Action and pre-commit hook, backed by a new `avoid-ai-writing-gate` CLI. The gate uses per-file finding counts rather than the composite score, defaults to `technical` + `rendered-markdown`, and uses a corpus-backed threshold of 6 findings per file (1.9% human-control failure rate across 376 documents, versus 31.4% at zero). Strict zero-findings policies remain available with an explicit threshold of 0. Preservation validation stays separate because it requires before/after inputs (#86).
 
-### Changed
-
-- Document the two CI-checked pattern-category count copies in contributor guidance and the pull-request checklist (#170).
-- Reserve `good first issue` for a contributor's first PR and direct returning contributors to other issues or newcomer reviews.
-
 ### Fixed
 
-- Name `references/patterns.md` as the source used by pattern-count checks in
-  workflow and SSOT guidance (#169).
 - Include every observed corpus register in `corpus.js list`; preserve the preferred accepted-register order and sort additional registers deterministically.
 - Fix three README link targets: the dead Cowork URL, the pattern-catalog pointer, and the
   voice-profile link that led to the triggering section.

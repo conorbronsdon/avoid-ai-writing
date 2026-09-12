@@ -142,8 +142,20 @@ its own.
 
 ## Changelog and versioning
 
-Add an entry to `CHANGELOG.md` under a dated, versioned heading
-(`## [X.Y.Z] — YYYY-MM-DD`), matching the existing entries. A new rule is a minor
-version bump; update the `version:` field in the `SKILL.md` frontmatter to match.
+Add an entry under `## [Unreleased]` in `CHANGELOG.md` when a change affects
+users: detection or rewriting behavior, writing rules, public APIs or CLI
+options, configuration, installation or packaging, compatibility, or security.
+
+Skip the changelog for routine docs corrections, links, formatting, contributor
+guidance, tests, and internal refactoring or CI maintenance with no user-facing
+effect. Describe those changes in the PR. A docs or maintenance label does not
+exempt a change that affects how the tool works, is installed or used, or is
+supported.
+
+When preparing a release, move its Unreleased entries under a dated, versioned
+heading (`## [X.Y.Z] — YYYY-MM-DD`) and update the matching versions in
+`SKILL.md`, `package.json`, and both plugin manifests. A release that adds a
+writing rule needs a minor version bump. Exempt changes need no version bump;
+leave published release entries intact.
 
 After changing either canonical file, run `bash scripts/sync-plugin-skill.sh && bash scripts/sync-cursor-rules.sh`. This regenerates both bundles, `SKILL.full.md`, and the portable paste/Cursor artifacts; CI checks parity. Do not edit generated copies.
