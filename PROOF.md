@@ -11,17 +11,18 @@ git clone https://github.com/conorbronsdon/avoid-ai-writing && cd avoid-ai-writi
 node scripts/self-scan.js
 ```
 
-## Result (v3.22.0, measured 2026-07-31)
+## Result (v3.34.0, measured 2026-09-12)
 
 | Document | Words | Raw score | Exempt score | Budget |
 |---|---:|---:|---:|---:|
-| `README.md` | 3,977 | 65 | **21** | 30 |
-| `SKILL.full.md` | 14,008 | 89 | **12** | 25 |
-| `CONTRIBUTING.md` | 527 | 3 | **1** | 15 |
-| `detector/README.md` | 593 | 2 | **2** | 15 |
-| `detector/CATEGORIES.md` | 1,064 | 1 | **1** | 15 |
-| `CHANGELOG.md` | 7,192 | 62 | **32** | 40 |
-| `PROOF.md` | 995 | 15 | **14** | 20 |
+| `README.md` | 5,183 | 60 | **19** | 30 |
+| `SKILL.full.md` | 18,080 | 77 | **9** | 25 |
+| `CONTRIBUTING.md` | 955 | 1 | **1** | 15 |
+| `detector/README.md` | 1,163 | 1 | **1** | 15 |
+| `detector/CATEGORIES.md` | 1,601 | 1 | **0** | 15 |
+| `examples/README.md` | 931 | 1 | **1** | 10 |
+| `CHANGELOG.md` | 11,552 | 60 | **35** | 40 |
+| `PROOF.md` | 1,164 | 13 | **12** | 20 |
 
 The `PROOF.md` row is a snapshot and mildly self-referential: editing this page
 changes its own word count and score. CI gates the live number from
@@ -33,7 +34,7 @@ publishing only the flattering one is the behavior this project exists to
 criticize.
 
 **Raw** counts every match, including the 112-entry vocabulary table and every
-pattern this repo quotes to warn about it. `SKILL.md` scoring 92 raw
+pattern this repo quotes to warn about it. `SKILL.full.md` scoring 77 raw
 means the catalog contains the words it catalogs. That number is noise, and it
 is here so nobody has to wonder what was suppressed.
 
@@ -82,7 +83,7 @@ dash inside a heading still counts, because `SKILL.md` applies the em-dash rule
 to headings too. The scan is what surfaced it, which is the argument for having
 the scan.
 
-**3. This page is in the table, and it scores 14 for the reason it just
+**3. This page is in the table, and it scores 12 for the reason it just
 described.** Nearly every hit on `PROOF.md` comes from the italicized list of
 Tier 1 words two paragraphs above. Italics are not an exempt span; quotation
 marks, code, tables, and blockquotes are. The page explaining that release
@@ -90,7 +91,7 @@ notes trip the detector by naming patterns trips the detector by naming
 patterns. One hit was a real one, an "in order to" in the paragraph above the
 table, and it is now "to".
 
-**4. `README.md` at 21 is the honest number for a page that sells something.**
+**4. `README.md` at 19 is the honest number for a page that sells something.**
 The residue is promotional register, not vocabulary. That is the expected
 failure mode for a project README, and the tolerance matrix in `SKILL.md`
 relaxes exactly nothing for it.
