@@ -44,35 +44,102 @@ const AIDetector = (() => {
   };
   const GREEK_LOOKALIKES = { 'ο': 'o', 'Ο': 'O', 'α': 'a', 'Α': 'A', 'ρ': 'p', 'Ρ': 'P' };
 
-  function normalizeText(text) {
+  const ZERO_WIDTH_RE = /[​-‍﻿⁠]/;
+  const HOMOGLYPH_RE = /[Ѐ-ӿͰ-Ͽ]/;
+  const ROLEPLAY_VERBS_RE = /^(?:nods|sighs|laughs|smiles|frowns|shrugs|grins|winks|chuckles|gasps|pauses|thinks|wonders|whispers|shouts|gestures|raises|leans|turns|looks|glances|smirks|blinks|nodding|sighing|laughing|smiling|thinking|gesturing)\b/i;
+  const ROLEPLAY_MARKER_RE = /(?<!\*)\*([^*\n]{1,80}?)\*(?!\*)/gu;
+
+  function normalizeText(text, sourceMap) {
     const flags = { zeroWidth: 0, homoglyph: 0, roleplay: 0 };
-    let out = text;
+    if (!sourceMap) {
+      let out = text;
+      out = out.replace(ZERO_WIDTH_RE, () => { flags.zeroWidth++; return ''; });
+      out = out.replace(HOMOGLYPH_RE, (m) => {
+        const swap = CYRILLIC_LOOKALIKES[m] ?? GREEK_LOOKALIKES[m];
+        if (swap) { flags.homoglyph++; return swap; }
+        return m;
+      });
+      out = out.replace(ROLEPLAY_MARKER_RE, (m, inner) => {
+        if (ROLEPLAY_VERBS_RE.test(inner)) { flags.roleplay++; return ''; }
+        return m;
+      });
+      return { text: out, flags };
+    }
 
-    // 1. Strip zero-width chars (ZWSP U+200B, ZWNJ U+200C, ZWJ U+200D,
-    //    BOM U+FEFF, word joiner U+2060).
-    out = out.replace(/[​-‍﻿⁠]/g, () => { flags.zeroWidth++; return ''; });
+    const outChars = [];
+    const outMap = [];
+    let i = 0;
+    while (i < text.length) {
+      const ch = text[i];
+      if (ZERO_WIDTH_RE.test(ch)) {
+        flags.zeroWidth++;
+        i += 1;
+        continue;
+      }
+      if (HOMOGLYPH_RE.test(ch)) {
+        const swap = CYRILLIC_LOOKALIKES[ch] ?? GREEK_LOOKALIKES[ch];
+        if (swap) {
+          flags.homoglyph++;
+          outChars.push(swap);
+          outMap.push(sourceMap[i]);
+          i += 1;
+          continue;
+        }
+      }
+      const rest = text.slice(i);
+      const roleplay = /(?<!\*)\*([^*\n]{1,80}?)\*(?!\*)/u.exec(rest);
+      if (roleplay && roleplay.index === 0 && ROLEPLAY_VERBS_RE.test(roleplay[1])) {
+        flags.roleplay++;
+        i += roleplay[0].length;
+        continue;
+      }
+      outChars.push(ch);
+      outMap.push(sourceMap[i]);
+      i += 1;
+    }
+    return { text: outChars.join(''), flags, sourceMap: outMap };
+  }
 
-    // 2. Swap Cyrillic / Greek Latin-lookalike chars back to Latin so
-    //    pattern matching catches obfuscated tokens.
-    out = out.replace(/[Ѐ-ӿͰ-Ͽ]/g, (m) => {
-      const swap = CYRILLIC_LOOKALIKES[m] ?? GREEK_LOOKALIKES[m];
-      if (swap) { flags.homoglyph++; return swap; }
-      return m;
-    });
+  function identitySourceMap(length) {
+    return Array.from({ length }, (_, idx) => idx);
+  }
 
-    // 3. Strip *roleplay-action* markers — paired *...* containing an
-    //    action verb (nods, sighs, laughs, smiles, etc.) anchored to
-    //    the start of the inner phrase. This is the actual chat-model
-    //    artifact shape. Markdown `**bold**` is rejected by the
-    //    lookbehind/lookahead; legitimate multi-word `*italic*` is
-    //    preserved because the verb whitelist is narrow.
-    const ROLEPLAY_VERBS = /^(?:nods|sighs|laughs|smiles|frowns|shrugs|grins|winks|chuckles|gasps|pauses|thinks|wonders|whispers|shouts|gestures|raises|leans|turns|looks|glances|smirks|blinks|nodding|sighing|laughing|smiling|thinking|gesturing)\b/i;
-    out = out.replace(/(?<!\*)\*([^*\n]{1,80}?)\*(?!\*)/gu, (m, inner) => {
-      if (ROLEPLAY_VERBS.test(inner)) { flags.roleplay++; return ''; }
-      return m;
-    });
+  function lineStartsForSplit(text, rawLines) {
+    const lineStarts = [];
+    let offset = 0;
+    for (let i = 0; i < rawLines.length; i += 1) {
+      lineStarts.push(offset);
+      offset += rawLines[i].length;
+      if (i < rawLines.length - 1) {
+        if (text[offset] === '\r') offset += 1;
+        if (text[offset] === '\n') offset += 1;
+      }
+    }
+    return lineStarts;
+  }
 
-    return { text: out, flags };
+  function mapWorkingIndexToSource(sourceMap, index) {
+    return sourceMap[index];
+  }
+
+  function mapWorkingEndExclusiveToSource(sourceMap, end) {
+    if (end <= 0) return 0;
+    if (end >= sourceMap.length) {
+      return sourceMap.length === 0 ? 0 : sourceMap[sourceMap.length - 1] + 1;
+    }
+    return sourceMap[end];
+  }
+
+  function remapFindingsToSource(issues, regions, sourceMap) {
+    for (const issue of issues) {
+      if (Number.isInteger(issue.index)) {
+        issue.index = mapWorkingIndexToSource(sourceMap, issue.index);
+      }
+    }
+    for (const region of regions) {
+      region.start = mapWorkingIndexToSource(sourceMap, region.start);
+      region.end = mapWorkingEndExclusiveToSource(sourceMap, region.end);
+    }
   }
 
   // ─── Tier 1: Always flag ───────────────────────────────────────────
@@ -983,17 +1050,43 @@ const AIDetector = (() => {
   // Keep the historical deletion behavior for default plain mode. Paragraph-
   // scoped rules depend on the surrounding lines being rejoined exactly this
   // way, so changing this prepass would change scores for existing callers.
-  function stripMultilineBlockquotes(text) {
+  function stripMultilineBlockquotes(text, sourceMap) {
     const rawLines = text.split(/\r?\n/);
     const isQuote = rawLines.map((line) => /^\s*>\s/.test(line));
     const stripIndexes = new Set();
     for (let i = 0; i < rawLines.length; i += 1) {
       if (isQuote[i] && ((isQuote[i - 1] && i > 0) || isQuote[i + 1])) stripIndexes.add(i);
     }
-    return {
-      text: rawLines.filter((_, i) => !stripIndexes.has(i)).join('\n'),
-      quotedLines: stripIndexes.size,
-    };
+    const quotedLines = stripIndexes.size;
+    if (!sourceMap) {
+      return {
+        text: rawLines.filter((_, i) => !stripIndexes.has(i)).join('\n'),
+        quotedLines,
+      };
+    }
+
+    const kept = [];
+    for (let i = 0; i < rawLines.length; i += 1) {
+      if (!stripIndexes.has(i)) kept.push(i);
+    }
+    const lineStarts = lineStartsForSplit(text, rawLines);
+    const newText = [];
+    const newMap = [];
+    for (let ki = 0; ki < kept.length; ki += 1) {
+      const lineIndex = kept[ki];
+      const line = rawLines[lineIndex];
+      const start = lineStarts[lineIndex];
+      for (let j = 0; j < line.length; j += 1) {
+        newText.push(line[j]);
+        newMap.push(sourceMap[start + j]);
+      }
+      if (ki < kept.length - 1) {
+        newText.push('\n');
+        const newlineIndex = lineStarts[lineIndex] + line.length;
+        newMap.push(sourceMap[newlineIndex]);
+      }
+    }
+    return { text: newText.join(''), quotedLines, sourceMap: newMap };
   }
 
   function maskTopLevelIndentedCode(chars, { listAware = false } = {}) {
@@ -1421,6 +1514,8 @@ const AIDetector = (() => {
       maskedHtmlComments = rendered.maskedHtmlComments;
     }
 
+    let sourceMap = identitySourceMap(text.length);
+
     // Pre-pass: mask Markdown blockquotes before scoring. A human
     // reacting to AI text by quoting it shouldn't have the quoted block
     // counted against their own writing. Requires ≥2 consecutive `> `
@@ -1429,15 +1524,17 @@ const AIDetector = (() => {
     // keeps later issue and highlight offsets aligned with the source file.
     const blockquotes = sourceMode === 'rendered-markdown'
       ? maskMultilineBlockquotes(text)
-      : stripMultilineBlockquotes(text);
+      : stripMultilineBlockquotes(text, sourceMap);
     text = blockquotes.text;
+    if (blockquotes.sourceMap) sourceMap = blockquotes.sourceMap;
     const { quotedLines } = blockquotes;
 
     // Pre-pass: strip bypass-trick chars before pattern matching so
-    // "delve" with a Cyrillic 'е' still hits Tier 1. Original text is
-    // preserved so reported `match.index` values remain visually accurate.
-    const norm = normalizeText(text);
+    // "delve" with a Cyrillic 'е' still hits Tier 1. Match on normalized
+    // text, then map issue/highlight offsets back through sourceMap.
+    const norm = normalizeText(text, sourceMap);
     text = norm.text;
+    if (norm.sourceMap) sourceMap = norm.sourceMap;
 
     const wordCount = countWords(text);
     if (wordCount < 10) {
@@ -2110,7 +2207,8 @@ const AIDetector = (() => {
     // merge adjacent flagged sentences into contiguous regions for UI
     // highlighting. Borrowed from GPTZero's sentence-highlighting model
     // — gives users "this paragraph is AI" rather than scattered hits.
-    const regions = buildSentenceRegions(text, deduped, sourceMode === 'rendered-markdown');
+    const regions = buildSentenceRegions(text, deduped, true);
+    remapFindingsToSource(deduped, regions, sourceMap);
 
     // Stats derived from the same deduped list so tier counts + patternCount
     // sum to `deduped.length`. Previously patternCount subtracted

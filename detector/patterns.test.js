@@ -288,6 +288,54 @@ test('#123: multiline blockquote masking preserves later source offsets', () => 
   assert.equal(result.stats.quotedLines, 2);
 });
 
+test('#189: findings and highlights use source offsets after preprocessing', () => {
+  const assertSourceSlice = (source, issue) => {
+    assert.ok(Number.isInteger(issue.index), `${issue.type} must carry a source index`);
+    assert.equal(source.slice(issue.index, issue.index + issue.text.length), issue.text);
+  };
+  const assertHighlightSlice = (source, region) => {
+    const slice = source.slice(region.start, region.end);
+    assert.ok(slice.trim().length > 0, 'highlight region must cover reader-visible prose');
+    assert.ok(/\S/.test(slice[0]), 'highlight start must not lead with stripped whitespace');
+  };
+
+  const blockquotePlain =
+    '> quoted line one\n> quoted line two\n\nIt is important to note that the system works well and the team shipped it.';
+  for (const sourceMode of ['plain', 'rendered-markdown']) {
+    const result = AIDetector.analyzeText(blockquotePlain, { sourceMode });
+    const filler = result.issues.find((issue) => issue.type === 'filler');
+    assert.ok(filler, `${sourceMode}: filler must still fire after quote handling`);
+    assert.equal(filler.index, blockquotePlain.indexOf(filler.text));
+    assertSourceSlice(blockquotePlain, filler);
+    const region = result.highlight_sentence_for_ai[0];
+    assert.equal(region.start, blockquotePlain.indexOf('It is important'));
+    assert.equal(region.end, blockquotePlain.length);
+    assertHighlightSlice(blockquotePlain, region);
+  }
+
+  const zw =
+    'Alpha beta\u200bgamma delta epsilon zeta eta theta iota kappa only time will tell about systems.';
+  const zwResult = AIDetector.analyzeText(zw);
+  const generic = zwResult.issues.find((issue) => issue.type === 'generic-conclusion');
+  assert.equal(generic.index, zw.indexOf(generic.text));
+  assertSourceSlice(zw, generic);
+  assert.equal(zwResult.highlight_sentence_for_ai[0].end, zw.length);
+
+  const crlf = '> first quote\r\n> second quote\r\n\r\nMoreover, the editor checked the original document before changing the published account for the morning edition.';
+  const crlfResult = AIDetector.analyzeText(crlf);
+  const transition = crlfResult.issues.find((issue) => issue.type === 'transition');
+  assert.equal(transition.index, crlf.indexOf(transition.text));
+  assertSourceSlice(crlf, transition);
+
+  const unchanged =
+    'Moreover, the editor checked the original document before changing the published account for the morning edition.';
+  const baseline = AIDetector.analyzeText(unchanged);
+  const baselineTransition = baseline.issues.find((issue) => issue.type === 'transition');
+  assert.equal(baselineTransition.index, unchanged.indexOf(baselineTransition.text));
+  assert.equal(baseline.highlight_sentence_for_ai[0].start, 0);
+  assert.equal(baseline.highlight_sentence_for_ai[0].end, unchanged.length);
+});
+
 test('#123: plain mode preserves legacy blockquote paragraph scoring', () => {
   const text = [
     'We harness practical tools for ordinary work each morning.',
@@ -305,10 +353,11 @@ test('#123: plain mode preserves legacy blockquote paragraph scoring', () => {
   assert.equal(result.stats.quotedLines, 2);
 
   const leadingWhitespace = '\n\nMoreover, the editor checked the original document before changing the published account for the morning edition.';
+  const leading = AIDetector.analyzeText(leadingWhitespace);
   assert.equal(
-    AIDetector.analyzeText(leadingWhitespace).highlight_sentence_for_ai[0].start,
-    0,
-    'plain-mode highlight boundaries must retain their legacy shape',
+    leading.highlight_sentence_for_ai[0].start,
+    leadingWhitespace.search(/\S/),
+    'plain-mode highlights trim leading whitespace against the source string',
   );
 });
 
