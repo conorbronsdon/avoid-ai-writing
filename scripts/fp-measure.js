@@ -119,8 +119,13 @@ function splitUnits(text) {
     let unit = blocks[i];
     let words = (unit.match(/\S+/g) || []).length;
     if (words < MIN_WORDS && looksLikeHeading(unit) && i + 1 < blocks.length) {
-      unit = `${unit}\n${blocks[++i]}`;
-      words = (unit.match(/\S+/g) || []).length;
+      const combined = `${unit}\n${blocks[i + 1]}`;
+      const combinedWords = (combined.match(/\S+/g) || []).length;
+      if (combinedWords <= MAX_WORDS) {
+        unit = combined;
+        words = combinedWords;
+        i++;
+      }
     }
     if (words >= MIN_WORDS && words <= MAX_WORDS) units.push(unit);
   }
