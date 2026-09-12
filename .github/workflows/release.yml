@@ -35,20 +35,7 @@ jobs:
 
       - name: Parse latest version from CHANGELOG.md
         id: changelog
-        run: |
-          HEADING_LINE="$(grep -m1 -E '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md || true)"
-          if [ -z "$HEADING_LINE" ]; then
-            echo "::error::Could not find a '## [X.Y.Z]' heading in CHANGELOG.md"
-            exit 1
-          fi
-          VERSION="$(echo "$HEADING_LINE" | sed -E 's/^## \[([0-9]+\.[0-9]+\.[0-9]+)\].*/\1/')"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Latest CHANGELOG.md version: $VERSION"
-
-          PKG_VERSION="$(node -p "require('./package.json').version" 2>/dev/null || echo unknown)"
-          if [ "$PKG_VERSION" != "$VERSION" ]; then
-            echo "::warning::package.json version ($PKG_VERSION) does not match the top CHANGELOG.md entry ($VERSION). This is pre-existing drift, not something this workflow fixes."
-          fi
+        run: node scripts/verify-release-versions.js --github-output "$GITHUB_OUTPUT"
 
       - name: Check if the release tag already exists
         id: tagcheck
@@ -96,8 +83,8 @@ jobs:
   # all. This job closes that gap. It is independently idempotent (skips when
   # the version is already on npm), so re-runs and already-tagged pushes are
   # safe, and it publishes package.json's version only after proving it matches
-  # the CHANGELOG heading the release job used — the drift this workflow
-  # already warns about must block a publish, not ride into the registry.
+  # the CHANGELOG heading the release job used — the same version guard as the
+  # release job must block a publish, not ride into the registry.
   publish-npm:
     needs: release
     runs-on: ubuntu-latest
@@ -130,18 +117,7 @@ jobs:
           '
 
       - name: Refuse to publish a version that disagrees with CHANGELOG.md
-        run: |
-          PKG_VERSION="$(node -p "require('./package.json').version")"
-          HEADING_LINE="$(grep -m1 -E '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md || true)"
-          if [ -z "$HEADING_LINE" ]; then
-            echo "::error::Could not find a '## [X.Y.Z]' heading in CHANGELOG.md"
-            exit 1
-          fi
-          CHANGELOG_VERSION="$(echo "$HEADING_LINE" | sed -E 's/^## \[([0-9]+\.[0-9]+\.[0-9]+)\].*/\1/')"
-          if [ "$PKG_VERSION" != "$CHANGELOG_VERSION" ]; then
-            echo "::error::package.json ($PKG_VERSION) != CHANGELOG.md ($CHANGELOG_VERSION) — fix the drift, then re-run. Publishing a mismatched version bakes the drift into the registry."
-            exit 1
-          fi
+        run: node scripts/verify-release-versions.js
 
       - name: Skip if this version is already on npm
         id: npmcheck
