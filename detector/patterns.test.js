@@ -1055,6 +1055,8 @@ test('emotional-flatline stays visible without moving the authorship score', () 
   const r = AIDetector.analyzeText(text);
   const baseline = AIDetector.analyzeText(control);
   const hits = r.issues.filter((i) => i.type === 'emotional-flatline');
+  assert.deepEqual(baseline.issues, [], `control sentence must stay clean: ${JSON.stringify(baseline.issues)}`);
+  assert.deepEqual(r.issues.map((i) => i.type), ['emotional-flatline'], `target sentence has confounding findings: ${JSON.stringify(r.issues)}`);
   assert.equal(hits.length, 1, `expected one emotional-flatline hit, got ${JSON.stringify(hits)}`);
   assert.equal(r.score, baseline.score, `style-only emotional-flatline changed score from ${baseline.score} to ${r.score}`);
   assert.deepEqual(

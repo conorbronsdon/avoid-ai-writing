@@ -42,12 +42,15 @@ for (const unit of ['document', 'paragraph']) {
   });
 }
 
-test('the same words in running prose do not become a heading match', () => {
-  const source = `Opening line. The interesting part of the project: ${filler}`;
-  const [chunk] = unitsForText(source, 'document');
-  const result = AIDetector.analyzeText(chunk);
-  assert.ok(!result.issues.some((issue) => issue.type === 'emotional-flatline'));
-});
+for (const unit of ['document', 'paragraph']) {
+  test(`${unit} preprocessing does not turn running prose into a heading match`, () => {
+    const source = `Opening line. The interesting part of the project: ${filler}`;
+    const chunks = unitsForText(source, unit);
+    assert.equal(chunks.length, 1);
+    const result = AIDetector.analyzeText(chunks[0]);
+    assert.ok(!result.issues.some((issue) => issue.type === 'emotional-flatline'));
+  });
+}
 
 console.log(`\n${failed === 0 ? 'all fp-measure tests passed' : `${failed} test(s) failed`}\n`);
 process.exit(failed === 0 ? 0 : 1);
