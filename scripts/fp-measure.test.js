@@ -28,27 +28,35 @@ const filler = [
 ].join(' ');
 
 test('normalization preserves heading boundaries and normalizes surrounding spaces', () => {
-  const normalized = normalizeUnit(`Opening line.\r\n  Interesting part of the project:  \r\n${filler}`);
-  assert.ok(normalized.includes('\nInteresting part of the project:\n'));
+  const normalized = normalizeUnit(`Opening line.\r\n\r\n  Interesting part of the project:  \r\n\r\n${filler}`);
+  assert.ok(normalized.includes('\n\nInteresting part of the project:\n\n'));
 });
 
 for (const unit of ['document', 'paragraph']) {
   test(`${unit} preprocessing keeps a line-anchored detector rule observable`, () => {
-    const source = `Opening line.\nInteresting part of the project:\n${filler}`;
+    const source = `Opening line.\n\nInteresting part of the project:\n\n${filler}`;
     const chunks = unitsForText(source, unit);
-    assert.equal(chunks.length, 1);
-    const result = AIDetector.analyzeText(chunks[0]);
-    assert.ok(result.issues.some((issue) => issue.type === 'emotional-flatline'));
+    assert.ok(chunks.length >= 1);
+    assert.ok(chunks.some((chunk) => AIDetector.analyzeText(chunk).issues.some((issue) => issue.type === 'emotional-flatline')));
   });
 }
 
 for (const unit of ['document', 'paragraph']) {
   test(`${unit} preprocessing does not turn running prose into a heading match`, () => {
-    const source = `Opening line. The interesting part of the project: ${filler}`;
+    const source = `Opening line. Interesting part of the project: ${filler}`;
     const chunks = unitsForText(source, unit);
     assert.equal(chunks.length, 1);
     const result = AIDetector.analyzeText(chunks[0]);
     assert.ok(!result.issues.some((issue) => issue.type === 'emotional-flatline'));
+  });
+}
+
+for (const unit of ['document', 'paragraph']) {
+  test(`${unit} preprocessing joins a hard wrap before the target words`, () => {
+    const source = `Opening prose continues across a source-format soft wrap without a paragraph break.\nInteresting part of the project: ${filler}`;
+    const chunks = unitsForText(source, unit);
+    assert.ok(chunks.length >= 1);
+    assert.ok(chunks.every((chunk) => !AIDetector.analyzeText(chunk).issues.some((issue) => issue.type === 'emotional-flatline')));
   });
 }
 

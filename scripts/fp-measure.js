@@ -76,25 +76,51 @@ function rocAuc(posScores, negScores) {
   return (rankSum - (n1 * (n1 + 1)) / 2) / (n1 * n0);
 }
 
-// Preserve line boundaries because some detector rules intentionally anchor to
-// headings. Collapsing all whitespace made those rules impossible to observe
-// through this measurement path even when they were present in the source.
-function normalizeUnit(text) {
+// Join hard-wrapped prose while preserving semantic paragraph and heading
+// boundaries. The public-domain sources contain many 65-85 character soft
+// wraps; retaining every newline would manufacture line starts. Flattening all
+// whitespace has the opposite bug: real line-anchored headings disappear.
+const collapseWhitespace = (text) => text.replace(/\s+/g, ' ').trim();
+
+function looksLikeHeading(text) {
+  const line = collapseWhitespace(text);
+  const words = (line.match(/\S+/g) || []).length;
+  return words > 0 && words <= 20 && (/^#{1,6}\s/.test(line) || /:$/.test(line));
+}
+
+function normalizeBlock(block) {
+  const lines = block.split('\n').map((line) => line.trim()).filter(Boolean);
+  if (lines.length > 1 && looksLikeHeading(lines[0])) {
+    return `${collapseWhitespace(lines[0])}\n${collapseWhitespace(lines.slice(1).join(' '))}`;
+  }
+  return collapseWhitespace(block);
+}
+
+function normalizedBlocks(text) {
   return text
     .replace(/\r\n?/g, '\n')
-    .replace(/[^\S\n]+/g, ' ')
-    .replace(/ *\n */g, '\n')
-    .trim();
+    .split(/\n\s*\n/)
+    .map(normalizeBlock)
+    .filter(Boolean);
+}
+
+function normalizeUnit(text) {
+  return normalizedBlocks(text).join('\n\n');
 }
 
 function splitUnits(text) {
-  return text
-    .split(/\n\s*\n/)
-    .map(normalizeUnit)
-    .filter((p) => {
-      const n = (p.match(/\S+/g) || []).length;
-      return n >= MIN_WORDS && n <= MAX_WORDS;
-    });
+  const blocks = normalizedBlocks(text);
+  const units = [];
+  for (let i = 0; i < blocks.length; i++) {
+    let unit = blocks[i];
+    let words = (unit.match(/\S+/g) || []).length;
+    if (words < MIN_WORDS && looksLikeHeading(unit) && i + 1 < blocks.length) {
+      unit = `${unit}\n${blocks[++i]}`;
+      words = (unit.match(/\S+/g) || []).length;
+    }
+    if (words >= MIN_WORDS && words <= MAX_WORDS) units.push(unit);
+  }
+  return units;
 }
 
 function unitsForText(text, unit) {

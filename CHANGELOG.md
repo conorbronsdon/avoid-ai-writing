@@ -26,7 +26,7 @@ All notable changes to this project are documented here.
 
 ### Fixed
 
-- Preserve line boundaries in corpus measurement units so line-anchored detector rules remain observable. Add should-fire and must-not-fire mutation controls for both document and paragraph preprocessing.
+- Preserve semantic heading and paragraph boundaries in corpus measurement while joining hard-wrapped prose. Add should-fire and must-not-fire mutation controls for headings, running prose, and soft wraps at document and paragraph level.
 
 ## [3.34.0] — 2026-09-11
 
