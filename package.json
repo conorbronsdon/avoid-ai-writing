@@ -22,7 +22,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "test": "node scripts/flatten-skill.test.js && node detector/patterns.test.js && node detector/categories.test.js && node detector/validate.test.js && node scripts/corpus.test.js && node scripts/check-style.test.js && node scripts/normalize-quotes.test.js && node scripts/test-canonical-skill-package.js && node bin/avoid-ai-writing.test.js && node bin/avoid-ai-writing-gate.test.js",
+    "test": "node scripts/flatten-skill.test.js && node detector/patterns.test.js && node detector/categories.test.js && node detector/validate.test.js && node scripts/corpus.test.js && node scripts/check-style.test.js && node scripts/normalize-quotes.test.js && node scripts/verify-release-versions.test.js && node scripts/test-canonical-skill-package.js && node bin/avoid-ai-writing.test.js && node bin/avoid-ai-writing-gate.test.js",
     "self-scan": "node scripts/self-scan.js",
     "self-scan:check": "node scripts/self-scan.js --check",
     "corpus": "node scripts/corpus.js list",
