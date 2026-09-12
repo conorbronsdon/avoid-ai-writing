@@ -90,7 +90,11 @@ function looksLikeHeading(text) {
 
 function normalizeBlock(block) {
   const lines = block.split('\n').map((line) => line.trim()).filter(Boolean);
-  if (lines.length > 1 && looksLikeHeading(lines[0])) {
+  // A lowercase continuation after a colon is prose split by source wrapping,
+  // not a heading followed by a new sentence. This shape occurs in the actual
+  // public-domain corpus.
+  const nextLineContinuesSentence = lines.length > 1 && /^[a-z]/.test(lines[1]);
+  if (lines.length > 1 && looksLikeHeading(lines[0]) && !nextLineContinuesSentence) {
     return `${collapseWhitespace(lines[0])}\n${collapseWhitespace(lines.slice(1).join(' '))}`;
   }
   return collapseWhitespace(block);

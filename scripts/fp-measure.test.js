@@ -32,6 +32,11 @@ test('normalization preserves heading boundaries and normalizes surrounding spac
   assert.ok(normalized.includes('\n\nInteresting part of the project:\n\n'));
 });
 
+test('normalization joins a colon-ended hard wrap with a lowercase continuation', () => {
+  const normalized = normalizeUnit('Between me and the other world there is ever an unasked question:\nunasked by some through feelings of delicacy; by others through the difficulty of framing it.');
+  assert.equal(normalized, 'Between me and the other world there is ever an unasked question: unasked by some through feelings of delicacy; by others through the difficulty of framing it.');
+});
+
 for (const unit of ['document', 'paragraph']) {
   test(`${unit} preprocessing keeps a line-anchored detector rule observable`, () => {
     const source = `Opening line.\n\nInteresting part of the project:\n\n${filler}`;
