@@ -76,14 +76,67 @@ function rocAuc(posScores, negScores) {
   return (rankSum - (n1 * (n1 + 1)) / 2) / (n1 * n0);
 }
 
-function splitUnits(text) {
+// Join hard-wrapped prose while preserving semantic paragraph and heading
+// boundaries. The public-domain sources contain many 65-85 character soft
+// wraps; retaining every newline would manufacture line starts. Flattening all
+// whitespace has the opposite bug: real line-anchored headings disappear.
+const collapseWhitespace = (text) => text.replace(/\s+/g, ' ').trim();
+
+function looksLikeHeading(text) {
+  const line = collapseWhitespace(text);
+  const words = (line.match(/\S+/g) || []).length;
+  return words > 0 && words <= 20 && (/^#{1,6}\s/.test(line) || /:$/.test(line));
+}
+
+function normalizeBlock(block) {
+  const lines = block.split('\n').map((line) => line.trim()).filter(Boolean);
+  // A lowercase continuation after a colon is prose split by source wrapping,
+  // not a heading followed by a new sentence. This shape occurs in the actual
+  // public-domain corpus.
+  const nextLineContinuesSentence = lines.length > 1 && /^[a-z]/.test(lines[1]);
+  if (lines.length > 1 && looksLikeHeading(lines[0]) && !nextLineContinuesSentence) {
+    const heading = collapseWhitespace(lines[0]);
+    const body = collapseWhitespace(lines.slice(1).join(' '));
+    const joined = `${heading}\n${body}`;
+    return ((joined.match(/\S+/g) || []).length <= MAX_WORDS) ? joined : body;
+  }
+  return collapseWhitespace(block);
+}
+
+function normalizedBlocks(text) {
   return text
+    .replace(/\r\n?/g, '\n')
     .split(/\n\s*\n/)
-    .map((p) => p.replace(/\s+/g, ' ').trim())
-    .filter((p) => {
-      const n = (p.match(/\S+/g) || []).length;
-      return n >= MIN_WORDS && n <= MAX_WORDS;
-    });
+    .map(normalizeBlock)
+    .filter(Boolean);
+}
+
+function normalizeUnit(text) {
+  return normalizedBlocks(text).join('\n\n');
+}
+
+function splitUnits(text) {
+  const blocks = normalizedBlocks(text);
+  const units = [];
+  for (let i = 0; i < blocks.length; i++) {
+    let unit = blocks[i];
+    let words = (unit.match(/\S+/g) || []).length;
+    if (words < MIN_WORDS && looksLikeHeading(unit) && i + 1 < blocks.length) {
+      const combined = `${unit}\n${blocks[i + 1]}`;
+      const combinedWords = (combined.match(/\S+/g) || []).length;
+      if (combinedWords <= MAX_WORDS) {
+        unit = combined;
+        words = combinedWords;
+        i++;
+      }
+    }
+    if (words >= MIN_WORDS && words <= MAX_WORDS) units.push(unit);
+  }
+  return units;
+}
+
+function unitsForText(text, unit) {
+  return unit === 'document' ? [normalizeUnit(text)] : splitUnits(text);
 }
 
 const pct = (x) => `${(x * 100).toFixed(1)}%`;
@@ -98,9 +151,7 @@ function measure(opts = {}) {
     const rows = loadRows(doc);
     if (rows === null) { skipped.push(doc.id); continue; }
     for (const row of rows) {
-      const chunks = unit === 'document'
-        ? [row.text.replace(/\s+/g, ' ').trim()]
-        : splitUnits(row.text);
+      const chunks = unitsForText(row.text, unit);
       for (const [i, chunk] of chunks.entries()) {
         const r = AIDetector.analyzeText(chunk);
         if (r.tooShort || r.label === 'Text too long') continue;
@@ -267,4 +318,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { measure, summarize, wilson, rocAuc, THRESHOLDS };
+module.exports = { measure, summarize, wilson, rocAuc, normalizeUnit, splitUnits, unitsForText, THRESHOLDS };

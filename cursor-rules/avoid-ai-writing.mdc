@@ -1,5 +1,5 @@
 ---
-description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Activate whenever editing prose-heavy files (Markdown, documentation, blog posts, READMEs, release notes, emails). Cursor port of the avoid-ai-writing skill v3.34.0. See https://github.com/conorbronsdon/avoid-ai-writing.
+description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Activate whenever editing prose-heavy files (Markdown, documentation, blog posts, READMEs, release notes, emails). Cursor port of the avoid-ai-writing skill v3.35.0. See https://github.com/conorbronsdon/avoid-ai-writing.
 globs: ["**/*.md", "**/*.mdx", "**/*.txt", "**/*.rst", "**/*.adoc"]
 alwaysApply: false
 ---
@@ -482,16 +482,16 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - Distinct from the bare "worth [verb]ing" word-table entry (a single weak word inside a sentence) and from infomercial engagement hooks (mid-flow teasers like "The catch?"): this is the whole closing line of a social post.
 - The fix: say *what* the thing is and *who* it's for, then drop the CTA. "This one is worth your time:" becomes "Sarah's breakdown of why context windows leak — the clearest explanation I've found for anyone debugging RAG pipelines." If you can't name a specific reason, the share doesn't need a sign-off at all; let the link stand on its own.
 
-### Emotional flatline
-- AI claims emotions as a structural crutch without conveying them through the writing: "What surprised me most," "I was fascinated to discover," "What struck me was," "I was excited to learn," "The most interesting part," and the bare section-header variant: "Interesting part of the project:" / "Interesting thing here:" / "Interesting aspect:". The header form drops "the most" but does the same job — pre-announcing significance the writing hasn't earned.
-- Two problems. First, it's tell-don't-show: if the thing is genuinely surprising, the reader should feel that from the content, not from the writer announcing it. Second, these phrases are massively overused as list introductions and transitions. They're filler wearing an emotion costume.
-- This pattern isn't always AI. It's also a sign of lazy human writing on autopilot. Flag it either way.
-- The fix isn't "never say surprised." It's: if you claim an emotion, the writing around it should earn it. Otherwise cut the claim and present the thing directly.
-- Related pattern: "hit differently" / "hits different." AI uses trendy colloquialisms as a shortcut to sound relatable without earning the emotional beat. If something genuinely affected you, describe how. Otherwise cut.
+### Stock reaction framing
+- Treat this as a **style heuristic, not an authorship signal**. The current corpus contains no examples in either class, so it cannot estimate a direction. Under the repository's precision-first evidence policy, an unvalidated style rule stays visible but does not move the authorship score.
+- Flag the **stock framing**, not the existence of a named emotion: "What surprised me most," "I was fascinated to discover," "What struck me was," "I was excited to learn," "The most interesting part," and the bare section-header variant: "Interesting part of the project:" / "Interesting thing here:" / "Interesting aspect:". These can function as generic list introductions or significance pre-announcements when the sentence would say the same thing without them.
+- Keep authentic, specific reactions. "I was surprised" is not a machine tell by itself, and a rewrite must not replace a named emotion with theatrical body language just to satisfy "show, don't tell." If the author's reaction matters, say what expectation changed and why.
+- Fix only the empty frame. If the reaction adds nothing, lead with the concrete fact. If it matters, make the reaction specific: "I expected X; the 40% drop surprised me because Y." The goal is specificity, not forcing emotion to be implied.
+- Related pattern: "hit differently" / "hits different." Treat it the same way: a vague relatability shortcut is a style problem; a concrete description of what changed or why it mattered is better. Do not infer authorship from the phrase alone.
 
 ### Lingering-attention claims
 - The share-post frame that claims a thing has occupied the writer's mind: "the line I keep coming back to," "I can't stop thinking about this," "still thinking about this one," "this has been rattling around in my head all week," "I've been chewing on this since Tuesday." The claim is about the writer's attention, not about the thing, and it arrives *before* the reader has any reason to care.
-- Distinct from emotional flatline, which claims a **feeling** ("What surprised me most"). This claims **duration** of attention, which is unfalsifiable and self-flattering in a way a feeling isn't: nobody can check whether you kept coming back to it, and the frame implies the quote earned repeat visits without showing what it earned them with. Also distinct from social endorsement closers, which vouch for a link at the end of a post; this opens one.
+- Distinct from stock reaction framing, which claims a **feeling** ("What surprised me most"). This claims **duration** of attention, which is unfalsifiable and self-flattering in a way a feeling isn't: nobody can check whether you kept coming back to it, and the frame implies the quote earned repeat visits without showing what it earned them with. Also distinct from social endorsement closers, which vouch for a link at the end of a post; this opens one.
 - **Carve-out — reason attached.** Leave it when the sentence says *why* the thing recurred: "I keep coming back to Hirschman's exit-voice framing because it predicts which engineers quit and which ones file the RFC." That's a claim about the idea's explanatory reach. The tell is the bare frame with the reason missing.
 - Fix: delete the frame and open on the thing itself. "The line I keep coming back to: agents are teenagers." becomes "Jeetu describes AI agents as teenagers." The quote either lands or it doesn't, and the frame doesn't change which.
 
@@ -801,7 +801,6 @@ Each profile is a set of concrete targets, not a vibe:
 **How voice composes with context.** Voice sets the target; context sets how hard to enforce it. A voice *target* always applies, even where a context profile would skip that category — `technical` voice still prefers plain copulatives in a `casual` context that otherwise ignores copula avoidance. Where both axes govern the same rule and agree, they reinforce: `blunt` voice wants near-zero em-dashes and a `blog` context is already strict on them, so it stays a hard edit. Where they disagree, resolve toward the **stricter** of the two — a `warm` voice on `docs` still doesn't get decorative tables. Sensible default pairings: casual↔casual, professional↔linkedin/investor-email, technical↔docs/technical-blog.
 
 ---
-
 ## House style (optional): `--style <config-or-guide>`
 
 `--style` copyedits to a house style on top of the de-AI pass (which always runs). No bundled guides. This layer is not a guide registry: it applies **register/voice** directives and removes AI tells, on top of whatever **mechanics** you enforce.

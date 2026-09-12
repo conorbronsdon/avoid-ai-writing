@@ -199,6 +199,32 @@ are not. The rule is not wrong as *writing* advice, and the maintainer has
 deliberately cut back on em dashes since. But as an authorship signal, on this
 evidence, it points the wrong way.
 
+**Targeted check: `emotional-flatline` is currently unmeasured, not validated.**
+A reproducible run found no detector hits in either class at document or
+paragraph level. A raw-text scan found none either, so the result was not caused
+by measurement preprocessing. With no positive observations, lift is undefined:
+the corpus cannot tell whether the rule separates human from machine writing.
+
+StoryScope motivated the question but does not test this rule. It studies how
+fictional characters' emotions are conveyed through bodily cues or explicit
+labels. The detector matches stock first-person introductions in expository and
+social prose. Those are different constructs in different registers, so the
+paper supplies no direction for this category's authorship weight.
+
+The measurement did uncover a separate defect: `fp-measure.js` collapsed every
+line break before analysis, making line-anchored header rules unobservable
+through that path. The corrected preparation joins hard-wrapped prose while
+preserving paragraph boundaries and short heading blocks. Symmetric mutation
+controls cover real headings, running prose, and hard wraps at document and
+paragraph level. The defect does not explain this category's absence because
+the raw-text scan also found no matches.
+
+**Policy for an unobserved category.** Zero hits on both sides select no branch
+of a lift-based decision rule. Because this detector prioritizes precision over
+recall, an unvalidated style category remains visible to writers but contributes
+zero authorship weight. Restoring a nonzero weight requires a relevant positive
+evaluation set that establishes direction; the current corpus result cannot.
+
 ### What this does not license
 
 It does not license "the detector does not work". It measures one thing: how

@@ -25,6 +25,16 @@ All notable changes to this project are documented here.
   `detector/CATEGORIES.md` with runtime behavior: four accepted modes, only
   `technical` changes flagging (#173).
 
+## [3.35.0] — 2026-09-11
+
+### Changed
+
+- Rename the user-facing "Emotional flatline" category to "Stock reaction framing" while preserving its `emotional-flatline` API type. Keep specific reactions, flag empty framing, and make the style finding neutral in authorship scoring under the precision-first evidence policy (#82).
+
+### Fixed
+
+- Preserve semantic heading and paragraph boundaries in corpus measurement while joining hard-wrapped prose. Add should-fire and must-not-fire mutation controls for headings, running prose, and soft wraps at document and paragraph level.
+
 ## [3.34.0] — 2026-09-11
 
 ### Added

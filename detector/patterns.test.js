@@ -1083,6 +1083,25 @@ test('emotional-flatline opener fires at position 0 (no leading newline)', () =>
   assert.ok(types.has('emotional-flatline'), 'expected emotional-flatline at position 0');
 });
 
+test('emotional-flatline stays visible without moving the authorship score', () => {
+  // #82: compare nearly identical prose so the assertion isolates the category
+  // weight instead of assuming every other scoring input remains at zero.
+  const text = 'What surprised me most was the rollback time: eleven seconds across all three production hosts after the database migration completed without retries.';
+  const control = 'The detail I remember best was the rollback time: eleven seconds across all three production hosts after the database migration completed without retries.';
+  const r = AIDetector.analyzeText(text);
+  const baseline = AIDetector.analyzeText(control);
+  const hits = r.issues.filter((i) => i.type === 'emotional-flatline');
+  assert.deepEqual(baseline.issues, [], `control sentence must stay clean: ${JSON.stringify(baseline.issues)}`);
+  assert.deepEqual(r.issues.map((i) => i.type), ['emotional-flatline'], `target sentence has confounding findings: ${JSON.stringify(r.issues)}`);
+  assert.equal(hits.length, 1, `expected one emotional-flatline hit, got ${JSON.stringify(hits)}`);
+  assert.equal(r.score, baseline.score, `style-only emotional-flatline changed score from ${baseline.score} to ${r.score}`);
+  assert.deepEqual(
+    r.highlight_sentence_for_ai,
+    [],
+    `style-only emotional-flatline must not create AI sentence highlights: ${JSON.stringify(r.highlight_sentence_for_ai)}`,
+  );
+});
+
 test('bullet-np-list ignores bullets inside fenced code blocks', () => {
   // CLI flag docs / option dumps inside ``` fences are not prose AI
   // scaffolding. False-positive that would fire on most READMEs.
