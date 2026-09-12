@@ -22,6 +22,8 @@ A portable writing skill for [Claude Code](https://docs.anthropic.com/en/docs/cl
 - **Detect** — flags AI patterns without rewriting. Shows which flags are real problems vs. judgment calls. Useful when patterns might be intentional, when auditing content you don't want altered, or when you just want a quick scan.
 - **Edit** — edits a prose file in place (via the Edit tool) with minimal, targeted changes, preserving passages that are already human. Source code, configuration, and generated data are refused because prose rewrites can corrupt structured content. Returns an edits-made + verification report, not the full file.
 
+Use `--iterate N` when you want the skill to repeat the audit and rewrite cycle until no patterns remain or the requested pass limit is reached. The limit is capped at 2: the initial rewrite plus one corrective pass. Rewrite mode already includes that corrective second pass; `--iterate` does not add passes on top of it. The skill reports how many passes it took.
+
 An optional **voice profile** (casual / professional / technical / warm / blunt) sets how the prose should sound, independent of the audience context profile.
 
 ## Quick demo
@@ -30,9 +32,9 @@ An optional **voice profile** (casual / professional / technical / warm / blunt)
 > Certainly! Acme Analytics, a vibrant startup nestled in the heart of Boulder's thriving tech ecosystem, has secured $40M in Series B funding — marking a watershed moment for the observability landscape. The platform serves as a unified hub, featuring real-time dashboards, boasting sub-second queries, and presenting a seamless integration layer. Moreover, experts believe Acme is poised to disrupt the market. In conclusion, the future looks bright!
 
 **Output:**
-> Acme Analytics raised a $40M Series B led by Sequoia. The Boulder-based startup makes an observability platform that runs queries in under a second and plugs into existing monitoring stacks without custom integration work.
+> Acme Analytics, a Boulder-based startup, raised a $40M Series B. Its observability platform has real-time dashboards, runs queries in under a second, and includes an integration layer.
 
-**What it caught:** chatbot opener ("Certainly!"), promotional language ("vibrant," "nestled," "thriving"), significance inflation ("watershed moment"), copula avoidance ("serves as," "featuring," "boasting"), 4 word replacements, vague attribution ("experts believe"), filler ("Moreover"), generic conclusion ("the future looks bright"), over-polished uniformity. 15+ AI tells in one paragraph.
+**What it caught:** the chatbot opener ("Certainly!"), promotional modifiers, inflated significance, roundabout verbs, vague attribution, and the generic conclusion. The rewrite keeps the funding, location, and three product capabilities. It removes the unsupported market prediction without inventing an investor or an integration mechanism.
 
 ## Why a skill, not just a prompt
 
@@ -207,13 +209,13 @@ Trigger detect mode with: "detect," "flag only," "audit only," "just flag," "sca
 
 | # | Pattern | Before | After |
 |---|---------|--------|-------|
-| 1 | **Significance inflation** | "marking a pivotal moment in the evolution of..." | "was founded in 2019 to solve X" |
-| 2 | **Notability name-dropping** | "cited in NYT, BBC, and Wired" | "In a 2024 NYT interview, she argued..." |
+| 1 | **Significance inflation** | "marking a pivotal moment in the evolution of..." | State the supported event; do not invent a date or purpose |
+| 2 | **Notability name-dropping** | "cited in NYT, BBC, and Wired" | Keep supported citations; remove claims that they prove importance |
 | 3 | **Superficial -ing analyses** | "symbolizing... reflecting... showcasing..." | Replace with specific facts or cut |
-| 4 | **Promotional language** | "nestled within the breathtaking region" | "is a town in the Gonder region" |
-| 5 | **Vague attributions** | "Experts believe it plays a crucial role" | "according to a 2019 survey by Gartner" |
+| 4 | **Promotional language** | "nestled within the breathtaking region" | Keep the supplied location; remove promotional modifiers |
+| 5 | **Vague attributions** | "Experts believe it plays a crucial role" | Request the source, or flag the claim for verification |
 | 6 | **Formulaic challenges** | "Despite challenges... continues to thrive" | Name the challenge and the response |
-| 7 | **Novelty inflation** | "He introduced a term I hadn't heard before" | "He walked through how X works in practice" |
+| 7 | **Novelty inflation** | "He introduced a term I hadn't heard before" | Keep the personal observation if it matters; do not invent an explanation |
 
 ### Language Patterns
 
@@ -340,13 +342,13 @@ Two writer-side **tests** round out the catalog (judgment checks, not auto-detec
 
 **After (cleaned up):**
 
-> Acme Analytics raised a $40M Series B led by Sequoia. The Boulder-based startup makes an observability platform that runs queries in under a second and plugs into existing monitoring stacks without custom integration work.
+> Acme Analytics, a Boulder-based startup, raised a $40M Series B led by Sequoia, with participation from Andreessen Horowitz, Y Combinator, and Index Ventures.
 >
-> The pitch is speed. Their median time-to-resolution is 12 minutes, compared to the 45-minute industry average that Datadog reported in 2024. That gap is why 380 companies are paying for it.
->
-> They'll use the money to hire sales reps in EMEA and add log management. The monitoring market is crowded, but Acme's bet is that most teams still stitch together three or four tools and lose time switching between them.
+> Its observability platform gives engineering teams real-time dashboards, queries that run in under a second, and an integration layer. The platform helps engineers resolve incidents faster and supports collaboration across frontend, SRE, platform, and infrastructure teams. Customer adoption is accelerating. Acme has invested in R&D for years and plans to expand its go-to-market work in a crowded monitoring market.
 
-**What the skill caught:** chatbot artifacts (Certainly!, Feel free to reach out), 3 em dashes, promotional language (vibrant, nestled, thriving), significance inflation (watershed moment), copula avoidance (serves as, featuring, boasting, presenting), 10 word replacements (landscape, robust, seamless, paradigm, streamline, empower, foster, utilize, ascertain, endeavor), synonym cycling (developers/practitioners/builders/engineers), negative parallelism (It's not just X, it's Y), notability name-dropping (Sequoia, a16z, YC, Index stacked for credibility), vague attributions (Experts believe, Studies show), filler phrases (In order to, Moreover), inline-header list with emoji, superficial -ing analysis (symbolizing... reflecting... highlighting...), formulaic challenges (Despite challenges... continues to thrive), generic conclusion (the future looks bright, only time will tell), false range implied in the adoption bullet.
+**Claims needing sources:** The input attributes a prediction about a $15B market to unnamed experts and a 40% improvement in issue identification to unspecified studies. Verify those sources before publishing the claims. The rewrite leaves them out; it does not replace them with invented benchmarks, customers, or plans. The product and adoption statements above also remain supplied claims, not independently verified facts.
+
+**What the skill caught:** chatbot framing, promotional modifiers, inflated significance, roundabout verbs, repeated role synonyms, empty contrast, list decoration, vague attribution, filler, and generic closing language. The rewrite preserves the named investors and supplied capabilities, consolidates the team list, and flags the unsupported market and study claims for verification.
 
 That's 35+ AI tells.
 

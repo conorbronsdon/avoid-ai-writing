@@ -12,11 +12,18 @@ All notable changes to this project are documented here.
 
 ### Fixed
 
+- Consume bodyless punctuation runs once when splitting sentence highlights, avoiding the quadratic punctuation-prefix regression introduced in #260 while preserving trailing-fragment boundaries.
+- Remove four quadratic scans from `analyzeText()`: the sentence splitter behind highlight regions, its boundary-whitespace trim in rendered-Markdown mode, the Markdown table delimiter test, and the line-anchored `Interesting part:` opener all rescanned a long whitespace or blank-line run from every position, so a document that ended in blank lines or carried a large masked comment block took seconds instead of milliseconds. Sentence boundaries are unchanged; the regression test compares them against the former regex on every boundary shape and asserts linear growth by ratio rather than by a wall-clock budget (#235).
+- Preserve detector issue indexes and sentence-highlight ranges against the original source after blockquote and normalization preprocessing (#189).
 - Include every observed corpus register in `corpus.js list`; preserve the preferred accepted-register order and sort additional registers deterministically.
+- Make rendered-Markdown HTML comment masking linear with a source-order scanner that preserves fenced, inline, and indented-code precedence without rescanning the document per comment (#190).
 - Fix three README link targets: the dead Cowork URL, the pattern-catalog pointer, and the
   voice-profile link that led to the triggering section.
 - Correct the `analyzeText()` result table in `detector/README.md`: the six score labels the
   engine returns, the `UNSCORED` classification on early-exit paths, and all four accepted `contextMode` values.
+- Align `contextMode` comments in `detector/patterns.js` and mode list in
+  `detector/CATEGORIES.md` with runtime behavior: four accepted modes, only
+  `technical` changes flagging (#173).
 
 ## [3.35.0] — 2026-09-11
 

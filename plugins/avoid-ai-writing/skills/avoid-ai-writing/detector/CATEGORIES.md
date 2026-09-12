@@ -138,5 +138,7 @@ mistake their absence for a coverage gap:
 
 > **Partial:** the skill's **Context profiles / Tolerance matrix / Auto-detection
 > cues** are partly realized by the engine's `options.contextMode`
-> (`general` / `technical`), which suppresses context-inappropriate flags. Full
+> (`general`, `technical`, `marketing`, `personal`). Only `technical` currently
+> changes flagging (e.g. suppresses context-inappropriate flags); `marketing` and
+> `personal` are accepted and reported in stats but score like `general`. Full
 > profile-based tolerance remains an LLM-side judgment.

@@ -19,15 +19,14 @@ A directory-based writing skill (`SKILL.md` plus `references/patterns.md`) that 
 
 Edit `SKILL.md` and `references/patterns.md` directly. When making changes:
 
-- Bump the version in the SKILL.md frontmatter (`version: X.Y.Z`).
-- Update the same version manually in both plugin manifests before syncing:
+- Follow the [changelog and versioning policy](CONTRIBUTING.md#changelog-and-versioning): add an Unreleased entry for user-facing changes; routine docs corrections, tests, and maintenance with no user-facing effect need no entry or version bump.
+- When preparing a release, update the SKILL.md frontmatter (`version: X.Y.Z`), `package.json`, and the dated changelog heading. Update the same version manually in both plugin manifests before syncing:
   - `plugins/avoid-ai-writing/.claude-plugin/plugin.json`
   - `.codex-plugin/plugin.json`
 - Run `bash scripts/sync-plugin-skill.sh && bash scripts/sync-cursor-rules.sh`. The first script validates both manifest versions against `SKILL.md` and regenerates bundled skill copies, detector resources, scripts, and examples; the second regenerates the portable paste/Cursor artifacts. Neither script generates the manifest versions. A mismatch fails with messages such as `version mismatch: SKILL.md=X Claude plugin=Y` or `version mismatch: SKILL.md=X OpenAI plugin=Y`.
 - Run `npm test` to exercise the detector, category contract, validator, corpus helpers, and style checks.
-- Add a dated entry to CHANGELOG.md
 - Update README.md if the change affects installation, usage, feature list, or pattern count
-- The pattern count lives in **one** place — the README "74 pattern categories" bullet — and is derived from references/patterns.md's detection `###` entries. Don't restate it elsewhere; CI (`scripts/check-pattern-count.sh`) fails the build if the README number drifts from references/patterns.md, so just add the new `###` entry and bump the README bullet.
+- The pattern count is canonical in the README "74 pattern categories" bullet (derived from references/patterns.md's detection `###` entries). This bullet quotes that number here as a **checked copy** for agent context — update README and this sentence when you add or remove a detection category. Don't restate the count elsewhere; CI (`scripts/check-pattern-count.sh`) fails if either literal drifts from `references/patterns.md`.
 
 ## Architecture of the skill
 

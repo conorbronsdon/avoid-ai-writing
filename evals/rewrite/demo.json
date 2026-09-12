@@ -1,0 +1,70 @@
+{
+  "id": "readme-quick-demo",
+  "source": "Certainly! Acme Analytics, a vibrant startup nestled in the heart of Boulder's thriving tech ecosystem, has secured $40M in Series B funding \u2014 marking a watershed moment for the observability landscape. The platform serves as a unified hub, featuring real-time dashboards, boasting sub-second queries, and presenting a seamless integration layer. Moreover, experts believe Acme is poised to disrupt the market. In conclusion, the future looks bright!",
+  "required_facts": [
+    {
+      "id": "company",
+      "pattern": "Acme Analytics"
+    },
+    {
+      "id": "round",
+      "pattern": "\\$40(?:M| million)"
+    },
+    {
+      "id": "stage",
+      "pattern": "Series B"
+    },
+    {
+      "id": "location",
+      "pattern": "Boulder"
+    },
+    {
+      "id": "domain",
+      "pattern": "observability"
+    },
+    {
+      "id": "dashboards",
+      "pattern": "real[- ]time dashboards"
+    },
+    {
+      "id": "latency",
+      "pattern": "(under (?:a|one|1) second|sub-second)"
+    },
+    {
+      "id": "integration",
+      "pattern": "integration layer"
+    }
+  ],
+  "forbidden_additions": [
+    {
+      "id": "investor",
+      "pattern": "Sequoia"
+    },
+    {
+      "id": "integration-mechanism",
+      "pattern": "without custom integration work|existing monitoring stacks"
+    }
+  ],
+  "allowed_edits": [
+    "Remove promotional framing and unsupported predictions.",
+    "Reorder sentences and use equivalent wording; the patterns cover only listed variants."
+  ],
+  "acceptable_outputs": [
+    "Acme Analytics, a Boulder-based startup, raised a $40M Series B. Its observability platform has real-time dashboards, runs queries in under a second, and includes an integration layer.",
+    "The Boulder startup Acme Analytics raised $40 million in Series B funding. Its observability platform includes an integration layer, real-time dashboards, and sub-second queries."
+  ],
+  "rejected_outputs": [
+    {
+      "reason": "unsupported investor",
+      "output": "Acme Analytics, a Boulder-based startup, raised a $40M Series B. Its observability platform has real-time dashboards, runs queries in under a second, and includes an integration layer. Sequoia led the round."
+    },
+    {
+      "reason": "unsupported integration mechanism",
+      "output": "Acme Analytics, a Boulder-based startup, raised a $40M Series B. Its observability platform has real-time dashboards, runs queries in under a second, and includes an integration layer. It works without custom integration work."
+    },
+    {
+      "reason": "omitted dashboards",
+      "output": "Acme Analytics, a Boulder-based startup, raised a $40M Series B. Its observability platform has runs queries in under a second, and includes an integration layer."
+    }
+  ]
+}

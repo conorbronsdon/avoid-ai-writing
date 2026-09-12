@@ -159,10 +159,11 @@ positives to catch 27.7% of machine text.
 
 **1. The 0–100 scale uses about a tenth of its range.** No paragraph of either
 class scored above 11. Every threshold at or above 15 reports 0.0% on both
-sides, and `SKILL.md`'s own label band puts everything at or under 15 in
-"Minimal AI signals". So in practice every ordinary paragraph is labelled
-Minimal regardless of who wrote it. The cause is mechanical: category weights
-run 2–12, and `rawScore` is divided by `max(1, log2(words / 50))`, so a
+sides, and the label band in `detector/patterns.js` puts everything at or
+under 15 in "Minimal AI signals". So in practice every ordinary paragraph is
+labelled Minimal regardless of who wrote it. The cause is mechanical: issue
+weights in `ISSUE_WEIGHTS` run 2–15, and `rawScore` is divided by
+`max(1, log2(words / 50))`, so a
 200-word paragraph has its total halved. This is a calibration defect, not a
 detection failure, and it is the most fixable thing on this page.
 

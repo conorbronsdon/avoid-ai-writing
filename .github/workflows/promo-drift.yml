@@ -84,7 +84,7 @@ jobs:
             cat report.md
             echo
             echo "Canonical is this repo. Fix the surfaces, not the README —"
-            echo "the README is already asserted against SKILL.md by"
+            echo "the README is already asserted against references/patterns.md by"
             echo "\`scripts/check-pattern-count.sh\`."
             echo
             echo "_Opened by [promo-drift](.github/workflows/promo-drift.yml)._"

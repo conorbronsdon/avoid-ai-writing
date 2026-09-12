@@ -3,7 +3,7 @@
 
 const assert = require('node:assert/strict');
 const AIDetector = require('../detector/patterns.js');
-const { normalizeUnit, unitsForText } = require('./fp-measure.js');
+const { normalizeUnit, rocAuc, unitsForText, wilson } = require('./fp-measure.js');
 
 let failed = 0;
 function test(name, fn) {
@@ -103,6 +103,35 @@ test('paragraph preprocessing still attaches a single-newline heading when the c
   assert.equal(chunks.length, 1);
   assert.ok(chunks[0].startsWith('Context:\n'));
   assert.equal((chunks[0].match(/\S+/g) || []).length, 400);
+});
+
+const close = (actual, expected, message) => {
+  assert.ok(Math.abs(actual - expected) <= 1e-12, `${message}: expected ${expected}, got ${actual}`);
+};
+
+test('wilson handles empty, boundary, and middle samples with z=2', () => {
+  const cases = [
+    [0, 0, [0, 0]],
+    [0, 4, [0, 0.5]],
+    [4, 4, [0.5, 1]],
+    [2, 4, [0.1464466094067262, 0.8535533905932737]],
+  ];
+  for (const [successes, n, expected] of cases) {
+    const actual = wilson(successes, n, 2);
+    assert.equal(actual.length, 2);
+    actual.forEach((bound) => assert.ok(bound >= 0 && bound <= 1, `${successes}/${n} bound ${bound} is outside [0, 1]`));
+    close(actual[0], expected[0], `${successes}/${n} lower`);
+    close(actual[1], expected[1], `${successes}/${n} upper`);
+  }
+});
+
+test('rocAuc credits separation, inversion, ties, and empty classes correctly', () => {
+  assert.equal(rocAuc([2, 3], [0, 1]), 1);
+  assert.equal(rocAuc([0, 1], [2, 3]), 0);
+  assert.equal(rocAuc([1, 1], [1, 1]), 0.5);
+  assert.equal(rocAuc([1, 2], [0, 1]), 0.875);
+  assert.equal(rocAuc([], [0, 1]), null);
+  assert.equal(rocAuc([0, 1], []), null);
 });
 
 console.log(`\n${failed === 0 ? 'all fp-measure tests passed' : `${failed} test(s) failed`}\n`);

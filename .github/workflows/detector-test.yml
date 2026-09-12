@@ -6,6 +6,7 @@ on:
       - "detector/**"
       - "scripts/**"
       - "examples/**"
+      - "evals/**"
       - "package.json"
       - ".github/workflows/detector-test.yml"
       - "README.md"
@@ -16,11 +17,15 @@ on:
       - "CHANGELOG.md"
       - "CONTRIBUTING.md"
       - "PROOF.md"
+      - 'bin/**'
+      - 'action.yml'
+      - '.pre-commit-hooks.yaml'
   pull_request:
     paths:
       - "detector/**"
       - "scripts/**"
       - "examples/**"
+      - "evals/**"
       - "package.json"
       - ".github/workflows/detector-test.yml"
       - "README.md"
@@ -31,6 +36,12 @@ on:
       - "CHANGELOG.md"
       - "CONTRIBUTING.md"
       - "PROOF.md"
+      - 'bin/**'
+      - 'action.yml'
+      - '.pre-commit-hooks.yaml'
+
+permissions:
+  contents: read
 
 jobs:
   # Kept as a single job on purpose: branch protection pins required checks by
@@ -40,6 +51,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v6
         with:
           node-version: "20"
