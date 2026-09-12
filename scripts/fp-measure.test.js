@@ -65,5 +65,25 @@ for (const unit of ['document', 'paragraph']) {
   });
 }
 
+test('paragraph preprocessing retains a 400-word paragraph after a short heading', () => {
+  const paragraph = Array.from({ length: 400 }, (_, i) => `word${i}`).join(' ');
+  const standalone = unitsForText(paragraph, 'paragraph');
+  const afterHeading = unitsForText(`Context:\n\n${paragraph}`, 'paragraph');
+
+  assert.equal(standalone.length, 1);
+  assert.equal(afterHeading.length, 1);
+  assert.equal(afterHeading[0], paragraph);
+  assert.equal((afterHeading[0].match(/\S+/g) || []).length, 400);
+});
+
+test('paragraph preprocessing still attaches a short heading when the combined unit fits', () => {
+  const paragraph = Array.from({ length: 399 }, (_, i) => `word${i}`).join(' ');
+  const chunks = unitsForText(`Context:\n\n${paragraph}`, 'paragraph');
+
+  assert.equal(chunks.length, 1);
+  assert.ok(chunks[0].startsWith('Context:\n'));
+  assert.equal((chunks[0].match(/\S+/g) || []).length, 400);
+});
+
 console.log(`\n${failed === 0 ? 'all fp-measure tests passed' : `${failed} test(s) failed`}\n`);
 process.exit(failed === 0 ? 0 : 1);
