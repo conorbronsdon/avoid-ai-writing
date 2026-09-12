@@ -95,7 +95,10 @@ function normalizeBlock(block) {
   // public-domain corpus.
   const nextLineContinuesSentence = lines.length > 1 && /^[a-z]/.test(lines[1]);
   if (lines.length > 1 && looksLikeHeading(lines[0]) && !nextLineContinuesSentence) {
-    return `${collapseWhitespace(lines[0])}\n${collapseWhitespace(lines.slice(1).join(' '))}`;
+    const heading = collapseWhitespace(lines[0]);
+    const body = collapseWhitespace(lines.slice(1).join(' '));
+    const joined = `${heading}\n${body}`;
+    return ((joined.match(/\S+/g) || []).length <= MAX_WORDS) ? joined : body;
   }
   return collapseWhitespace(block);
 }
