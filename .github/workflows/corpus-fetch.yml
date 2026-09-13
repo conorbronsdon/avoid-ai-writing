@@ -1,0 +1,47 @@
+name: corpus-fetch
+
+# PROOF.md, corpus/README.md, and the gate threshold cite measurements from
+# corpus/manifest.json. Those numbers are only reproducible while every
+# recorded source still fetches and still hashes to the committed value.
+# Weekly is enough: unlike detector tests, nothing in this repo re-runs fetch
+# on every push.
+
+on:
+  schedule:
+    # Mondays 15:00 UTC — same backstop cadence as promo-drift.yml.
+    - cron: "0 15 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: corpus-fetch
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+
+      # Fetch every manifest entry into corpus/cache/, then assert each file
+      # matches its recorded sha256. A red run is the signal: drift or a dead
+      # URL needs a deliberate manifest update, not a silent re-record.
+      #
+      # RAID (liamdugan/raid train.csv, ~11.8 GB) is not downloaded whole.
+      # scripts/dataset-raid.js samples fixed byte-range windows via HTTP Range
+      # requests (~6 MB each). HC3 uses partial Range reads on selected JSONL
+      # files only. Both paths are what `npm run corpus:fetch` exercises locally.
+      - name: Fetch the human-control corpus
+        run: node scripts/corpus.js fetch
+
+      - name: Verify corpus hashes
+        run: node scripts/corpus.js verify
