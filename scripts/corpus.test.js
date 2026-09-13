@@ -9,7 +9,18 @@
  */
 
 const assert = require('node:assert/strict');
-const { stripGutenberg, htmlToText, applySlice, sha256, cmdList } = require('./corpus.js');
+const fs = require('node:fs');
+const http = require('node:http');
+const path = require('node:path');
+const {
+  stripGutenberg,
+  htmlToText,
+  applySlice,
+  sha256,
+  cmdList,
+  fetchDoc,
+  FETCH_TIMEOUT_MS,
+} = require('./corpus.js');
 const { parseCsv } = require('./csv-lite.js');
 const { DOMAIN_REGISTER } = require('./dataset-raid.js');
 
@@ -291,5 +302,47 @@ test('sha256 is stable and content-sensitive', () => {
   assert.match(sha256('abc'), /^[0-9a-f]{64}$/);
 });
 
-console.log(`\n${failed === 0 ? 'all corpus tests passed' : `${failed} test(s) failed`}\n`);
-process.exit(failed === 0 ? 0 : 1);
+test('default fetch timeout matches dataset ranged reads', () => {
+  assert.equal(FETCH_TIMEOUT_MS, 180000);
+});
+
+let asyncFailed = 0;
+async function asyncTest(name, fn) {
+  try {
+    await fn();
+    console.log(`  ✓ ${name}`);
+  } catch (err) {
+    asyncFailed++;
+    console.error(`  ✗ ${name}`);
+    console.error(`    ${err.message}`);
+  }
+}
+
+(async () => {
+  await asyncTest('fetch times out with document id and host in the error', async () => {
+    const server = http.createServer(() => {});
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const { port } = server.address();
+    const id = 'corpus-fetch-timeout-test';
+    const cacheFile = path.join(__dirname, '..', 'corpus', 'cache', `${id}.txt`);
+    const doc = { id, source: { type: 'url', url: `http://127.0.0.1:${port}/hang` } };
+    try {
+      await assert.rejects(
+        () => fetchDoc(doc, true, { timeoutMs: 200 }),
+        (err) => {
+          assert.match(err.message, new RegExp(id));
+          assert.match(err.message, /127\.0\.0\.1/);
+          assert.match(err.message, /timed out after 200ms/);
+          return true;
+        },
+      );
+    } finally {
+      server.close();
+      if (fs.existsSync(cacheFile)) fs.unlinkSync(cacheFile);
+    }
+  });
+
+  failed += asyncFailed;
+  console.log(`\n${failed === 0 ? 'all corpus tests passed' : `${failed} test(s) failed`}\n`);
+  process.exit(failed === 0 ? 0 : 1);
+})();

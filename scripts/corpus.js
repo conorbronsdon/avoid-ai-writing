@@ -36,6 +36,17 @@ const CORPUS_DIR = path.join(ROOT, 'corpus');
 const MANIFEST = path.join(CORPUS_DIR, 'manifest.json');
 const CACHE = path.join(CORPUS_DIR, 'cache');
 
+/** Same bound as dataset ranged fetches in dataset-hc3.js / dataset-raid.js. */
+const FETCH_TIMEOUT_MS = 180000;
+
+function fetchHost(url) {
+  try {
+    return new URL(url).host;
+  } catch {
+    return String(url);
+  }
+}
+
 /**
  * Registers are the unit of analysis, not a label of convenience.
  *
@@ -201,10 +212,13 @@ function loadText(doc) {
   return fs.readFileSync(p, 'utf8');
 }
 
-async function fetchDoc(doc, force) {
+async function fetchDoc(doc, force, opts = {}) {
+  const timeoutMs = opts.timeoutMs ?? FETCH_TIMEOUT_MS;
   if (doc.source.type === 'local') return { id: doc.id, status: 'local' };
   const p = cachePath(doc);
-  if (fs.existsSync(p) && !force) return { id: doc.id, status: 'cached' };
+  if (fs.existsSync(p) && !force) {
+    return { id: doc.id, status: 'cached', bytes: fs.statSync(p).size };
+  }
 
   // A dataset entry is a whole sampled collection rather than one document.
   // The sampler is deterministic, so the cached JSONL and its hash are
@@ -216,10 +230,21 @@ async function fetchDoc(doc, force) {
     const { jsonl, stats } = await build(doc.source.select, (m) => console.error(m));
     fs.mkdirSync(CACHE, { recursive: true });
     fs.writeFileSync(p, jsonl);
-    return { id: doc.id, status: 'fetched', sha256: sha256(jsonl), words: null, stats };
+    const bytes = Buffer.byteLength(jsonl, 'utf8');
+    return { id: doc.id, status: 'fetched', sha256: sha256(jsonl), words: null, stats, bytes };
   }
 
-  const res = await fetch(doc.source.url, { redirect: 'follow' });
+  const url = doc.source.url;
+  const host = fetchHost(url);
+  let res;
+  try {
+    res = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(timeoutMs) });
+  } catch (err) {
+    if (err.name === 'TimeoutError') {
+      throw new Error(`${doc.id}: timed out after ${timeoutMs}ms (${host})`);
+    }
+    throw new Error(`${doc.id}: ${err.message} (${host})`);
+  }
   if (!res.ok) return { id: doc.id, status: `HTTP ${res.status}` };
   let text = await res.text();
   if (doc.source.gutenberg) text = stripGutenberg(text);
@@ -228,17 +253,45 @@ async function fetchDoc(doc, force) {
 
   fs.mkdirSync(CACHE, { recursive: true });
   fs.writeFileSync(p, text);
-  return { id: doc.id, status: 'fetched', sha256: sha256(text), words: (text.match(/\S+/g) || []).length };
+  const bytes = Buffer.byteLength(text, 'utf8');
+  return {
+    id: doc.id,
+    status: 'fetched',
+    sha256: sha256(text),
+    words: (text.match(/\S+/g) || []).length,
+    bytes,
+  };
+}
+
+function logFetchProgress(phase, index, total, doc, detail) {
+  const line = `fetch ${index + 1}/${total}: ${doc.id}${detail ? ` ${detail}` : ''}`;
+  console.error(phase === 'start' ? `${line} ...` : line);
 }
 
 async function cmdFetch(force) {
   const m = readManifest();
   const results = [];
-  for (const doc of m.documents) {
+  const total = m.documents.length;
+  for (let i = 0; i < m.documents.length; i++) {
+    const doc = m.documents[i];
+    logFetchProgress('start', i, total, doc);
     try {
-      results.push(await fetchDoc(doc, force));
+      const r = await fetchDoc(doc, force);
+      results.push(r);
+      if (r.status === 'cached') {
+        logFetchProgress('done', i, total, doc, `cached (${r.bytes} bytes)`);
+      } else if (r.status === 'local') {
+        logFetchProgress('done', i, total, doc, 'local');
+      } else if (r.status === 'fetched') {
+        const hash = r.sha256 ? `, sha256 ${r.sha256.slice(0, 16)}` : '';
+        logFetchProgress('done', i, total, doc, `fetched (${r.bytes} bytes${hash})`);
+      } else {
+        logFetchProgress('done', i, total, doc, String(r.status));
+      }
     } catch (err) {
-      results.push({ id: doc.id, status: `error: ${err.message}` });
+      const r = { id: doc.id, status: `error: ${err.message}` };
+      results.push(r);
+      logFetchProgress('done', i, total, doc, r.status);
     }
   }
 
@@ -392,4 +445,17 @@ async function main() {
 
 if (require.main === module) main();
 
-module.exports = { readManifest, loadText, loadRows, sha256, REGISTERS, AUTHORSHIP, stripGutenberg, htmlToText, applySlice, cmdList };
+module.exports = {
+  readManifest,
+  loadText,
+  loadRows,
+  sha256,
+  REGISTERS,
+  AUTHORSHIP,
+  stripGutenberg,
+  htmlToText,
+  applySlice,
+  cmdList,
+  fetchDoc,
+  FETCH_TIMEOUT_MS,
+};
