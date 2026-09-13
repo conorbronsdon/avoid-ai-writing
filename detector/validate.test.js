@@ -50,6 +50,20 @@ test('fenced code removed → error', () => {
   assert.ok(codes(r).includes('code-block-count'));
 });
 
+test('tilde line inside a backtick fence does not end it → error', () => {
+  const before = 'Text before.\n\n```md\nexample line one\n~~~\nSECRET CODE A\n```\n\nText after.';
+  const after = 'Text before.\n\n```md\nexample line one\n~~~\nSECRET CODE B\n```\n\nText after.';
+  const r = validate(before, after, { skipResidual: true });
+  assert.ok(codes(r).includes('code-block-modified'), formatResult(r));
+});
+
+test('backtick line inside a tilde fence does not end it → error', () => {
+  const before = 'Text before.\n\n~~~md\nexample line\n```\nSECRET CODE A\n~~~\n\nAfter.';
+  const after = 'Text before.\n\n~~~md\nexample line\n```\nSECRET CODE B\n~~~\n\nAfter.';
+  const r = validate(before, after, { skipResidual: true });
+  assert.ok(codes(r).includes('code-block-modified'), formatResult(r));
+});
+
 test('blockquote reworded → error', () => {
   const before = 'He said:\n\n> The system is slow and it is getting slower.\n> We need to fix it.\n\nThat is the claim.';
   const after = 'He said:\n\n> The system is slow and getting slower.\n> We need to fix it.\n\nThat is the claim.';

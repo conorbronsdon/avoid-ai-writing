@@ -33,7 +33,10 @@
 
 const AIDetectorValidate = (() => {
   // ═══ Block extractors ══════════════════════════════════════════════
-  const FENCED_CODE = /^(?:```|~~~)[^\n]*\n[\s\S]*?^(?:```|~~~)[ \t]*$/gm;
+  // A fence closes only on its own marker: a `~~~` line inside a ``` block must
+  // not end it (see the tilde-fence/backtick-fence cases in validate.test.js).
+  const FENCED_CODE =
+    /^```[^\n]*\n[\s\S]*?^```[ \t]*$|^~~~[^\n]*\n[\s\S]*?^~~~[ \t]*$/gm;
   const INLINE_CODE = /`[^`\n]+`/g;
   const YAML_FRONTMATTER = /^---\n[\s\S]*?\n---(?=\n|$)/;
   const BLOCKQUOTE_BLOCK = /(?:^[ \t]*>[^\n]*(?:\n[ \t]*>[^\n]*)*)/gm;
