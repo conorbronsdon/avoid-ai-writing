@@ -66,7 +66,8 @@ Use the edge semantics in `references/handoff-contract.md`:
 - `REPAIR`: return a failed preservation result to the correct mutation owner.
 - `RECHECK`: run one bounded residual check when requested.
 - `ESCALATE`: move uncertain or consequential authorship interpretation to `false-positive-reviewer`.
-- `GUARD`: add conditional protected constraints without changing the primary owner.
+
+Conditional guards are not graph edges. Encode them in `skill-graph.json` `guards` and the handoff envelope (`protected_constraints`, `human_representation_sensitive`) per `references/handoff-contract.md`.
 
 ## Conditional human-representation guard
 

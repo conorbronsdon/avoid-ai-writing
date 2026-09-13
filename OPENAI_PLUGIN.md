@@ -30,7 +30,8 @@ The network uses typed relationships rather than loose prose references:
 - `REPAIR` returns a failed preservation scope to the correct owner once.
 - `RECHECK` permits one bounded residual audit when requested.
 - `ESCALATE` sends interpretation questions to the terminal reviewer.
-- `GUARD` attaches protected semantic constraints without changing the primary owner.
+
+Conditional guards live in `skill-graph.json` `guards` and the handoff envelope; they constrain semantics without adding a graph edge or changing the primary owner.
 
 Cross-stage state follows `skills/avoid-ai-writing-router/references/handoff-contract.md`. The envelope carries context mode, voice, protected constraints, execution evidence, detector summary, verification state, risk flags, and pass limits without making each Skill infer them again.
 

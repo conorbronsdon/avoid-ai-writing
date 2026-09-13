@@ -40,7 +40,8 @@
 - `REPAIR`: return blocking preservation scope to the correct rewrite or mutation owner.
 - `RECHECK`: run one residual audit when requested.
 - `ESCALATE`: move interpretation limits to `false-positive-reviewer`.
-- `GUARD`: attach protected semantic constraints without changing the primary owner.
+
+Conditional guards (`skill-graph.json` `guards`, handoff envelope fields) attach protected semantic constraints without changing the primary owner. They are not entries in the `edges` array above.
 
 ## Tie breakers
 
