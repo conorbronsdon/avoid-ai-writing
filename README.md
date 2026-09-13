@@ -159,7 +159,7 @@ The [plugin package](./OPENAI_PLUGIN.md) keeps the canonical `SKILL.md` as its e
 - `preservation-verifier` — checks meaning and constraints before and after a rewrite
 - `false-positive-reviewer` — reviews detector findings that need context
 
-Build and validate the package with:
+From a cloned checkout, build and validate the package with:
 
 ```bash
 python3 scripts/package-openai-plugin.py . /tmp/avoid-ai-writing.zip --json
@@ -365,6 +365,9 @@ It's also the single source of the numeric score: the skill itself (and `detect`
 npm install avoid-ai-writing-detector
 ```
 
+The npm package includes the detector runtime and CLI entry points, but not the
+repository's `scripts/` utilities. Clone the repository to run those scripts.
+
 ```js
 const AIDetector = require("avoid-ai-writing-detector");
 const { score, label, issues } = AIDetector.analyzeText("Your text here…");
@@ -503,12 +506,12 @@ optional `--style` input takes a house-style config you supply: a `register` lis
 the model applies, and a `mechanics` object whose checkable rules
 `scripts/check-style.js` verifies deterministically (quote form and Latin
 abbreviations gate the exit code; heading case, em-dash rate, and number spelling
-are advisory). [`examples/`](./examples/) has the schema. You can skip the input
+are advisory). This script requires a cloned checkout. [`examples/`](./examples/) has the schema. You can skip the input
 entirely and put your guide in your agent's context alongside a
 [voice profile](./references/patterns.md#voice-profiles), as instructions rather than as a checked
 rule set.
 
-After a rewrite, `node scripts/normalize-quotes.js draft.md --reference original.md`
+From a cloned checkout, after a rewrite, `node scripts/normalize-quotes.js draft.md --reference original.md`
 prints prose marks normalized to the original document's convention; add `--write`
 to save it. Explicit `--quotes straight|curly` overrides inference. It shares the
 checker's Markdown protection. See the
