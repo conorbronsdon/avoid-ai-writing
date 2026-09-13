@@ -15,6 +15,7 @@ FRONTMATTER = re.compile(r"\A---\s*\n(.*?)\n---\s*\n(.*)\Z", re.S)
 # The top-level `metadata` key only: `metadata:` at column 0 followed by
 # whitespace or end of line, so `metadata:extra:` (a different plain key) is kept.
 METADATA_KEY = re.compile(r"metadata:(?:\s|$)")
+TOP_LEVEL_NAME_KEY = re.compile(r"name:(?:\s|$)")
 TOP_LEVEL_INCLUDE_FILES = ("OPENAI_PLUGIN.md", "NOTICE.md", "PRIVACY.md", "TERMS.md", "SUPPORT.md", "LICENSE")
 CANONICAL_PROJECT_URL = "https://github.com/conorbronsdon/avoid-ai-writing"
 MAX_SVG_BYTES = 256 * 1024
@@ -36,6 +37,47 @@ def parse_frontmatter(path: Path):
         key, value = line.split(":", 1)
         meta[key.strip()] = value.strip().strip('"').strip("'")
     return meta, match.group(2).strip()
+
+def frontmatter_inner(text: str) -> str | None:
+    match = FRONTMATTER.match(text)
+    return match.group(1) if match else None
+
+
+def duplicate_top_level_frontmatter_keys(inner: str) -> list[str]:
+    """Return top-level YAML keys that appear more than once in a frontmatter block."""
+    counts: dict[str, int] = {}
+    for line in inner.splitlines():
+        if not line or line[0] in (" ", "\t", "#"):
+            continue
+        if ":" not in line:
+            continue
+        key = line.split(":", 1)[0].strip()
+        counts[key] = counts.get(key, 0) + 1
+    return sorted(key for key, count in counts.items() if count > 1)
+
+
+def strip_frontmatter_name(text: str) -> str:
+    """Drop the top-level `name` line from SKILL.md frontmatter when the directory name is authoritative."""
+    match = FRONTMATTER.match(text)
+    if not match:
+        return text
+    kept, skip = [], False
+    for line in match.group(1).splitlines(keepends=True):
+        if not skip and line[:1] not in (" ", "\t") and TOP_LEVEL_NAME_KEY.match(line.rstrip("\r\n")):
+            continue
+        skip = False
+        kept.append(line)
+    joined = "".join(kept)
+    if joined and joined.endswith("\n"):
+        joined = joined[:-1]
+    start, end = match.start(1), match.end(1)
+    return text[:start] + joined + text[end:]
+
+
+def openai_canonical_skill_copy(text: str) -> str:
+    """OpenAI bundled copy: no portal-rejected metadata, no redundant `name` (directory is avoid-ai-writing)."""
+    return strip_frontmatter_name(strip_frontmatter_metadata(text))
+
 
 def strip_frontmatter_metadata(text: str) -> str:
     """Drop the top-level `metadata` block from SKILL.md frontmatter, byte-exact otherwise.
@@ -503,9 +545,18 @@ def validate(root: Path):
             errors.append(f"{skill_dir}: missing SKILL.md")
             continue
         meta, body = parse_frontmatter(skill_path)
-        name, desc = meta.get("name", ""), meta.get("description", "")
-        if not name or not desc or not body:
+        inner = frontmatter_inner(skill_path.read_text(encoding="utf-8"))
+        if inner:
+            for key in duplicate_top_level_frontmatter_keys(inner):
+                errors.append(f"{skill_path}: duplicate frontmatter key: {key}")
+        name = meta.get("name") or skill_dir.name
+        desc = meta.get("description", "")
+        if not desc or not body:
             errors.append(f"{skill_path}: name, description, and body are required")
+        if meta.get("name") and meta.get("name") != skill_dir.name:
+            errors.append(
+                f"{skill_path}: frontmatter name {meta.get('name')!r} must match directory {skill_dir.name!r}"
+            )
         if frontmatter_has_metadata(skill_path):
             errors.append(
                 f"{skill_path}: `metadata` in SKILL.md frontmatter is rejected by the OpenAI plugin portal; "
@@ -525,8 +576,15 @@ def validate(root: Path):
     if canonical.is_file():
         if not openai_copy.is_file():
             errors.append("skills/avoid-ai-writing/SKILL.md missing; cannot check drift from root SKILL.md")
-        elif strip_frontmatter_metadata(canonical.read_bytes().decode("utf-8")).encode("utf-8") != openai_copy.read_bytes():
-            errors.append("skills/avoid-ai-writing/SKILL.md drifted from root SKILL.md (expected: root minus the frontmatter `metadata` block)")
+        elif openai_canonical_skill_copy(canonical.read_text(encoding="utf-8")) != openai_copy.read_text(encoding="utf-8"):
+            errors.append(
+                "skills/avoid-ai-writing/SKILL.md drifted from root SKILL.md "
+                "(expected: root minus the frontmatter `metadata` block and redundant `name`)"
+            )
+        canonical_inner = frontmatter_inner(canonical.read_text(encoding="utf-8"))
+        if canonical_inner:
+            for key in duplicate_top_level_frontmatter_keys(canonical_inner):
+                errors.append(f"{canonical}: duplicate frontmatter key: {key}")
         meta, _ = parse_frontmatter(canonical)
         if meta.get("version") != version:
             errors.append(f"canonical SKILL.md version {meta.get('version')!r} does not match manifest {version!r}")
@@ -685,12 +743,21 @@ def main():
     parser.add_argument(
         "--strip-frontmatter-metadata",
         metavar="SKILL_MD",
-        help="print SKILL_MD with the frontmatter `metadata` block removed (used by sync-plugin-skill.sh) and exit",
+        help="print SKILL_MD with the frontmatter `metadata` block removed and exit",
+    )
+    parser.add_argument(
+        "--openai-canonical-skill-copy",
+        metavar="SKILL_MD",
+        help="print the OpenAI bundled canonical skill copy (metadata and redundant name stripped) and exit",
     )
     args = parser.parse_args()
     if args.strip_frontmatter_metadata:
         data = Path(args.strip_frontmatter_metadata).read_bytes().decode("utf-8")
         sys.stdout.buffer.write(strip_frontmatter_metadata(data).encode("utf-8"))
+        return 0
+    if args.openai_canonical_skill_copy:
+        data = Path(args.openai_canonical_skill_copy).read_bytes().decode("utf-8")
+        sys.stdout.buffer.write(openai_canonical_skill_copy(data).encode("utf-8"))
         return 0
     errors, warnings, summary = validate(Path(args.root).resolve())
     if args.json:

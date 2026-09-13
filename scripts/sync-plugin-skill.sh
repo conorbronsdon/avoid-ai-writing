@@ -56,11 +56,12 @@ for skill_root in "$(dirname "$claude_dest")" "$canonical_skill_root"; do
 done
 # The OpenAI plugin portal rejects a `metadata` key in SKILL.md frontmatter
 # ("Skill interface settings must use agents/openai.yaml"); that block carries
-# agentskills.io/OpenClaw fields, so the OpenAI copy omits it and every other
-# byte stays identical. The transform lives in validate-openai-plugin.py so the
-# sync and the drift check cannot diverge.
+# agentskills.io/OpenClaw fields, so the OpenAI copy omits it. The bundled copy
+# also omits redundant `name` (the directory name is authoritative). The
+# transform lives in validate-openai-plugin.py so the sync and the drift check
+# cannot diverge.
 python_bin="$(command -v python3 || command -v python)"
-"$python_bin" "$repo_root/scripts/validate-openai-plugin.py" --strip-frontmatter-metadata "$src" > "$openai_dest"
+"$python_bin" "$repo_root/scripts/validate-openai-plugin.py" --openai-canonical-skill-copy "$src" > "$openai_dest"
 cp "$patterns_src" "$detector_patterns_dest"
 cp "$patterns_src" "$verifier_patterns_dest"
 cp "$validate_src" "$verifier_validate_dest"

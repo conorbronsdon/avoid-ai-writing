@@ -6,6 +6,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- Drop redundant `name` frontmatter from the generated `SKILL.full.md` and OpenAI bundled `skills/avoid-ai-writing/SKILL.md` copy; the directory name remains authoritative per Agent Skills convention (#259).
+
 ### Added
 
 - Package the deterministic detector as a composite GitHub Action and pre-commit hook, backed by a new `avoid-ai-writing-gate` CLI. The gate uses per-file finding counts rather than the composite score, defaults to `technical` + `rendered-markdown`, and uses a corpus-backed threshold of 6 findings per file (1.9% human-control failure rate across 376 documents, versus 31.4% at zero). Strict zero-findings policies remain available with an explicit threshold of 0. Preservation validation stays separate because it requires before/after inputs (#86).
