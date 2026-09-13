@@ -24,6 +24,7 @@ const exempt = (name, middle, protectedText) => t(name, () => {
 exempt('blanks a triple-backtick fence', '```js\nconst raw = "quoted";\n```', '```js\nconst raw = "quoted";\n```');
 exempt('blanks a triple-tilde fence', '~~~text\nraw "quoted"\n~~~', '~~~text\nraw "quoted"\n~~~');
 exempt('blanks a multirow pipe-delimited table', '| name | note |\n| --- | --- |\n| alpha | "raw" |', '| name | note |\n| --- | --- |\n| alpha | "raw" |');
+exempt('blanks a table without outer pipes', 'name | note\n--- | ---\nalpha | "raw"', 'name | note\n--- | ---\nalpha | "raw"');
 exempt('blanks a blockquote', '> quoted "raw"\n> another row', '> quoted "raw"\n> another row');
 exempt('blanks inline backticks', 'Use `raw "code"` here.', '`raw "code"`');
 exempt('blanks paired straight double quotes', 'The "quoted text" stays exempt.', '"quoted text"');
@@ -33,6 +34,16 @@ exempt('blanks paired straight single quotes', "The 'quoted text' stays exempt."
 t('ordinary prose remains unchanged', () => {
   const source = 'Ordinary prose before and after has no exempt span.';
   assert.strictEqual(applyExemptions(source), source);
+});
+
+t('bare pipes without a delimiter row remain ordinary prose', () => {
+  const source = 'Use a | b in the shell.\nThe output is c | d.';
+  assert.strictEqual(applyExemptions(source), source);
+});
+
+t('a pipe inside inline code is not a table row', () => {
+  const source = 'Run `a | b` in the shell.\n--- | ---';
+  assert.strictEqual(applyExemptions(source), source.replace(/`a \| b`/, blank('`a | b`')));
 });
 
 process.stdout.write(`\n${passed} self-scan exemption tests passed\n`);

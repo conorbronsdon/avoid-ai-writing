@@ -12,6 +12,7 @@ All notable changes to this project are documented here.
 
 ### Fixed
 
+- Recognize GFM tables without outer pipes in preservation validation and self-scan exemptions, while requiring a delimiter row so prose containing a bare pipe remains editable (#209).
 - Validate CLI `--unit` argument in `scripts/fp-measure.js` before starting measurement, exiting with code 2 on missing, unrecognized, or repeated values, and on `--unit=VALUE` syntax (`paragraph` and `document` accepted).
 - Consume bodyless punctuation runs once when splitting sentence highlights, avoiding the quadratic punctuation-prefix regression introduced in #260 while preserving trailing-fragment boundaries.
 - Remove four quadratic scans from `analyzeText()`: the sentence splitter behind highlight regions, its boundary-whitespace trim in rendered-Markdown mode, the Markdown table delimiter test, and the line-anchored `Interesting part:` opener all rescanned a long whitespace or blank-line run from every position, so a document that ended in blank lines or carried a large masked comment block took seconds instead of milliseconds. Sentence boundaries are unchanged; the regression test compares them against the former regex on every boundary shape and asserts linear growth by ratio rather than by a wall-clock budget (#235).

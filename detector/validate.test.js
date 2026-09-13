@@ -64,6 +64,20 @@ test('table cell content changed → error', () => {
   assert.ok(codes(r).includes('table-modified'));
 });
 
+test('table without outer pipes changed → error', () => {
+  const before = 'Intro.\n\nRepo | Stars\n--- | ---\npatina | 278\n\nOutro.';
+  const after = 'Intro.\n\nRepo | Stars\n--- | ---\npatina | 280\n\nOutro.';
+  const r = validate(before, after, { skipResidual: true });
+  assert.ok(codes(r).includes('table-modified'), formatResult(r));
+});
+
+test('single-column pipe table changed → error', () => {
+  const before = '| Repo |\n| --- |\n| patina |\n';
+  const after = '| Repo |\n| --- |\n| changed |\n';
+  const r = validate(before, after, { skipResidual: true });
+  assert.ok(codes(r).includes('table-modified'), formatResult(r));
+});
+
 test('inline code dropped → error', () => {
   const before = 'Run `npm test` before pushing the change.';
   const after = 'Run the test suite before pushing the change.';
@@ -178,6 +192,27 @@ test('removing an emoji from a heading → warning, not error', () => {
 test('re-aligning table padding → no error', () => {
   const before = '| Repo | Stars |\n|---|---|\n| patina | 278 |\n';
   const after = '| Repo   | Stars |\n| ------ | ----- |\n| patina | 278   |\n';
+  const r = validate(before, after, { skipResidual: true });
+  assert.equal(r.ok, true, formatResult(r));
+});
+
+test('re-aligning a table without outer pipes → no error', () => {
+  const before = 'Repo | Stars\n---|---\npatina|278\n';
+  const after = 'Repo   | Stars\n------ | -----\npatina | 278\n';
+  const r = validate(before, after, { skipResidual: true });
+  assert.equal(r.ok, true, formatResult(r));
+});
+
+test('prose containing a bare pipe is not treated as a table', () => {
+  const before = 'Use a | b in the shell.';
+  const after = 'Use c | d in the shell.';
+  const r = validate(before, after, { skipResidual: true });
+  assert.equal(r.ok, true, formatResult(r));
+});
+
+test('pipe-delimited lines without a delimiter row are not a table', () => {
+  const before = 'one | two\nthree | four\n';
+  const after = 'one | changed\nthree | four\n';
   const r = validate(before, after, { skipResidual: true });
   assert.equal(r.ok, true, formatResult(r));
 });

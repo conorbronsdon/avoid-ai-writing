@@ -37,7 +37,6 @@ const AIDetectorValidate = (() => {
   const INLINE_CODE = /`[^`\n]+`/g;
   const YAML_FRONTMATTER = /^---\n[\s\S]*?\n---(?=\n|$)/;
   const BLOCKQUOTE_BLOCK = /(?:^[ \t]*>[^\n]*(?:\n[ \t]*>[^\n]*)*)/gm;
-  const TABLE_BLOCK = /(?:^[ \t]*\|[^\n]*\|[ \t]*(?:\n[ \t]*\|[^\n]*\|[ \t]*)+)/gm;
   const MD_HEADING = /^(#{1,6})[ \t]+(.+?)[ \t]*$/gm;
   const URL = /https?:\/\/[^\s)>\]"'`]+/g;
   const MD_LINK_TARGET = /\[[^\]\n]*\]\(([^)\s]+)[^)]*\)/g;
@@ -73,6 +72,34 @@ const AIDetectorValidate = (() => {
 
   function normalizeUrl(u) {
     return u.replace(AI_URL_PARAMS, '').replace(/[?&]$/, '');
+  }
+
+  // Keep delimiter semantics in sync with scripts/self-scan.js.
+  function isTableDelimiter(line) {
+    const trimmed = line.trim();
+    if (!trimmed.includes('|')) return false;
+    const withoutOuterPipes = trimmed.replace(/^\|/, '').replace(/\|$/, '');
+    return withoutOuterPipes
+      .split('|')
+      .every((cell) => /^:?-{3,}:?$/.test(cell.trim()));
+  }
+
+  /**
+   * Extract GFM tables with or without outer pipes. A delimiter row is
+   * required, so ordinary prose such as `use a | b in the shell` stays prose.
+   * Scanning once by line avoids backtracking on long whitespace runs.
+   */
+  function extractTableBlocks(text) {
+    const lines = text.split('\n');
+    const blocks = [];
+    for (let i = 1; i < lines.length; i++) {
+      if (!lines[i - 1].includes('|') || !isTableDelimiter(lines[i])) continue;
+      let end = i;
+      while (end + 1 < lines.length && lines[end + 1].includes('|')) end++;
+      blocks.push(lines.slice(i - 1, end + 1).join('\n'));
+      i = end;
+    }
+    return blocks;
   }
 
   /** Collapse cell padding so a re-aligned table isn't reported as edited. */
@@ -172,14 +199,13 @@ const AIDetectorValidate = (() => {
       throw new TypeError('validate(original, rewritten): both arguments must be strings');
     }
 
-    // Every extractor above anchors on a bare \n. A Windows-authored document
-    // arrives with CRLF, so YAML_FRONTMATTER and TABLE_BLOCK match nothing and
-    // their protected content becomes invisible here: frontmatter could be
-    // rewritten and validate() still returned ok. See the CRLF must-fire cases
-    // in validate.test.js. Normalize once, up front, so extraction sees one
-    // line-ending shape. A rewrite that only re-terminates CRLF lines is not a
-    // preservation failure, but a lone carriage return can be meaningful code
-    // content and must remain visible to the exact-content comparisons.
+    // The regex-backed extractors above anchor on a bare \n. A Windows-authored
+    // document arrives with CRLF, so protected content can become invisible:
+    // frontmatter could be rewritten and validate() still returned ok. See the
+    // CRLF must-fire cases in validate.test.js. Normalize once, up front, so
+    // extraction sees one line-ending shape. A rewrite that only re-terminates
+    // CRLF lines is not a preservation failure, but a lone carriage return can
+    // be meaningful code content and must remain visible to exact comparisons.
     original = original.replace(/\r\n/g, '\n');
     rewritten = rewritten.replace(/\r\n/g, '\n');
 
@@ -212,8 +238,8 @@ const AIDetectorValidate = (() => {
     }
 
     // ── Tables: reference content, not prose. ──
-    const origTables = extractAll(TABLE_BLOCK, origProse).map(normalizeTable);
-    const newTables = extractAll(TABLE_BLOCK, newProse).map(normalizeTable);
+    const origTables = extractTableBlocks(origProse).map(normalizeTable);
+    const newTables = extractTableBlocks(newProse).map(normalizeTable);
     const lostTables = missingFrom(origTables, newTables);
     if (lostTables.length) {
       err('table-modified', `Markdown table content was modified or removed (${lostTables.length} table(s)).`);

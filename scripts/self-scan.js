@@ -62,13 +62,37 @@ const FILES = Object.keys(BUDGETS);
 
 // ── The self-reference escape hatch, made executable ───────────────────
 //
-// Order matters: fenced code first (it can contain anything), then the
-// line-oriented block forms, then inline spans.
+// Order matters: fenced and inline code first (they can contain table syntax),
+// then the line-oriented block forms, then quoted spans.
 const FENCED_CODE = /^(?:```|~~~)[^\n]*\n[\s\S]*?^(?:```|~~~)[ \t]*$/gm;
-const TABLE_BLOCK = /(?:^[ \t]*\|[^\n]*\|[ \t]*(?:\n[ \t]*\|[^\n]*\|[ \t]*)+)/gm;
 const BLOCKQUOTE_BLOCK = /(?:^[ \t]*>[^\n]*(?:\n[ \t]*>[^\n]*)*)/gm;
 const INLINE_CODE = /`[^`\n]+`/g;
 const QUOTED_SPAN = /(?:"[^"\n]{1,300}"|“[^”\n]{1,300}”|'[^'\n]{2,300}')/g;
+
+// Keep delimiter semantics in sync with detector/validate.js.
+function isTableDelimiter(line) {
+  const trimmed = line.trim();
+  if (!trimmed.includes('|')) return false;
+  const withoutOuterPipes = trimmed.replace(/^\|/, '').replace(/\|$/, '');
+  return withoutOuterPipes
+    .split('|')
+    .every((cell) => /^:?-{3,}:?$/.test(cell.trim()));
+}
+
+/** Blank GFM table rows while preserving every source offset. */
+function maskTables(text) {
+  const lines = text.split('\n');
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i - 1].includes('|') || !isTableDelimiter(lines[i])) continue;
+    let end = i;
+    while (end + 1 < lines.length && lines[end + 1].includes('|')) end++;
+    for (let row = i - 1; row <= end; row++) {
+      lines[row] = ' '.repeat(lines[row].length);
+    }
+    i = end;
+  }
+  return lines.join('\n');
+}
 
 /**
  * Blank out the spans SKILL.md exempts, preserving line and column offsets so
@@ -76,11 +100,11 @@ const QUOTED_SPAN = /(?:"[^"\n]{1,300}"|“[^”\n]{1,300}”|'[^'\n]{2,300}')/g
  */
 function applyExemptions(text) {
   const blank = (s) => s.replace(/[^\n]/g, ' ');
-  return text
+  const withoutFencesOrInlineCode = text
     .replace(FENCED_CODE, blank)
-    .replace(TABLE_BLOCK, blank)
+    .replace(INLINE_CODE, blank);
+  return maskTables(withoutFencesOrInlineCode)
     .replace(BLOCKQUOTE_BLOCK, blank)
-    .replace(INLINE_CODE, blank)
     .replace(QUOTED_SPAN, blank);
 }
 
