@@ -98,6 +98,15 @@ The rules from the [#88 license audit](https://github.com/conorbronsdon/avoid-ai
 npm test
 ```
 
+`npm test` runs every suite via `scripts/run-tests.js` and prints a combined
+summary; earlier failures do not skip later files. To run one suite:
+
+```bash
+node scripts/run-tests.js detector/patterns.test.js
+# or invoke the file directly:
+node detector/patterns.test.js
+```
+
 This runs the engine fixtures and the `CATEGORIES.md` contract checks: every
 detector `type` must be documented, every documented type must be real, and every
 prose statement of the engine `type` total must match the code. All must pass. No

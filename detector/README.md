@@ -78,9 +78,9 @@ the workflow.
 Use the repository directly when developing or validating detector changes:
 
 ```bash
-npm test          # pattern, category-contract, and preservation tests (no deps)
-# or directly:
-node detector/patterns.test.js
+npm test          # all suites; failures in one file still run the rest (no deps)
+node scripts/run-tests.js detector/patterns.test.js   # one suite
+node detector/patterns.test.js                        # same, direct
 ```
 
 ```js
