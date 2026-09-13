@@ -1443,7 +1443,11 @@ const AIDetector = (() => {
   //
   // Setext headings (`Title`/`=====`) need no prefix: their text line is bare
   // and already matched by this same pattern.
-  const TITLE_CASE_HEADER = /^(?:#{1,6}[ \t]+)?([A-Z][a-z]+(?:\s+(?:[A-Z][a-z]+|and|or|of|the|in|for|to|a|an))+\s+[A-Z][a-z]+)\s*$/gm;
+  // Interior tokens accept Title Case words, acronyms (`AI`, `API`, `CLI`) and
+  // the capitalised single-letter function word `A`. The first and last tokens
+  // stay ordinary `[A-Z][a-z]+` words, which also excludes all-caps banner
+  // lines (`## HTTP API REFERENCE`) whose leading token is not Title Case.
+  const TITLE_CASE_HEADER = /^(?:#{1,6}[ \t]+)?([A-Z][a-z]+(?:\s+(?:[A-Z][a-z]+|[A-Z]+|and|or|of|the|in|for|to|a|an))+\s+[A-Z][a-z]+)\s*$/gm;
 
   // ─── Parenthetical hedging asides ──────────────────────────────────
   // "(and increasingly, X)", "(or more precisely, Y)", "(though to be

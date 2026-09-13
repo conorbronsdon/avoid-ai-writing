@@ -1747,6 +1747,31 @@ test('#62: an interior function word still flags, in both forms', () => {
   }
 });
 
+test('#240: an acronym or single-letter function word in the title still flags', () => {
+  // `TITLE_CASE_HEADER` previously required every interior token to be
+  // [A-Z][a-z]+ or a lowercase function word, so a capitalised `A` and any
+  // all-caps acronym (AI, API, CLI) broke the whole match. These are the
+  // common shapes in the content this rule actually targets.
+  for (const heading of [
+    '## Why Your Team Needs A Better Testing Strategy',
+    '## The Future Of AI In Production',
+    '## Choosing A Database For Your Startup',
+    '## Building An API Driven Strategy',
+  ]) {
+    assert.equal(titleCaseHits(heading + HEADING_BODY).length, 1, `must flag: ${heading}`);
+  }
+});
+
+test('#240: an all-caps banner line is not a title-case header', () => {
+  // The first and last tokens must remain ordinary [A-Z][a-z]+ words, so a
+  // fully uppercase line like a section banner never matches.
+  assert.equal(
+    titleCaseHits('## HTTP API REFERENCE' + HEADING_BODY).length,
+    0,
+    'all-caps banner must not flag',
+  );
+});
+
 test('#62: fences that a parity count gets wrong', () => {
   const f3 = '```';
   const f4 = '````';
