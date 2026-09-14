@@ -214,21 +214,26 @@ function writeCacheFile(destination, content) {
   const staged = path.join(stagingDir, 'content');
   try {
     fs.writeFileSync(staged, content, { flag: 'wx' });
-    let collision;
     for (let attempt = 0; attempt < 4; attempt += 1) {
       try {
         fs.renameSync(staged, destination);
         return;
       } catch (err) {
         if (err.code !== 'EEXIST' && err.code !== 'EPERM') throw err;
-        collision = err;
-        fs.rmSync(destination, { force: true });
-        if (attempt < 3) {
-          Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 10 * (attempt + 1));
+        // With no retry left, preserve whichever complete cache file won the
+        // collision instead of deleting it and then throwing.
+        if (attempt === 3) throw err;
+        try {
+          fs.rmSync(destination, { force: true });
+        } catch (removeErr) {
+          // Windows can report the same temporary sharing violation while
+          // removing the occupied destination. Keep the staged file and let
+          // the next bounded rename attempt try again.
+          if (removeErr.code !== 'EEXIST' && removeErr.code !== 'EPERM') throw removeErr;
         }
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 10 * (attempt + 1));
       }
     }
-    throw collision;
   } finally {
     fs.rmSync(stagingDir, { recursive: true, force: true });
   }
