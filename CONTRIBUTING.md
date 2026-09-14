@@ -177,3 +177,6 @@ writing rule needs a minor version bump. Exempt changes need no version bump;
 leave published release entries intact.
 
 After changing either canonical file, run `bash scripts/sync-plugin-skill.sh && bash scripts/sync-cursor-rules.sh`. This regenerates both bundles, `SKILL.full.md`, and the portable paste/Cursor artifacts; CI checks parity. Do not edit generated copies.
+
+Maintainers should follow [the release recovery procedure](docs/releasing.md)
+instead of moving a tag or reusing a published version after a failed run.

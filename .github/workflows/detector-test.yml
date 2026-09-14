@@ -20,25 +20,9 @@ on:
       - 'bin/**'
       - 'action.yml'
       - '.pre-commit-hooks.yaml'
+  # This job is a required-check candidate, so it must report on every PR.
+  # Workflow-level path filters would leave unrelated PRs pending forever.
   pull_request:
-    paths:
-      - "detector/**"
-      - "scripts/**"
-      - "examples/**"
-      - "evals/**"
-      - "package.json"
-      - ".github/workflows/detector-test.yml"
-      - "README.md"
-      - "SKILL.md"
-      - "SKILL.full.md"
-      - "references/**"
-      - "dist/**"
-      - "CHANGELOG.md"
-      - "CONTRIBUTING.md"
-      - "PROOF.md"
-      - 'bin/**'
-      - 'action.yml'
-      - '.pre-commit-hooks.yaml'
 
 permissions:
   contents: read

@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - "CHANGELOG.md"
+  # Recovery dispatches must target main. The release environment enforces
+  # that boundary again outside this editable workflow file.
   workflow_dispatch:
 
 permissions:
@@ -14,36 +16,68 @@ permissions:
 # `gh release view` before `gh release create`, and publish-npm reads
 # `npm view` before `npm publish`. Overlapping runs can both read "not there
 # yet" and then collide. Two runs carrying the same version turn one of them
-# red; two runs carrying different versions can finish out of order and leave
-# npm's `latest` pointing at the older one. Serializing puts the second run's
-# checks after the first run's writes, so its `exists` guards see the truth and
-# skip — the guards and this block do the job together, neither one alone.
+# red; two runs carrying different versions can otherwise race their shared
+# tags and registry state. Serializing puts each run's checks after the prior
+# run's writes, so its `exists` guards see the truth. `queue: max` matters too:
+# without it, a newer trigger replaces an already-pending release even when
+# `cancel-in-progress` is false.
 #
 # The group omits `github.ref` on purpose: the registry and the release list are
-# repo-global, so a workflow_dispatch has to queue behind a main push too.
-# Never cancel — a cancelled run can die between its check and its publish, or
-# leave a GitHub release standing with nothing published against it.
+# repo-global. Never cancel — a cancelled run can die between its check and its
+# publish, or leave a GitHub release standing with nothing published against it.
 concurrency:
   group: release
+  queue: max
   cancel-in-progress: false
 
 jobs:
-  release:
+  # Validate the exact release commit without a write token or OIDC access.
+  # Nothing public exists until this job has proved the version, tests, and
+  # package payload all succeed.
+  preflight:
+    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.changelog.outputs.version }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - name: Parse latest version from CHANGELOG.md
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Verify release versions
         id: changelog
         run: node scripts/verify-release-versions.js --github-output "$GITHUB_OUTPUT"
+
+      - name: Test the release commit
+        run: npm test
+
+      - name: Verify the npm package can be assembled
+        run: npm pack --dry-run --json
+
+  release:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Check if the release tag already exists
         id: tagcheck
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="v${{ steps.changelog.outputs.version }}"
+          TAG="v${{ needs.preflight.outputs.version }}"
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
             echo "Release $TAG already exists — nothing to do."
@@ -54,7 +88,7 @@ jobs:
       - name: Extract this version's changelog section
         if: steps.tagcheck.outputs.exists == 'false'
         run: |
-          VERSION="${{ steps.changelog.outputs.version }}"
+          VERSION="${{ needs.preflight.outputs.version }}"
           awk -v heading="## [$VERSION]" '
             $0 ~ /^## \[/ {
               if (found) exit
@@ -73,7 +107,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          VERSION="${{ steps.changelog.outputs.version }}"
+          VERSION="${{ needs.preflight.outputs.version }}"
           gh release create "v$VERSION" \
             --target "$GITHUB_SHA" \
             --title "v$VERSION" \
@@ -87,14 +121,17 @@ jobs:
   # the CHANGELOG heading the release job used — the same version guard as the
   # release job must block a publish, not ride into the registry.
   publish-npm:
-    needs: release
+    needs: [preflight, release]
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    environment: release
     permissions:
       contents: read
       id-token: write # npm Trusted Publishing (OIDC) + --provenance
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
@@ -164,10 +201,6 @@ jobs:
             exit 1
           fi
           echo "HEAD is the commit tagged $TAG ($TAG_SHA) — safe to publish."
-
-      - name: Test before publish
-        if: steps.npmcheck.outputs.exists == 'false'
-        run: npm test
 
       - name: Publish with provenance
         if: steps.npmcheck.outputs.exists == 'false'
