@@ -19,6 +19,7 @@ const {
   sha256,
   cmdList,
   fetchDoc,
+  writeCacheFile,
   FETCH_TIMEOUT_MS,
   rowsFromText,
 } = require('./corpus.js');
@@ -38,6 +39,79 @@ function test(name, fn) {
 }
 
 console.log('\ncorpus helpers\n');
+
+test('cache replacement retries Windows-style rename and removal collisions', () => {
+  const id = 'corpus-cache-collision-test';
+  const cacheFile = path.join(__dirname, '..', 'corpus', 'cache', `${id}.txt`);
+  fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
+  fs.writeFileSync(cacheFile, 'old corpus text');
+  const originalRenameSync = fs.renameSync;
+  const originalRmSync = fs.rmSync;
+  let destinationRenames = 0;
+  let destinationRemovals = 0;
+  fs.renameSync = (source, destination) => {
+    if (destination === cacheFile && destinationRenames < 2) {
+      destinationRenames += 1;
+      const error = new Error('simulated replacement collision');
+      error.code = 'EPERM';
+      throw error;
+    }
+    destinationRenames += 1;
+    return originalRenameSync(source, destination);
+  };
+  fs.rmSync = (target, options) => {
+    if (target === cacheFile && destinationRemovals++ === 0) {
+      const error = new Error('simulated removal collision');
+      error.code = 'EPERM';
+      throw error;
+    }
+    return originalRmSync(target, options);
+  };
+  try {
+    writeCacheFile(cacheFile, 'replacement corpus text');
+    assert.equal(destinationRenames, 3);
+    assert.equal(destinationRemovals, 2);
+    assert.equal(fs.readFileSync(cacheFile, 'utf8'), 'replacement corpus text');
+  } finally {
+    fs.renameSync = originalRenameSync;
+    fs.rmSync = originalRmSync;
+    originalRmSync(cacheFile, { force: true });
+  }
+});
+
+test('cache replacement exhaustion preserves a complete competing file', () => {
+  const id = 'corpus-cache-exhaustion-test';
+  const cacheFile = path.join(__dirname, '..', 'corpus', 'cache', `${id}.txt`);
+  fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
+  fs.writeFileSync(cacheFile, 'first complete corpus');
+  const originalRenameSync = fs.renameSync;
+  const originalRmSync = fs.rmSync;
+  let destinationRenames = 0;
+  let destinationRemovals = 0;
+  fs.renameSync = (_source, destination) => {
+    if (destination !== cacheFile) return originalRenameSync(_source, destination);
+    destinationRenames += 1;
+    const error = new Error('simulated persistent rename collision');
+    error.code = 'EEXIST';
+    throw error;
+  };
+  fs.rmSync = (target, options) => {
+    if (target !== cacheFile) return originalRmSync(target, options);
+    destinationRemovals += 1;
+    originalRmSync(target, options);
+    fs.writeFileSync(target, 'complete competing corpus');
+  };
+  try {
+    assert.throws(() => writeCacheFile(cacheFile, 'replacement corpus text'), /persistent rename collision/);
+    assert.equal(destinationRenames, 4);
+    assert.equal(destinationRemovals, 3, 'the final failed rename must not remove the destination');
+    assert.equal(fs.readFileSync(cacheFile, 'utf8'), 'complete competing corpus');
+  } finally {
+    fs.renameSync = originalRenameSync;
+    fs.rmSync = originalRmSync;
+    originalRmSync(cacheFile, { force: true });
+  }
+});
 
 test('constructs text and dataset rows from the supplied source snapshot', () => {
   const doc = { id: 'snapshot', source: { type: 'local' }, register: 'docs', class: 'human' };
@@ -327,6 +401,32 @@ async function asyncTest(name, fn) {
 }
 
 (async () => {
+  await asyncTest('fetch validates cache ids and safely replaces cached content', async () => {
+    await assert.rejects(
+      () => fetchDoc({ id: '../outside', source: { type: 'url', url: 'https://example.invalid' } }, true),
+      /invalid document id/,
+    );
+
+    const server = http.createServer((_req, res) => {
+      res.writeHead(200, { 'content-type': 'text/plain' });
+      res.end('replacement corpus text');
+    });
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const { port } = server.address();
+    const id = 'corpus-safe-write-test';
+    const cacheFile = path.join(__dirname, '..', 'corpus', 'cache', `${id}.txt`);
+    fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
+    fs.writeFileSync(cacheFile, 'old corpus text');
+    try {
+      const result = await fetchDoc({ id, source: { type: 'url', url: `http://127.0.0.1:${port}/text` } }, true);
+      assert.equal(result.status, 'fetched');
+      assert.equal(fs.readFileSync(cacheFile, 'utf8'), 'replacement corpus text');
+    } finally {
+      server.close();
+      fs.rmSync(cacheFile, { force: true });
+    }
+  });
+
   await asyncTest('fetch times out with document id and host in the error', async () => {
     const server = http.createServer(() => {});
     await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));

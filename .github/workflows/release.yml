@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "CHANGELOG.md"
+      - "package.json"
   # Recovery dispatches must target main. The release environment enforces
   # that boundary again outside this editable workflow file.
   workflow_dispatch:
@@ -45,6 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -55,6 +56,22 @@ jobs:
       - name: Verify release versions
         id: changelog
         run: node scripts/verify-release-versions.js --github-output "$GITHUB_OUTPUT"
+
+      - name: Verify a push changed the package version
+        if: github.event_name == 'push'
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          if ! [[ "$BEFORE_SHA" =~ ^[0-9a-f]{40}$ ]] || [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            echo "::error::Push event supplied an invalid previous commit SHA. Use workflow_dispatch for documented recovery."
+            exit 1
+          fi
+          if ! git cat-file -e "${BEFORE_SHA}^{commit}"; then
+            echo "::error::Previous commit $BEFORE_SHA is unavailable; refusing an unverified push-triggered release."
+            exit 1
+          fi
+          git show "${BEFORE_SHA}:package.json" > "$RUNNER_TEMP/previous-package.json"
+          node scripts/verify-release-versions.js --previous-package-json "$RUNNER_TEMP/previous-package.json"
 
       - name: Test the release commit
         run: npm test

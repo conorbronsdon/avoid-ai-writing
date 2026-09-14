@@ -397,6 +397,29 @@ test('#190: many HTML comments avoid quadratic rescanning', () => {
   );
 });
 
+test('adversarial Markdown scans stay within a bounded time', () => {
+  const ordinary = 'one two three four five six seven eight nine ten';
+  const attacks = [
+    `${ordinary} ${'`'.repeat(2500)}${'a'.repeat(2500)}`,
+    `${ordinary} ${'<a'.repeat(10000)}`,
+    `## 1.1.1${'\t'.repeat(20000)}— x\n${ordinary}`,
+    `## 1.1.${'1'.repeat(64000)}]x — 2026-01-01\n${ordinary}`,
+    `- ${' '.repeat(10000)}X\rY\n${ordinary}`,
+  ];
+  for (const text of attacks) {
+    const started = performance.now();
+    AIDetector.analyzeText(text);
+    const elapsedMs = performance.now() - started;
+    assert.ok(elapsedMs < 900, `adversarial scan took ${elapsedMs.toFixed(1)}ms`);
+  }
+});
+
+test('version-heading dash carve-out does not swallow prose after a closed version label', () => {
+  const text = '## [1.1.1] Not a version label — 2026-01-01\n\nOne two three four five six seven eight nine ten.';
+  const issues = AIDetector.analyzeText(text).issues.filter((issue) => issue.type === 'em-dash');
+  assert.equal(issues.length, 1, 'text after a closed version label must keep its prose dash visible');
+});
+
 test('repeated Tier 1 phrase does not inflate score linearly', () => {
   const single = AIDetector.analyzeText('We delve into the landscape of many things today.');
   const fivefold = AIDetector.analyzeText(

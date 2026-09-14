@@ -400,7 +400,8 @@ recalibration work such as #70.
 # .github/workflows/prose.yml
 steps:
   - uses: actions/checkout@v7
-  - uses: conorbronsdon/avoid-ai-writing@main
+  - id: gate
+    uses: conorbronsdon/avoid-ai-writing@main
     with:
       glob: "**/*.md"
       threshold: "6"
@@ -409,6 +410,43 @@ steps:
 
 For long-lived production workflows, pin `uses:` to a release tag or commit SHA
 that contains `action.yml`.
+
+The Action exposes step outputs via `$GITHUB_OUTPUT`:
+
+- `pass`: `'true'` when all scanned files are within threshold; `'false'` on a threshold failure or operational error.
+- `total-findings`: total count of deterministic findings across scanned files; unset on an operational error (exit 2).
+- `failed-files`: count of files exceeding the threshold; unset on an operational error (exit 2).
+
+Downstream steps can consume these outputs:
+
+```yaml
+  - name: Report gate summary
+    if: always() && steps.gate.outputs.total-findings != ''
+    run: |
+      echo "Pass: ${{ steps.gate.outputs.pass }}"
+      echo "Total findings: ${{ steps.gate.outputs.total-findings }}"
+      echo "Failed files: ${{ steps.gate.outputs.failed-files }}"
+```
+
+The underlying `avoid-ai-writing-gate` CLI also accepts `--json` to emit structured JSON on stdout:
+
+```json
+{
+  "schemaVersion": 1,
+  "threshold": 6,
+  "context": "technical",
+  "sourceMode": "rendered-markdown",
+  "pass": false,
+  "totalFindings": 9,
+  "failedFiles": 1,
+  "files": [
+    { "path": "README.md", "findings": 2, "pass": true, "types": ["em-dash", "tier1"] },
+    { "path": "docs/guide.md", "findings": 7, "pass": false, "types": ["hedge-stack", "tier1", "tier2"] }
+  ]
+}
+```
+
+Top-level fields report `schemaVersion`, `threshold`, `context`, `sourceMode`, `pass` (boolean), `totalFindings`, `failedFiles`, and `files` (preserving scan order). Each file item reports `path`, `findings`, `pass`, and sorted distinct detector `types`. When no files match the input or glob, `files` is empty with `pass: true`.
 
 `threshold` is the maximum number of deterministic findings allowed in **each**
 file. The shipped default is **6**, chosen from the current human-control corpus

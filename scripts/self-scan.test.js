@@ -23,6 +23,17 @@ const exempt = (name, middle, protectedText) => t(name, () => {
 
 exempt('blanks a triple-backtick fence', '```js\nconst raw = "quoted";\n```', '```js\nconst raw = "quoted";\n```');
 exempt('blanks a triple-tilde fence', '~~~text\nraw "quoted"\n~~~', '~~~text\nraw "quoted"\n~~~');
+exempt('blanks a mixed-marker example inside a backtick fence', '```md\n~~~\nraw "quoted"\n```', '```md\n~~~\nraw "quoted"\n```');
+exempt('blanks a shorter backtick example inside a longer fence', '````md\n```\nraw "quoted"\n````', '````md\n```\nraw "quoted"\n````');
+exempt('blanks a fence with indented opening and closing markers', '  ```js\nraw "quoted"\n  ```', '  ```js\nraw "quoted"\n  ```');
+exempt('blanks a CRLF fence without consuming following prose', '```js\r\nraw "quoted"\r\n```', '```js\r\nraw "quoted"\r\n```');
+
+t('identical text before a fence is not blanked in place of the fence', () => {
+  const repeated = '```text\nraw "quoted"\n```';
+  const source = `${repeated}\nordinary prose\n${repeated}`;
+  const actual = applyExemptions(source);
+  assert.strictEqual(actual, `${blank(repeated)}\nordinary prose\n${blank(repeated)}`);
+});
 exempt('blanks a multirow pipe-delimited table', '| name | note |\n| --- | --- |\n| alpha | "raw" |', '| name | note |\n| --- | --- |\n| alpha | "raw" |');
 exempt('blanks a blockquote', '> quoted "raw"\n> another row', '> quoted "raw"\n> another row');
 exempt('blanks inline backticks', 'Use `raw "code"` here.', '`raw "code"`');

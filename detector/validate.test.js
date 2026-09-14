@@ -14,7 +14,7 @@
  */
 
 const assert = require('node:assert/strict');
-const { validate, formatResult } = require('./validate.js');
+const { validate, formatResult, maskCode } = require('./validate.js');
 
 let failed = 0;
 function test(name, fn) {
@@ -48,6 +48,45 @@ test('fenced code removed → error', () => {
   const after = 'Intro.\n\nOutro.';
   const r = validate(before, after, { skipResidual: true });
   assert.ok(codes(r).includes('code-block-count'));
+});
+
+test('a tilde line inside a backtick fence does not end it → error', () => {
+  const before = 'Text before.\n\n```md\nexample line one\n~~~\nSECRET CODE A\n```\n\nText after.';
+  const after = 'Text before.\n\n```md\nexample line one\n~~~\nSECRET CODE B\n```\n\nText after.';
+  const r = validate(before, after, { skipResidual: true });
+  assert.ok(codes(r).includes('code-block-modified'), formatResult(r));
+});
+
+test('a backtick line inside a tilde fence does not end it → error', () => {
+  const before = 'Text before.\n\n~~~md\nexample line\n```\nSECRET CODE A\n~~~\n\nAfter.';
+  const after = 'Text before.\n\n~~~md\nexample line\n```\nSECRET CODE B\n~~~\n\nAfter.';
+  const r = validate(before, after, { skipResidual: true });
+  assert.ok(codes(r).includes('code-block-modified'), formatResult(r));
+});
+
+test('a three-backtick line inside a four-backtick fence does not end it → error', () => {
+  // CommonMark: the closing fence must be at least as long as the opener. The
+  // four-backtick outer fence wrapping a three-backtick example is exactly how
+  // fences are documented, and the fence scanner must track the opening run
+  // length so the inner ``` line does not close it (#236 review).
+  const before = 'Text before.\n\n````md\ninner example\n```\nSECRET CODE A\n````\n\nAfter.';
+  const after = 'Text before.\n\n````md\ninner example\n```\nSECRET CODE B\n````\n\nAfter.';
+  const r = validate(before, after, { skipResidual: true });
+  assert.ok(codes(r).includes('code-block-modified'), formatResult(r));
+});
+
+test('an indented closing fence leaves following prose editable', () => {
+  const before = '  ```js\nconst x = 1;\n  ```\n\nOrdinary prose alpha.';
+  const after = '  ```js\nconst x = 1;\n  ```\n\nOrdinary prose beta.';
+  const r = validate(before, after, { skipResidual: true });
+  assert.equal(r.ok, true, formatResult(r));
+});
+
+test('an indented fenced-code edit still fires', () => {
+  const before = '  ```js\nconst x = 1;\n  ```\n\nOrdinary prose.';
+  const after = '  ```js\nconst x = 2;\n  ```\n\nOrdinary prose.';
+  const r = validate(before, after, { skipResidual: true });
+  assert.ok(codes(r).includes('code-block-modified'), formatResult(r));
 });
 
 test('blockquote reworded → error', () => {
@@ -151,6 +190,13 @@ test('lone CR changed to LF inside fenced code -> error', () => {
   assert.ok(codes(r).includes('code-block-modified'), formatResult(r));
 });
 
+test('maskCode closes a CRLF fence before following prose', () => {
+  const source = crlf('```text\nprotected code\n```\n') + 'Ordinary prose.';
+  const masked = maskCode(source);
+  assert.match(masked, /Ordinary prose\.$/);
+  assert.doesNotMatch(masked, /protected code/);
+});
+
 // ── Documented, correct edits must pass ────────────────────────────────
 
 test('stripping an AI utm_source parameter → no error', () => {
@@ -158,6 +204,61 @@ test('stripping an AI utm_source parameter → no error', () => {
   const after = 'Background: https://example.com/post and more.';
   const r = validate(before, after, { skipResidual: true });
   assert.equal(r.ok, true, formatResult(r));
+});
+
+test('stripping AI tracking parameters preserves the remaining query string', () => {
+  const cases = [
+    ['?utm_source=chatgpt.com&b=1', '?b=1'],
+    ['?a=1&utm_source=chatgpt.com', '?a=1'],
+    ['?a=1&utm_source=chatgpt.com&b=2', '?a=1&b=2'],
+    ['?utm_source=chatgpt.com', ''],
+    ['?referrer=grok.com&b=1', '?b=1'],
+    ['?a=1&referrer=grok.com', '?a=1'],
+    ['?a=1&referrer=grok.com&b=2', '?a=1&b=2'],
+    ['?referrer=grok.com', ''],
+    ['?utm_source=chatgpt.com&', ''],
+    ['?&utm_source=chatgpt.com', ''],
+    ['?a=1&&utm_source=chatgpt.com', '?a=1'],
+    ['?a=1&&b=2&utm_source=chatgpt.com', '?a=1&&b=2'],
+    ['?utm_source=chatgpt.com&&b=1', '?&b=1'],
+    ['?a=1&utm_source=chatgpt.com&', '?a=1&'],
+    ['?referrer=grok.com&&b=1', '?&b=1'],
+  ];
+
+  for (const [beforeQuery, afterQuery] of cases) {
+    const before = `See https://example.com/post${beforeQuery} for details.`;
+    const after = `See https://example.com/post${afterQuery} for details.`;
+    const r = validate(before, after, { skipResidual: true });
+    assert.equal(r.ok, true, `${beforeQuery}: ${formatResult(r)}`);
+  }
+});
+
+test('stripping a terminal AI tracker preserves adjacent sentence punctuation', () => {
+  const cases = [
+    ['https://example.com/post?utm_source=chatgpt.com.', 'https://example.com/post.'],
+    ['https://example.com/post?referrer=grok.com,', 'https://example.com/post,'],
+    ['https://example.com/post?utm_source=chatgpt.com?', 'https://example.com/post?'],
+    ['https://example.com/post?utm_source=chatgpt.com!?', 'https://example.com/post!?'],
+  ];
+
+  for (const [beforeUrl, afterUrl] of cases) {
+    const r = validate(`See ${beforeUrl}`, `See ${afterUrl}`, { skipResidual: true });
+    assert.equal(r.ok, true, `${beforeUrl}: ${formatResult(r)}`);
+  }
+});
+
+test('removing a terminal question mark from a URL is still an error', () => {
+  const before = 'See https://example.com/post? for details.';
+  const after = 'See https://example.com/post for details.';
+  const r = validate(before, after, { skipResidual: true });
+  assert.ok(codes(r).includes('url-missing'), formatResult(r));
+});
+
+test('changing a non-tracking query parameter → error', () => {
+  const before = 'See https://example.com/post?utm_source=chatgpt.com&ref=home for details.';
+  const after = 'See https://example.com/post?ref=away for details.';
+  const r = validate(before, after, { skipResidual: true });
+  assert.ok(codes(r).includes('url-missing'), formatResult(r));
 });
 
 test('sentence-casing a Title Case heading → warning, not error', () => {

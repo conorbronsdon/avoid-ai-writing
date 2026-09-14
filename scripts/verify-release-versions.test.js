@@ -9,6 +9,7 @@ const { spawnSync } = require('node:child_process');
 
 const {
   readChangelogVersion,
+  verifyVersionChanged,
   verifyReleaseVersions,
 } = require('./verify-release-versions.js');
 
@@ -81,6 +82,39 @@ t('verifyReleaseVersions accepts matching package.json and changelog versions', 
   assert.strictEqual(result.ok, true);
   assert.strictEqual(result.changelogVersion, '1.2.3');
   assert.strictEqual(result.packageVersion, '1.2.3');
+});
+
+t('verifyVersionChanged accepts a new version and rejects unchanged recovery pushes', () => {
+  assert.deepStrictEqual(verifyVersionChanged('{"version":"1.2.2"}', '1.2.3'), {
+    ok: true,
+    previousVersion: '1.2.2',
+    currentVersion: '1.2.3',
+  });
+  const unchanged = verifyVersionChanged('{"version":"1.2.3"}', '1.2.3');
+  assert.strictEqual(unchanged.ok, false);
+  assert.match(unchanged.message, /did not change \(1\.2\.3\)/);
+  assert.match(unchanged.message, /workflow_dispatch/);
+  const rollback = verifyVersionChanged('{"version":"2.0.0"}', '1.99.99');
+  assert.strictEqual(rollback.ok, false);
+  assert.match(rollback.message, /moved backward from 2\.0\.0 to 1\.99\.99/);
+});
+
+t('CLI checks the previous package version only when requested', () => {
+  const root = fixtureRoot();
+  writeFixture(root, {
+    changelog: '## [2.0.0]\n',
+    packageVersion: '2.0.0',
+  });
+  const previous = path.join(root, 'previous-package.json');
+  fs.writeFileSync(previous, '{"name":"fixture","version":"1.9.0"}\n', 'utf8');
+  const changed = runCli(root, ['--previous-package-json', previous]);
+  assert.strictEqual(changed.status, 0);
+  assert.match(changed.stdout, /changed from 1\.9\.0 to 2\.0\.0/);
+
+  fs.writeFileSync(previous, '{"name":"fixture","version":"2.0.0"}\n', 'utf8');
+  const unchanged = runCli(root, ['--previous-package-json', previous]);
+  assert.strictEqual(unchanged.status, 1);
+  assert.match(unchanged.stderr, /push-triggered releases require a new version/);
 });
 
 t('verifyReleaseVersions accepts an Unreleased-only documentation edit above the current release', () => {
@@ -258,10 +292,11 @@ t('workflow runs the shared guard before both release mutations', () => {
   const publishJob = workflow.slice(publishStart);
   const releaseGuards = [...releaseJob.matchAll(/node scripts\/verify-release-versions\.js/g)];
   const publishGuards = [...publishJob.matchAll(/node scripts\/verify-release-versions\.js/g)];
-  assert.strictEqual(releaseGuards.length, 1);
+  assert.strictEqual(releaseGuards.length, 2);
   assert.strictEqual(publishGuards.length, 1);
   assert.ok(releaseGuards[0].index < /^\s+gh release create/m.exec(releaseJob).index);
   assert.ok(publishGuards[0].index < /^\s+run: npm publish --provenance/m.exec(publishJob).index);
+  assert.match(releaseJob, /if: github\.event_name == 'push'[\s\S]*--previous-package-json/);
 });
 
 process.stdout.write(`verify-release-versions.test.js: ${passed} passed\n`);
