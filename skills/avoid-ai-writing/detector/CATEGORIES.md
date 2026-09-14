@@ -6,14 +6,14 @@ the skill, decide here whether it's regex-detectable (give it a detector `type`)
 or LLM-only judgment (mark it so). When you add a detector `type`, point it back
 at the skill section it enforces.
 
-The engine exposes 54 issue `type`s (see `TYPE_LABELS` in `patterns.js`). The
+The engine exposes 53 issue `type`s (see `TYPE_LABELS` in `patterns.js`). The
 skill has more `###` sections than that — the gap is **not** missing coverage,
 it's rules that are judgment calls a regex can't make. The three groups below
 account for every entry on both sides.
 
 Three counts coexist on purpose and should not be forced to match: the README's
 **pattern-category count** (the human-facing prose catalog, derived from references/patterns.md
-and guarded in CI), the engine's **54 `type`s** (which split the vocabulary tiers
+and guarded in CI), the engine's **53 `type`s** (which split the vocabulary tiers
 and add stylometric signals), and references/patterns.md's `###` sections (which also include
 writer-side tests with no detectable form). The
 `categories.test.js` enforces the engine ↔ this-file mapping, and checks every
@@ -30,7 +30,6 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 | `tier3-phrase` / `tier3-phrase-cluster` | Boilerplate phrase / cluster | Template phrases (avoid) |
 | `chatbot` | Chatbot artifact | Chatbot artifacts |
 | `sycophantic` | Sycophantic tone | Sycophantic tone |
-| `acknowledgment-loop` | Acknowledgment loop | Acknowledgment loops |
 | `filler` | Filler phrase | Filler phrases |
 | `hollow-intensifier` | Hollow intensifier | Filler phrases (intensifiers), except context-dependent `actually` (see §C) |
 | `generic-conclusion` | Generic conclusion | Generic conclusions |
@@ -121,6 +120,7 @@ mistake their absence for a coverage gap:
 - Self-labeling significance
 - Wall-of-text replies (missing line breaks) *(tried as a detector — "reply-length, >=4 sentences, zero newlines" — and reverted; it fires on any ordinary short paragraph, not just conversational-reply register, so it stayed judgment-only. See the NOTE in `patterns.js` near the bullet-NP-list block)*
 - Recap-flattery opener
+- Acknowledgment loops *(tried as a detector — "you're asking about", "the question of whether", "to answer your question" — and retired (#239): the first opens ordinary replies and support answers ("You're asking about the retry limit. It is five by default..."), the third opens replies to a named earlier question ("To answer your question from Tuesday: the invoice went out on the 3rd..."), and the second is standard academic and analytical English. Both reply openers are document-initial in those examples, so position cannot separate them from the tell. Judging it needs reading whether the restatement adds anything before the answer arrives)*
 - Narrated candor *(tried as a detector and reverted: the phrasings are shared with idiomatic conflict-of-interest disclosure ("in the interest of full disclosure, I own shares in...") and with the ordinary English comparative ("I'd rather die than let you drive"), so any regex tight enough to avoid those stopped matching the tell. Judging it needs reading whether the clause carries information or only announces that information is coming)*
 - Immaculate typography in casual registers *(folded into the Formatting section — same weak-signal tier as curly quotes, not a standalone category)*
 - Subjectless fragments and agentless passives *(docs and changelog registers are carve-outs — the fragment is the correct form there)*

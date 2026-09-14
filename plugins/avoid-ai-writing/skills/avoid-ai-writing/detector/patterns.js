@@ -368,7 +368,6 @@ const AIDetector = (() => {
     'generic-conclusion': 3,
     'lets-construction': 2,
     'reasoning-artifact': 6,
-    'acknowledgment-loop': 3,
     'significance-inflation': 4,
     'vague-attribution': 5,
     'hollow-intensifier': 2,
@@ -528,12 +527,11 @@ const AIDetector = (() => {
     /\bworking\s+through\s+this\s+logically\b/gi,
   ];
 
-  // ─── Acknowledgment loops ──────────────────────────────────────────
-  const ACKNOWLEDGMENT_LOOPS = [
-    /\byou'?re\s+asking\s+about\b/gi,
-    /\bthe\s+question\s+of\s+whether\b/gi,
-    /\bto\s+answer\s+your\s+question\b/gi,
-  ];
+  // NOTE: Acknowledgment loops are judgment-only (#239). The three phrases the
+  // detector matched ("you're asking about", "the question of whether", "to answer
+  // your question") are also how people open an ordinary reply and standard
+  // analytical English. The tell is a restatement that adds nothing, which a
+  // regex cannot see. See detector/CATEGORIES.md §C.
 
   // ─── Significance inflation ────────────────────────────────────────
   const SIGNIFICANCE_INFLATION = [
@@ -1825,7 +1823,6 @@ const AIDetector = (() => {
     issues.push(...matchPatterns(text, GENERIC_CONCLUSIONS, 'generic-conclusion', 'medium'));
     issues.push(...matchPatterns(text, LETS_PATTERNS, 'lets-construction', 'medium'));
     issues.push(...matchPatterns(text, REASONING_ARTIFACTS, 'reasoning-artifact', 'critical'));
-    issues.push(...matchPatterns(text, ACKNOWLEDGMENT_LOOPS, 'acknowledgment-loop', 'medium'));
     issues.push(...matchPatterns(text, SIGNIFICANCE_INFLATION, 'significance-inflation', 'high'));
     issues.push(...matchPatterns(text, VAGUE_ATTRIBUTIONS, 'vague-attribution', 'critical'));
     issues.push(...matchPatterns(text, HOLLOW_INTENSIFIERS, 'hollow-intensifier', 'medium'));
@@ -2743,7 +2740,6 @@ const AIDetector = (() => {
     'generic-conclusion': 'Generic conclusion',
     'lets-construction': '"Let\'s" opener',
     'reasoning-artifact': 'Reasoning artifact',
-    'acknowledgment-loop': 'Acknowledgment loop',
     'significance-inflation': 'Significance inflation',
     'vague-attribution': 'Vague attribution',
     'hollow-intensifier': 'Hollow intensifier',

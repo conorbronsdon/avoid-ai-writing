@@ -466,8 +466,12 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - **Judgment-only, deliberately.** This was implemented as a detector and reverted: every regex tight enough to spare the two carve-outs above stopped matching the tell, and the phrasings are shared with idiomatic disclosure language. Deciding it requires reading whether the clause carries information or only announces that information is coming, which is what a reader can do and a pattern cannot.
 
 ### Acknowledgment loops
-- "You're asking about," "The question of whether," "To answer your question," "That's a great question. The..." — AI restates the prompt before answering. In writing, this is pure filler. The reader knows what they asked. Just answer.
+- "You're asking about," "To answer your question," "That's a great question. The..." — AI restates the prompt before answering. In writing, this is pure filler. The reader knows what they asked. Just answer.
 - Related pattern: opening a section by summarizing what the previous section said. If the structure is clear, the reader doesn't need a recap.
+- **The deletion test.** Cut the opener. If the reply loses nothing, it was a loop: "You're asking about retries. Retries are how the client handles failures" restates the prompt twice before saying anything.
+- **Carve-out — replies that orient the reader.** "To answer your question from Tuesday: the invoice went out on the 3rd" and "You're asking about the retry limit. It is five by default" point at which question is being answered, then answer it. Email, support, and docs replies open this way on purpose.
+- **Not analytical framing.** "The question of whether the effect persists is still open" names an open question; it is ordinary academic English, not a restatement of a prompt.
+- **Judgment-only, deliberately.** This was a detector and was retired: the phrases are shared with the carve-outs above, and the two reply openers were document-initial in the false positives, so position cannot separate them from the tell. Deciding it requires reading whether the restatement adds anything before the answer arrives.
 
 ### Confidence calibration phrases
 - "It's worth noting that," "Interestingly," "Surprisingly," "Importantly," "Significantly," "Notably," "Certainly," "Undoubtedly," "Without a doubt" — AI uses these to signal how the reader should feel about a fact instead of letting the fact speak for itself.

@@ -2653,6 +2653,25 @@ test('#237: technical context mode suppresses technical-legitimate vocabulary te
   }
 });
 
+test('reply openers and analytical framing are not reported as acknowledgment loops (#239)', () => {
+  // Acknowledgment loops are judgment-only: these phrases also open ordinary
+  // replies, and "the question of whether" is standard analytical English. The
+  // tell is a restatement that adds nothing, which the engine cannot read.
+  const clean = [
+    'The question of whether the effect persists after controlling for income is still open, and the two replications disagree with each other.',
+    'To answer your question from Tuesday: the invoice went out on the 3rd and the payment cleared last week, so nothing is outstanding on our side.',
+    "You're asking about the retry limit. It is five by default and configurable with RETRY_MAX, though we do not recommend raising it past ten.",
+  ];
+  for (const text of clean) {
+    for (const contextMode of [undefined, 'technical']) {
+      const r = AIDetector.analyzeText(text, contextMode ? { contextMode } : {});
+      const hits = r.issues.filter((i) => /question of whether|answer your question|asking about/i.test(i.text));
+      assert.deepEqual(hits.map((i) => `${i.type}:${i.text}`), [], `${contextMode || 'default'}: ${text}`);
+      assert.ok(!r.issues.some((i) => i.type === 'acknowledgment-loop'));
+    }
+  }
+});
+
 if (failed > 0) {
   console.error(`\n${failed} test(s) failed`);
   process.exit(1);
