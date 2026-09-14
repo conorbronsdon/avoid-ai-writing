@@ -6,6 +6,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- Define one editing contract for rewrite and file-edit decisions. Cleanup now separates candidate matches, justified findings, and authorized edits; preserves source-supported facts, attribution, negation, uncertainty, technical terms, intentional rhetoric, protected content, and established voice; allows explicitly requested structure or register changes without invented evidence or experience; respects context skips before voice targets; leaves clean input unchanged when no separate transformation is requested; and no longer requires confirmation solely because a clearly scoped file is large (#202).
+
 ## [3.35.0] — 2026-09-13
 
 ### Changed

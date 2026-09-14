@@ -33,7 +33,7 @@ The network uses typed relationships rather than loose prose references:
 
 Conditional guards live in `skill-graph.json` `guards` and the handoff envelope; they constrain semantics without adding a graph edge or changing the primary owner.
 
-Cross-stage state follows `skills/avoid-ai-writing-router/references/handoff-contract.md`. The envelope carries context mode, voice, protected constraints, execution evidence, detector summary, verification state, risk flags, and pass limits without making each Skill infer them again.
+Cross-stage state follows `skills/avoid-ai-writing-router/references/handoff-contract.md`. The envelope carries requested scope, explicit user corrections, the canonical context profile separately from detector mode, voice, protected constraints, execution evidence, detector summary, verification state, risk flags, and pass limits without making each Skill infer them again.
 
 Terminal Skills have no outgoing Skill edges. Every permitted graph cycle must pass through an edge with `max_reentries: 1`, which keeps repair and residual-check loops bounded.
 

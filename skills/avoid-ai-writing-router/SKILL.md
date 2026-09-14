@@ -24,7 +24,8 @@ Classify the request once, create the smallest useful handoff envelope, then pas
 The envelope should carry only observed or user-provided facts such as:
 
 - intent and source kind
-- general vs technical context
+- requested editing scope and explicit factual corrections
+- canonical context profile and detector context mode
 - requested voice or supplied style sample
 - protected semantic constraints
 - whether detector, mutation, or verifier execution actually ran
