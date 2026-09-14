@@ -11,6 +11,21 @@ const CHANGELOG_HEADING_RE = new RegExp(
 );
 const CHANGELOG_SECTION_RE = /^##\s+(.+)$/;
 const UNRELEASED_HEADING_RE = /^## \[Unreleased\](?:\s|$)/;
+const SKILL_FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
+
+const VERSIONED_FILES = [
+  { path: 'SKILL.md', label: 'SKILL.md', kind: 'skill' },
+  {
+    path: path.join('plugins', 'avoid-ai-writing', '.claude-plugin', 'plugin.json'),
+    label: 'Claude plugin manifest',
+    kind: 'json',
+  },
+  {
+    path: path.join('.codex-plugin', 'plugin.json'),
+    label: 'OpenAI plugin manifest',
+    kind: 'json',
+  },
+];
 
 function readChangelogVersion(changelogText) {
   for (const line of changelogText.split(/\r?\n/)) {
@@ -21,20 +36,48 @@ function readChangelogVersion(changelogText) {
   return null;
 }
 
-function readPackageVersion(packageJsonText) {
+function readJsonVersion(jsonText, label) {
   let parsed;
   try {
-    parsed = JSON.parse(packageJsonText);
+    parsed = JSON.parse(jsonText);
   } catch {
-    return { error: 'package.json is not valid JSON' };
+    return { error: `${label} is not valid JSON` };
   }
   const version = parsed && parsed.version;
   if (typeof version !== 'string' || version.length === 0) {
-    return { error: 'package.json is missing a string "version" field' };
+    return { error: `${label} is missing a string "version" field` };
   }
-  // Releases use numeric X.Y.Z tags only; prereleases intentionally fail closed.
   if (!SEMVER_RE.test(version)) {
-    return { error: `package.json version (${version}) is not a numeric X.Y.Z semver` };
+    return { error: `${label} version (${version}) is not a numeric X.Y.Z semver` };
+  }
+  return { version };
+}
+
+function readPackageVersion(packageJsonText) {
+  // Releases use numeric X.Y.Z tags only; prereleases intentionally fail closed.
+  return readJsonVersion(packageJsonText, 'package.json');
+}
+
+function readSkillVersion(skillText) {
+  const frontmatter = skillText.match(SKILL_FRONTMATTER_RE);
+  if (!frontmatter) {
+    return { error: 'SKILL.md is missing valid YAML frontmatter' };
+  }
+
+  const versionLines = frontmatter[1]
+    .split(/\r?\n/)
+    .filter((line) => /^version\s*:/.test(line));
+  if (versionLines.length !== 1) {
+    return { error: 'SKILL.md frontmatter must contain exactly one top-level version field' };
+  }
+
+  const match = versionLines[0].match(/^version\s*:\s*(?:"([^"]*)"|'([^']*)'|([^\s#]+))\s*(?:#.*)?$/);
+  const version = match && (match[1] ?? match[2] ?? match[3]);
+  if (!version) {
+    return { error: 'SKILL.md is missing a string "version" field' };
+  }
+  if (!SEMVER_RE.test(version)) {
+    return { error: `SKILL.md version (${version}) is not a numeric X.Y.Z semver` };
   }
   return { version };
 }
@@ -72,8 +115,8 @@ function verifyVersionChanged(previousPackageJsonText, currentVersion) {
 }
 
 /**
- * @param {string} root Repository root containing CHANGELOG.md and package.json
- * @returns {{ ok: true, changelogVersion: string, packageVersion: string } | { ok: false, message: string }}
+ * @param {string} root Repository root containing the release version files
+ * @returns {{ ok: true, changelogVersion: string, packageVersion: string, skillVersion: string, claudePluginVersion: string, openaiPluginVersion: string } | { ok: false, message: string }}
  */
 function verifyReleaseVersions(root) {
   const changelogPath = path.join(root, 'CHANGELOG.md');
@@ -121,7 +164,37 @@ function verifyReleaseVersions(root) {
     };
   }
 
-  return { ok: true, changelogVersion, packageVersion: pkg.version };
+  const versions = {};
+  for (const file of VERSIONED_FILES) {
+    let text;
+    try {
+      text = fs.readFileSync(path.join(root, file.path), 'utf8');
+    } catch {
+      return { ok: false, message: `Could not read ${file.label}` };
+    }
+    const parsed = file.kind === 'skill'
+      ? readSkillVersion(text)
+      : readJsonVersion(text, file.label);
+    if (parsed.error) return { ok: false, message: parsed.error };
+    if (parsed.version !== pkg.version) {
+      return {
+        ok: false,
+        message:
+          `${file.label} (${parsed.version}) != package.json and CHANGELOG.md (${pkg.version}) — ` +
+          'fix the drift before publishing or tagging.',
+      };
+    }
+    versions[file.label] = parsed.version;
+  }
+
+  return {
+    ok: true,
+    changelogVersion,
+    packageVersion: pkg.version,
+    skillVersion: versions['SKILL.md'],
+    claudePluginVersion: versions['Claude plugin manifest'],
+    openaiPluginVersion: versions['OpenAI plugin manifest'],
+  };
 }
 
 function formatGithubError(message) {
@@ -186,7 +259,7 @@ function main(argv) {
   }
 
   process.stdout.write(
-    `package.json and CHANGELOG.md agree on ${result.changelogVersion}\n`,
+    `Release version files agree on ${result.changelogVersion}\n`,
   );
   if (githubOutput) {
     fs.appendFileSync(githubOutput, `version=${result.changelogVersion}\n`, 'utf8');
@@ -199,6 +272,7 @@ module.exports = {
   SEMVER_RE,
   readChangelogVersion,
   readPackageVersion,
+  readSkillVersion,
   verifyVersionChanged,
   verifyReleaseVersions,
 };

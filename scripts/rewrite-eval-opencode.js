@@ -574,7 +574,7 @@ function runTask(context, task) {
     const sessions = [...new Set(events.map((event) => event.sessionID).filter(Boolean))];
     assert.equal(sessions.length, 1, `${task.id}: expected one OpenCode session ID`);
     const exported = command(config.opencode_path, ['export', sessions[0], '--pure'], { env: taskEnv, cwd: taskDir, timeout: config.timeout_ms });
-    assert.equal(exported.status, 0, `${task.id}: opencode export failed: ${exported.stderr.trim()}`);
+    requireCommand(exported, `${task.id}: opencode export failed`);
     writeExclusive(path.join(taskDir, 'session-export.json'), exported.stdout);
     const receipt = JSON.parse(exported.stdout);
     assert.equal(receipt.info?.version, config.opencode_version, `${task.id}: session export OpenCode version differs`);

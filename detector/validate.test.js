@@ -239,11 +239,29 @@ test('stripping a terminal AI tracker preserves adjacent sentence punctuation', 
     ['https://example.com/post?referrer=grok.com,', 'https://example.com/post,'],
     ['https://example.com/post?utm_source=chatgpt.com?', 'https://example.com/post?'],
     ['https://example.com/post?utm_source=chatgpt.com!?', 'https://example.com/post!?'],
+    ['**https://example.com/post?utm_source=chatgpt.com**', '**https://example.com/post**'],
+    ['https://example.com/post?utm_source=chatgpt.com—it', 'https://example.com/post—it'],
+    ['https://example.com/post?a=1&utm_source=chatgpt.com…', 'https://example.com/post?a=1…'],
   ];
 
   for (const [beforeUrl, afterUrl] of cases) {
     const r = validate(`See ${beforeUrl}`, `See ${afterUrl}`, { skipResidual: true });
     assert.equal(r.ok, true, `${beforeUrl}: ${formatResult(r)}`);
+  }
+});
+
+test('dash and ellipsis suffixes cannot move query data into prose', () => {
+  for (const marker of ['–', '—', '…']) {
+    for (const tail of ['foo&keep=1', 'foo=1', 'foo&keep', 'foo%26keep%3D1']) {
+      const before = `See https://example.com/post?utm_source=chatgpt.com${marker}${tail}`;
+      const after = `See https://example.com/post${marker}${tail}`;
+      const r = validate(before, after, { skipResidual: true });
+      assert.ok(codes(r).includes('url-missing'), `${marker}${tail}: ${formatResult(r)}`);
+    }
+  }
+  for (const query of ['?ref=home—it', '?utm_source=chatgpt.com.au—x']) {
+    const r = validate(`See https://example.com/post${query}`, 'See https://example.com/post', { skipResidual: true });
+    assert.ok(codes(r).includes('url-missing'), formatResult(r));
   }
 });
 
