@@ -271,6 +271,42 @@ function changeSet(legacyRecords, currentRecords, exampleLimit = 40) {
     });
   }
 
+  // Boundary-only whitespace changes can move an otherwise identical unit's
+  // source span. Pair only unique normalized content within the same source
+  // row so those records remain provenance modifications. Repeated identical
+  // units are intentionally left unmatched rather than paired greedily.
+  const boundaryBefore = beforeRecords.filter((record) => !pairedBefore.has(record));
+  const boundaryAfter = afterRecords.filter((record) => !pairedAfter.has(record));
+  const boundaryCandidatesByCurrent = new Map();
+  const boundaryCandidatesByLegacy = new Map();
+  for (const current of boundaryAfter) {
+    if (typeof current.normalizedHash !== 'string' || !current.normalizedHash) continue;
+    const candidates = boundaryBefore.filter((legacy) =>
+      rowIdentity(legacy) === rowIdentity(current)
+      && legacy.normalizedHash === current.normalizedHash);
+    boundaryCandidatesByCurrent.set(current, candidates);
+    for (const legacy of candidates) {
+      if (!boundaryCandidatesByLegacy.has(legacy)) boundaryCandidatesByLegacy.set(legacy, []);
+      boundaryCandidatesByLegacy.get(legacy).push(current);
+    }
+  }
+  for (const [current, candidates] of boundaryCandidatesByCurrent) {
+    if (candidates.length !== 1) continue;
+    const legacy = candidates[0];
+    if (boundaryCandidatesByLegacy.get(legacy)?.length !== 1) continue;
+    pairedBefore.add(legacy);
+    pairedAfter.add(current);
+    const fields = changedFields(legacy, current);
+    changes.push({
+      kind: 'modified',
+      key: JSON.parse(identity(legacy)),
+      currentKey: JSON.parse(identity(current)),
+      fields,
+      legacy: diagnostic(legacy),
+      current: diagnostic(current),
+    });
+  }
+
   for (const current of afterRecords) {
     if (!pairedAfter.has(current)) {
       changes.push({ kind: 'added', key: JSON.parse(identity(current)), legacy: null, current: diagnostic(current) });

@@ -164,6 +164,61 @@ test('leaves ambiguous attachment candidates unpaired and counts each record onc
   assert.strictEqual(changes.examples.some((change) => change.currentKey), false);
 });
 
+test('pairs a unique normalized unit when only its source span boundary moves', () => {
+  const base = {
+    recordKind: 'unit', doc: 'fixture', rowId: 'row', rowIndex: 0,
+    rowSourceHash: 'source', cls: 'human', register: 'docs', model: null,
+    selectionStatus: 'selected', status: 'selected', reason: null,
+    headingAttached: false, headingKind: null, mergedContinuation: false,
+    kinds: ['prose'], normalizedHash: 'same-content', inputWords: 55,
+    detectorWords: 55, detectorStatus: 'Clean', score: 0, types: [],
+  };
+  const legacy = { ...base, spans: [{ start: 0, end: 100 }], unitId: 'legacy' };
+  const current = { ...base, spans: [{ start: 1, end: 99 }], unitId: 'current' };
+
+  const changes = changeSet([legacy], [current], 10);
+  assert.deepStrictEqual(changes.counts, { added: 0, removed: 0, modified: 1 });
+  assert.deepStrictEqual(changes.byImpact, {
+    population: 0, detector: 0, normalization: 0, segmentation: 0, 'metadata-only': 1,
+  });
+  assert.deepStrictEqual(changes.examples[0].fields, ['spans']);
+  assert.deepStrictEqual(changes.examples[0].key[4], legacy.spans);
+  assert.deepStrictEqual(changes.examples[0].currentKey[4], current.spans);
+});
+
+test('leaves repeated normalized units unpaired when boundary provenance is ambiguous', () => {
+  const base = {
+    recordKind: 'unit', doc: 'fixture', rowId: 'row', rowIndex: 0,
+    rowSourceHash: 'source', cls: 'human', register: 'docs', model: null,
+    selectionStatus: 'selected', status: 'selected', reason: null,
+    headingAttached: false, headingKind: null, mergedContinuation: false,
+    kinds: ['prose'], normalizedHash: 'duplicate', inputWords: 55,
+    detectorWords: 55, detectorStatus: 'Clean', score: 0, types: [],
+  };
+  const legacy = [
+    { ...base, spans: [{ start: 0, end: 50 }], unitId: 'legacy-1' },
+    { ...base, spans: [{ start: 51, end: 101 }], unitId: 'legacy-2' },
+  ];
+  const current = [
+    { ...base, spans: [{ start: 1, end: 49 }], unitId: 'current-1' },
+    { ...base, spans: [{ start: 52, end: 100 }], unitId: 'current-2' },
+  ];
+
+  const changes = changeSet(legacy, current, 10);
+  assert.deepStrictEqual(changes.counts, { added: 2, removed: 2, modified: 0 });
+  assert.strictEqual(changes.byImpact.population, 4);
+
+  const oneLegacyTwoCurrent = changeSet([legacy[0]], current, 10);
+  assert.deepStrictEqual(oneLegacyTwoCurrent.counts, { added: 2, removed: 1, modified: 0 });
+
+  const twoLegacyOneCurrent = changeSet(legacy, [current[0]], 10);
+  assert.deepStrictEqual(twoLegacyOneCurrent.counts, { added: 1, removed: 2, modified: 0 });
+
+  const otherRow = { ...current[0], rowId: 'other-row' };
+  const differentRows = changeSet([legacy[0]], [otherRow], 10);
+  assert.deepStrictEqual(differentRows.counts, { added: 1, removed: 1, modified: 0 });
+});
+
 test('compares an empty row that produces no current decisions', () => {
   const changes = result.modes.paragraph.comparison.changes;
   const empty = changes.examples.find((change) => change.legacy?.rowId === 'empty-human');

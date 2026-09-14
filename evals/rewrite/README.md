@@ -264,7 +264,12 @@ creates only the missing files, and conflicting contents still fail closed.
 Each run or import performs the full Git-backed plan/provenance check once (six
 pinned-file reads for this protocol); per-task and final row checks reuse that
 already-verified in-memory plan without launching 3,888 redundant Git jobs for
-a 648-task import. `opencode_path` must be absolute. Use a new directory for an explicit retry so
+a 648-task import. `opencode_path` must be absolute. On Windows it must name the
+native `opencode.exe`; npm's `opencode.cmd` and other command shims cannot be
+launched by this runner. A global npm installation typically places the native
+binary under `%APPDATA%\npm\node_modules\opencode-ai\bin\opencode.exe`. Verify
+that the selected binary reports the pinned version before starting a run. Use
+a new directory for an explicit retry so
 the rejected attempt remains in the experiment record. A configuration with
 `task_ids` must use `purpose: "diagnostic"`. Zen's free model IDs are moving
 aliases; record that limitation and do not describe them as immutable model

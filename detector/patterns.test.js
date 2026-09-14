@@ -1822,6 +1822,21 @@ test('#240: unrelated single-letter capitals do not widen the rule', () => {
   );
 });
 
+test('#314: first-person I can appear inside a Title Case heading', () => {
+  assert.equal(
+    titleCaseHits('## What I Learned And Why It Matters' + HEADING_BODY).length,
+    1,
+    'a first-person title with a targeted capitalized function word must flag',
+  );
+  for (const heading of [
+    '## What X Learned And Why It Matters',
+    '## What I learned and why it matters',
+    '## What I Learned About Writing',
+  ]) {
+    assert.equal(titleCaseHits(heading + HEADING_BODY).length, 0, `must not flag: ${heading}`);
+  }
+});
+
 test('#291: blank lines do not manufacture a longer heading', () => {
   // `\s+` between words also eats newlines, so two unrelated lines could
   // combine into one heading match that neither line independently satisfies.
