@@ -6,6 +6,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Add machine-readable `--json` output to `avoid-ai-writing-gate` and expose `pass`, `total-findings`, and `failed-files` step outputs in the GitHub Action (#252).
+
 ### Fixed
 
 - Preserve non-tracking query parameters when removing AI-referrer parameters from URLs during rewrite validation (#210).

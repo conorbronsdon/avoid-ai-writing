@@ -97,5 +97,69 @@ assert.strictEqual(hookSource.status, 2);
 assert.match(hookSource.stderr, /source-mode/);
 assert.doesNotMatch(hookSource.stderr, /ENOENT/);
 
+// Machine-readable --json output tests (#252)
+const jsonPassing = run(["--json", clean]);
+assert.strictEqual(jsonPassing.status, 0, jsonPassing.stderr);
+assert.strictEqual(jsonPassing.stderr, "");
+const passData = JSON.parse(jsonPassing.stdout);
+assert.strictEqual(passData.schemaVersion, 1);
+assert.strictEqual(passData.threshold, 6);
+assert.strictEqual(passData.context, "technical");
+assert.strictEqual(passData.sourceMode, "rendered-markdown");
+assert.strictEqual(passData.pass, true);
+assert.strictEqual(passData.totalFindings, 0);
+assert.strictEqual(passData.failedFiles, 0);
+assert.strictEqual(passData.files.length, 1);
+assert.strictEqual(passData.files[0].path, clean);
+assert.strictEqual(passData.files[0].findings, 0);
+assert.strictEqual(passData.files[0].pass, true);
+assert.deepStrictEqual(passData.files[0].types, []);
+
+const jsonFailing = run(["--threshold", "0", "--json", flagged]);
+assert.strictEqual(jsonFailing.status, 1, jsonFailing.stderr);
+assert.strictEqual(jsonFailing.stderr, "");
+const failData = JSON.parse(jsonFailing.stdout);
+assert.strictEqual(failData.schemaVersion, 1);
+assert.strictEqual(failData.threshold, 0);
+assert.strictEqual(failData.pass, false);
+assert.ok(failData.totalFindings > 0);
+assert.strictEqual(failData.failedFiles, 1);
+assert.strictEqual(failData.files.length, 1);
+assert.strictEqual(failData.files[0].path, flagged);
+assert.strictEqual(failData.files[0].pass, false);
+assert.strictEqual(failData.files[0].findings, failData.totalFindings);
+assert.ok(failData.files[0].types.length > 0);
+
+const jsonMixed = run(["--threshold", "0", "--json", clean, flagged]);
+assert.strictEqual(jsonMixed.status, 1, jsonMixed.stderr);
+assert.strictEqual(jsonMixed.stderr, "");
+const mixedData = JSON.parse(jsonMixed.stdout);
+assert.strictEqual(mixedData.schemaVersion, 1);
+assert.strictEqual(mixedData.pass, false);
+assert.strictEqual(mixedData.failedFiles, 1);
+assert.strictEqual(mixedData.totalFindings, failData.totalFindings);
+assert.strictEqual(mixedData.files.length, 2);
+const cleanEntry = mixedData.files.find((f) => f.path === clean);
+const flaggedEntry = mixedData.files.find((f) => f.path === flagged);
+assert.ok(cleanEntry && cleanEntry.pass && cleanEntry.findings === 0);
+assert.ok(flaggedEntry && !flaggedEntry.pass && flaggedEntry.findings > 0);
+
+const jsonEmpty = run(["--glob", "nonexistent/**/*.md", "--json"], gitRepo);
+assert.strictEqual(jsonEmpty.status, 0, jsonEmpty.stderr);
+assert.strictEqual(jsonEmpty.stderr, "");
+const emptyData = JSON.parse(jsonEmpty.stdout);
+assert.strictEqual(emptyData.schemaVersion, 1);
+assert.strictEqual(emptyData.pass, true);
+assert.strictEqual(emptyData.totalFindings, 0);
+assert.strictEqual(emptyData.failedFiles, 0);
+assert.deepStrictEqual(emptyData.files, []);
+
+const jsonCustom = run(["--threshold", "2", "--context", "general", "--source-mode", "plain", "--json", clean]);
+assert.strictEqual(jsonCustom.status, 0, jsonCustom.stderr);
+const customData = JSON.parse(jsonCustom.stdout);
+assert.strictEqual(customData.threshold, 2);
+assert.strictEqual(customData.context, "general");
+assert.strictEqual(customData.sourceMode, "plain");
+
 fs.rmSync(tmp, { recursive: true, force: true });
 console.log("avoid-ai-writing gate cli: ok");

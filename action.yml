@@ -18,22 +18,64 @@ inputs:
     description: Detector source mode (plain or rendered-markdown).
     required: false
     default: rendered-markdown
+outputs:
+  pass:
+    description: "Whether all scanned files passed within the threshold (true/false)."
+    value: ${{ steps.gate.outputs.pass }}
+  total-findings:
+    description: "Total count of deterministic findings across all scanned files."
+    value: ${{ steps.gate.outputs.total-findings }}
+  failed-files:
+    description: "Count of files that exceeded the threshold."
+    value: ${{ steps.gate.outputs.failed-files }}
 runs:
   using: composite
   steps:
-    - name: Gate prose with avoid-ai-writing detector
+    - id: gate
+      name: Gate prose with avoid-ai-writing detector
       shell: bash
       env:
         AAW_GLOB: ${{ inputs.glob }}
         AAW_THRESHOLD: ${{ inputs.threshold }}
         AAW_CONTEXT: ${{ inputs.context }}
         AAW_SOURCE_MODE: ${{ inputs.source-mode }}
-      run: >-
-        node "$GITHUB_ACTION_PATH/bin/avoid-ai-writing-gate.js"
-        --glob "$AAW_GLOB"
-        --threshold "$AAW_THRESHOLD"
-        --context "$AAW_CONTEXT"
-        --source-mode "$AAW_SOURCE_MODE"
+      run: |
+        TMP_JSON="$(mktemp 2>/dev/null || mktemp -t aaw 2>/dev/null || echo "${RUNNER_TEMP:-/tmp}/aaw-gate-$$.json")"
+        set +e
+        node "$GITHUB_ACTION_PATH/bin/avoid-ai-writing-gate.js" \
+          --glob "$AAW_GLOB" \
+          --threshold "$AAW_THRESHOLD" \
+          --context "$AAW_CONTEXT" \
+          --source-mode "$AAW_SOURCE_MODE" \
+          --json > "$TMP_JSON"
+        EXIT_CODE=$?
+        set -e
+
+        if [ "$EXIT_CODE" -eq 0 ] || [ "$EXIT_CODE" -eq 1 ]; then
+          node -e '
+            const fs = require("fs");
+            const raw = fs.readFileSync(process.argv[1], "utf8");
+            const data = JSON.parse(raw);
+            const githubOutput = process.env.GITHUB_OUTPUT;
+            if (githubOutput) {
+              fs.appendFileSync(githubOutput, `pass=${data.pass}\n`);
+              fs.appendFileSync(githubOutput, `total-findings=${data.totalFindings}\n`);
+              fs.appendFileSync(githubOutput, `failed-files=${data.failedFiles}\n`);
+            }
+            if (data.files.length === 0) {
+              process.stdout.write("avoid-ai-writing-gate: no matching files; nothing to scan\n");
+            } else {
+              for (const f of data.files) {
+                const label = f.pass ? "PASS" : "FAIL";
+                const typeSummary = f.types.length ? ` [${f.types.join(", ")}]` : "";
+                process.stdout.write(`${label} ${f.path} — ${f.findings} finding(s), threshold ${data.threshold}${typeSummary}\n`);
+              }
+            }
+          ' "$TMP_JSON"
+        fi
+
+        rm -f "$TMP_JSON"
+        exit "$EXIT_CODE"
 branding:
   icon: edit-3
   color: purple

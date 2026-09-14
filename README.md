@@ -400,7 +400,8 @@ recalibration work such as #70.
 # .github/workflows/prose.yml
 steps:
   - uses: actions/checkout@v7
-  - uses: conorbronsdon/avoid-ai-writing@main
+  - id: gate
+    uses: conorbronsdon/avoid-ai-writing@main
     with:
       glob: "**/*.md"
       threshold: "6"
@@ -409,6 +410,25 @@ steps:
 
 For long-lived production workflows, pin `uses:` to a release tag or commit SHA
 that contains `action.yml`.
+
+The Action exposes step outputs via `$GITHUB_OUTPUT`:
+
+- `pass`: `'true'` when all scanned files are within threshold; `'false'` otherwise.
+- `total-findings`: total count of deterministic findings across scanned files.
+- `failed-files`: count of files exceeding the threshold.
+
+Downstream steps can consume these outputs:
+
+```yaml
+  - name: Report gate summary
+    if: always() && steps.gate.outputs.total-findings != ''
+    run: |
+      echo "Pass: ${{ steps.gate.outputs.pass }}"
+      echo "Total findings: ${{ steps.gate.outputs.total-findings }}"
+      echo "Failed files: ${{ steps.gate.outputs.failed-files }}"
+```
+
+The underlying `avoid-ai-writing-gate` CLI also accepts `--json` for machine-readable JSON output in custom scripts.
 
 `threshold` is the maximum number of deterministic findings allowed in **each**
 file. The shipped default is **6**, chosen from the current human-control corpus
