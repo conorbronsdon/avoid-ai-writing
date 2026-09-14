@@ -41,7 +41,10 @@ runs:
         AAW_SOURCE_MODE: ${{ inputs.source-mode }}
       run: |
         if [ -n "$GITHUB_OUTPUT" ]; then
-          echo "pass=false" >> "$GITHUB_OUTPUT"
+          if ! echo "pass=false" >> "$GITHUB_OUTPUT"; then
+            echo "avoid-ai-writing-gate: could not initialize action outputs" >&2
+            exit 2
+          fi
         fi
         TEMP_ROOT="${RUNNER_TEMP:-${TMPDIR:-/tmp}}"
         TMP_JSON="$(mktemp "$TEMP_ROOT/aaw-gate.XXXXXX")" || {
