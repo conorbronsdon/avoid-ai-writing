@@ -64,11 +64,18 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  # Pull requests share a stable group so newer commits cancel stale checks.
+  # Pushes use a unique group and always run to completion.
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # merge-base --is-ancestor in validate-openai-plugin.py needs history
           fetch-depth: 0

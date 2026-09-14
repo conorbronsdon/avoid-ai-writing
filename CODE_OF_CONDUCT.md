@@ -1,5 +1,8 @@
 # Contributor Covenant Code of Conduct
 
+> Draft proposal: adoption is pending a maintainer-designated private conduct
+> reporting contact. The commitments below are proposed, not an adopted policy.
+
 ## Our Pledge
 
 We as members, contributors, and leaders pledge to make participation in our
@@ -58,11 +61,14 @@ representative at an online or offline event.
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders responsible for enforcement at
-[@conorbronsdon](https://github.com/conorbronsdon) on GitHub (for example via
-a direct message when available, or by referencing this policy in a private
-channel the maintainer provides).
+A private contact for reports to this project's maintainers has not yet been
+designated. Do not post sensitive conduct reports in public issues. This
+proposal must remain unmerged until that contact is published here.
+
+For abuse on GitHub, use GitHub's existing
+[abuse-reporting process](https://docs.github.com/en/communities/maintaining-your-safety-on-github/reporting-abuse-or-spam).
+Reports sent to GitHub Support are handled by GitHub; they do not establish a
+private reporting route to this project's maintainers.
 
 All complaints will be reviewed and investigated promptly and fairly.
 

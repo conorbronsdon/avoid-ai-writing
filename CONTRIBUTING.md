@@ -20,9 +20,10 @@ others for fellow newcomers, including while your PR is awaiting review.
 
 You are also welcome to propose your own issues and ideas.
 
-If you've already contributed here, choose a `help wanted` issue without the
+> [!IMPORTANT]
+> If you've already contributed here, choose a `help wanted` issue without the
 `good first issue` label, propose another improvement, or help review and test
-newcomer PRs.
+newcomer PRs. Please leave `good first issue`s for new contributors. 
 
 ## How the repo fits together
 
@@ -98,6 +99,15 @@ The rules from the [#88 license audit](https://github.com/conorbronsdon/avoid-ai
 npm test
 ```
 
+`npm test` runs every suite via `scripts/run-tests.js` and prints a combined
+summary; earlier failures do not skip later files. To run one suite:
+
+```bash
+node scripts/run-tests.js detector/patterns.test.js
+# or invoke the file directly:
+node detector/patterns.test.js
+```
+
 This runs the engine fixtures and the `CATEGORIES.md` contract checks: every
 detector `type` must be documented, every documented type must be real, and every
 prose statement of the engine `type` total must match the code. All must pass. No
@@ -167,3 +177,6 @@ writing rule needs a minor version bump. Exempt changes need no version bump;
 leave published release entries intact.
 
 After changing either canonical file, run `bash scripts/sync-plugin-skill.sh && bash scripts/sync-cursor-rules.sh`. This regenerates both bundles, `SKILL.full.md`, and the portable paste/Cursor artifacts; CI checks parity. Do not edit generated copies.
+
+Maintainers should follow [the release recovery procedure](docs/releasing.md)
+instead of moving a tag or reusing a published version after a failed run.

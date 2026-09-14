@@ -69,5 +69,33 @@ assert.strictEqual(dashPrefixed.status, 1, dashPrefixed.stderr);
 assert.match(dashPrefixed.stdout, /-draft\.md/);
 assert.doesNotMatch(dashPrefixed.stderr, /unknown option/);
 
+// Exercise entry + configured args + filenames in pre-commit's actual order.
+// A separator baked into entry turns override options into filenames.
+const manifest = fs.readFileSync(path.join(__dirname, "../.pre-commit-hooks.yaml"), "utf8");
+const entry = manifest.match(/^  entry: (.+)$/m)[1].trim().split(/\s+/).slice(1);
+const defaultsMatch = manifest.match(/^  args: (.+)$/m);
+const defaultArgs = defaultsMatch ? JSON.parse(defaultsMatch[1]) : [];
+const hook = (args, filename = "-draft.md") => run([...entry, ...args, filename], gitRepo);
+const hookDefault = hook(defaultArgs);
+assert.strictEqual(hookDefault.status, 0, hookDefault.stderr);
+assert.match(hookDefault.stdout, /threshold 6/);
+const hookStrict = hook(["--threshold", "0", "--"]);
+assert.strictEqual(hookStrict.status, 1, hookStrict.stderr);
+assert.match(hookStrict.stdout, /^FAIL .*threshold 0/m);
+const hookPermissive = hook(["--threshold", "999", "--"]);
+assert.strictEqual(hookPermissive.status, 0, hookPermissive.stderr);
+assert.match(hookPermissive.stdout, /threshold 999/);
+fs.writeFileSync(path.join(gitRepo, "comment.md"), "<!-- " + FLAGGED + " -->\nThe deploy finished.\n", "utf8");
+assert.strictEqual(hook(["--threshold", "0", "--"], "comment.md").status, 0);
+assert.strictEqual(hook(["--threshold", "0", "--source-mode", "plain", "--"], "comment.md").status, 1);
+const hookContext = hook(["--context", "not-a-context", "--"]);
+assert.strictEqual(hookContext.status, 2);
+assert.match(hookContext.stderr, /context/);
+assert.doesNotMatch(hookContext.stderr, /ENOENT/);
+const hookSource = hook(["--source-mode", "not-a-mode", "--"]);
+assert.strictEqual(hookSource.status, 2);
+assert.match(hookSource.stderr, /source-mode/);
+assert.doesNotMatch(hookSource.stderr, /ENOENT/);
+
 fs.rmSync(tmp, { recursive: true, force: true });
 console.log("avoid-ai-writing gate cli: ok");

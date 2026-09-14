@@ -20,28 +20,18 @@ on:
       - 'bin/**'
       - 'action.yml'
       - '.pre-commit-hooks.yaml'
+  # This job is a required-check candidate, so it must report on every PR.
+  # Workflow-level path filters would leave unrelated PRs pending forever.
   pull_request:
-    paths:
-      - "detector/**"
-      - "scripts/**"
-      - "examples/**"
-      - "evals/**"
-      - "package.json"
-      - ".github/workflows/detector-test.yml"
-      - "README.md"
-      - "SKILL.md"
-      - "SKILL.full.md"
-      - "references/**"
-      - "dist/**"
-      - "CHANGELOG.md"
-      - "CONTRIBUTING.md"
-      - "PROOF.md"
-      - 'bin/**'
-      - 'action.yml'
-      - '.pre-commit-hooks.yaml'
 
 permissions:
   contents: read
+
+concurrency:
+  # Pull requests share a stable group so newer commits cancel stale checks.
+  # Pushes use a unique group and always run to completion.
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # Kept as a single job on purpose: branch protection pins required checks by
@@ -49,11 +39,12 @@ jobs:
   # updates the rule.
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: "20"
       - run: npm test

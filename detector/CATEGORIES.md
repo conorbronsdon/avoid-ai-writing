@@ -23,7 +23,7 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 
 | Detector `type` | Label | references/patterns.md section |
 |---|---|---|
-| `tier1` / `tier2` / `tier3` | AI vocabulary / Word cluster / Overused word | Words and phrases to replace (`load-bearing`: immediate abstract-noun allowlist only; literal, predicative, and unlisted forms pass) |
+| `tier1` / `tier2` / `tier3` | AI vocabulary / Word cluster / Overused word | Words and phrases to replace (`load-bearing`: immediate abstract-noun allowlist only; literal, predicative, and unlisted forms pass; `technical` context mode suppresses eight technical-legitimate terms: `robust`, `comprehensive`, `seamless`, `ecosystem`, `leverage`, `facilitate`, `underpin`, `streamline`) |
 | `tier1-clarity` | Wordiness | Words and phrases to replace (Tier 1B) |
 | `transition` | AI transition | Transition phrases to remove or rewrite |
 | `template-phrase` | Template phrase | Template phrases (avoid) |
@@ -42,7 +42,7 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 | `novelty-inflation` | Novelty inflation | Novelty inflation *(the invented-concept-labels sub-rule is LLM-judgment only — open-ended coinages aren't regex-matchable)* |
 | `real-actual-inflation` | "Real/actual" inflation | "Real/actual" adjective inflation |
 | `vague-attribution` | Vague attribution | Vague attributions |
-| `emotional-flatline` | Emotional flatline | Emotional flatline / Superficial -ing analyses |
+| `emotional-flatline` | Stock reaction framing | Stock reaction framing / Superficial -ing analyses *(stable API type; style-only for authorship scoring under the precision-first evidence policy)* |
 | `lingering-attention` | Lingering-attention claim | Lingering-attention claims *(noun-anchored frames only — the bare "I keep coming back to X" stays LLM-judgment, since a following reason clause makes it legitimate and isn't regex-detectable)* |
 | `cutoff-disclaimer` | Cutoff disclaimer | Cutoff disclaimers |
 | `false-concession` | False concession | False concession structure |
@@ -136,9 +136,11 @@ mistake their absence for a coverage gap:
 - Self-reference escape hatch
 - Output format
 
-> **Partial:** the skill's **Context profiles / Tolerance matrix / Auto-detection
-> cues** are partly realized by the engine's `options.contextMode`
-> (`general`, `technical`, `marketing`, `personal`). Only `technical` currently
-> changes flagging (e.g. suppresses context-inappropriate flags); `marketing` and
-> `personal` are accepted and reported in stats but score like `general`. Full
-> profile-based tolerance remains an LLM-side judgment.
+> **Partial:** the skill's six context profiles map to the engine's broader
+> `options.contextMode` values as documented in
+> `references/patterns.md#detector-mode-mapping`. Only `technical` currently
+> changes flagging behavior (skips title-case headers and suppresses eight
+> technical-legitimate terms: `robust`, `comprehensive`, `seamless`, `ecosystem`,
+> `leverage`, `facilitate`, `underpin`, `streamline`); `marketing` and `personal`
+> are accepted and reported in stats but score like `general`. Full profile-based
+> tolerance remains an LLM-side judgment.

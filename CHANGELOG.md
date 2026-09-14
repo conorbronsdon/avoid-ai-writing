@@ -6,13 +6,29 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [3.35.0] — 2026-09-13
+
+### Changed
+
+- Allow pre-commit `args` to override the gate defaults by moving the filename separator out of `entry` and into default `args` (#243).
+- Add npm package keywords, homepage, issue tracker, and author metadata.
+- Rename the user-facing "Emotional flatline" category to "Stock reaction framing" while preserving its `emotional-flatline` API type. Keep specific reactions, flag empty framing, and make the style finding neutral in authorship scoring until relevant positive evidence establishes a direction (#82).
+
 ### Added
 
+- Add an explicit OpenCode 1.18.30 executor for frozen rewrite-evaluation plans. It limits calls to the observed free-model allowlist, disables tools, verifies prompt and model receipts, retains failed attempts, and revalidates evidence before import. Model runs remain opt-in; benchmark judgments and release gates remain separate (#201).
+- Add opt-in `fp-measure.js --dump-units PATH` provenance records and a fixed-detector `fp-compare.js` comparison of legacy and repaired preprocessing. Reports include selected and skipped units, source spans, corpus hashes, detector exclusions, and zero-observation categories (#288, #289).
 - Package the deterministic detector as a composite GitHub Action and pre-commit hook, backed by a new `avoid-ai-writing-gate` CLI. The gate uses per-file finding counts rather than the composite score, defaults to `technical` + `rendered-markdown`, and uses a corpus-backed threshold of 6 findings per file (1.9% human-control failure rate across 376 documents, versus 31.4% at zero). Strict zero-findings policies remain available with an explicit threshold of 0. Preservation validation stays separate because it requires before/after inputs (#86).
 
 ### Fixed
 
+- Suppress eight technical-legitimate vocabulary terms (`robust`, `comprehensive`, `seamless`, `ecosystem`, `leverage`, `facilitate`, `underpin`, `streamline`) when analyzing text under `--context technical` mode (#237).
+
+- Keep mid-paragraph years and other ordered markers above one in prose during false-positive measurement; expose blank-separated continuation merges and distinct measurement/preprocessor fingerprints; and pair attached headings with their unique legacy body span in comparison output without changing source spans or unit IDs (#293).
+- Preserve Markdown structure and document content during corpus measurement. Separate structural cleanup from paragraph selection, retain eligible 400-word bodies after headings, and account for oversized units without silently deleting text. Keep tab-indented fences atomic, reject source hash mismatches, and construct scored rows from the verified source snapshot (#178, #179, #180, #288, #289).
+- Report top detection categories for documents the self-scan scores in chunks. `scoreLongText()` now counts issue types across every accepted chunk, so `scanFile()` returns a populated `topTypes` for a chunked file and the `--check` over-budget diagnostic names categories instead of printing `none` (#264).
 - Validate CLI `--unit` argument in `scripts/fp-measure.js` before starting measurement, exiting with code 2 on missing, unrecognized, or repeated values, and on `--unit=VALUE` syntax (`paragraph` and `document` accepted).
+- Accept acronyms (`AI`, `API`, `CLI`) and the capitalised single-letter function word `A` as interior tokens in the Title Case header rule, so headings like `## The Future Of AI In Production` and `## Why Your Team Needs A Better Testing Strategy` are flagged like the original tell. First and last tokens still require an ordinary Title Case word, so all-caps banner lines such as `## HTTP API REFERENCE` stay clean (#240).
 - Consume bodyless punctuation runs once when splitting sentence highlights, avoiding the quadratic punctuation-prefix regression introduced in #260 while preserving trailing-fragment boundaries.
 - Remove four quadratic scans from `analyzeText()`: the sentence splitter behind highlight regions, its boundary-whitespace trim in rendered-Markdown mode, the Markdown table delimiter test, and the line-anchored `Interesting part:` opener all rescanned a long whitespace or blank-line run from every position, so a document that ended in blank lines or carried a large masked comment block took seconds instead of milliseconds. Sentence boundaries are unchanged; the regression test compares them against the former regex on every boundary shape and asserts linear growth by ratio rather than by a wall-clock budget (#235).
 - Preserve detector issue indexes and sentence-highlight ranges against the original source after blockquote and normalization preprocessing (#189).

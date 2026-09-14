@@ -184,6 +184,92 @@ predate the plan's `created_at`; a result dated before the freeze is rejected.
 A failed or missing call leaves the comparison incomplete; log the error and
 rerun that task explicitly. Do not silently choose the best of several outputs.
 
+#### Optional OpenCode Zen executor
+
+`scripts/rewrite-eval-opencode.js` is an explicit, free-model executor for
+OpenCode 1.18.30. It does not change the frozen cases, prompts, metrics or
+reporting gates. It starts a new OpenCode process and session for every selected
+task, resolves a custom agent with every tool disabled, and stores the full
+OpenCode event stream and session export beside each result.
+
+OpenCode normally adds a coding-agent and environment system prompt. The
+executor loads a local file plugin that uses OpenCode's
+`experimental.chat.system.transform` hook to replace that assembled prompt with
+the plan's exact condition prompt immediately before dispatch. A second hook
+sets the frozen temperature, sampling and output-token parameters. Per-call
+audit files must exactly match the plan before a result is accepted. The task's
+user prompt is supplied over stdin and checked against the persisted session;
+OpenCode 1.18.30 adds display quotes when a multiline prompt is passed as one
+positional argument. `--pure` cannot be used for execution because it disables
+the audit plugin. The executor still sets sharing off, automatic updates off and
+all permissions to deny. It uses a dedicated config directory, disables project
+config discovery, enables only the OpenCode provider, and rejects the resolved
+configuration unless the generated audit plugin is the only external plugin,
+there are no provider or MCP overrides, and the resolved agent has no extra
+settings. Model audits pin the observed Zen URL and SDK transport and require
+every advertised cost dimension to be zero.
+This prevents another configured plugin from changing a message after an audit.
+
+The adapter accepts only the observed free Zen IDs `mimo-v2.5-free`,
+`ling-3.0-flash-fin-free` and `nemotron-3-ultra-free`, and only model settings it
+can apply and verify:
+
+```json
+{
+  "temperature": 0,
+  "top_p": null,
+  "top_k": null,
+  "max_output_tokens": 4096,
+  "provider_options": {},
+  "transport": "opencode-1.18.30-system-transform-v1",
+  "opencode_version": "1.18.30",
+  "model_alias_reproducibility": "Moving Zen alias; no immutable provider revision is exposed."
+}
+```
+
+Create an external runner configuration. Omit `task_ids` only after approving a
+complete run; a selected subset remains diagnostic and cannot satisfy the
+release policy.
+
+```json
+{
+  "schema_version": 1,
+  "purpose": "diagnostic",
+  "opencode_path": "/absolute/path/to/opencode",
+  "opencode_version": "1.18.30",
+  "timeout_ms": 420000,
+  "task_ids": ["CASE/MODEL/REPETITION/CONDITION"]
+}
+```
+
+Run and import only validated results:
+
+```bash
+node scripts/rewrite-eval-opencode.js run /tmp/plan.json /tmp/runner.json /tmp/run
+node scripts/rewrite-eval-opencode.js import /tmp/plan.json /tmp/run /tmp/results.json
+```
+
+The run directory is resumable but never retries a recorded failure or replaces
+a recorded success. Resume and import re-derive every request and revalidate the
+plugin, resolved config, no-tools agent, event stream, system and parameter
+audits (including every invocation when OpenCode repeats a hook), call timing,
+session export, model identity, cost, usage and result. A
+missing or contradictory receipt fails closed. Spawn errors and timeouts retain
+a failure record and batch status. Immutable artifacts use flushed temporary
+files and atomic no-clobber publication. If resume finds a malformed result, it
+moves the exact bytes to `invalid-result.json`, records a hashed failure and
+continues unrelated tasks; it never treats that file as a completed result.
+Interrupted config/plugin setup validates every existing artifact before it
+creates only the missing files, and conflicting contents still fail closed.
+Each run or import performs the full Git-backed plan/provenance check once (six
+pinned-file reads for this protocol); per-task and final row checks reuse that
+already-verified in-memory plan without launching 3,888 redundant Git jobs for
+a 648-task import. `opencode_path` must be absolute. Use a new directory for an explicit retry so
+the rejected attempt remains in the experiment record. A configuration with
+`task_ids` must use `purpose: "diagnostic"`. Zen's free model IDs are moving
+aliases; record that limitation and do not describe them as immutable model
+versions. A transport smoke test is diagnostic, not a benchmark result.
+
 ### Blind human review
 
 ```bash

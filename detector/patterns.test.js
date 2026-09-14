@@ -1083,6 +1083,25 @@ test('emotional-flatline opener fires at position 0 (no leading newline)', () =>
   assert.ok(types.has('emotional-flatline'), 'expected emotional-flatline at position 0');
 });
 
+test('emotional-flatline stays visible without moving the authorship score', () => {
+  // #82: compare nearly identical prose so the assertion isolates the category
+  // weight instead of assuming every other scoring input remains at zero.
+  const text = 'What surprised me most was the rollback time: eleven seconds across all three production hosts after the database migration completed without retries.';
+  const control = 'The detail I remember best was the rollback time: eleven seconds across all three production hosts after the database migration completed without retries.';
+  const r = AIDetector.analyzeText(text);
+  const baseline = AIDetector.analyzeText(control);
+  const hits = r.issues.filter((i) => i.type === 'emotional-flatline');
+  assert.deepEqual(baseline.issues, [], `control sentence must stay clean: ${JSON.stringify(baseline.issues)}`);
+  assert.deepEqual(r.issues.map((i) => i.type), ['emotional-flatline'], `target sentence has confounding findings: ${JSON.stringify(r.issues)}`);
+  assert.equal(hits.length, 1, `expected one emotional-flatline hit, got ${JSON.stringify(hits)}`);
+  assert.equal(r.score, baseline.score, `style-only emotional-flatline changed score from ${baseline.score} to ${r.score}`);
+  assert.deepEqual(
+    r.highlight_sentence_for_ai,
+    [],
+    `style-only emotional-flatline must not create AI sentence highlights: ${JSON.stringify(r.highlight_sentence_for_ai)}`,
+  );
+});
+
 test('bullet-np-list ignores bullets inside fenced code blocks', () => {
   // CLI flag docs / option dumps inside ``` fences are not prose AI
   // scaffolding. False-positive that would fire on most READMEs.
@@ -1745,6 +1764,39 @@ test('#62: an interior function word still flags, in both forms', () => {
   ]) {
     assert.equal(titleCaseHits(heading + HEADING_BODY).length, 1, `must flag: ${heading}`);
   }
+});
+
+test('#240: an acronym or single-letter function word in the title still flags', () => {
+  // `TITLE_CASE_HEADER` previously required every interior token to be
+  // [A-Z][a-z]+ or a lowercase function word, so a capitalised `A` and any
+  // all-caps acronym (AI, API, CLI) broke the whole match. These are the
+  // common shapes in the content this rule actually targets.
+  for (const heading of [
+    '## Why Your Team Needs A Better Testing Strategy',
+    '## The Future Of AI In Production',
+    '## Choosing A Database For Your Startup',
+    '## Building An API Driven Strategy',
+  ]) {
+    assert.equal(titleCaseHits(heading + HEADING_BODY).length, 1, `must flag: ${heading}`);
+  }
+});
+
+test('#240: an all-caps banner line is not a title-case header', () => {
+  // The first and last tokens must remain ordinary [A-Z][a-z]+ words, so a
+  // fully uppercase line like a section banner never matches.
+  assert.equal(
+    titleCaseHits('## HTTP API REFERENCE' + HEADING_BODY).length,
+    0,
+    'all-caps banner must not flag',
+  );
+});
+
+test('#240: unrelated single-letter capitals do not widen the rule', () => {
+  assert.equal(
+    titleCaseHits('## What X Means And Other Things' + HEADING_BODY).length,
+    0,
+    'only the capitalised function word A may be a one-letter interior token',
+  );
 });
 
 test('#62: fences that a parity count gets wrong', () => {
@@ -2566,6 +2618,39 @@ test('#235: table delimiter rows still mask with surrounding whitespace and CR',
   const notTable = 'A dash line --- followed by a code-base mention that is ordinary prose here.\n| --- |';
   const prose = AIDetector.analyzeText(notTable).issues.filter((issue) => issue.type === 'unnecessary-hyphenation');
   assert.equal(prose.length, 1, `prose next to a single-cell delimiter still edits: ${JSON.stringify(prose)}`);
+});
+
+test('#237: technical context mode suppresses technical-legitimate vocabulary terms', () => {
+  const text = 'We built a robust, comprehensive, seamless pipeline that can leverage the ecosystem to facilitate and streamline the work that underpin delivery. '.repeat(3);
+
+  const generalResult = AIDetector.analyzeText(text, { contextMode: 'general' });
+  const technicalResult = AIDetector.analyzeText(text, { contextMode: 'technical' });
+
+  // Verify all eight exception terms fire under general mode
+  const genIssueTexts = generalResult.issues.map((i) => i.text.toLowerCase());
+  const exemptTerms = ['robust', 'comprehensive', 'seamless', 'leverage', 'ecosystem', 'facilitate', 'streamline', 'underpin'];
+  for (const term of exemptTerms) {
+    assert.ok(genIssueTexts.includes(term), `general mode must report issue for "${term}"`);
+  }
+
+  // Verify all eight exception terms stay suppressed under technical mode
+  assert.equal(technicalResult.score, 0, 'technical mode must score 0 on technical-legitimate terms');
+  assert.equal(technicalResult.issues.length, 0, 'technical mode must report 0 issues for technical-legitimate terms');
+
+  // Verify inflections also stay clean under technical mode
+  const inflections = 'Leveraging the leveraged leverages of the ecosystems and seamlessly streamlining what facilitates and underpins the underpinning underpinnings.';
+  const techInflect = AIDetector.analyzeText(inflections, { contextMode: 'technical' });
+  assert.equal(techInflect.issues.length, 0, `technical mode must suppress inflections: ${JSON.stringify(techInflect.issues.map((i) => i.text))}`);
+
+  // Non-exempt terms must STILL fire under technical mode
+  // Include harness alongside another Tier 2 term (navigate) to satisfy cluster threshold (2+ per paragraph)
+  const nonExemptText = 'We delve into the tapestry and beacon to embark on a testament to a game-changer. We harness the power to navigate.';
+  const techNonExempt = AIDetector.analyzeText(nonExemptText, { contextMode: 'technical' });
+  const nonExemptIssueTexts = techNonExempt.issues.map((i) => i.text.toLowerCase());
+  const requiredNonExempt = ['delve', 'tapestry', 'beacon', 'embark', 'testament to', 'game-changer', 'harness'];
+  for (const term of requiredNonExempt) {
+    assert.ok(nonExemptIssueTexts.includes(term), `technical mode must still flag non-exempt term "${term}"`);
+  }
 });
 
 if (failed > 0) {

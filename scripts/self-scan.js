@@ -88,6 +88,8 @@ function applyExemptions(text) {
  * The detector refuses text over ~10k words. Long documents are scored in
  * paragraph-aligned chunks and reported by their worst chunk, which is the
  * conservative reading: a document is as machine-sounding as its worst section.
+ * Issue categories are counted across every accepted chunk so the over-budget
+ * diagnostic can name them, the same way the single-pass path does.
  */
 const CHUNK_WORDS = 4000;
 
@@ -112,12 +114,13 @@ function scoreLongText(text) {
     .map((chunk) => AIDetector.analyzeText(chunk))
     .filter((r) => !r.tooShort && r.label !== 'Text too long');
 
-  if (!results.length) return { score: 0, issues: 0, wordCount: 0, chunks: chunks.length };
+  if (!results.length) return { score: 0, issues: 0, wordCount: 0, chunks: chunks.length, topTypes: [] };
   return {
     score: Math.max(...results.map((r) => r.score)),
     issues: results.reduce((sum, r) => sum + r.issues.length, 0),
     wordCount: results.reduce((sum, r) => sum + (r.stats.wordCount || 0), 0),
     chunks: results.length,
+    topTypes: topTypes(results.flatMap((r) => r.issues)),
   };
 }
 
@@ -140,7 +143,11 @@ function topTypes(issues) {
   return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
 }
 
-function scanFile(rel) {
+/**
+ * Score one document. `budget` defaults to the tracked ceiling for `rel`;
+ * tests pass an explicit one to scan a fixture that is not in BUDGETS.
+ */
+function scanFile(rel, budget = BUDGETS[rel]) {
   const text = fs.readFileSync(path.join(ROOT, rel), 'utf8');
   const raw = score(text);
   const exempt = score(applyExemptions(text));
@@ -151,16 +158,22 @@ function scanFile(rel) {
     rawIssues: raw.issues,
     exemptScore: exempt.score,
     exemptIssues: exempt.issues,
-    budget: BUDGETS[rel],
-    overBudget: exempt.score > BUDGETS[rel],
+    budget,
+    overBudget: exempt.score > budget,
     chunked: raw.chunks > 1 ? raw.chunks : null,
     topTypes: exempt.topTypes || [],
   };
 }
 
+/** The line `--check` prints for a document over its budget. */
+function overBudgetDiagnostic(r) {
+  const categories = r.topTypes.map(([t, n]) => `${t}×${n}`).join(', ') || 'none';
+  return `${r.file} is over budget (${r.exemptScore} > ${r.budget}). Top categories: ${categories}`;
+}
+
 function main() {
   const args = process.argv.slice(2);
-  const rows = FILES.map(scanFile);
+  const rows = FILES.map((file) => scanFile(file));
 
   if (args.includes('--json')) {
     console.log(JSON.stringify({ generated_by: 'scripts/self-scan.js', rows }, null, 2));
@@ -186,7 +199,7 @@ function main() {
     );
     if (over.length) {
       for (const r of over) {
-        console.log(`  ${r.file} is over budget (${r.exemptScore} > ${r.budget}). Top categories: ${r.topTypes.map(([t, n]) => `${t}×${n}`).join(', ') || 'none'}`);
+        console.log(`  ${overBudgetDiagnostic(r)}`);
       }
     }
   }
@@ -203,4 +216,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { applyExemptions, scanFile, BUDGETS };
+module.exports = { applyExemptions, scanFile, overBudgetDiagnostic, BUDGETS };

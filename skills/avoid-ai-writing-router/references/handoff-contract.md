@@ -89,7 +89,11 @@ When detector signals are being used for an interpretation the detector does not
 
 `false-positive-reviewer` does not call the detector back directly. If additional signal collection is requested, it returns control to `avoid-ai-writing-router` with `return_to_router_reason: fresh_signal_collection_needed`. This prevents an unbounded reviewer-detector cycle.
 
-### GUARD
+## Conditional guards (not graph edges)
+
+Guards are declared in `skill-graph.json` `guards` and carried on the handoff envelope. They do not appear in `edges` and are not a seventh edge `type`.
+
+### Human representation preservation
 
 When the source is an image/video prompt or creative brief describing people, preserve identity, cultural, geographic, disability, age, attire, and physical-reality details as protected constraints. Rewriting may remove AI-writing style tells but must not genericize human representation.
 

@@ -1,7 +1,8 @@
 - id: avoid-ai-writing
   name: avoid-ai-writing deterministic prose gate
   description: Fail when a staged Markdown file exceeds the configured detector finding count.
-  entry: avoid-ai-writing-gate --context technical --source-mode rendered-markdown --threshold 6 --
+  entry: avoid-ai-writing-gate --context technical --source-mode rendered-markdown --threshold 6
+  args: ["--"]
   language: node
   files: \.mdx?$
   types: [text]

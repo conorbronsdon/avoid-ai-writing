@@ -49,7 +49,8 @@ const wordCount = (s) => (s.match(/\S+/g) || []).length;
 async function fetchFile(file, bytes) {
   const headers = bytes ? { Range: `bytes=0-${bytes}` } : {};
   const res = await fetch(BASE + file, { headers, signal: AbortSignal.timeout(180000) });
-  if (!res.ok && res.status !== 206) throw new Error(`HTTP ${res.status} for ${file}`);
+  if (bytes && res.status !== 206) throw new Error(`expected HTTP 206 for ${file}, got ${res.status}`);
+  if (!bytes && !res.ok) throw new Error(`HTTP ${res.status} for ${file}`);
   return res.text();
 }
 

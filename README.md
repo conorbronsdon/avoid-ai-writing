@@ -159,7 +159,7 @@ The [plugin package](./OPENAI_PLUGIN.md) keeps the canonical `SKILL.md` as its e
 - `preservation-verifier` — checks meaning and constraints before and after a rewrite
 - `false-positive-reviewer` — reviews detector findings that need context
 
-Build and validate the package with:
+From a cloned checkout, build and validate the package with:
 
 ```bash
 python3 scripts/package-openai-plugin.py . /tmp/avoid-ai-writing.zip --json
@@ -251,7 +251,7 @@ Trigger detect mode with: "detect," "flag only," "audit only," "just flag," "sca
 | 25 | **"Let's" constructions** | "Let's explore," "Let's break this down" | Just start with the point |
 | 26 | **Cutoff disclaimers** | "While details are limited in available sources..." | Find sources or remove |
 | 27 | **Generic conclusions** | "The future looks bright," "Only time will tell" | Specific closing thought or cut |
-| 28 | **Emotional flatline** | "What surprised me most," "I was fascinated to discover" | Earn the emotion or cut the claim |
+| 28 | **Stock reaction framing** | "What surprised me most," "I was fascinated to discover" | Keep specific, authentic reactions; cut empty stock framing or make the reaction concrete |
 | 29 | **Reasoning chain artifacts** | "Let me think step by step," "Breaking this down" | State conclusion, then evidence |
 | 30 | **Sycophantic tone** | "Great question!", "You're absolutely right!" | Remove entirely |
 | 31 | **Acknowledgment loops** | "You're asking about," "To answer your question" | Just answer directly |
@@ -365,6 +365,9 @@ It's also the single source of the numeric score: the skill itself (and `detect`
 npm install avoid-ai-writing-detector
 ```
 
+The npm package includes the detector runtime and CLI entry points, but not the
+repository's `scripts/` utilities. Clone the repository to run those scripts.
+
 ```js
 const AIDetector = require("avoid-ai-writing-detector");
 const { score, label, issues } = AIDetector.analyzeText("Your text here…");
@@ -396,7 +399,7 @@ recalibration work such as #70.
 ```yaml
 # .github/workflows/prose.yml
 steps:
-  - uses: actions/checkout@v4
+  - uses: actions/checkout@v7
   - uses: conorbronsdon/avoid-ai-writing@main
     with:
       glob: "**/*.md"
@@ -433,8 +436,16 @@ repos:
 
 Pin `rev` to a release tag or commit SHA in shared repositories. The hook scans
 staged `.md` / `.mdx` files with the same **6-findings** corpus-backed default.
-Override the entry in your pre-commit config when you need a stricter or more
-permissive finding threshold.
+Use `args` to override the threshold, context, or source mode:
+
+```yaml
+      - id: avoid-ai-writing
+        args: ["--threshold", "0", "--context", "technical", "--source-mode", "plain", "--"]
+```
+
+Pre-commit replaces the hook's default `args: ["--"]` when you provide `args`.
+End an overriding list with `"--"` to protect filenames that begin with a dash.
+The entry keeps its defaults; later options in `args` take precedence.
 
 The gate only **detects**. Preservation validation still requires an original and
 a rewritten file and remains a separate command:
@@ -503,12 +514,12 @@ optional `--style` input takes a house-style config you supply: a `register` lis
 the model applies, and a `mechanics` object whose checkable rules
 `scripts/check-style.js` verifies deterministically (quote form and Latin
 abbreviations gate the exit code; heading case, em-dash rate, and number spelling
-are advisory). [`examples/`](./examples/) has the schema. You can skip the input
+are advisory). This script requires a cloned checkout. [`examples/`](./examples/) has the schema. You can skip the input
 entirely and put your guide in your agent's context alongside a
 [voice profile](./references/patterns.md#voice-profiles), as instructions rather than as a checked
 rule set.
 
-After a rewrite, `node scripts/normalize-quotes.js draft.md --reference original.md`
+From a cloned checkout, after a rewrite, `node scripts/normalize-quotes.js draft.md --reference original.md`
 prints prose marks normalized to the original document's convention; add `--write`
 to save it. Explicit `--quotes straight|curly` overrides inference. It shares the
 checker's Markdown protection. See the
