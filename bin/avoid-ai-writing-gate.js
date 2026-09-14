@@ -137,7 +137,8 @@ function main(argv) {
       failedFiles += 1;
     }
     totalFindings += count;
-    fileEntries.push({ path: file, findings: count, pass: !over, types });
+    const outputPath = file.split(path.sep).join("/");
+    fileEntries.push({ path: outputPath, findings: count, pass: !over, types });
     if (!parsed.json) {
       const label = over ? "FAIL" : "PASS";
       const typeSummary = types.length ? ` [${types.join(", ")}]` : "";

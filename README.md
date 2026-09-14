@@ -413,9 +413,9 @@ that contains `action.yml`.
 
 The Action exposes step outputs via `$GITHUB_OUTPUT`:
 
-- `pass`: `'true'` when all scanned files are within threshold; `'false'` otherwise.
-- `total-findings`: total count of deterministic findings across scanned files.
-- `failed-files`: count of files exceeding the threshold.
+- `pass`: `'true'` when all scanned files are within threshold; `'false'` on a threshold failure or operational error.
+- `total-findings`: total count of deterministic findings across scanned files; unset on an operational error (exit 2).
+- `failed-files`: count of files exceeding the threshold; unset on an operational error (exit 2).
 
 Downstream steps can consume these outputs:
 

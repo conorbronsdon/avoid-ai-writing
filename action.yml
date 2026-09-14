@@ -20,13 +20,13 @@ inputs:
     default: rendered-markdown
 outputs:
   pass:
-    description: "Whether all scanned files passed within the threshold (true/false)."
+    description: "Whether all scanned files passed within the threshold (true/false); false on an operational error."
     value: ${{ steps.gate.outputs.pass }}
   total-findings:
-    description: "Total count of deterministic findings across all scanned files."
+    description: "Total count of deterministic findings across all scanned files; unset when the scan exits with an operational error."
     value: ${{ steps.gate.outputs.total-findings }}
   failed-files:
-    description: "Count of files that exceeded the threshold."
+    description: "Count of files that exceeded the threshold; unset when the scan exits with an operational error."
     value: ${{ steps.gate.outputs.failed-files }}
 runs:
   using: composite
@@ -43,7 +43,12 @@ runs:
         if [ -n "$GITHUB_OUTPUT" ]; then
           echo "pass=false" >> "$GITHUB_OUTPUT"
         fi
-        TMP_JSON="$(mktemp 2>/dev/null || mktemp -t aaw 2>/dev/null || echo "${RUNNER_TEMP:-/tmp}/aaw-gate-$$.json")"
+        TEMP_ROOT="${RUNNER_TEMP:-${TMPDIR:-/tmp}}"
+        TMP_JSON="$(mktemp "$TEMP_ROOT/aaw-gate.XXXXXX")" || {
+          echo "avoid-ai-writing-gate: could not create a temporary output file" >&2
+          exit 2
+        }
+        trap 'rm -f "$TMP_JSON"' EXIT
         set +e
         node "$GITHUB_ACTION_PATH/bin/avoid-ai-writing-gate.js" \
           --glob "$AAW_GLOB" \
@@ -55,6 +60,7 @@ runs:
         set -e
 
         if [ "$EXIT_CODE" -eq 0 ] || [ "$EXIT_CODE" -eq 1 ]; then
+          set +e
           node -e '
             const fs = require("fs");
             const raw = fs.readFileSync(process.argv[1], "utf8");
@@ -75,9 +81,14 @@ runs:
               }
             }
           ' "$TMP_JSON"
+          PARSE_EXIT=$?
+          set -e
+          if [ "$PARSE_EXIT" -ne 0 ]; then
+            echo "avoid-ai-writing-gate: could not parse gate JSON output" >&2
+            EXIT_CODE=2
+          fi
         fi
 
-        rm -f "$TMP_JSON"
         exit "$EXIT_CODE"
 branding:
   icon: edit-3
