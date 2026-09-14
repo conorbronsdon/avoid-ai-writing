@@ -70,15 +70,21 @@ case until then. All conditions use the same portable, no-tools environment. The
 exact skill entry and reference contents are included in the system prompt. This
 does not evaluate resource-loading efficiency.
 
-Rewrite mode still gives the skill conditions a four-section reporting format
-while the simple condition may return only prose. A common user instruction
-therefore requires every condition to place exactly one final artifact between
-the `<<<FINAL_REWRITE>>>` and `<<<END_FINAL_REWRITE>>>` boundary lines. If the
-skill's second pass changes section 2, only the corrected version in section 4
-goes between the boundaries. Result validation derives the complete payload
-from those markers; a reviewer cannot select a more favorable substring. This
-makes the prose sent to mechanical and human review the same kind of artifact
-without removing the skill's reporting behavior from the condition being tested.
+Skill snapshots can differ in their surrounding report: historical baselines
+may use the former four-section format, while current candidates present one
+final rewrite after review and available verification. A common user
+instruction therefore requires every condition to place exactly one final
+artifact between the `<<<FINAL_REWRITE>>>` and `<<<END_FINAL_REWRITE>>>`
+boundary lines. For a historical output where a second pass supersedes an
+earlier section, only the corrected version goes between the boundaries. Result
+validation derives the complete payload from those markers; a reviewer cannot
+select a more favorable substring. This keeps the frozen comparison compatible
+with old and new presentation contracts without changing the scored artifact.
+
+Manual forward checks for the current output, pass-budget, residual, and
+tool-status contract live in [`output-contract-scenarios.md`](./output-contract-scenarios.md).
+They supplement this frozen comparison and are not part of its cases, protocol,
+or score.
 
 ### Freeze a comparison
 
@@ -283,7 +289,7 @@ an extra or duplicated alias is rejected, and adjudication is counted per task,
 so a task judged twice through two aliases cannot stand in for one never judged.
 Reviewers may see the source and expected constraints but not condition labels.
 The packet contains the validated `final_text`, not the differently formatted
-`raw_output`, so the skill's four-section report cannot disclose its condition or
+`raw_output`, so the skill's surrounding report cannot disclose its condition or
 prime the judgment. Keep raw responses with the experiment record for a separate
 audit after judgments are frozen. The prose itself may still make a condition
 inferable: this is label blinding, not a guarantee that reviewers cannot infer

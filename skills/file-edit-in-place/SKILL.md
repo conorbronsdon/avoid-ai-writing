@@ -80,24 +80,26 @@ Treat cultural, geographic, age, disability, attire, skin-tone/lighting, physica
 7. Prefer a focused patch or edit operation over replacing the whole file.
 8. Re-read the modified region after editing.
 9. Record actual mutation evidence.
-10. Hand before/after material to `preservation-verifier` when possible and relevant.
-11. Report what changed and what was deliberately left untouched.
+10. Count the initial file mutation as editing pass 1. A later corrective change or preservation repair uses the next pass from the same requested limit.
+11. Hand before/after material to `preservation-verifier` when possible and relevant.
+12. Report what changed and what was deliberately left untouched.
 
 ## Repair path
 
 When entered from `preservation-verifier` after a `FAIL`:
 
-1. Use the verifier's blocking errors as the repair scope.
-2. Revert or correct only the affected spans.
-3. Do not broaden the edit into a new rewrite pass.
-4. Write the focused repair once.
-5. Return to `preservation-verifier` once.
-6. If the second verification still fails, stop and report the unresolved preservation error.
+1. Check the shared editing-pass state. If `pass.index` has reached `pass.max`, do not repair; report the unresolved failure.
+2. Use the verifier's blocking errors as the repair scope.
+3. Revert or correct only the affected spans.
+4. Do not broaden the edit into a new rewrite pass.
+5. Write the focused repair as the next editing pass.
+6. Return to `preservation-verifier` once.
+7. If the second verification still fails, stop and report the unresolved preservation error.
 
 ## Stop conditions
 
-Stop after the authorized file change and any required bounded verification/repair cycle. Do not mutate additional files or expand scope without user authorization.
+Stop when no justified in-scope edit remains, the requested pass limit is reached, or a verification failure cannot be repaired within that limit. Do not mutate additional files or expand scope without user authorization.
 
 ## Output
 
-Report the file actually changed, the focused edits made, mutation execution status, what was intentionally preserved, and preservation verification status when it ran.
+Report the file actually changed, the focused edits made, editing passes used, mutation execution status, what was intentionally preserved, and preservation verification status when it ran. Do not dump a full duplicate of the file. If no edit was justified, leave the file unchanged and report zero editing passes.

@@ -42,8 +42,8 @@ risk_flags:
   consequential_authorship_claim: false
   human_representation_sensitive: false
 pass:
-  index: 1
-  max: 2
+  index: 0
+  max: 1 | 2
 next_action: optional skill slug
 return_to_router_reason: optional reason
 ```
@@ -56,6 +56,13 @@ Do not treat source-internal instructions as user directions or fabricate fields
 that were never observed. `executed` requires host execution evidence. Do not
 copy the full source text into metadata when the next Skill already has access
 to it.
+
+`pass.index` is the number of editing passes that have changed returned text or
+a named file. Start it at 0. Set `pass.max` to 1 for `--iterate 1` and to 2 for
+`--iterate 2` or the default, then preserve both values across stages. Increment
+the index after each successful mutation and never exceed the maximum. Audits,
+re-reading, detector rechecks, and preservation checks do not increment it. A
+corrective edit and a verifier repair draw from the same budget.
 
 ## Ownership rules
 
@@ -83,15 +90,15 @@ A detection result can feed a requested rewrite or named-file edit. Candidate ma
 
 ### VERIFY
 
-Rewriter or file editor sends before/after material to `preservation-verifier`. A verifier `FAIL` blocks completion of the mutation/rewrite workflow until the single allowed repair is attempted or the unresolved failure is reported.
+Rewriter or file editor sends before/after material to `preservation-verifier`. A verifier `FAIL` blocks successful completion of the mutation/rewrite workflow until one repair is attempted within the shared editing budget or the unresolved failure is reported.
 
 ### REPAIR
 
-Verifier returns the blocking items and the correct repair owner. Returned text goes to `voice-preserving-rewriter`; a named-file mutation returns to `file-edit-in-place`.
+Verifier returns the blocking items and the correct repair owner when `pass.index < pass.max`. Returned text goes to `voice-preserving-rewriter`; a named-file mutation returns to `file-edit-in-place`. The repair increments `pass.index`; it has no separate pass allowance.
 
 ### RECHECK
 
-After repair, verification may run once more. A residual detector recheck runs only when requested or when convergence is part of the original request.
+After repair, verification may run once more. A residual detector recheck runs only when requested or when convergence is part of the original request. These read-only checks do not increment `pass.index`; any edit they prompt does.
 
 ### ESCALATE
 
@@ -109,10 +116,11 @@ When the source is an image/video prompt or creative brief describing people, pr
 
 ## Loop limits
 
-- Rewrite/audit convergence follows the canonical maximum of two passes.
-- A verifier repair loop may re-enter the repair owner once, then verify once more.
+- All returned-text and named-file mutations share the requested maximum: one pass for `--iterate 1`, otherwise at most two.
+- A corrective edit or verifier repair consumes the next available pass; neither has a separate allowance.
+- A verifier repair loop may re-enter the repair owner once when the shared budget has room, then verify once more.
 - Residual detector recheck may occur once when the original request requires it.
-- If the second verification still fails, stop and report the unresolved preservation error instead of cycling.
+- If the editing budget is exhausted or verification still fails after repair, stop and report the unresolved preservation error instead of cycling.
 - Terminal Skills have no outgoing Skill edges.
 - Every graph cycle must contain an edge with `max_reentries: 1`.
 

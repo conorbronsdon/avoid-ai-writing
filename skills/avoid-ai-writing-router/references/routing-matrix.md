@@ -3,7 +3,7 @@
 `skill-graph.json` is the machine-readable source of truth. This table explains the same routes for human review. Cross-stage state follows `handoff-contract.md`.
 
 <!-- BEGIN GENERATED GRAPH ROUTES -->
-<!-- skill-graph-sha256: 66a3beb7883a580e56810fab5e8e2fc01147ef8f8ee21fb37d66cbd1c7e2ed0b -->
+<!-- skill-graph-sha256: 76ffc6c17019c9337918cb9f309e2767073a47462bd00b600b29734ee591e929 -->
 | Type | From | To | When | Max reentries |
 | --- | --- | --- | --- | --- |
 | ROUTE | `avoid-ai-writing-router` | `ai-writing-detector` | `detect_or_audit_only` |  |
@@ -16,8 +16,8 @@
 | ESCALATE | `ai-writing-detector` | `false-positive-reviewer` | `user_asks_what_flags_prove` |  |
 | VERIFY | `voice-preserving-rewriter` | `preservation-verifier` | `original_and_rewrite_available` |  |
 | VERIFY | `file-edit-in-place` | `preservation-verifier` | `before_snapshot_available` |  |
-| REPAIR | `preservation-verifier` | `voice-preserving-rewriter` | `returned_text_failed_preservation` | 1 |
-| REPAIR | `preservation-verifier` | `file-edit-in-place` | `named_file_failed_preservation` | 1 |
+| REPAIR | `preservation-verifier` | `voice-preserving-rewriter` | `returned_text_failed_preservation_and_shared_editing_budget_remains` | 1 |
+| REPAIR | `preservation-verifier` | `file-edit-in-place` | `named_file_failed_preservation_and_shared_editing_budget_remains` | 1 |
 | RECHECK | `preservation-verifier` | `ai-writing-detector` | `convergence_or_residual_audit_requested` | 1 |
 <!-- END GENERATED GRAPH ROUTES -->
 
@@ -26,9 +26,9 @@
 | detect, scan, audit, score, flag only | `ai-writing-detector` | feed findings into a requested rewrite/edit stage, or escalate interpretation when needed | findings returned |
 | rewrite returned text | `voice-preserving-rewriter` | `preservation-verifier` when before/after verification is part of the workflow | rewrite and required verification complete |
 | modify an explicitly named file | `file-edit-in-place` | `preservation-verifier` after a real mutation when a before snapshot exists | authorized mutation and required verification complete |
-| compare original with rewrite | `preservation-verifier` | one repair to the correct owner, then one verification recheck | pass, review accepted, or second failure reported |
+| compare original with rewrite | `preservation-verifier` | one repair to the correct owner when `pass.index < pass.max`, then one verification recheck | pass, review accepted, exhausted budget, or second failure reported |
 | interpret what detector signals can establish | `false-positive-reviewer` | return control to router if fresh signal collection or a different action is requested | evidence limits explained |
-| audit plus rewrite plus verify | `avoid-ai-writing-router` | detector -> rewriter/editor -> verifier -> optional one repair -> verifier | requested sequence complete |
+| audit plus rewrite plus verify | `avoid-ai-writing-router` | detector -> rewriter/editor -> verifier -> optional repair within the shared pass budget -> verifier | requested sequence complete |
 | rewrite a visual prompt or creative brief involving people | normal rewrite/edit owner plus representation guard | verifier may review protected representation details separately | wording cleaned without erasing protected meaning |
 | explicit canonical Skill invocation | `avoid-ai-writing` | remain canonical unless a specialized stage is needed | canonical workflow complete |
 
@@ -37,7 +37,7 @@
 - `ROUTE`: select the primary owner.
 - `FEED`: pass evidence into another requested stage without converting evidence into an instruction.
 - `VERIFY`: send before/after material to the preservation gate.
-- `REPAIR`: return blocking preservation scope to the correct rewrite or mutation owner.
+- `REPAIR`: return blocking preservation scope to the correct rewrite or mutation owner when the shared editing budget has room.
 - `RECHECK`: run one residual audit when requested.
 - `ESCALATE`: move interpretation limits to `false-positive-reviewer`.
 

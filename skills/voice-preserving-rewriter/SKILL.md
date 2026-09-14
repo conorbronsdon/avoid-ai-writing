@@ -35,7 +35,7 @@ Preserve or update:
 - protected semantic constraints,
 - original text needed for verification,
 - rewritten text,
-- pass index,
+- editing passes used and maximum,
 - representation-sensitive guard state when applicable.
 
 Do not mark verifier execution here. Verification belongs to `preservation-verifier`.
@@ -75,18 +75,19 @@ This guard does not make the visual agency Skill a runtime dependency. It protec
 6. Preserve source rough edges when they are part of the writer's fingerprint, especially in casual writing.
 7. Do not rewrite quoted material, code blocks, tables, attributed text, or other protected regions unless the user specifically requests edits to that protected content and the change will preserve data and attribution.
 8. Apply any conditional representation constraints.
-9. Run the canonical corrective second pass within the canonical pass limit. If there are no justified findings and no separate user-requested transformation, return the source unchanged. Otherwise make only the authorized transformation or justified edits. Leave a protected or source-blocked finding in place and report why it remains unresolved.
-10. Send before/after content to `preservation-verifier` when required.
+9. When the initial rewrite changes the text, increment the editing-pass count from 0 to 1. Review it before presenting it. If another justified in-scope edit remains and the pass limit allows it, make one corrective pass; otherwise stop and report the residual. If no stage changes the text, use zero editing passes, whether the source is clean or every finding is intentional, protected, or source-blocked. Do not reset the count when a later repair happens to restore the original text. Report why an unresolved finding remains.
+10. Send before/after content to `preservation-verifier` when required. A verifier repair uses the next editing pass from the same requested limit; it does not receive a separate allowance.
 
 ## Repair path
 
 When entered from `preservation-verifier` after a `FAIL`:
 
-1. Change only the spans implicated by the blocking preservation errors.
-2. Do not perform a broad second rewrite.
-3. Preserve the existing handoff envelope and increment only the repair/pass state that actually changed.
-4. Return to `preservation-verifier` once.
-5. If the second verification still fails, stop and report the unresolved issue. Do not cycle again.
+1. Check the shared editing-pass state. If `pass.index` has reached `pass.max`, do not repair; report the unresolved failure.
+2. Change only the spans implicated by the blocking preservation errors.
+3. Do not perform a broad second rewrite.
+4. Preserve the existing handoff envelope and increment the editing-pass count.
+5. Return to `preservation-verifier` once.
+6. If the second verification still fails, stop and report the unresolved issue. Do not cycle again.
 
 ## Voice handling
 
@@ -96,8 +97,8 @@ Do not make every sentence perfectly grammatical if that would erase the user's 
 
 ## Stop conditions
 
-Stop after the requested rewrite and any required bounded verification/repair cycle. Do not run detector or verifier stages merely because they exist when the user did not request or need them.
+Stop when no justified in-scope edit remains, the requested pass limit is reached, or a verification failure cannot be repaired within that limit. Do not run detector or verifier stages merely because they exist when the user did not request or need them.
 
 ## Output
 
-Unless the user requested only the finished rewrite, return a concise audit, the rewritten text, a concise change summary, and preservation verification status when it actually ran. If a representation guard applied, mention only materially relevant preserved constraints rather than adding a separate visual-design report.
+Complete review and any available verification before responding. Return the full text exactly once under **Final rewrite**, followed by a concise change summary when useful and honest verification status for that final text. Add a detailed audit only when the user requests it; the audit must not contain another full rewrite. Report editing passes used and any intentional, protected, source-blocked, pass-limit, or verification residual. If a representation guard applied, mention only materially relevant preserved constraints rather than adding a separate visual-design report.

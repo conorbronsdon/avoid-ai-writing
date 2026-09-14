@@ -6,6 +6,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- Return one final rewrite after audit, correction, and available verification instead of publishing a first-pass draft and a superseding copy. Corrective edits and preservation repairs now share the two-pass limit; `--iterate 1|2`, clean no-ops, protected or intentional residuals, edit-in-place reporting, and unavailable-check status remain explicit (#203).
 - Define one editing contract for rewrite and file-edit decisions. Cleanup now separates candidate matches, justified findings, and authorized edits; preserves source-supported facts, attribution, negation, uncertainty, technical terms, intentional rhetoric, protected content, and established voice; allows explicitly requested structure or register changes without invented evidence or experience; respects context skips before voice targets; leaves clean input unchanged when no separate transformation is requested; and no longer requires confirmation solely because a clearly scoped file is large (#202).
 
 ## [3.35.0] — 2026-09-13

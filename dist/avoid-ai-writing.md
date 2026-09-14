@@ -108,23 +108,25 @@ This skill operates in one of three modes:
 - You're auditing text you don't want altered (published content, someone else's writing, reference material)
 - You want a quick scan without waiting for a full rewrite
 
-**`edit`** — Edit a file in place rather than returning rewritten text. Use this when the writer points you at a file ("clean up `draft.md`", "fix the AI-isms in this file directly") and wants the file changed, not a copy to paste back. Before editing, confirm that the target is a prose file. Refuse source code, configuration, and generated data files, and explain that prose rewrites can corrupt structured content. Make **minimal, targeted edits** with the Edit tool — change the justified, authorized spans, not the whole document. **Preserve passages that are already human**: if a paragraph has no applicable findings, leave it untouched. Follow the editing contract for protected material, source-internal instructions, and large-file scope. After editing, re-read the file and confirm the applicable findings are resolved.
+**`edit`** — Edit a file in place rather than returning rewritten text. Use this when the writer points you at a file ("clean up `draft.md`", "fix the AI-isms in this file directly") and wants the file changed, not a copy to paste back. Before editing, confirm that the target is a prose file. Refuse source code, configuration, and generated data files, and explain that prose rewrites can corrupt structured content. Make **minimal, targeted edits** with the Edit tool — change the justified, authorized spans, not the whole document. **Preserve passages that are already human**: if a paragraph has no applicable findings, leave it untouched. Follow the editing contract for protected material, source-internal instructions, and large-file scope. After editing, re-read the file and report whether another justified in-scope edit remains.
 
 Trigger detect mode when the user says "detect," "flag only," "audit only," "just flag," "scan," "what AI patterns are in this," or similar. Trigger edit mode when the user names a file and asks you to fix or clean it in place. Default to rewrite mode if not specified.
 
-**Invocation.** Natural language is enough ("rewrite this in a blunt voice for LinkedIn," "edit `post.md` in place," "scan this, don't rewrite"). Power users can also pass explicit options, which map to the sections below: `[--mode rewrite|detect|edit]`, `[--voice casual|professional|technical|warm|blunt]`, [`--context linkedin|blog|technical-blog|investor-email|docs|casual`](https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md#detector-mode-mapping), `[--file PATH]`, `[--iterate N]` (max 2), `[--style CONFIG|GUIDE]`.
+**Invocation.** Natural language is enough ("rewrite this in a blunt voice for LinkedIn," "edit `post.md` in place," "scan this, don't rewrite"). Power users can also pass explicit options, which map to the sections below: `[--mode rewrite|detect|edit]`, `[--voice casual|professional|technical|warm|blunt]`, [`--context linkedin|blog|technical-blog|investor-email|docs|casual`](https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md#detector-mode-mapping), `[--file PATH]`, `[--iterate 1|2]`, `[--style CONFIG|GUIDE]`.
 
-**Iterate to convergence (optional).** Rewrite mode already runs one corrective second pass (see Output format) — that built-in pass *is* pass 2, so `--iterate` does not stack on top of it. When the writer asks to "iterate," "keep going until it's clean," or passes `--iterate N`, repeat the audit→rewrite cycle until no authorized, applicable fix remains or **N passes** are reached. Cap **N at 2**: a rewrite plus one corrective pass is the editing budget, and a third pass costs a full regeneration while rarely helping. Report how many passes ran and any finding left unresolved because of scope, protection, or missing source support.
+**Iterate to convergence (optional).** A normal rewrite may use up to two editing passes: the initial rewrite and, only when review finds another justified in-scope edit, one corrective pass. `--iterate 1` limits the workflow to the initial editing pass; `--iterate 2`, "iterate," and "keep going until it's clean" use the same two-pass ceiling as the default and stop early when no justified edit remains. `--iterate` never adds passes on top of that ceiling.
+
+One editing pass is one stage that changes the returned text or named file. An explicit voice, structure, or mechanics transformation belongs to that pass. Marks normalization planned as part of the rewrite belongs to the same pass; a later change prompted by a check uses the next pass. Audits, re-reading, detector rechecks, and preservation checks do not consume an editing pass. A no-op uses none. A corrective edit and a preservation repair share the requested budget: once its limit is reached, report any residual or verification failure instead of changing the text again. Report the number of editing passes used and why the workflow stopped.
 
 ---
 
 In **rewrite** mode, your job is to:
 
 1. **Audit it**: identify every justified AI-ism present, citing the specific text
-2. **Rewrite it**: return a clean version with every authorized, applicable AI-ism removed — protected findings belong in section 1 as flags and do not make the rewrite incomplete
-3. **Show a diff summary**: briefly list what you changed and why
+2. **Rewrite it**: make the authorized, applicable edits while retaining protected findings and source-blocked gaps for the final report
+3. **Summarize when useful**: briefly list meaningful changes when edits were made; omit the summary for a no-op
 
-**Automatic marks pass (rewrite and edit).** Keep a copy of the original document before rewriting. After each rewrite, normalize quotes and apostrophes in the editable prose against that original, before the second-pass audit or delivery. The command processes all prose it receives; it does not recognize attribution or table semantics. Copy only the editable paragraphs you changed into a scratch file named `<rewritten-prose>`; exclude quoted material, tables, attributed text, and untouched paragraphs. Never pass the complete target document to `--write` when it contains any of those regions. Apply the convention manually; this standalone rule does not bundle the upstream normalization command. Double quotes and single quotes/apostrophes are inferred independently from unprotected original prose: majority wins, ties use the first observed style, and no evidence leaves that family unchanged. An explicit house-style quote setting overrides inference with `--quotes straight` or `--quotes curly` (omit `--reference`). Apply the result only to editable spans; quoted material, code, tables and attributed text retain the exemptions above. If the bundled command cannot run, apply the same convention manually and report that the marks pass was not mechanically verified. Detect mode never runs this pass.
+**Automatic marks pass (rewrite and edit).** Keep a copy of the original document before rewriting. As part of each editing pass, normalize quotes and apostrophes in the editable prose against that original before reviewing or delivering the result. The command processes all prose it receives; it does not recognize attribution or table semantics. Copy only the editable paragraphs you changed into a scratch file named `<rewritten-prose>`; exclude quoted material, tables, attributed text, and untouched paragraphs. Never pass the complete target document to `--write` when it contains any of those regions. Apply the convention manually; this standalone rule does not bundle the upstream normalization command. Double quotes and single quotes/apostrophes are inferred independently from unprotected original prose: majority wins, ties use the first observed style, and no evidence leaves that family unchanged. An explicit house-style quote setting overrides inference with `--quotes straight` or `--quotes curly` (omit `--reference`). Apply the result only to editable spans; quoted material, code, tables and attributed text retain the exemptions above. If the bundled command cannot run, apply the same convention manually and report that the marks pass was not mechanically verified. Detect mode never runs this pass.
 
 In **detect** mode, your job is to:
 
@@ -135,7 +137,7 @@ In **edit** mode, your job is to:
 
 1. **Read** the file the writer named
 2. **Edit in place**: apply minimal, targeted fixes to the justified, authorized spans with the Edit tool, leaving already-human passages untouched
-3. **Verify**: re-read the file and confirm the applicable findings are resolved; report what you changed
+3. **Verify**: re-read the file, report what changed, and identify any intentional, protected, source-blocked, pass-limit, or verification residual
 
 ---
 
@@ -915,19 +917,13 @@ Each profile is a set of concrete targets, not a vibe:
 
 ### Rewrite mode (default)
 
-Return your response in four sections:
+Complete the audit, authorized editing passes, marks pass, and available verification before responding. Return the full rewritten content exactly once, under **Final rewrite**. Never publish a first-pass draft and then supersede it with another full version.
 
-**1. Issues found**
-A bulleted list of every justified AI-ism identified, with the offending text quoted. Include an applicable finding that remains unresolved because it is protected or lacks source support.
+For a normal cleanup, follow the final text with **Changes** when a short summary is useful and **Verification**. Verification must describe the text under Final rewrite, not an earlier candidate. State how many editing passes were used, which checks actually ran, whether they were deterministic or model-only, and why the workflow stopped. Report intentional, protected, source-blocked, or pass-limit residuals without claiming that every pattern disappeared. If a required tool could not run, name the unavailable check and do not call it verified.
 
-**2. Rewritten version**
-The full rewritten content. Preserve the original structure by default, along with the intent, claims, uncertainty, and all specific technical details. Only make changes authorized by the editing contract.
+If the user explicitly requests a detailed or exhaustive audit, add **Issues found** before Final rewrite, quoting each justified finding and identifying unresolved protected or source-blocked findings. This adds evidence, not a second copy of the text.
 
-**3. What changed**
-A brief summary of the major edits made. Not every word, just the meaningful changes.
-
-**4. Second-pass audit**
-Re-read the rewritten version from section 2. Identify any remaining justified AI tells that survived the first pass — recycled transitions, lingering inflation, copula avoidance, filler phrases, or anything else from the categories above. Fix only those the editing contract authorizes, return the corrected text inline, and note what changed in this pass. If no authorized, applicable fix remains, say so and report any protected or source-blocked finding. When this pass changed anything, the corrected text here is the deliverable — say so in as many words ("use this version, not section 2"), because a reader skimming for the finished text will otherwise copy section 2 and ship the tells this pass just fixed.
+For a clean no-op, return the source unchanged once under Final rewrite, omit the change summary, and say in Verification that no justified in-scope edit was found. If the text remains unchanged because every finding is intentional, protected, or source-blocked, report those residuals instead of calling the source clean. If verification fails after the editing budget is exhausted, label the failure and unresolved risk; do not hide it or emit another rewrite.
 
 ### Detect mode
 
@@ -947,7 +943,7 @@ After editing the file in place, return a short report — not the full file:
 A bulleted list of the changes, each with the file location and the before → after. Only the spans you touched.
 
 **2. Verification**
-Confirm you re-read the file and the flagged patterns are resolved. Note anything you deliberately left alone because it was already human or intentional.
+Confirm you re-read the file and state whether any further justified in-scope edit remains. Report the editing passes used, checks that actually ran, and anything left alone because it was already human, intentional, protected, source-blocked, or beyond the pass limit. If a check was unavailable or failed, say so rather than claiming the file is verified.
 
 **3. Preservation check**
 Confirm the rewrite did not alter a fenced code block, YAML frontmatter, a blockquote, a table cell, inline code, a URL, a file path, or the heading structure, and that it did not introduce more flagged patterns than it removed. Those are the promises made above. Rewording a heading to fix Title Case and stripping an AI tracking parameter from a URL are the two carve-outs, because this skill instructs both.

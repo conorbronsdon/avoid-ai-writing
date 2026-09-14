@@ -12,7 +12,7 @@
       "id": "P2-voice-rewrite",
       "prompt": "Rewrite this LinkedIn draft to remove AI-isms, keep my blunt casual voice, and preserve every fact and number.",
       "expectedBehavior": "Route to voice-preserving-rewriter and apply the canonical rulebook with blunt voice cues and fact preservation.",
-      "expectedResultShape": "Short audit, rewritten draft, concise change summary, verification status if a deterministic comparison ran.",
+      "expectedResultShape": "Exactly one final rewritten draft after review, a concise change summary when useful, and honest verification status.",
       "fixture": "A LinkedIn draft with named facts, numbers, and a recognizable casual voice."
     },
     {
@@ -33,7 +33,7 @@
       "id": "P5-multistage-router",
       "prompt": "Audit this article, rewrite the bad AI patterns without flattening the voice, then verify that code, URLs, figures, and quotes survived.",
       "expectedBehavior": "Route through avoid-ai-writing-router, then detector, voice-preserving-rewriter, and preservation-verifier in sequence as capabilities permit.",
-      "expectedResultShape": "Audit findings, rewritten article, change summary, preservation result, and explicit distinction between executed and model-only checks.",
+      "expectedResultShape": "Audit findings, exactly one final rewritten article after all stages, a change summary, preservation result, editing-pass count, and explicit distinction between executed and model-only checks.",
       "fixture": "An article with ordinary prose plus code, URLs, figures, and quoted material."
     }
   ],

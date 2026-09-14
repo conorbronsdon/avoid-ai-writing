@@ -13,7 +13,7 @@ function violations(output) {
 const readme = fs.readFileSync(path.join(__dirname, '../README.md'), 'utf8');
 const demo = readme.split('## Quick demo\n')[1].split('\n## ')[0];
 assert.equal(demo.match(/\*\*Input:\*\*\n> (.+)/)[1], fixture.source);
-assert.deepEqual(violations(demo.match(/\*\*Output:\*\*\n> (.+)/)[1]), []);
+assert.deepEqual(violations(demo.match(/\*\*Final rewrite:\*\*\n> (.+)/)[1]), []);
 for (const output of fixture.acceptable_outputs) assert.deepEqual(violations(output), []);
 for (const {output, reason} of fixture.rejected_outputs) assert.ok(violations(output).length, reason);
 console.log('README demo fidelity checks passed (case-specific constraints only).');

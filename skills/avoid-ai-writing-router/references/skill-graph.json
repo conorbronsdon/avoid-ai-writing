@@ -65,8 +65,8 @@
     {"type": "ESCALATE", "from": "ai-writing-detector", "to": "false-positive-reviewer", "when": "user_asks_what_flags_prove"},
     {"type": "VERIFY", "from": "voice-preserving-rewriter", "to": "preservation-verifier", "when": "original_and_rewrite_available"},
     {"type": "VERIFY", "from": "file-edit-in-place", "to": "preservation-verifier", "when": "before_snapshot_available"},
-    {"type": "REPAIR", "from": "preservation-verifier", "to": "voice-preserving-rewriter", "when": "returned_text_failed_preservation", "max_reentries": 1},
-    {"type": "REPAIR", "from": "preservation-verifier", "to": "file-edit-in-place", "when": "named_file_failed_preservation", "max_reentries": 1},
+    {"type": "REPAIR", "from": "preservation-verifier", "to": "voice-preserving-rewriter", "when": "returned_text_failed_preservation_and_shared_editing_budget_remains", "max_reentries": 1},
+    {"type": "REPAIR", "from": "preservation-verifier", "to": "file-edit-in-place", "when": "named_file_failed_preservation_and_shared_editing_budget_remains", "max_reentries": 1},
     {"type": "RECHECK", "from": "preservation-verifier", "to": "ai-writing-detector", "when": "convergence_or_residual_audit_requested", "max_reentries": 1}
   ],
   "guards": [

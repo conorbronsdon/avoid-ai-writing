@@ -34,8 +34,8 @@ A `FAIL` is a blocking workflow result. The rewrite/edit stage is not complete m
 
 ### Outgoing
 
-- `REPAIR` to `voice-preserving-rewriter` when returned text failed preservation.
-- `REPAIR` to `file-edit-in-place` when a named file failed preservation.
+- `REPAIR` to `voice-preserving-rewriter` when returned text failed preservation and the shared editing budget has room.
+- `REPAIR` to `file-edit-in-place` when a named file failed preservation and the shared editing budget has room.
 - `RECHECK` to `ai-writing-detector` only when convergence or a residual audit was part of the user's request.
 - Stop on `PASS` unless another user-requested stage remains.
 - Stop and report on a second verification failure. Do not start another repair loop.
@@ -92,11 +92,11 @@ Protected content changed or disappeared. Identify the correct repair owner from
 - returned text -> `voice-preserving-rewriter`
 - named file -> `file-edit-in-place`
 
-Pass only the blocking repair scope and existing envelope. Do not ask the repair owner to redo clean parts.
+Pass only the blocking repair scope and existing envelope. Do not ask the repair owner to redo clean parts. If `pass.index` has reached `pass.max`, report the unresolved failure instead of requesting another mutation.
 
 ## Repair-loop limit
 
-One repair re-entry is allowed. After repair, verify once more. If that second check still fails, stop and report the unresolved errors. Never cycle indefinitely.
+At most one repair re-entry is allowed, and only while the requested editing budget has room. The repair consumes the next editing pass. Verification itself does not consume a pass. After repair, verify once more. If that check still fails, stop and report the unresolved errors. Never cycle indefinitely.
 
 ## Output
 

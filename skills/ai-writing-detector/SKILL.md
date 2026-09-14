@@ -85,7 +85,7 @@ If Node or shell execution is unavailable, perform the detect-only workflow from
 
 Stop here when the request is detect-only. Do not continue into rewrite, file mutation, or interpretation merely because those Skills are available.
 
-A residual `RECHECK` may run once. Respect the canonical two-pass limit and the graph's loop policy.
+A residual `RECHECK` may run once when requested. It is read-only and does not consume an editing pass; any change it prompts must fit within the requested editing-pass limit, capped at two, and the graph's loop policy.
 
 ## Output
 
