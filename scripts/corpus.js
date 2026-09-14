@@ -214,13 +214,21 @@ function writeCacheFile(destination, content) {
   const staged = path.join(stagingDir, 'content');
   try {
     fs.writeFileSync(staged, content, { flag: 'wx' });
-    try {
-      fs.renameSync(staged, destination);
-    } catch (err) {
-      if (err.code !== 'EEXIST' && err.code !== 'EPERM') throw err;
-      fs.rmSync(destination, { force: true });
-      fs.renameSync(staged, destination);
+    let collision;
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      try {
+        fs.renameSync(staged, destination);
+        return;
+      } catch (err) {
+        if (err.code !== 'EEXIST' && err.code !== 'EPERM') throw err;
+        collision = err;
+        fs.rmSync(destination, { force: true });
+        if (attempt < 3) {
+          Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 10 * (attempt + 1));
+        }
+      }
     }
+    throw collision;
   } finally {
     fs.rmSync(stagingDir, { recursive: true, force: true });
   }
@@ -486,5 +494,6 @@ module.exports = {
   applySlice,
   cmdList,
   fetchDoc,
+  writeCacheFile,
   FETCH_TIMEOUT_MS,
 };

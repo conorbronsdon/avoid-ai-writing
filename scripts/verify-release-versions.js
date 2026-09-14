@@ -39,6 +39,38 @@ function readPackageVersion(packageJsonText) {
   return { version };
 }
 
+function verifyVersionChanged(previousPackageJsonText, currentVersion) {
+  const previous = readPackageVersion(previousPackageJsonText);
+  if (previous.error) {
+    return { ok: false, message: `Previous package.json ${previous.error}` };
+  }
+  const current = readPackageVersion(JSON.stringify({ version: currentVersion }));
+  if (current.error) return { ok: false, message: current.error };
+  if (previous.version === currentVersion) {
+    return {
+      ok: false,
+      message:
+        `package.json version did not change (${currentVersion}) — push-triggered releases require a new version; ` +
+        'use workflow_dispatch only for documented recovery of an unchanged version.',
+    };
+  }
+  const previousParts = previous.version.split('.').map(BigInt);
+  const currentParts = currentVersion.split('.').map(BigInt);
+  let increased = false;
+  for (let index = 0; index < currentParts.length; index += 1) {
+    if (currentParts[index] === previousParts[index]) continue;
+    increased = currentParts[index] > previousParts[index];
+    break;
+  }
+  if (!increased) {
+    return {
+      ok: false,
+      message: `package.json version moved backward from ${previous.version} to ${currentVersion}`,
+    };
+  }
+  return { ok: true, previousVersion: previous.version, currentVersion };
+}
+
 /**
  * @param {string} root Repository root containing CHANGELOG.md and package.json
  * @returns {{ ok: true, changelogVersion: string, packageVersion: string } | { ok: false, message: string }}
@@ -100,6 +132,7 @@ function main(argv) {
   const args = argv.slice(2);
   let root = process.cwd();
   let githubOutput = null;
+  let previousPackageJson = null;
 
   for (let i = 0; i < args.length; i += 1) {
     if (args[i] === '--root') {
@@ -112,9 +145,16 @@ function main(argv) {
         process.exit(2);
       }
       i += 1;
+    } else if (args[i] === '--previous-package-json') {
+      previousPackageJson = args[i + 1];
+      if (typeof previousPackageJson !== 'string' || previousPackageJson.length === 0) {
+        process.stderr.write(`${formatGithubError('--previous-package-json requires a non-empty path')}\n`);
+        process.exit(2);
+      }
+      i += 1;
     } else if (args[i] === '--help' || args[i] === '-h') {
       process.stdout.write(
-        'Usage: node scripts/verify-release-versions.js [--root DIR] [--github-output FILE]\n',
+        'Usage: node scripts/verify-release-versions.js [--root DIR] [--github-output FILE] [--previous-package-json FILE]\n',
       );
       process.exit(0);
     } else {
@@ -127,6 +167,22 @@ function main(argv) {
   if (!result.ok) {
     process.stderr.write(`${formatGithubError(result.message)}\n`);
     process.exit(1);
+  }
+
+  if (previousPackageJson) {
+    let previousText;
+    try {
+      previousText = fs.readFileSync(previousPackageJson, 'utf8');
+    } catch {
+      process.stderr.write(`${formatGithubError('Could not read previous package.json')}\n`);
+      process.exit(1);
+    }
+    const changed = verifyVersionChanged(previousText, result.packageVersion);
+    if (!changed.ok) {
+      process.stderr.write(`${formatGithubError(changed.message)}\n`);
+      process.exit(1);
+    }
+    process.stdout.write(`package.json version changed from ${changed.previousVersion} to ${changed.currentVersion}\n`);
   }
 
   process.stdout.write(
@@ -143,6 +199,7 @@ module.exports = {
   SEMVER_RE,
   readChangelogVersion,
   readPackageVersion,
+  verifyVersionChanged,
   verifyReleaseVersions,
 };
 

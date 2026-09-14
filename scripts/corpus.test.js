@@ -19,6 +19,7 @@ const {
   sha256,
   cmdList,
   fetchDoc,
+  writeCacheFile,
   FETCH_TIMEOUT_MS,
   rowsFromText,
 } = require('./corpus.js');
@@ -38,6 +39,33 @@ function test(name, fn) {
 }
 
 console.log('\ncorpus helpers\n');
+
+test('cache replacement retries repeated Windows-style rename collisions', () => {
+  const id = 'corpus-cache-collision-test';
+  const cacheFile = path.join(__dirname, '..', 'corpus', 'cache', `${id}.txt`);
+  fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
+  fs.writeFileSync(cacheFile, 'old corpus text');
+  const originalRenameSync = fs.renameSync;
+  let destinationRenames = 0;
+  fs.renameSync = (source, destination) => {
+    if (destination === cacheFile && destinationRenames < 2) {
+      destinationRenames += 1;
+      const error = new Error('simulated replacement collision');
+      error.code = 'EPERM';
+      throw error;
+    }
+    destinationRenames += 1;
+    return originalRenameSync(source, destination);
+  };
+  try {
+    writeCacheFile(cacheFile, 'replacement corpus text');
+    assert.equal(destinationRenames, 3);
+    assert.equal(fs.readFileSync(cacheFile, 'utf8'), 'replacement corpus text');
+  } finally {
+    fs.renameSync = originalRenameSync;
+    fs.rmSync(cacheFile, { force: true });
+  }
+});
 
 test('constructs text and dataset rows from the supplied source snapshot', () => {
   const doc = { id: 'snapshot', source: { type: 'local' }, register: 'docs', class: 'human' };
