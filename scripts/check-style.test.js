@@ -187,11 +187,14 @@ t('example configs are generic, parse with register + mechanics', () => {
 
 // --- CLI exit codes: 0 clean, 1 hard, 2 tool error ---
 const cli = (mdText, cfgArg) => {
-  const f = path.join(os.tmpdir(), `cs-${passed}-${Math.floor(process.hrtime()[1])}.md`);
-  fs.writeFileSync(f, mdText);
-  const r = spawnSync('node', [path.join(__dirname, 'check-style.js'), f, '--config', cfgArg], { encoding: 'utf8' });
-  fs.unlinkSync(f);
-  return r.status;
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cs-cli-one-'));
+  const f = path.join(dir, 'input.md');
+  try {
+    fs.writeFileSync(f, mdText);
+    return spawnSync('node', [path.join(__dirname, 'check-style.js'), f, '--config', cfgArg], { encoding: 'utf8' }).status;
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 };
 t('CLI exits 0 clean, 1 on a hard violation, 2 on a tool error', () => {
   assert.strictEqual(cli('# ok\n\nplain text', 'technical'), 0);

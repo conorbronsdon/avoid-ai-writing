@@ -327,6 +327,32 @@ async function asyncTest(name, fn) {
 }
 
 (async () => {
+  await asyncTest('fetch validates cache ids and safely replaces cached content', async () => {
+    await assert.rejects(
+      () => fetchDoc({ id: '../outside', source: { type: 'url', url: 'https://example.invalid' } }, true),
+      /invalid document id/,
+    );
+
+    const server = http.createServer((_req, res) => {
+      res.writeHead(200, { 'content-type': 'text/plain' });
+      res.end('replacement corpus text');
+    });
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const { port } = server.address();
+    const id = 'corpus-safe-write-test';
+    const cacheFile = path.join(__dirname, '..', 'corpus', 'cache', `${id}.txt`);
+    fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
+    fs.writeFileSync(cacheFile, 'old corpus text');
+    try {
+      const result = await fetchDoc({ id, source: { type: 'url', url: `http://127.0.0.1:${port}/text` } }, true);
+      assert.equal(result.status, 'fetched');
+      assert.equal(fs.readFileSync(cacheFile, 'utf8'), 'replacement corpus text');
+    } finally {
+      server.close();
+      fs.rmSync(cacheFile, { force: true });
+    }
+  });
+
   await asyncTest('fetch times out with document id and host in the error', async () => {
     const server = http.createServer(() => {});
     await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));

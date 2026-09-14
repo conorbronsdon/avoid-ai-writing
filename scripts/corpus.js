@@ -202,7 +202,28 @@ function rowsFromText(doc, text) {
 }
 
 function cachePath(doc) {
+  if (typeof doc.id !== 'string' || !/^[a-z0-9][a-z0-9._-]*$/i.test(doc.id)) {
+    throw new Error(`invalid document id: ${JSON.stringify(doc.id)}`);
+  }
   return path.join(CACHE, `${doc.id}.txt`);
+}
+
+function writeCacheFile(destination, content) {
+  fs.mkdirSync(CACHE, { recursive: true });
+  const stagingDir = fs.mkdtempSync(path.join(CACHE, '.write-'));
+  const staged = path.join(stagingDir, 'content');
+  try {
+    fs.writeFileSync(staged, content, { flag: 'wx' });
+    try {
+      fs.renameSync(staged, destination);
+    } catch (err) {
+      if (err.code !== 'EEXIST' && err.code !== 'EPERM') throw err;
+      fs.rmSync(destination, { force: true });
+      fs.renameSync(staged, destination);
+    }
+  } finally {
+    fs.rmSync(stagingDir, { recursive: true, force: true });
+  }
 }
 
 /** Resolve a document's measured text, from cache or from its local path. */
@@ -232,8 +253,7 @@ async function fetchDoc(doc, force, opts = {}) {
     if (!builders[doc.source.dataset]) throw new Error(`unknown dataset: ${doc.source.dataset}`);
     const { build } = require(builders[doc.source.dataset]);
     const { jsonl, stats } = await build(doc.source.select, (m) => console.error(m));
-    fs.mkdirSync(CACHE, { recursive: true });
-    fs.writeFileSync(p, jsonl);
+    writeCacheFile(p, jsonl);
     const bytes = Buffer.byteLength(jsonl, 'utf8');
     return { id: doc.id, status: 'fetched', sha256: sha256(jsonl), words: null, stats, bytes };
   }
@@ -256,8 +276,7 @@ async function fetchDoc(doc, force, opts = {}) {
   if (doc.source.html) text = htmlToText(text, doc.source.html);
   text = applySlice(text, doc.slice);
 
-  fs.mkdirSync(CACHE, { recursive: true });
-  fs.writeFileSync(p, text);
+  writeCacheFile(p, text);
   const bytes = Buffer.byteLength(text, 'utf8');
   return {
     id: doc.id,
@@ -396,6 +415,10 @@ function cmdAddLocal(args) {
   };
   if (!id || !filePath) {
     console.error('usage: node scripts/corpus.js add-local <id> <path> --register R --author A --year Y [--title T]');
+    return 2;
+  }
+  if (!/^[a-z0-9][a-z0-9._-]*$/i.test(id)) {
+    console.error('id must contain only letters, numbers, dots, underscores, and hyphens');
     return 2;
   }
   const register = opt('register');

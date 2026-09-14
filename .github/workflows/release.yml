@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "CHANGELOG.md"
+      - "package.json"
   # Recovery dispatches must target main. The release environment enforces
   # that boundary again outside this editable workflow file.
   workflow_dispatch:
