@@ -70,10 +70,11 @@ For abuse on GitHub, use GitHub's existing
 Reports sent to GitHub Support are handled by GitHub; they do not establish a
 private reporting route to this project's maintainers.
 
-All complaints will be reviewed and investigated promptly and fairly.
+If adopted, project maintainers would review complaints received through the
+designated project contact promptly and fairly.
 
-All community leaders are obligated to respect the privacy and security of the
-reporter of any incident.
+Under this proposed policy, all community leaders would be obligated to respect
+the privacy and security of the reporter of any incident.
 
 ## Enforcement Guidelines
 
