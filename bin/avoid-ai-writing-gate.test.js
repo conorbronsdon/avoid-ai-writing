@@ -40,6 +40,14 @@ const badThreshold = run(["--threshold", "1.5", flagged]);
 assert.strictEqual(badThreshold.status, 2);
 assert.match(badThreshold.stderr, /invalid --threshold/);
 
+const unsafeThreshold = run(["--threshold", "999999999999999999999999999999", flagged]);
+assert.strictEqual(unsafeThreshold.status, 2);
+assert.match(unsafeThreshold.stderr, /invalid --threshold/);
+
+const infinityThreshold = run(["--threshold", "1".repeat(400), flagged]);
+assert.strictEqual(infinityThreshold.status, 2);
+assert.match(infinityThreshold.stderr, /invalid --threshold/);
+
 const noInput = run([]);
 assert.strictEqual(noInput.status, 2);
 assert.match(noInput.stderr, /provide at least one file or --glob/);

@@ -44,7 +44,9 @@ function parseArgs(argv) {
       if (arg === "--glob") options.glob = value;
       if (arg === "--threshold") {
         if (!/^\d+$/.test(value)) return { error: `invalid --threshold value: ${value}` };
-        options.threshold = Number(value);
+        const num = Number(value);
+        if (!Number.isSafeInteger(num) || num < 0) return { error: `invalid --threshold value: ${value}` };
+        options.threshold = num;
       }
       if (arg === "--context") {
         if (!CONTEXTS.includes(value)) return { error: `invalid --context value: ${value}` };

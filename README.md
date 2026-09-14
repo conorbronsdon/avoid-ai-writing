@@ -428,7 +428,25 @@ Downstream steps can consume these outputs:
       echo "Failed files: ${{ steps.gate.outputs.failed-files }}"
 ```
 
-The underlying `avoid-ai-writing-gate` CLI also accepts `--json` for machine-readable JSON output in custom scripts.
+The underlying `avoid-ai-writing-gate` CLI also accepts `--json` to emit structured JSON on stdout:
+
+```json
+{
+  "schemaVersion": 1,
+  "threshold": 6,
+  "context": "technical",
+  "sourceMode": "rendered-markdown",
+  "pass": false,
+  "totalFindings": 9,
+  "failedFiles": 1,
+  "files": [
+    { "path": "README.md", "findings": 2, "pass": true, "types": ["em-dash", "tier1"] },
+    { "path": "docs/guide.md", "findings": 7, "pass": false, "types": ["hedge-stack", "tier1", "tier2"] }
+  ]
+}
+```
+
+Top-level fields report `schemaVersion`, `threshold`, `context`, `sourceMode`, `pass` (boolean), `totalFindings`, `failedFiles`, and `files` (preserving scan order). Each file item reports `path`, `findings`, `pass`, and sorted distinct detector `types`. When no files match the input or glob, `files` is empty with `pass: true`.
 
 `threshold` is the maximum number of deterministic findings allowed in **each**
 file. The shipped default is **6**, chosen from the current human-control corpus

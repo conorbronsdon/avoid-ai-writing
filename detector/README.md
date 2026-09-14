@@ -55,7 +55,7 @@ Exit codes:
 - `1`: at least one file exceeds the threshold;
 - `2`: usage, glob-expansion, file-read, UTF-8, or unscannable-input error (including documents above the detector's 10,000-word limit).
 
-The `--json` flag formats scan results as structured JSON on standard output with `schemaVersion`, per-file counts, and aggregate totals.
+The `--json` flag formats scan results as structured JSON on standard output with `schemaVersion`, per-file entries (`path`, `findings`, `pass`, `types`), and aggregates (`pass`, `totalFindings`, `failedFiles`).
 
 The GitHub Action in `action.yml` exposes `glob`, `threshold`, `context`,
 and `source-mode` inputs, and outputs `pass`, `total-findings`, and `failed-files`.

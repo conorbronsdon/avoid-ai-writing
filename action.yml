@@ -40,6 +40,9 @@ runs:
         AAW_CONTEXT: ${{ inputs.context }}
         AAW_SOURCE_MODE: ${{ inputs.source-mode }}
       run: |
+        if [ -n "$GITHUB_OUTPUT" ]; then
+          echo "pass=false" >> "$GITHUB_OUTPUT"
+        fi
         TMP_JSON="$(mktemp 2>/dev/null || mktemp -t aaw 2>/dev/null || echo "${RUNNER_TEMP:-/tmp}/aaw-gate-$$.json")"
         set +e
         node "$GITHUB_ACTION_PATH/bin/avoid-ai-writing-gate.js" \
