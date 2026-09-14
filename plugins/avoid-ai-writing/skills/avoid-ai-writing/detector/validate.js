@@ -33,7 +33,55 @@
 
 const AIDetectorValidate = (() => {
   // ═══ Block extractors ══════════════════════════════════════════════
-  const FENCED_CODE = /^(?:```|~~~)[^\n]*\n[\s\S]*?^(?:```|~~~)[ \t]*$/gm;
+/**
+   * A small line-scanner walked over the text once and remembers the opening
+   * fence marker and its run length. A fence closes only on a line whose
+   * marker matches the opener, is at least as long, and carries no payload
+   * (just a closing fence, whitespace allowed). All fence content is captured
+   * as one span. An unclosed fence runs to end of document.
+   *
+   * Replaces the FENCED_CODE regex (GH-236): it closed on any single ~~~ or
+   * ``` line regardless of what opened the block, and it mis-respected
+   * markers shorter vs longer run-length. Regex can't express run lengths
+   * reliably, so this is a plain scan.
+   *
+   * The algorithm mirrors fenceRanges() in detector/patterns.js so both
+   * report the same boundaries for the same input.
+   */
+  function fenceSpans(text) {
+    const spans = [];
+    const lines = text.split('\n');
+    let cursor = 0;
+    let open = null; // { marker, len, start }
+
+    for (const line of lines) {
+      const markerMatch = line.match(/^[ \t]{0,3}(`{3,}|~{3,})/);
+      if (!open) {
+        if (markerMatch) {
+          open = { marker: markerMatch[1][0], len: markerMatch[1].length, start: cursor };
+        }
+      } else {
+        const isClose =
+          markerMatch &&
+          markerMatch[1][0] === open.marker &&
+          markerMatch[1].length >= open.len &&
+          /^[ \t]*\r?$/.test(line.slice(markerMatch[0].length));
+        if (isClose) {
+          spans.push([open.start, cursor + line.length]);
+          open = null;
+        }
+      }
+      cursor += line.length + 1; // +1 for the newline
+    }
+
+    if (open) spans.push([open.start, text.length]);
+    return spans;
+  }
+
+  /** The full text of each fenced code block, in document order. */
+  function fenceBlockTexts(text) {
+    return fenceSpans(text).map(([start, end]) => text.slice(start, end));
+  }
   const INLINE_CODE = /`[^`\n]+`/g;
   const YAML_FRONTMATTER = /^---\n[\s\S]*?\n---(?=\n|$)/;
   const BLOCKQUOTE_BLOCK = /(?:^[ \t]*>[^\n]*(?:\n[ \t]*>[^\n]*)*)/gm;
@@ -66,9 +114,17 @@ const AIDetectorValidate = (() => {
    * `|` in a code block reads as a table row.
    */
   function maskCode(text) {
-    return text
-      .replace(FENCED_CODE, (block) => block.replace(/[^\n]/g, ' '))
-      .replace(INLINE_CODE, (span) => ' '.repeat(span.length));
+    const out = text.split('');
+    // Blank out everything inside fenced code spans so fenced content reads as
+    // empty interior lines (their newlines are kept as line separators).
+    for (const [start, end] of fenceSpans(text)) {
+      // Fill the opened block inside the fence markers; keep newlines so
+      // downstream offsets stay aligned.
+      for (let i = start; i < end; i += 1) {
+        if (out[i] !== '\n') out[i] = ' ';
+      }
+    }
+    return out.join('').replace(INLINE_CODE, (span) => ' '.repeat(span.length));
   }
 
   function normalizeUrl(u) {
@@ -214,8 +270,8 @@ const AIDetectorValidate = (() => {
     rewritten = rewritten.replace(/\r\n/g, '\n');
 
     // ── Fenced code: exact, in order. Code is never the skill's business. ──
-    const origFenced = extractAll(FENCED_CODE, original);
-    const newFenced = extractAll(FENCED_CODE, rewritten);
+    const origFenced = fenceBlockTexts(original);
+    const newFenced = fenceBlockTexts(rewritten);
     if (origFenced.length !== newFenced.length) {
       err('code-block-count', `Fenced code blocks changed in number: ${origFenced.length} → ${newFenced.length}.`);
     } else if (origFenced.some((block, i) => block !== newFenced[i])) {
