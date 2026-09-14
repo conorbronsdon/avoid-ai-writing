@@ -245,18 +245,24 @@ with tempfile.TemporaryDirectory() as temp_dir:
 with tempfile.TemporaryDirectory() as temp_dir:
     root = Path(temp_dir)
     make_valid_plugin_root(root)
-    skill_dir = root / "skills" / "missing-name"
-    skill_dir.mkdir()
+    skill_dir = root / "skills" / "avoid-ai-writing"
     skill_path = skill_dir / "SKILL.md"
     skill_path.write_text(
-        "---\ndescription: Fixture without a name\n---\n# Missing name\n\nTest body.\n",
+        "---\nname: avoid-ai-writing\n---\n# Missing description\n\nTest body.\n",
         encoding="utf-8",
     )
-    agents_dir = skill_dir / "agents"
-    agents_dir.mkdir()
-    (agents_dir / "openai.yaml").write_text(PREFIX + "  products: [CHAT]\n", encoding="utf-8")
     errors, _, _ = MODULE.validate(root)
-    assert errors == [f"{skill_path}: name, description, and body are required"]
+    assert f"{skill_path}: name, description, and body are required" in errors
+
+with tempfile.TemporaryDirectory() as temp_dir:
+    root = Path(temp_dir)
+    make_valid_plugin_root(root)
+    skill_dir = root / "skills" / "avoid-ai-writing"
+    skill_path = skill_dir / "SKILL.md"
+    text = skill_path.read_text(encoding="utf-8")
+    skill_path.write_text(text.replace("name: avoid-ai-writing\n", "", 1), encoding="utf-8")
+    errors, _, _ = MODULE.validate(root)
+    assert errors == [], errors
 
 for payload in ("[]", "null"):
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -367,13 +373,14 @@ with tempfile.TemporaryDirectory() as temp_dir:
         assert any("symlink not allowed in plugin surface: LICENSE" in error for error in errors)
 
 # The OpenAI copy of the canonical skill must drop the frontmatter `metadata`
-# block (the portal rejects it) and otherwise match root SKILL.md exactly.
+# block (the portal rejects it) and the redundant `name` field.
 ROOT_SKILL = (REPO_ROOT / "SKILL.md").read_text(encoding="utf-8")
 assert "\nmetadata:\n" in ROOT_SKILL, "fixture assumption: root SKILL.md carries a metadata block"
-STRIPPED = MODULE.strip_frontmatter_metadata(ROOT_SKILL)
+STRIPPED = MODULE.openai_canonical_skill_copy(ROOT_SKILL)
 ROOT_HEAD, ROOT_BODY = ROOT_SKILL.split("\n---\n", 1)
 STRIPPED_HEAD, STRIPPED_BODY = STRIPPED.split("\n---\n", 1)
 assert "metadata:" not in STRIPPED_HEAD
+assert "name:" not in STRIPPED_HEAD
 assert "\nversion:" in STRIPPED_HEAD and "\nlicense:" in STRIPPED_HEAD and "\ncompatibility:" in STRIPPED_HEAD
 assert STRIPPED_BODY == ROOT_BODY, "body must be untouched"
 assert MODULE.strip_frontmatter_metadata("no frontmatter\nmetadata:\n  x: y\n") == "no frontmatter\nmetadata:\n  x: y\n"
@@ -391,16 +398,22 @@ assert STRIP("---\nname: x\nmetadata:\n  author: y\n# note\n  repository: z\nlic
 assert STRIP("---\nname: x\nmetadata:extra: keep\n---\nBody\n") == "---\nname: x\nmetadata:extra: keep\n---\nBody\n"
 # missing closing delimiter: not a frontmatter, untouched
 assert STRIP("---\nname: x\nmetadata:\n  author: y\nBody\n") == "---\nname: x\nmetadata:\n  author: y\nBody\n"
-# the CLI path sync-plugin-skill.sh uses must be byte-exact with the function
+# sync-plugin-skill.sh uses --openai-canonical-skill-copy; metadata-only strip keeps `name`
 import subprocess
-cli = subprocess.run(
+metadata_only = subprocess.run(
     [sys.executable, str(MODULE_PATH), "--strip-frontmatter-metadata", str(REPO_ROOT / "SKILL.md")],
     capture_output=True, check=True,
 )
-assert cli.stdout == STRIPPED.encode("utf-8"), "CLI output differs from strip_frontmatter_metadata"
+assert metadata_only.stdout == MODULE.strip_frontmatter_metadata(ROOT_SKILL).encode("utf-8")
+openai_copy = subprocess.run(
+    [sys.executable, str(MODULE_PATH), "--openai-canonical-skill-copy", str(REPO_ROOT / "SKILL.md")],
+    capture_output=True, check=True,
+)
+assert openai_copy.stdout == STRIPPED.encode("utf-8"), "CLI output differs from openai_canonical_skill_copy"
 assert STRIPPED == (REPO_ROOT / "skills" / "avoid-ai-writing" / "SKILL.md").read_text(encoding="utf-8"), (
     "run bash scripts/sync-plugin-skill.sh; the OpenAI copy is out of date"
 )
+assert "name:" not in (REPO_ROOT / "SKILL.full.md").read_text(encoding="utf-8").split("\n---\n", 1)[0]
 
 with tempfile.TemporaryDirectory() as temp_dir:
     root = Path(temp_dir)

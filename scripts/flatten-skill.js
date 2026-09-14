@@ -1,6 +1,15 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
+function stripRedundantNameFromFrontmatter(text) {
+  if (!text.startsWith('---\n')) return text;
+  const end = text.indexOf('\n---\n', 4);
+  if (end < 0) return text;
+  const inner = text.slice(4, end);
+  const kept = inner.split('\n').filter((line) => !/^name:/.test(line));
+  return `---\n${kept.join('\n')}\n---\n${text.slice(end + 5)}`;
+}
+
 function flatten(root) {
   let front = fs.readFileSync(path.join(root, 'SKILL.md'), 'utf8').replace(/\r\n/g, '\n');
   const reference = fs.readFileSync(path.join(root, 'references/patterns.md'), 'utf8').replace(/\r\n/g, '\n');
@@ -16,7 +25,7 @@ function flatten(root) {
     front = front.replace(marker, () => content);
   }
   if (/<!-- patterns:/.test(front)) throw new Error('Unknown pattern include marker');
-  return front;
+  return stripRedundantNameFromFrontmatter(front);
 }
 if (require.main === module) {
   const root = path.resolve(__dirname, '..');

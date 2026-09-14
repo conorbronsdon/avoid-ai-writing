@@ -6,6 +6,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- Drop redundant `name` frontmatter from the generated `SKILL.full.md` and OpenAI bundled `skills/avoid-ai-writing/SKILL.md` copy; the directory name remains authoritative per Agent Skills convention (#259).
+
 ### Added
 
 - Add machine-readable `--json` output to `avoid-ai-writing-gate` and expose `pass`, `total-findings`, and `failed-files` step outputs in the GitHub Action (#252).
