@@ -62,6 +62,11 @@ runs:
         EXIT_CODE=$?
         set -e
 
+        if [ "$EXIT_CODE" -ne 0 ] && [ "$EXIT_CODE" -ne 1 ] && [ "$EXIT_CODE" -ne 2 ]; then
+          echo "avoid-ai-writing-gate: gate process exited unexpectedly with status $EXIT_CODE" >&2
+          EXIT_CODE=2
+        fi
+
         if [ "$EXIT_CODE" -eq 0 ] || [ "$EXIT_CODE" -eq 1 ]; then
           set +e
           node -e '

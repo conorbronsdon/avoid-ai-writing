@@ -174,6 +174,7 @@ assert.match(action, /trap 'rm -f "\$TMP_JSON"' EXIT/);
 assert.match(action, /EXIT_CODE=2/);
 assert.match(action, /could not create a temporary output file/);
 assert.match(action, /could not initialize action outputs/);
+assert.match(action, /gate process exited unexpectedly with status \$EXIT_CODE/);
 assert.match(action, /unset when the scan exits with an operational error/g);
 
 fs.rmSync(tmp, { recursive: true, force: true });
