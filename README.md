@@ -396,20 +396,23 @@ The repository also ships a deterministic gate that fails on **finding count per
 file**, not the composite 0–100 score. That keeps CI policy independent of score
 recalibration work such as #70.
 
+[View Avoid AI Writing Gate on the GitHub Marketplace](https://github.com/marketplace/actions/avoid-ai-writing-gate),
+or add it directly to a workflow:
+
 ```yaml
 # .github/workflows/prose.yml
 steps:
   - uses: actions/checkout@v7
   - id: gate
-    uses: conorbronsdon/avoid-ai-writing@main
+    uses: conorbronsdon/avoid-ai-writing@v3.35.0
     with:
       glob: "**/*.md"
       threshold: "6"
       context: technical
 ```
 
-For long-lived production workflows, pin `uses:` to a release tag or commit SHA
-that contains `action.yml`.
+The example pins the release tag. For stricter supply-chain controls, pin
+`uses:` to the full commit SHA for that release.
 
 The Action exposes step outputs via `$GITHUB_OUTPUT`:
 

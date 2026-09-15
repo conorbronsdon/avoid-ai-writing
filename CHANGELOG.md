@@ -12,6 +12,8 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- Link the GitHub Marketplace listing from the Action instructions and pin the
+  example workflow to the released `v3.35.0` tag.
 - Make acknowledgment loops a judgment-only rule. The detector no longer reports the `acknowledgment-loop` type: its three phrases also open ordinary email, support, and docs replies ("To answer your question from Tuesday: ...", "You're asking about the retry limit. It is five by default ..."), and "the question of whether" is standard analytical English. The engine now exposes 53 issue types. The skill keeps the rule, with the deletion test and carve-outs (#239).
 
 ### Fixed
