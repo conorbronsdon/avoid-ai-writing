@@ -2743,6 +2743,51 @@ test('reply openers and analytical framing are not reported as acknowledgment lo
   }
 });
 
+test('#241: unsegmented-script documents are declined, not scored "Too short"', () => {
+  // countWords counts \S+ runs; Chinese and Japanese carry no inter-word
+  // spaces, so segmentation cannot measure them. The script check runs
+  // before the word gate and declines only when CJK characters dominate
+  // the non-whitespace text. Han + kana ranges (including halfwidth
+  // katakana) signal an unsegmented script; Hangul is space-separated and
+  // segments fine, so it is excluded.
+  const zh = '这个函数返回一个承诺，调用方不应假设句柄之后仍可重用。'.repeat(50);
+  const rzh = AIDetector.analyzeText(zh);
+  assert.equal(rzh.label, 'Unsupported script', `expected Unsupported script, got ${rzh.label}`);
+  assert.equal(rzh.unsupportedScript, true);
+  assert.equal(rzh.document_classification, 'UNSCORED');
+  assert.ok(rzh.stats.cjkChars > 0, 'stats must carry the cjkChars count');
+  assert.match(rzh.stats.reason, /unsegmented-script/);
+
+  const ja = 'この関数はプロミスを返します。呼び出し側は、ハンドルがその後も再利用できると仮定してはいけません。'.repeat(40);
+  assert.equal(AIDetector.analyzeText(ja).label, 'Unsupported script');
+
+  // Halfwidth katakana (U+FF66–U+FF9D) is also an unsegmented script.
+  const jaHw = 'ﾃｽﾄ'.repeat(100);
+  assert.equal(AIDetector.analyzeText(jaHw).label, 'Unsupported script');
+
+  // Newline-wrapped CJK lines each count as a word, so the script check
+  // must not sit inside the minimum word-count condition.
+  const zhLines = Array(10).fill('这个函数返回一个承诺。').join('\n');
+  assert.equal(AIDetector.analyzeText(zhLines).label, 'Unsupported script');
+
+  // A genuinely short English document still reports Too short.
+  const en = AIDetector.analyzeText('Short text here.');
+  assert.equal(en.label, 'Too short');
+  assert.equal(en.unsupportedScript, undefined);
+
+  // An incidental CJK place name in a short English document is not an
+  // unsegmented-script document: the dominance check keeps it scorable.
+  const mixed = AIDetector.analyzeText('The Tokyo (東京) office owns the retry limit docs.');
+  assert.equal(mixed.label, 'Too short');
+  assert.equal(mixed.unsupportedScript, undefined);
+
+  // Korean is space-separated: it segments and scores normally.
+  const ko = '이 함수는 프라미스를 반환합니다. 호출자는 핸들이 나중에 재사용 가능하다고 가정해서는 안 됩니다. '.repeat(30);
+  const rko = AIDetector.analyzeText(ko);
+  assert.notEqual(rko.label, 'Unsupported script');
+  assert.equal(rko.unsupportedScript, undefined);
+});
+
 if (failed > 0) {
   console.error(`\n${failed} test(s) failed`);
   process.exit(1);

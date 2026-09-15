@@ -59,6 +59,24 @@ assert.strictEqual(oversized.status, 2, oversized.stderr);
 assert.match(oversized.stderr, /detector limit exceeded/);
 assert.doesNotMatch(oversized.stdout, /^PASS /m);
 
+// An unsegmented-script document (Chinese/Japanese: no inter-word spaces) is
+// declined, not scored; the gate must exit 2 rather than pass silently (#241).
+const cjk = path.join(tmp, "cjk.md");
+fs.writeFileSync(cjk, "这个函数返回一个承诺，调用方不应假设句柄之后仍可重用。".repeat(50), "utf8");
+const cjkRun = run([cjk]);
+assert.strictEqual(cjkRun.status, 2, cjkRun.stderr);
+assert.match(cjkRun.stderr, /unsegmented-script document/);
+assert.doesNotMatch(cjkRun.stdout, /^PASS /m);
+
+// A short English document with an incidental CJK place name is not an
+// unsegmented-script document: the dominance check keeps it scorable, so
+// the gate must not exit 2 on it (#241 review follow-up).
+const mixed = path.join(tmp, "mixed.md");
+fs.writeFileSync(mixed, "The Tokyo (東京) office owns the retry limit docs.", "utf8");
+const mixedRun = run([mixed]);
+assert.notStrictEqual(mixedRun.status, 2, mixedRun.stderr);
+assert.doesNotMatch(mixedRun.stderr, /cannot scan/);
+
 const gitRepo = path.join(tmp, "repo");
 fs.mkdirSync(gitRepo);
 spawnSync("git", ["init", "-q"], { cwd: gitRepo });

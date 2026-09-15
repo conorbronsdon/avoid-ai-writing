@@ -129,6 +129,25 @@ try {
     for (const r of rows) assert.strictEqual(r.budget, BUDGETS[r.file], `${r.file} scanned against budget ${r.budget}`);
   });
 
+  t('an unsupported-script document is declined, not scored as clean', () => {
+    const row = scanFile(fixture('cjk.md', '这个函数返回一个承诺，调用方不应假设句柄之后仍可重用。'.repeat(50)));
+    assert.strictEqual(row.declined, true);
+    assert.strictEqual(row.rawScore, 0);
+    assert.strictEqual(row.exemptIssues, 0);
+    assert.strictEqual(row.overBudget, false);
+  });
+
+  t('a chunked unsegmented-script document is declined, not scored as clean', () => {
+    // One-word-per-paragraph Chinese paragraphs take the chunked path, and
+    // every chunk is CJK-dominated: the scan must be marked declined rather
+    // than aggregated as a clean zero score.
+    const paragraphs = new Array(LONG_DOCUMENT_WORDS + 500).fill('这个函数返回一个承诺。');
+    const row = scanFile(fixture('chunked-cjk.md', paragraphs.join('\n\n')));
+    assert.ok(row.chunked >= 2, 'fixture must take the chunked path');
+    assert.strictEqual(row.declined, true);
+    assert.deepStrictEqual(row.topTypes, []);
+  });
+
   t('the over-budget diagnostic still prints none when nothing was detected', () => {
     const line = overBudgetDiagnostic({ file: 'x.md', exemptScore: 1, budget: 0, topTypes: [] });
     assert.strictEqual(line, 'x.md is over budget (1 > 0). Top categories: none');
