@@ -397,6 +397,29 @@ test('#190: many HTML comments avoid quadratic rescanning', () => {
   );
 });
 
+test('adversarial Markdown scans stay within a bounded time', () => {
+  const ordinary = 'one two three four five six seven eight nine ten';
+  const attacks = [
+    `${ordinary} ${'`'.repeat(2500)}${'a'.repeat(2500)}`,
+    `${ordinary} ${'<a'.repeat(10000)}`,
+    `## 1.1.1${'\t'.repeat(20000)}— x\n${ordinary}`,
+    `## 1.1.${'1'.repeat(64000)}]x — 2026-01-01\n${ordinary}`,
+    `- ${' '.repeat(10000)}X\rY\n${ordinary}`,
+  ];
+  for (const text of attacks) {
+    const started = performance.now();
+    AIDetector.analyzeText(text);
+    const elapsedMs = performance.now() - started;
+    assert.ok(elapsedMs < 900, `adversarial scan took ${elapsedMs.toFixed(1)}ms`);
+  }
+});
+
+test('version-heading dash carve-out does not swallow prose after a closed version label', () => {
+  const text = '## [1.1.1] Not a version label — 2026-01-01\n\nOne two three four five six seven eight nine ten.';
+  const issues = AIDetector.analyzeText(text).issues.filter((issue) => issue.type === 'em-dash');
+  assert.equal(issues.length, 1, 'text after a closed version label must keep its prose dash visible');
+});
+
 test('repeated Tier 1 phrase does not inflate score linearly', () => {
   const single = AIDetector.analyzeText('We delve into the landscape of many things today.');
   const fivefold = AIDetector.analyzeText(
@@ -1799,6 +1822,54 @@ test('#240: unrelated single-letter capitals do not widen the rule', () => {
   );
 });
 
+test('#314: first-person I can appear inside a Title Case heading', () => {
+  assert.equal(
+    titleCaseHits('## What I Learned And Why It Matters' + HEADING_BODY).length,
+    1,
+    'a first-person title with a targeted capitalized function word must flag',
+  );
+  for (const heading of [
+    '## What X Learned And Why It Matters',
+    '## What I learned and why it matters',
+    '## What I Learned About Writing',
+  ]) {
+    assert.equal(titleCaseHits(heading + HEADING_BODY).length, 0, `must not flag: ${heading}`);
+  }
+});
+
+test('#291: blank lines do not manufacture a longer heading', () => {
+  // `\s+` between words also eats newlines, so two unrelated lines could
+  // combine into one heading match that neither line independently satisfies.
+  // The repro from #290's fixed-corpus review.
+  const filler = Array.from({ length: 30 }, (_, i) => 'word' + i).join(' ');
+  const cases = [
+    ['## Benefits\n\nOf Good Writing\n\n' + filler, 'blank-line separated fragments'],
+    ['## Benefits\nOf Good Writing\n\n' + filler, 'adjacent-line fragments'],
+    ['## Benefits\r\n\r\nOf Good Writing\r\n\r\n' + filler, 'CRLF variants'],
+  ];
+  for (const [text, why] of cases) {
+    assert.equal(
+      titleCaseHits(text).length,
+      0,
+      `must not combine lines into a heading: ${why}`,
+    );
+  }
+});
+
+test('#291: a single physical line still flags with horizontal whitespace', () => {
+  const filler = Array.from({ length: 30 }, (_, i) => 'word' + i).join(' ');
+  assert.equal(
+    titleCaseHits('## Benefits And Strategic Considerations\n\n' + filler).length,
+    1,
+    'a real one-line heading must still flag',
+  );
+  assert.equal(
+    titleCaseHits('##\tBenefits And Strategic Considerations\n\n' + filler).length,
+    1,
+    'tab-indented heading still flags',
+  );
+});
+
 test('#62: fences that a parity count gets wrong', () => {
   const f3 = '```';
   const f4 = '````';
@@ -2650,6 +2721,25 @@ test('#237: technical context mode suppresses technical-legitimate vocabulary te
   const requiredNonExempt = ['delve', 'tapestry', 'beacon', 'embark', 'testament to', 'game-changer', 'harness'];
   for (const term of requiredNonExempt) {
     assert.ok(nonExemptIssueTexts.includes(term), `technical mode must still flag non-exempt term "${term}"`);
+  }
+});
+
+test('reply openers and analytical framing are not reported as acknowledgment loops (#239)', () => {
+  // Acknowledgment loops are judgment-only: these phrases also open ordinary
+  // replies, and "the question of whether" is standard analytical English. The
+  // tell is a restatement that adds nothing, which the engine cannot read.
+  const clean = [
+    'The question of whether the effect persists after controlling for income is still open, and the two replications disagree with each other.',
+    'To answer your question from Tuesday: the invoice went out on the 3rd and the payment cleared last week, so nothing is outstanding on our side.',
+    "You're asking about the retry limit. It is five by default and configurable with RETRY_MAX, though we do not recommend raising it past ten.",
+  ];
+  for (const text of clean) {
+    for (const contextMode of [undefined, 'technical']) {
+      const r = AIDetector.analyzeText(text, contextMode ? { contextMode } : {});
+      const hits = r.issues.filter((i) => /question of whether|answer your question|asking about/i.test(i.text));
+      assert.deepEqual(hits.map((i) => `${i.type}:${i.text}`), [], `${contextMode || 'default'}: ${text}`);
+      assert.ok(!r.issues.some((i) => i.type === 'acknowledgment-loop'));
+    }
   }
 });
 

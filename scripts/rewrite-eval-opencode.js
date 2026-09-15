@@ -69,12 +69,22 @@ function safeId(id) {
   return crypto.createHash('sha256').update(id).digest('hex').slice(0, 24);
 }
 
+function checkExecutablePath(executable, platform = process.platform) {
+  assert(typeof executable === 'string' && executable, 'runner config opencode_path required');
+  const pathApi = platform === 'win32' ? path.win32 : path.posix;
+  assert(pathApi.isAbsolute(executable), 'runner config opencode_path must be absolute');
+  if (platform === 'win32') {
+    const stableRoot = /^(?:[A-Za-z]:[\\/]|[\\/]{2}[^\\/]+[\\/][^\\/]+)/.test(executable);
+    assert(stableRoot, 'runner config opencode_path must include a drive letter or UNC share on Windows');
+    assert(/\.exe$/i.test(executable), 'runner config opencode_path must point to a native .exe executable on Windows, not a command shim');
+  }
+}
+
 function checkConfig(config, plan) {
   assert(config && typeof config === 'object' && !Array.isArray(config), 'runner config must be an object');
   assert.equal(config.schema_version, 1, 'runner config schema_version must be 1');
   assert(['diagnostic', 'comparison'].includes(config.purpose), 'runner config purpose must be diagnostic or comparison');
-  assert(typeof config.opencode_path === 'string' && config.opencode_path, 'runner config opencode_path required');
-  assert(path.isAbsolute(config.opencode_path), 'runner config opencode_path must be absolute');
+  checkExecutablePath(config.opencode_path);
   assert.equal(config.opencode_version, '1.18.30', 'this adapter is pinned to OpenCode 1.18.30');
   assert(Number.isInteger(config.timeout_ms) && config.timeout_ms > 0, 'runner config timeout_ms must be positive');
   if (config.task_ids !== undefined) {
@@ -574,7 +584,7 @@ function runTask(context, task) {
     const sessions = [...new Set(events.map((event) => event.sessionID).filter(Boolean))];
     assert.equal(sessions.length, 1, `${task.id}: expected one OpenCode session ID`);
     const exported = command(config.opencode_path, ['export', sessions[0], '--pure'], { env: taskEnv, cwd: taskDir, timeout: config.timeout_ms });
-    assert.equal(exported.status, 0, `${task.id}: opencode export failed: ${exported.stderr.trim()}`);
+    requireCommand(exported, `${task.id}: opencode export failed`);
     writeExclusive(path.join(taskDir, 'session-export.json'), exported.stdout);
     const receipt = JSON.parse(exported.stdout);
     assert.equal(receipt.info?.version, config.opencode_version, `${task.id}: session export OpenCode version differs`);
@@ -690,6 +700,6 @@ if (require.main === module) {
 }
 
 module.exports = {
-  AGENT, TRANSPORT, checkConfig, effectiveParams, importResults, openCodeConfig,
+  AGENT, TRANSPORT, checkConfig, checkExecutablePath, effectiveParams, importResults, openCodeConfig,
   parseEvents, pluginSource, run, safeId, writeExclusiveAtomic,
 };

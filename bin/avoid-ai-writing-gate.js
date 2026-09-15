@@ -17,6 +17,7 @@ Options:
   --threshold <count>                     Maximum findings per file (default: 6)
   --context <general|technical|marketing|personal>  Detector context (default: technical)
   --source-mode <plain|rendered-markdown>  Source mode (default: rendered-markdown)
+  --json                                   Emit machine-readable JSON on stdout
   -h, --help                               Show this help
 
 Examples:
@@ -28,13 +29,14 @@ const CONTEXTS = ["general", "technical", "marketing", "personal"];
 const SOURCE_MODES = ["plain", "rendered-markdown"];
 
 function parseArgs(argv) {
-  const options = { help: false, glob: null, threshold: 6, context: "technical", sourceMode: "rendered-markdown", files: [] };
+  const options = { help: false, json: false, glob: null, threshold: 6, context: "technical", sourceMode: "rendered-markdown", files: [] };
   let endOfOptions = false;
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (endOfOptions) { options.files.push(arg); continue; }
     if (arg === "--") { endOfOptions = true; continue; }
     if (arg === "-h" || arg === "--help") { options.help = true; continue; }
+    if (arg === "--json") { options.json = true; continue; }
     if (["--glob", "--threshold", "--context", "--source-mode"].includes(arg)) {
       const value = argv[i + 1];
       if (value === undefined) return { error: `${arg} requires a value` };
@@ -42,7 +44,9 @@ function parseArgs(argv) {
       if (arg === "--glob") options.glob = value;
       if (arg === "--threshold") {
         if (!/^\d+$/.test(value)) return { error: `invalid --threshold value: ${value}` };
-        options.threshold = Number(value);
+        const num = Number(value);
+        if (!Number.isSafeInteger(num) || num < 0) return { error: `invalid --threshold value: ${value}` };
+        options.threshold = num;
       }
       if (arg === "--context") {
         if (!CONTEXTS.includes(value)) return { error: `invalid --context value: ${value}` };
@@ -91,8 +95,28 @@ function main(argv) {
     files.push(...expanded.files);
   }
   files = [...new Set(files.map((file) => path.normalize(file)))];
-  if (files.length === 0) { process.stdout.write("avoid-ai-writing-gate: no matching files; nothing to scan\n"); return 0; }
+  if (files.length === 0) {
+    if (parsed.json) {
+      const emptyPayload = {
+        schemaVersion: 1,
+        threshold: parsed.threshold,
+        context: parsed.context,
+        sourceMode: parsed.sourceMode,
+        pass: true,
+        totalFindings: 0,
+        failedFiles: 0,
+        files: []
+      };
+      process.stdout.write(JSON.stringify(emptyPayload, null, 2) + "\n");
+      return 0;
+    }
+    process.stdout.write("avoid-ai-writing-gate: no matching files; nothing to scan\n");
+    return 0;
+  }
   let failed = false;
+  let totalFindings = 0;
+  let failedFiles = 0;
+  const fileEntries = [];
   for (const file of files) {
     const input = readUtf8(file);
     if (input.error) { process.stderr.write(`avoid-ai-writing-gate: ${input.error}\n`); return 2; }
@@ -108,10 +132,31 @@ function main(argv) {
     const count = result.issues.length;
     const types = [...new Set(result.issues.map((issue) => issue.type))].sort();
     const over = count > parsed.threshold;
-    if (over) failed = true;
-    const label = over ? "FAIL" : "PASS";
-    const typeSummary = types.length ? ` [${types.join(", ")}]` : "";
-    process.stdout.write(`${label} ${file} — ${count} finding(s), threshold ${parsed.threshold}${typeSummary}\n`);
+    if (over) {
+      failed = true;
+      failedFiles += 1;
+    }
+    totalFindings += count;
+    const outputPath = file.split(path.sep).join("/");
+    fileEntries.push({ path: outputPath, findings: count, pass: !over, types });
+    if (!parsed.json) {
+      const label = over ? "FAIL" : "PASS";
+      const typeSummary = types.length ? ` [${types.join(", ")}]` : "";
+      process.stdout.write(`${label} ${file} — ${count} finding(s), threshold ${parsed.threshold}${typeSummary}\n`);
+    }
+  }
+  if (parsed.json) {
+    const payload = {
+      schemaVersion: 1,
+      threshold: parsed.threshold,
+      context: parsed.context,
+      sourceMode: parsed.sourceMode,
+      pass: !failed,
+      totalFindings,
+      failedFiles,
+      files: fileEntries
+    };
+    process.stdout.write(JSON.stringify(payload, null, 2) + "\n");
   }
   return failed ? 1 : 0;
 }

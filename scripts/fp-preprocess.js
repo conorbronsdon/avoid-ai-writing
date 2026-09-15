@@ -107,6 +107,10 @@ function classify(lines) {
     const opener = lines[i].text.match(FENCE);
     if (!opener) continue;
     const marker = opener[1][0];
+    // CommonMark forbids backticks in the info string of a backtick fence.
+    // Without this guard, an inline span such as ```js``` consumes the rest of
+    // the document as an unclosed fenced block.
+    if (marker === '`' && opener[2].includes('`')) continue;
     const length = opener[1].length;
     let end = lines.length - 1;
     for (let j = i + 1; j < lines.length; j++) {
@@ -129,13 +133,59 @@ function classify(lines) {
 
   // A dash line is a setext underline when it follows eligible title text;
   // otherwise the same shape is a thematic break.
-  for (let i = 0; i + 1 < lines.length; i++) {
-    if (kinds[i].length || isBlank(lines[i]) || kinds[i + 1].includes('fenced-code')) continue;
-    if (!SETEXT.test(lines[i + 1].text)) continue;
-    if (ATX.test(lines[i].text) || LIST.test(lines[i].text) || QUOTE.test(lines[i].text) || INDENTED.test(lines[i].text)) continue;
-    addKind(kinds[i], 'setext-heading');
-    addKind(kinds[i + 1], 'setext-heading');
-    i += 1;
+  const startsNonEmptyList = (index) => {
+    const marker = index >= 0 ? lines[index].text.match(LIST) : null;
+    return Boolean(marker
+      && /\S/.test(lines[index].text.slice(marker[0].length))
+      && startsListRun(lines, kinds, indentedCode, index));
+  };
+  const startsOpenQuoteParagraph = (index) => {
+    if (index < 0 || !QUOTE.test(lines[index].text)) return false;
+    const content = lines[index].text.replace(/^(?:[ \t]*>[ \t]?)+/, '');
+    const listMarker = content.match(LIST);
+    if (listMarker) return /\S/.test(content.slice(listMarker[0].length));
+    return /\S/.test(content)
+      && !ATX.test(content)
+      && !FENCE.test(content)
+      && !THEMATIC.test(content)
+      && !QUOTE.test(content);
+  };
+  const startsContainer = (index) => index >= 0
+    && (startsOpenQuoteParagraph(index) || startsNonEmptyList(index));
+  const followsLooseList = (index) => {
+    if (index <= 0 || !LIST_CONTINUATION.test(lines[index].text) || !isBlank(lines[index - 1])) return false;
+    let previous = index - 1;
+    while (previous >= 0) {
+      if (isBlank(lines[previous])) {
+        previous -= 1;
+        continue;
+      }
+      if (kinds[previous].length) return false;
+      if (startsNonEmptyList(previous)) return true;
+      if (!LIST_CONTINUATION.test(lines[previous].text)) return false;
+      previous -= 1;
+    }
+    return false;
+  };
+  const setextBoundary = (index) => index < 0
+    || kinds[index].length > 0
+    || isBlank(lines[index])
+    || ATX.test(lines[index].text)
+    || QUOTE.test(lines[index].text)
+    || startsNonEmptyList(index)
+    || THEMATIC.test(lines[index].text);
+  for (let underline = 1; underline < lines.length; underline++) {
+    if (kinds[underline].length || !SETEXT.test(lines[underline].text)) continue;
+    if (setextBoundary(underline - 1)) continue;
+    let start = underline - 1;
+    while (!setextBoundary(start - 1)) start -= 1;
+    if (startsContainer(start - 1)) continue;
+    if (followsLooseList(start)) continue;
+    // Indented code cannot start a paragraph, but indentation after paragraph
+    // text is lazy continuation and remains part of a multiline heading.
+    while (start < underline && INDENTED.test(lines[start].text)) start += 1;
+    if (start === underline) continue;
+    for (let i = start; i <= underline; i++) addKind(kinds[i], 'setext-heading');
   }
   for (let i = 0; i < lines.length; i++) {
     if (!kinds[i].length && THEMATIC.test(lines[i].text)) addKind(kinds[i], 'thematic-break');
@@ -274,7 +324,14 @@ function buildAtoms(lines, classified) {
 
     const lineKinds = classified.kinds[i];
     if (isHeadingKinds(lineKinds)) {
-      const end = lineKinds.includes('setext-heading') ? i + 2 : i + 1;
+      let end = i + 1;
+      if (lineKinds.includes('setext-heading')) {
+        while (end < lines.length && classified.kinds[end].includes('setext-heading')) {
+          const isUnderline = SETEXT.test(lines[end].text);
+          end += 1;
+          if (isUnderline) break;
+        }
+      }
       const kinds = collectKinds(classified, i, Math.min(end, lines.length));
       atoms.push({
         startLine: i,

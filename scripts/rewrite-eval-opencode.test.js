@@ -18,7 +18,7 @@ if (process.platform === 'win32') {
     if (gitCountTarget && /^git(?:\.exe)?$/i.test(path.basename(command))) {
       fs.appendFileSync(gitCountTarget, '1\n');
     }
-    if (path.extname(command).toLowerCase() === '.js') {
+    if (path.basename(command).toLowerCase() === 'fake-opencode.exe') {
       return nativeSpawnSync(process.execPath, [command, ...args], options);
     }
     return nativeSpawnSync(command, args, options);
@@ -38,7 +38,7 @@ childProcess.execFileSync = nativeExecFileSync;
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rewrite-eval-opencode-'));
 process.on('exit', () => fs.rmSync(root, { recursive: true, force: true }));
 
-const executable = path.join(root, 'fake-opencode.js');
+const executable = path.join(root, process.platform === 'win32' ? 'fake-opencode.exe' : 'fake-opencode.js');
 fs.writeFileSync(executable, `#!/usr/bin/env node
 const fs = require('node:fs');
 const path = require('node:path');
@@ -148,6 +148,17 @@ assert.equal(fs.readdirSync(root).some((name) => name.startsWith('atomic-result.
 
 const relativeConfig = { ...baseConfig, opencode_path: './opencode' };
 assert.throws(() => runner.checkConfig(relativeConfig, plan), /must be absolute/);
+assert.throws(
+  () => runner.checkExecutablePath('C:\\Users\\example\\AppData\\Roaming\\npm\\opencode.cmd', 'win32'),
+  /native \.exe executable.*command shim/,
+);
+assert.throws(() => runner.checkExecutablePath('C:\\tools\\opencode.cmd.', 'win32'), /native \.exe/);
+assert.throws(() => runner.checkExecutablePath('C:\\tools\\opencode.ps1', 'win32'), /native \.exe/);
+assert.throws(() => runner.checkExecutablePath('\\tools\\opencode.exe', 'win32'), /drive letter or UNC share/);
+assert.doesNotThrow(() => runner.checkExecutablePath('C:\\tools\\opencode.exe', 'win32'));
+assert.doesNotThrow(() => runner.checkExecutablePath('\\\\server\\share\\opencode.exe', 'win32'));
+assert.doesNotThrow(() => runner.checkExecutablePath('/usr/local/bin/opencode', 'linux'));
+assert.throws(() => runner.checkExecutablePath('C:\\tools\\opencode', 'linux'), /must be absolute/);
 
 const configOnlyRun = path.join(root, 'config-only-run');
 fs.mkdirSync(configOnlyRun);

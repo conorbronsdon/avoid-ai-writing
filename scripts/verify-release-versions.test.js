@@ -9,6 +9,7 @@ const { spawnSync } = require('node:child_process');
 
 const {
   readChangelogVersion,
+  verifyVersionChanged,
   verifyReleaseVersions,
 } = require('./verify-release-versions.js');
 
@@ -25,10 +26,44 @@ function fixtureRoot() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'avoid-ai-writing-release-versions-'));
 }
 
-function writeFixture(root, { changelog, packageVersion, packageJson }) {
+function writeFixture(root, {
+  changelog,
+  packageVersion,
+  packageJson,
+  skillVersion,
+  skillText,
+  claudePluginVersion,
+  claudePluginJson,
+  openaiPluginVersion,
+  openaiPluginJson,
+}) {
+  const defaultVersion = packageVersion ?? packageJson?.version ?? '1.0.0';
   fs.writeFileSync(
     path.join(root, 'CHANGELOG.md'),
     changelog,
+    'utf8',
+  );
+  fs.writeFileSync(
+    path.join(root, 'SKILL.md'),
+    skillText === undefined ? `---\nname: fixture\nversion: ${skillVersion ?? defaultVersion}\n---\n` : skillText,
+    'utf8',
+  );
+  const claudeManifest = path.join(root, 'plugins', 'avoid-ai-writing', '.claude-plugin', 'plugin.json');
+  const openaiManifest = path.join(root, '.codex-plugin', 'plugin.json');
+  fs.mkdirSync(path.dirname(claudeManifest), { recursive: true });
+  fs.mkdirSync(path.dirname(openaiManifest), { recursive: true });
+  fs.writeFileSync(
+    claudeManifest,
+    claudePluginJson === undefined
+      ? JSON.stringify({ name: 'fixture', version: claudePluginVersion ?? defaultVersion }, null, 2) + '\n'
+      : claudePluginJson,
+    'utf8',
+  );
+  fs.writeFileSync(
+    openaiManifest,
+    openaiPluginJson === undefined
+      ? JSON.stringify({ name: 'fixture', version: openaiPluginVersion ?? defaultVersion }, null, 2) + '\n'
+      : openaiPluginJson,
     'utf8',
   );
   fs.writeFileSync(
@@ -81,6 +116,42 @@ t('verifyReleaseVersions accepts matching package.json and changelog versions', 
   assert.strictEqual(result.ok, true);
   assert.strictEqual(result.changelogVersion, '1.2.3');
   assert.strictEqual(result.packageVersion, '1.2.3');
+  assert.strictEqual(result.skillVersion, '1.2.3');
+  assert.strictEqual(result.claudePluginVersion, '1.2.3');
+  assert.strictEqual(result.openaiPluginVersion, '1.2.3');
+});
+
+t('verifyVersionChanged accepts a new version and rejects unchanged recovery pushes', () => {
+  assert.deepStrictEqual(verifyVersionChanged('{"version":"1.2.2"}', '1.2.3'), {
+    ok: true,
+    previousVersion: '1.2.2',
+    currentVersion: '1.2.3',
+  });
+  const unchanged = verifyVersionChanged('{"version":"1.2.3"}', '1.2.3');
+  assert.strictEqual(unchanged.ok, false);
+  assert.match(unchanged.message, /did not change \(1\.2\.3\)/);
+  assert.match(unchanged.message, /workflow_dispatch/);
+  const rollback = verifyVersionChanged('{"version":"2.0.0"}', '1.99.99');
+  assert.strictEqual(rollback.ok, false);
+  assert.match(rollback.message, /moved backward from 2\.0\.0 to 1\.99\.99/);
+});
+
+t('CLI checks the previous package version only when requested', () => {
+  const root = fixtureRoot();
+  writeFixture(root, {
+    changelog: '## [2.0.0]\n',
+    packageVersion: '2.0.0',
+  });
+  const previous = path.join(root, 'previous-package.json');
+  fs.writeFileSync(previous, '{"name":"fixture","version":"1.9.0"}\n', 'utf8');
+  const changed = runCli(root, ['--previous-package-json', previous]);
+  assert.strictEqual(changed.status, 0);
+  assert.match(changed.stdout, /changed from 1\.9\.0 to 2\.0\.0/);
+
+  fs.writeFileSync(previous, '{"name":"fixture","version":"2.0.0"}\n', 'utf8');
+  const unchanged = runCli(root, ['--previous-package-json', previous]);
+  assert.strictEqual(unchanged.status, 1);
+  assert.match(unchanged.stderr, /push-triggered releases require a new version/);
 });
 
 t('verifyReleaseVersions accepts an Unreleased-only documentation edit above the current release', () => {
@@ -93,7 +164,79 @@ t('verifyReleaseVersions accepts an Unreleased-only documentation edit above the
     ok: true,
     changelogVersion: '3.34.0',
     packageVersion: '3.34.0',
+    skillVersion: '3.34.0',
+    claudePluginVersion: '3.34.0',
+    openaiPluginVersion: '3.34.0',
   });
+});
+
+t('verifyReleaseVersions rejects each stale skill or plugin version', () => {
+  const cases = [
+    [{ skillVersion: '1.2.2' }, /SKILL\.md \(1\.2\.2\)/],
+    [{ claudePluginVersion: '1.2.2' }, /Claude plugin manifest \(1\.2\.2\)/],
+    [{ openaiPluginVersion: '1.2.2' }, /OpenAI plugin manifest \(1\.2\.2\)/],
+  ];
+  for (const [override, expected] of cases) {
+    const root = fixtureRoot();
+    writeFixture(root, {
+      changelog: '## [1.2.3]\n',
+      packageVersion: '1.2.3',
+      ...override,
+    });
+    const result = verifyReleaseVersions(root);
+    assert.strictEqual(result.ok, false);
+    assert.match(result.message, expected);
+  }
+});
+
+t('verifyReleaseVersions rejects missing versioned skill and plugin files', () => {
+  const paths = [
+    ['SKILL.md', /Could not read SKILL\.md/],
+    [path.join('plugins', 'avoid-ai-writing', '.claude-plugin', 'plugin.json'), /Could not read Claude plugin manifest/],
+    [path.join('.codex-plugin', 'plugin.json'), /Could not read OpenAI plugin manifest/],
+  ];
+  for (const [missing, expected] of paths) {
+    const root = fixtureRoot();
+    writeFixture(root, { changelog: '## [1.2.3]\n', packageVersion: '1.2.3' });
+    fs.rmSync(path.join(root, missing));
+    const result = verifyReleaseVersions(root);
+    assert.strictEqual(result.ok, false);
+    assert.match(result.message, expected);
+  }
+});
+
+t('verifyReleaseVersions rejects malformed skill and plugin version sources', () => {
+  const cases = [
+    [{ skillText: '# no frontmatter\n' }, /SKILL\.md is missing valid YAML frontmatter/],
+    [{ skillText: '---\nname: fixture\n---\n' }, /exactly one top-level version field/],
+    [{ skillText: '---\nversion: 1.2.3\nversion: 1.2.3\n---\n' }, /exactly one top-level version field/],
+    [{ skillText: '---\nversion: 1.2\n---\n' }, /SKILL\.md version \(1\.2\).*numeric X\.Y\.Z/],
+    [{ claudePluginJson: '{bad json' }, /Claude plugin manifest is not valid JSON/],
+    [{ claudePluginJson: '{"name":"fixture"}' }, /Claude plugin manifest is missing a string "version" field/],
+    [{ openaiPluginJson: '{bad json' }, /OpenAI plugin manifest is not valid JSON/],
+    [{ openaiPluginJson: '{"version":"v1.2.3"}' }, /OpenAI plugin manifest version \(v1\.2\.3\).*numeric X\.Y\.Z/],
+  ];
+  for (const [override, expected] of cases) {
+    const root = fixtureRoot();
+    writeFixture(root, {
+      changelog: '## [1.2.3]\n',
+      packageVersion: '1.2.3',
+      ...override,
+    });
+    const result = verifyReleaseVersions(root);
+    assert.strictEqual(result.ok, false);
+    assert.match(result.message, expected);
+  }
+});
+
+t('verifyReleaseVersions accepts a quoted skill version in CRLF frontmatter', () => {
+  const root = fixtureRoot();
+  writeFixture(root, {
+    changelog: '## [1.2.3]\r\n',
+    packageVersion: '1.2.3',
+    skillText: '---\r\nname: fixture\r\nversion: "1.2.3"\r\n---\r\n',
+  });
+  assert.strictEqual(verifyReleaseVersions(root).ok, true);
 });
 
 t('verifyReleaseVersions accepts CRLF changelog headings', () => {
@@ -258,10 +401,11 @@ t('workflow runs the shared guard before both release mutations', () => {
   const publishJob = workflow.slice(publishStart);
   const releaseGuards = [...releaseJob.matchAll(/node scripts\/verify-release-versions\.js/g)];
   const publishGuards = [...publishJob.matchAll(/node scripts\/verify-release-versions\.js/g)];
-  assert.strictEqual(releaseGuards.length, 1);
+  assert.strictEqual(releaseGuards.length, 2);
   assert.strictEqual(publishGuards.length, 1);
   assert.ok(releaseGuards[0].index < /^\s+gh release create/m.exec(releaseJob).index);
   assert.ok(publishGuards[0].index < /^\s+run: npm publish --provenance/m.exec(publishJob).index);
+  assert.match(releaseJob, /if: github\.event_name == 'push'[\s\S]*--previous-package-json/);
 });
 
 process.stdout.write(`verify-release-versions.test.js: ${passed} passed\n`);

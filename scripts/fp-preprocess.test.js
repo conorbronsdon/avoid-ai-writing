@@ -456,6 +456,77 @@ test('setext headings win over thematic breaks while standalone rules remain str
   const thematic = prepareUnits(`---\n${words(50)}`).decisions;
   assert.equal(thematic.some((decision) => decision.headingKind === 'setext'), false);
   assert.ok(thematic[0].kinds.includes('thematic-break'));
+
+  const wrapped = prepareUnits(`First wrapped line\nSecond wrapped line\n---\n\n${words(50)}`).decisions;
+  assert.equal(wrapped.length, 1);
+  assert.equal(wrapped[0].headingKind, 'setext');
+  assert.equal(wrapped[0].headingAttached, true);
+  assert.ok(wrapped[0].text.startsWith('First wrapped line\nSecond wrapped line\n---'));
+
+  const adjacent = prepareUnits(`First Heading\n===\nSecond Heading\n---\n\n${words(50)}`).decisions;
+  assert.equal(adjacent.length, 2);
+  assert.equal(adjacent[0].headingKind, 'setext');
+  assert.equal(adjacent[0].headingAttached, false);
+  assert.ok(adjacent[0].text.startsWith('First Heading\n==='));
+  assert.equal(adjacent[1].headingKind, 'setext');
+  assert.equal(adjacent[1].headingAttached, true);
+  assert.ok(adjacent[1].text.startsWith('Second Heading\n---'));
+
+  for (const title of [
+    'Heading start\n    indented continuation',
+    'Heading start\n    indented continuation\nHeading end',
+  ]) {
+    const continued = prepareUnits(`${title}\n---\n\n${words(50)}`).decisions;
+    assert.equal(continued.length, 1);
+    assert.equal(continued[0].headingKind, 'setext');
+    assert.equal(continued[0].headingAttached, true);
+    assert.ok(continued[0].text.startsWith(`${title}\n---`));
+  }
+
+  const afterCode = prepareUnits(`    code\nHeading after code\n---\n\n${words(50)}`).decisions;
+  assert.equal(afterCode.length, 2);
+  assert.deepEqual(afterCode[0].kinds, ['indented-code']);
+  assert.ok(afterCode[1].text.startsWith('Heading after code\n---'));
+
+  const yearHeading = prepareUnits(`Heading start\n2024. was busy\n---\n\n${words(50)}`).decisions;
+  assert.equal(yearHeading.length, 1);
+  assert.equal(yearHeading[0].headingKind, 'setext');
+  assert.ok(yearHeading[0].text.startsWith('Heading start\n2024. was busy\n---'));
+
+  for (const container of ['> quoted text', '- list item', '1. ordered item']) {
+    const lazy = prepareUnits(`${container}\nlazy continuation\n---\n${words(50)}`).decisions;
+    assert.equal(lazy.some((decision) => decision.headingKind === 'setext'), false, container);
+    assert.ok(lazy.some((decision) => decision.kinds.includes('thematic-break')), container);
+  }
+
+  for (const closedQuote of ['>', '> # Heading']) {
+    const decisions = prepareUnits(`Intro text\n${closedQuote}\nText\n---\n\n${words(50)}`).decisions;
+    const heading = decisions.find((decision) => decision.headingKind === 'setext');
+    assert.ok(heading, closedQuote);
+    assert.ok(heading.text.startsWith('Text\n---'), closedQuote);
+  }
+
+  for (const indentation of ['  ', '    ']) {
+    const loose = prepareUnits(`- item\n\n${indentation}continued paragraph\nText\n---\n${words(50)}`).decisions;
+    assert.equal(loose.some((decision) => decision.headingKind === 'setext'), false, `${indentation.length} spaces`);
+    assert.ok(loose.some((decision) => decision.kinds.includes('thematic-break')), `${indentation.length} spaces`);
+  }
+
+  const blockStartOrdinal = prepareUnits(`Intro\n\n2024. item\nText\n---\n${words(50)}`).decisions;
+  assert.equal(blockStartOrdinal.some((decision) => decision.headingKind === 'setext'), false);
+  assert.ok(blockStartOrdinal.some((decision) => decision.kinds.includes('thematic-break')));
+
+  const quotedList = prepareUnits(`> - item\nlazy continuation\n---\n${words(50)}`).decisions;
+  assert.equal(quotedList.some((decision) => decision.headingKind === 'setext'), false);
+  assert.ok(quotedList.some((decision) => decision.kinds.includes('thematic-break')));
+
+  const nestedQuote = prepareUnits(`> > nested quote text\nlazy continuation\n---\n${words(50)}`).decisions;
+  assert.equal(nestedQuote.some((decision) => decision.headingKind === 'setext'), false);
+  assert.ok(nestedQuote.some((decision) => decision.kinds.includes('thematic-break')));
+
+  const multiParagraphList = prepareUnits(`- item\n\n  first continuation\n\n  second continuation\n  ---\n${words(50)}`).decisions;
+  assert.equal(multiParagraphList.some((decision) => decision.headingKind === 'setext'), false);
+  assert.ok(multiParagraphList.some((decision) => decision.kinds.includes('thematic-break')));
 });
 
 test('fences use same-marker valid closers and stay atomic across blank lines', () => {
@@ -482,6 +553,14 @@ test('fences use same-marker valid closers and stay atomic across blank lines', 
   assert.equal(unclosedResult.length, 1);
   assert.deepEqual(unclosedResult[0].kinds, ['fenced-code']);
   assert.ok(unclosedResult[0].text.endsWith('tail24'));
+
+  const inlineTicks = prepareUnits(`\`\`\`x\`\`\` inline\n${words(50)}`).decisions;
+  assert.equal(inlineTicks.length, 1);
+  assert.deepEqual(inlineTicks[0].kinds, ['prose']);
+  assert.ok(inlineTicks[0].text.startsWith('```x``` inline '));
+
+  const tildeInfo = prepareUnits(`~~~x\`y\n${words(50)}\n~~~`).decisions;
+  assert.deepEqual(tildeInfo[0].kinds, ['fenced-code']);
 
   const oversized = `~~~\n${words(210)}\n\n${words(210, 'tail')}\n~~~`;
   const oversizedResult = prepareUnits(oversized).decisions;

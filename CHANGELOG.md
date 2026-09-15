@@ -6,6 +6,25 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Add machine-readable `--json` output to `avoid-ai-writing-gate` and expose `pass`, `total-findings`, and `failed-files` step outputs in the GitHub Action (#252).
+
+### Changed
+
+- Link the GitHub Marketplace listing from the Action instructions and pin the
+  example workflow to the released `v3.35.0` tag.
+- Make acknowledgment loops a judgment-only rule. The detector no longer reports the `acknowledgment-loop` type: its three phrases also open ordinary email, support, and docs replies ("To answer your question from Tuesday: ...", "You're asking about the retry limit. It is five by default ..."), and "the question of whether" is standard analytical English. The engine now exposes 53 issue types. The skill keeps the rule, with the deletion test and carve-outs (#239).
+
+### Fixed
+
+- Align false-positive preprocessing with CommonMark for backtick fence info strings and multiline setext headings, preserve unique normalized units as modified when only whitespace boundaries move their source spans, reject Windows OpenCode command shims with an actionable native-binary error, and recognize first-person `I` inside otherwise targeted Title Case headings (#314).
+- Restrict Title Case header word separators and trailing whitespace to horizontal whitespace, so a match can never run past one physical line. `\s` also ate newlines, which let two unrelated lines or a blank-line-separated fragment combine into a single heading match that neither line independently satisfied (#291).
+- Report the underlying OpenCode export launch error instead of a secondary `stderr.trim()` exception during rewrite evaluation.
+- Preserve non-tracking query parameters when removing AI-referrer parameters from URLs during rewrite validation (#210). Removing a tracker that sits directly before bold markers, a dash, or an ellipsis no longer reports the URL as altered.
+- Replace four superlinear Markdown scans reachable through the detector API with bounded or forward-only parsing. Validate corpus cache IDs, stage and retry cache replacements, isolate CLI-test files in private temporary directories, and require push-triggered releases to prove the package version changed.
+- Replace the preservation validator's fenced-code regex with a line scanner that tracks the opening fence marker and run length, so a fence closes only on the same marker at equal or greater length per CommonMark. A `~~~` line inside a ``` block (the normal way to document Markdown fences) is content, and a three-backtick line inside a four-backtick fence no longer closes it. The same scanner replaces the marker-agnostic matcher in `scripts/self-scan.js` (#236).
+
 ## [3.35.0] — 2026-09-13
 
 ### Changed

@@ -368,7 +368,6 @@ const AIDetector = (() => {
     'generic-conclusion': 3,
     'lets-construction': 2,
     'reasoning-artifact': 6,
-    'acknowledgment-loop': 3,
     'significance-inflation': 4,
     'vague-attribution': 5,
     'hollow-intensifier': 2,
@@ -528,12 +527,11 @@ const AIDetector = (() => {
     /\bworking\s+through\s+this\s+logically\b/gi,
   ];
 
-  // ─── Acknowledgment loops ──────────────────────────────────────────
-  const ACKNOWLEDGMENT_LOOPS = [
-    /\byou'?re\s+asking\s+about\b/gi,
-    /\bthe\s+question\s+of\s+whether\b/gi,
-    /\bto\s+answer\s+your\s+question\b/gi,
-  ];
+  // NOTE: Acknowledgment loops are judgment-only (#239). The three phrases the
+  // detector matched ("you're asking about", "the question of whether", "to answer
+  // your question") are also how people open an ordinary reply and standard
+  // analytical English. The tell is a restatement that adds nothing, which a
+  // regex cannot see. See detector/CATEGORIES.md §C.
 
   // ─── Significance inflation ────────────────────────────────────────
   const SIGNIFICANCE_INFLATION = [
@@ -969,6 +967,48 @@ const AIDetector = (() => {
     }
   }
 
+  function inlineCodeRanges(text) {
+    const runs = [];
+    for (let i = 0; i < text.length;) {
+      if (text[i] === '\n') {
+        runs.push(null);
+        i += 1;
+        continue;
+      }
+      if (text[i] !== '`') {
+        i += 1;
+        continue;
+      }
+      const start = i;
+      while (i < text.length && text[i] === '`') i += 1;
+      runs.push({ start, end: i, length: i - start });
+    }
+
+    const ranges = [];
+    let lineStart = 0;
+    while (lineStart < runs.length) {
+      let lineEnd = runs.indexOf(null, lineStart);
+      if (lineEnd === -1) lineEnd = runs.length;
+      const nextByLength = new Map();
+      const nextSame = new Array(lineEnd - lineStart);
+      for (let i = lineEnd - 1; i >= lineStart; i -= 1) {
+        nextSame[i - lineStart] = nextByLength.get(runs[i].length);
+        nextByLength.set(runs[i].length, i);
+      }
+      for (let i = lineStart; i < lineEnd;) {
+        const close = nextSame[i - lineStart];
+        if (close === undefined) {
+          i += 1;
+          continue;
+        }
+        ranges.push([runs[i].start, runs[close].end]);
+        i = close + 1;
+      }
+      lineStart = lineEnd + 1;
+    }
+    return ranges;
+  }
+
   // Copy of the text with fenced blocks and inline code spans blanked out.
   // Index-preserving: each masked character becomes a space and newlines are
   // kept, so offsets into the result still address the same position in the
@@ -984,9 +1024,7 @@ const AIDetector = (() => {
     // continuation, so blanking it silences real tag blocks. #90 reports
     // fences and inline spans, and those are what this masks.
     const withoutFences = chars.join('');
-    const inlineRe = /(`+)(?:(?!\1)[^\n])+\1/g;
-    let m;
-    while ((m = inlineRe.exec(withoutFences)) !== null) blankRange(chars, m.index, m.index + m[0].length);
+    for (const [start, end] of inlineCodeRanges(withoutFences)) blankRange(chars, start, end);
     return chars.join('');
   }
 
@@ -1177,7 +1215,7 @@ const AIDetector = (() => {
     const lineRe = /[^\r\n]*(?:\r\n|\n|\r|$)/g;
     let match;
     while ((match = lineRe.exec(text)) !== null && match[0]) {
-      const body = match[0].replace(/[\r\n]+$/, '');
+      const body = match[0].replace(/(?:\r\n|\n|\r)$/, '');
       lines.push({ text: body, start: match.index, end: match.index + body.length });
     }
 
@@ -1379,7 +1417,7 @@ const AIDetector = (() => {
 
     maskMatches(/^[ \t]*>[^\n]*$/gm);
     maskMatches(/\b(?:https?:\/\/|www\.)[^\s<>]+/gi);
-    maskMatches(/<[!?/]?[a-z][^>\n]*>/gi);
+    maskMatches(/<[!?/]?[a-z][^<>\n]*>/gi);
     maskMatches(/(?<![a-z0-9_-])--?[a-z0-9][a-z0-9-]{0,127}/gi);
 
     // Paths and filenames use bounded components. Besides preventing
@@ -1468,10 +1506,15 @@ const AIDetector = (() => {
   // Setext headings (`Title`/`=====`) need no prefix: their text line is bare
   // and already matched by this same pattern.
   // Interior tokens accept Title Case words, acronyms (`AI`, `API`, `CLI`) and
-  // the capitalised single-letter function word `A`. The first and last tokens
+  // the capitalised single-letter words `A` and `I`. The first and last tokens
   // stay ordinary `[A-Z][a-z]+` words, which also excludes all-caps banner
   // lines (`## HTTP API REFERENCE`) whose leading token is not Title Case.
-  const TITLE_CASE_HEADER = /^(?:#{1,6}[ \t]+)?([A-Z][a-z]+(?:\s+(?:[A-Z][a-z]+|A|[A-Z]{2,}|and|or|of|the|in|for|to|a|an))+\s+[A-Z][a-z]+)\s*$/gm;
+  //
+  // Separators and trailing whitespace are horizontal only (`[ \t]`), so a
+  // match can never run past one physical line: `\s` also eats newlines, which
+  // let two unrelated lines or a blank-line-separated fragment combine into a
+  // single heading match (GH-291).
+  const TITLE_CASE_HEADER = /^(?:#{1,6}[ \t]+)?([A-Z][a-z]+(?:[ \t]+(?:[A-Z][a-z]+|A|I|[A-Z]{2,}|and|or|of|the|in|for|to|a|an))+[ \t]+[A-Z][a-z]+)[ \t]*$/gm;
 
   // ─── Parenthetical hedging asides ──────────────────────────────────
   // "(and increasingly, X)", "(or more precisely, Y)", "(though to be
@@ -1825,7 +1868,6 @@ const AIDetector = (() => {
     issues.push(...matchPatterns(text, GENERIC_CONCLUSIONS, 'generic-conclusion', 'medium'));
     issues.push(...matchPatterns(text, LETS_PATTERNS, 'lets-construction', 'medium'));
     issues.push(...matchPatterns(text, REASONING_ARTIFACTS, 'reasoning-artifact', 'critical'));
-    issues.push(...matchPatterns(text, ACKNOWLEDGMENT_LOOPS, 'acknowledgment-loop', 'medium'));
     issues.push(...matchPatterns(text, SIGNIFICANCE_INFLATION, 'significance-inflation', 'high'));
     issues.push(...matchPatterns(text, VAGUE_ATTRIBUTIONS, 'vague-attribution', 'critical'));
     issues.push(...matchPatterns(text, HOLLOW_INTENSIFIERS, 'hollow-intensifier', 'medium'));
@@ -1931,7 +1973,32 @@ const AIDetector = (() => {
     // a bracketed or bare semver token, then a dash, then an ISO date, and
     // nothing else on the line. Ordinary prose dashes in headings still count,
     // because SKILL.md applies the em-dash rule to headings too.
-    const VERSION_HEADING_DASH_RE = /^#{1,6}[ \t]+\[?v?\d+\.\d+\.\d+[^\]\n]*\]?[ \t]*—[ \t]*\d{4}-\d{2}-\d{2}[ \t]*$/gm;
+    function countVersionHeadingDashes(value) {
+      let count = 0;
+      for (const rawLine of value.split(/\r\n|\n|\r/)) {
+        let end = rawLine.length;
+        while (end > 0 && (rawLine[end - 1] === ' ' || rawLine[end - 1] === '\t')) end -= 1;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(rawLine.slice(Math.max(0, end - 10), end))) continue;
+        let cursor = end - 10;
+        while (cursor > 0 && (rawLine[cursor - 1] === ' ' || rawLine[cursor - 1] === '\t')) cursor -= 1;
+        if (rawLine[cursor - 1] !== '\u2014') continue;
+        cursor -= 1;
+        while (cursor > 0 && (rawLine[cursor - 1] === ' ' || rawLine[cursor - 1] === '\t')) cursor -= 1;
+        const prefix = rawLine.slice(0, cursor);
+        const heading = /^#{1,6}[ \t]+/.exec(prefix);
+        if (!heading) continue;
+        let version = prefix.slice(heading[0].length);
+        if (version.startsWith('[')) {
+          if (!version.endsWith(']')) continue;
+          version = version.slice(1, -1);
+        } else if (version.endsWith(']')) {
+          version = version.slice(0, -1);
+        }
+        if (version.includes(']')) continue;
+        if (/^v?\d+\.\d+\.\d+/.test(version)) count += 1;
+      }
+      return count;
+    }
 
     // ── Smart-punctuation co-occurrence signature ────────────────────
     // Curly quotes + em-dash + Oxford comma all present + zero typos
@@ -1944,7 +2011,7 @@ const AIDetector = (() => {
       const hasCurly = /[“”‘’]/.test(text);
       const totalEmDashes = (text.match(/—/g) || []).length;
       const separatorEmDashes = (text.match(SEPARATOR_DASH_RE) || []).length
-        + (text.match(VERSION_HEADING_DASH_RE) || []).length;
+        + countVersionHeadingDashes(text);
       const hasEmDash = totalEmDashes > separatorEmDashes;
       const oxfordHit = text.match(/\b\w+,\s+\w+,\s+and\s+\w+/g);
       const hasOxford = (oxfordHit?.length || 0) >= 1;
@@ -2181,7 +2248,17 @@ const AIDetector = (() => {
     // false-negative risk from adjectives ending in -ed ("skilled",
     // "advanced") that share the same surface form.
     const lines = text.split(/\r?\n/);
-    const bulletRe = /^\s*(?:\*|-|•|\+)\s+(.+)$/;
+    const parseBullet = (line) => {
+      let cursor = 0;
+      while (cursor < line.length && /\s/.test(line[cursor])) cursor += 1;
+      if (!['*', '-', '•', '+'].includes(line[cursor])) return null;
+      cursor += 1;
+      const spacingStart = cursor;
+      while (cursor < line.length && /\s/.test(line[cursor])) cursor += 1;
+      if (cursor === spacingStart) return null;
+      if (cursor >= line.length) return cursor - spacingStart >= 2 ? '' : null;
+      return line.slice(cursor).trim();
+    };
     const verbRe = /\b(?:is|are|was|were|has|have|had|will|would|should|must|do|does|did|can|could|may|might|am|been|being)\b/i;
     const fenceRe = /^\s*(?:```|~~~)/;
     let run = [];
@@ -2215,9 +2292,9 @@ const AIDetector = (() => {
         continue;
       }
       if (inFence) continue;
-      const m = line.match(bulletRe);
-      if (m) {
-        run.push(m[1].trim());
+      const bullet = parseBullet(line);
+      if (bullet !== null) {
+        run.push(bullet);
         blankStreak = 0;
       } else if (line.trim() === '') {
         // A single blank line inside a list is normal Markdown spacing;
@@ -2260,7 +2337,7 @@ const AIDetector = (() => {
     // splice. Em dash only — the `--` substitute is never carved out.
     const rawEmDashCount = (text.match(/—|(?<=\s)--(?=\s|$)|(?<=^|\s)--(?=\s)/gm) || []).length;
     const separatorDashCount = (text.match(SEPARATOR_DASH_RE) || []).length
-      + (text.match(VERSION_HEADING_DASH_RE) || []).length;
+      + countVersionHeadingDashes(text);
     const emDashCount = rawEmDashCount - separatorDashCount;
     const emDashRate = emDashCount / (wordCount / 1000);
     if (emDashRate > 1) {
@@ -2743,7 +2820,6 @@ const AIDetector = (() => {
     'generic-conclusion': 'Generic conclusion',
     'lets-construction': '"Let\'s" opener',
     'reasoning-artifact': 'Reasoning artifact',
-    'acknowledgment-loop': 'Acknowledgment loop',
     'significance-inflation': 'Significance inflation',
     'vague-attribution': 'Vague attribution',
     'hollow-intensifier': 'Hollow intensifier',
