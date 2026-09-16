@@ -1747,11 +1747,15 @@ const AIDetector = (() => {
     // without segmentation. The check therefore runs before the word gate
     // and declines only when CJK characters dominate the non-whitespace
     // text, so short English documents with an incidental place name or
-    // single Han character stay scorable. Han, Hiragana, and Katakana
-    // ranges (including halfwidth) signal an unsegmented script; Hangul is
-    // space-separated and segments fine, so it is excluded.
-    const cjkChars = (text.match(/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9d]/g) || []).length;
-    if (cjkChars > 0 && cjkChars * 2 >= (text.match(/\S/g) || []).length) {
+    // single Han character stay scorable. Unicode script properties cover
+    // the complete Han, Hiragana, and Katakana repertoires (including
+    // supplementary-plane and halfwidth forms); Hangul is space-separated
+    // and segments fine, so it is excluded. Both counts use Unicode mode so
+    // supplementary characters count as one code point rather than two UTF-16
+    // code units.
+    const cjkChars = (text.match(/[\p{Script_Extensions=Han}\p{Script_Extensions=Hiragana}\p{Script_Extensions=Katakana}]/gu) || []).length;
+    const nonSpaceChars = (text.match(/\S/gu) || []).length;
+    if (cjkChars > 0 && cjkChars * 2 >= nonSpaceChars) {
       return {
         ...buildV2Defaults('UNSCORED', 'low'),
         score: 0,

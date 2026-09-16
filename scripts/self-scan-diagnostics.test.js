@@ -131,10 +131,21 @@ try {
 
   t('an unsupported-script document is declined, not scored as clean', () => {
     const row = scanFile(fixture('cjk.md', '这个函数返回一个承诺，调用方不应假设句柄之后仍可重用。'.repeat(50)));
+    assert.strictEqual(row.rawDeclined, true);
+    assert.strictEqual(row.exemptDeclined, true);
     assert.strictEqual(row.declined, true);
     assert.strictEqual(row.rawScore, 0);
     assert.strictEqual(row.exemptIssues, 0);
     assert.strictEqual(row.overBudget, false);
+  });
+
+  t('raw-only unsupported examples do not decline the exemption-aware scan', () => {
+    const prose = 'This ordinary English prose has enough words for the detector to score the relevant document content normally.';
+    const example = '这个函数返回一个承诺，调用方不应假设句柄之后仍可重用。'.repeat(50);
+    const row = scanFile(fixture('cjk-example.md', `${prose}\n\n\`\`\`text\n${example}\n\`\`\`\n`));
+    assert.strictEqual(row.rawDeclined, true);
+    assert.strictEqual(row.exemptDeclined, false);
+    assert.strictEqual(row.declined, false);
   });
 
   t('a chunked unsegmented-script document is declined, not scored as clean', () => {

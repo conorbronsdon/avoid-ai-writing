@@ -2765,6 +2765,16 @@ test('#241: unsegmented-script documents are declined, not scored "Too short"', 
   const jaHw = 'ﾃｽﾄ'.repeat(100);
   assert.equal(AIDetector.analyzeText(jaHw).label, 'Unsupported script');
 
+  // Supplementary-plane Han and kana must be counted by code point. Explicit
+  // BMP ranges miss these characters and a non-Unicode regex counts each
+  // surrogate pair twice in the dominance denominator.
+  const zhSupplementary = '𠀀'.repeat(100); // CJK Unified Ideographs Extension B
+  const rzhSupplementary = AIDetector.analyzeText(zhSupplementary);
+  assert.equal(rzhSupplementary.label, 'Unsupported script');
+  assert.equal(rzhSupplementary.stats.cjkChars, 100);
+  const jaSupplementary = '𛀀'.repeat(100); // Kana Supplement
+  assert.equal(AIDetector.analyzeText(jaSupplementary).label, 'Unsupported script');
+
   // Newline-wrapped CJK lines each count as a word, so the script check
   // must not sit inside the minimum word-count condition.
   const zhLines = Array(10).fill('这个函数返回一个承诺。').join('\n');

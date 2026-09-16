@@ -217,7 +217,13 @@ function scanFile(rel, budget = BUDGETS[rel]) {
     exemptScore: exempt.score,
     exemptIssues: exempt.issues,
     budget,
-    declined: raw.declined || exempt.declined || null,
+    // Keep the two scans independent: raw deliberately includes quoted
+    // examples, while the exemption-aware result is what --check gates.
+    rawDeclined: Boolean(raw.declined),
+    exemptDeclined: Boolean(exempt.declined),
+    // Backward-compatible summary: a document is declined only when its
+    // exemption-aware prose could not be scored.
+    declined: Boolean(exempt.declined),
     overBudget: exempt.score > budget,
     chunked: raw.chunks > 1 ? raw.chunks : null,
     topTypes: exempt.topTypes || [],
@@ -240,16 +246,19 @@ function main() {
     console.log('| Document | Words | Raw score | Exempt score | Budget |');
     console.log('|---|---:|---:|---:|---:|');
     for (const r of rows) {
-      const exemptCell = r.declined ? 'declined' : `**${r.exemptScore}**`;
-      console.log(`| \`${r.file}\` | ${r.words.toLocaleString()} | ${r.rawScore} | ${exemptCell} | ${r.budget} |`);
+      const rawCell = r.rawDeclined ? 'declined' : r.rawScore;
+      const exemptCell = r.exemptDeclined ? 'declined' : `**${r.exemptScore}**`;
+      console.log(`| \`${r.file}\` | ${r.words.toLocaleString()} | ${rawCell} | ${exemptCell} | ${r.budget} |`);
     }
   } else {
     console.log('\nself-scan — this skill\'s detector against this skill\'s docs\n');
     console.log('  file                      words    raw  exempt  budget');
     for (const r of rows) {
-      const flag = r.declined ? '  DECLINED' : (r.overBudget ? '  OVER' : '');
+      const rawCell = r.rawDeclined ? 'declined' : String(r.rawScore);
+      const exemptCell = r.exemptDeclined ? 'declined' : String(r.exemptScore);
+      const flag = r.exemptDeclined ? '  DECLINED' : (r.rawDeclined ? '  RAW DECLINED' : (r.overBudget ? '  OVER' : ''));
       console.log(
-        `  ${r.file.padEnd(24)}${String(r.words).padStart(6)}${String(r.rawScore).padStart(7)}${String(r.exemptScore).padStart(8)}${String(r.budget).padStart(8)}${flag}`,
+        `  ${r.file.padEnd(24)}${String(r.words).padStart(6)}${rawCell.padStart(9)}${exemptCell.padStart(10)}${String(r.budget).padStart(8)}${flag}`,
       );
     }
     const over = rows.filter((r) => r.overBudget);
@@ -265,9 +274,9 @@ function main() {
   }
 
   if (args.includes('--check')) {
-    const declined = rows.filter((r) => r.declined);
+    const declined = rows.filter((r) => r.exemptDeclined);
     if (declined.length) {
-      console.error(`\nFAIL — ${declined.length} file(s) could not be scored (unsupported script): ${declined.map((r) => r.file).join(', ')}`);
+      console.error(`\nFAIL — ${declined.length} file(s) could not be scored after exemptions (unsupported script): ${declined.map((r) => r.file).join(', ')}`);
       process.exit(1);
     }
     const over = rows.filter((r) => r.overBudget);
