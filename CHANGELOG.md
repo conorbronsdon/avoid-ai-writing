@@ -42,6 +42,7 @@ All notable changes to this project are documented here.
 
 ### Fixed
 
+- Recognize GFM tables without outer pipes in preservation validation and self-scan exemptions, including compact one- and two-hyphen delimiter cells, while requiring a delimiter row so prose containing a bare pipe remains editable (#209).
 - Suppress eight technical-legitimate vocabulary terms (`robust`, `comprehensive`, `seamless`, `ecosystem`, `leverage`, `facilitate`, `underpin`, `streamline`) when analyzing text under `--context technical` mode (#237).
 
 - Keep mid-paragraph years and other ordered markers above one in prose during false-positive measurement; expose blank-separated continuation merges and distinct measurement/preprocessor fingerprints; and pair attached headings with their unique legacy body span in comparison output without changing source spans or unit IDs (#293).

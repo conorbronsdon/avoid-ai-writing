@@ -35,6 +35,9 @@ t('identical text before a fence is not blanked in place of the fence', () => {
   assert.strictEqual(actual, `${blank(repeated)}\nordinary prose\n${blank(repeated)}`);
 });
 exempt('blanks a multirow pipe-delimited table', '| name | note |\n| --- | --- |\n| alpha | "raw" |', '| name | note |\n| --- | --- |\n| alpha | "raw" |');
+exempt('blanks a table without outer pipes', 'name | note\n--- | ---\nalpha | "raw"', 'name | note\n--- | ---\nalpha | "raw"');
+exempt('blanks a three-space-indented table', '   name | note\n   --- | ---\n   alpha | "raw"', '   name | note\n   --- | ---\n   alpha | "raw"');
+exempt('escaped pipes stay within their table cell', 'name \\| alias | note\n--- | ---\nalpha | "raw"', 'name \\| alias | note\n--- | ---\nalpha | "raw"');
 exempt('blanks a blockquote', '> quoted "raw"\n> another row', '> quoted "raw"\n> another row');
 exempt('blanks inline backticks', 'Use `raw "code"` here.', '`raw "code"`');
 exempt('blanks paired straight double quotes', 'The "quoted text" stays exempt.', '"quoted text"');
@@ -43,6 +46,39 @@ exempt('blanks paired straight single quotes', "The 'quoted text' stays exempt."
 
 t('ordinary prose remains unchanged', () => {
   const source = 'Ordinary prose before and after has no exempt span.';
+  assert.strictEqual(applyExemptions(source), source);
+});
+
+t('bare pipes without a delimiter row remain ordinary prose', () => {
+  const source = 'Use a | b in the shell.\nThe output is c | d.';
+  assert.strictEqual(applyExemptions(source), source);
+});
+
+t('a pipe inside inline code is not a table row', () => {
+  const source = 'Run `a | b` in the shell.\n--- | ---';
+  assert.strictEqual(applyExemptions(source), source.replace(/`a \| b`/, blank('`a | b`')));
+});
+
+t('mismatched header and delimiter cell counts remain ordinary prose', () => {
+  const source = 'name | note\n--- | --- | ---\nalpha | raw';
+  assert.strictEqual(applyExemptions(source), source);
+});
+
+t('four-space-indented table-shaped code remains ordinary code', () => {
+  const source = '    name | note\n    --- | ---\n    alpha | raw';
+  assert.strictEqual(applyExemptions(source), source);
+});
+
+for (const delimiter of ['- | -', '-- | --', ':-: | --:']) {
+  for (const outer of [false, true]) {
+    const row = (text) => outer ? `| ${text} |` : text;
+    const table = [row('Name | Value'), row(delimiter), row('alpha | beta')].join('\n');
+    exempt(`blanks compact delimiter ${delimiter}, outer pipes ${outer}`, table, table);
+  }
+}
+
+t('colon-only delimiter cells remain ordinary prose', () => {
+  const source = 'Name | Value\n: | ::\nalpha | beta';
   assert.strictEqual(applyExemptions(source), source);
 });
 
