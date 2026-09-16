@@ -129,6 +129,15 @@ function main(argv) {
       );
       return 2;
     }
+    if (result.unsupportedScript) {
+      // An unsegmented-script document (Chinese/Japanese: no inter-word
+      // spaces) was declined, not scored. README classifies unscannable
+      // input as exit 2, so the gate must not report green on it. (GH-241)
+      process.stderr.write(
+        `avoid-ai-writing-gate: cannot scan ${file}: unsegmented-script document (no inter-word spaces to count)\n`
+      );
+      return 2;
+    }
     const count = result.issues.length;
     const types = [...new Set(result.issues.map((issue) => issue.type))].sort();
     const over = count > parsed.threshold;
