@@ -252,13 +252,20 @@ function main() {
     }
   } else {
     console.log('\nself-scan — this skill\'s detector against this skill\'s docs\n');
-    console.log('  file                      words    raw  exempt  budget');
+    // Header and rows share these widths so the columns cannot drift apart.
+    // The score columns are wide enough for the word `declined` (8) plus a
+    // gutter, which is why they are wider than their headings.
+    const W = { file: 24, words: 6, raw: 9, exempt: 10, budget: 8 };
+    console.log(
+      `  ${'file'.padEnd(W.file)}${'words'.padStart(W.words)}${'raw'.padStart(W.raw)}`
+      + `${'exempt'.padStart(W.exempt)}${'budget'.padStart(W.budget)}`,
+    );
     for (const r of rows) {
       const rawCell = r.rawDeclined ? 'declined' : String(r.rawScore);
       const exemptCell = r.exemptDeclined ? 'declined' : String(r.exemptScore);
       const flag = r.exemptDeclined ? '  DECLINED' : (r.rawDeclined ? '  RAW DECLINED' : (r.overBudget ? '  OVER' : ''));
       console.log(
-        `  ${r.file.padEnd(24)}${String(r.words).padStart(6)}${rawCell.padStart(9)}${exemptCell.padStart(10)}${String(r.budget).padStart(8)}${flag}`,
+        `  ${r.file.padEnd(W.file)}${String(r.words).padStart(W.words)}${rawCell.padStart(W.raw)}${exemptCell.padStart(W.exempt)}${String(r.budget).padStart(W.budget)}${flag}`,
       );
     }
     const over = rows.filter((r) => r.overBudget);
