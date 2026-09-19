@@ -34,6 +34,7 @@ newcomer PRs. Please leave `good first issue`s for new contributors.
 | `detector/patterns.js` | The deterministic engine — the executable subset of the rules. |
 | `detector/CATEGORIES.md` | The map between references/patterns.md rules and detector `type`s. Keep it current. |
 | `README.md` | The pitch and the numbered prose-pattern list. |
+| [`GLOSSARY.md`](GLOSSARY.md) | One-line definitions of the project's terms, each linked to its canonical source. |
 | `cursor-rules/`, `plugins/` | Editor and tool integrations. |
 
 ## Adding or changing a rule

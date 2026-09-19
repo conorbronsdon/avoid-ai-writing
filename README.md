@@ -28,6 +28,8 @@ Use `--iterate 1|2` to set the editing-pass ceiling. `--iterate 1` allows the in
 
 An optional **voice profile** (casual / professional / technical / warm / blunt) sets how the prose should sound, independent of the audience context profile.
 
+The [glossary](GLOSSARY.md) defines the terms these docs use: word tiers, severity tiers, modes, profiles, and detector options.
+
 ## Table of contents
 - [Quick demo](#quick-demo)
 - [Why a skill, not just a prompt](#why-a-skill-not-just-a-prompt)
