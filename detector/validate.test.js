@@ -89,6 +89,32 @@ test('an indented fenced-code edit still fires', () => {
   assert.ok(codes(r).includes('code-block-modified'), formatResult(r));
 });
 
+test('a prose line opening with a triple-backtick inline span is not a fence', () => {
+  // CommonMark: a backtick fence's info string cannot contain a backtick, so
+  // this line is a paragraph. Treated as an opener it never closes, the rest
+  // of the document becomes one code block, and an ordinary prose edit below
+  // it reports as code-block-modified.
+  const before = '# Setup\n\n```npm test``` runs the suite.\n\nOrdinary prose alpha.';
+  const after = '# Setup\n\n```npm test``` runs the suite.\n\nOrdinary prose beta.';
+  const r = validate(before, after, { skipResidual: true });
+  assert.equal(r.ok, true, formatResult(r));
+});
+
+test('a real fence after a triple-backtick inline span still fires', () => {
+  const before = '```npm test``` runs the suite.\n\n```js\nconst x = 1;\n```\n\nOrdinary prose.';
+  const after = '```npm test``` runs the suite.\n\n```js\nconst x = 2;\n```\n\nOrdinary prose.';
+  const r = validate(before, after, { skipResidual: true });
+  assert.ok(codes(r).includes('code-block-modified'), formatResult(r));
+});
+
+test('a tilde fence keeps backticks in its info string → error', () => {
+  // The backtick restriction applies to backtick fences only.
+  const before = '~~~ `md`\nSECRET CODE A\n~~~\n\nOrdinary prose.';
+  const after = '~~~ `md`\nSECRET CODE B\n~~~\n\nOrdinary prose.';
+  const r = validate(before, after, { skipResidual: true });
+  assert.ok(codes(r).includes('code-block-modified'), formatResult(r));
+});
+
 test('blockquote reworded → error', () => {
   const before = 'He said:\n\n> The system is slow and it is getting slower.\n> We need to fix it.\n\nThat is the claim.';
   const after = 'He said:\n\n> The system is slow and getting slower.\n> We need to fix it.\n\nThat is the claim.';

@@ -80,7 +80,14 @@ function fenceSpans(text) {
   for (const line of lines) {
     const markerMatch = line.match(/^[ \t]{0,3}(`{3,}|~{3,})/);
     if (!open) {
-      if (markerMatch) {
+      // CommonMark forbids backticks in the info string of a backtick fence.
+      // Without this guard a prose line that starts with an inline span such as
+      // ```npm test``` opens a fence that never closes, and the rest of the
+      // document is exempted from the scan.
+      const isOpen =
+        markerMatch &&
+        !(markerMatch[1][0] === '`' && line.slice(markerMatch[0].length).includes('`'));
+      if (isOpen) {
         open = { marker: markerMatch[1][0], len: markerMatch[1].length, start: cursor };
       }
     } else {

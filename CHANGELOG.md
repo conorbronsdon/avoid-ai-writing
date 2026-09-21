@@ -34,6 +34,7 @@ All notable changes to this project are documented here.
 - Preserve non-tracking query parameters when removing AI-referrer parameters from URLs during rewrite validation (#210). Removing a tracker that sits directly before bold markers, a dash, or an ellipsis no longer reports the URL as altered.
 - Replace four superlinear Markdown scans reachable through the detector API with bounded or forward-only parsing. Validate corpus cache IDs, stage and retry cache replacements, isolate CLI-test files in private temporary directories, and require push-triggered releases to prove the package version changed.
 - Replace the preservation validator's fenced-code regex with a line scanner that tracks the opening fence marker and run length, so a fence closes only on the same marker at equal or greater length per CommonMark. A `~~~` line inside a ``` block (the normal way to document Markdown fences) is content, and a three-backtick line inside a four-backtick fence no longer closes it. The same scanner replaces the marker-agnostic matcher in `scripts/self-scan.js` (#236).
+- Stop the preservation validator's fence scanner from opening a fence on a backtick line whose info string contains a backtick, which CommonMark forbids. A prose line that began with a triple-backtick inline span opened a fence that ran to end of document, so every later prose edit reported `code-block-modified`. `scripts/self-scan.js` had the same gap and exempted the rest of the document from its scan.
 
 ## [3.35.0] — 2026-09-13
 

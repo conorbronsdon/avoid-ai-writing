@@ -34,6 +34,15 @@ t('identical text before a fence is not blanked in place of the fence', () => {
   const actual = applyExemptions(source);
   assert.strictEqual(actual, `${blank(repeated)}\nordinary prose\n${blank(repeated)}`);
 });
+t('a prose line opening with a triple-backtick inline span does not exempt the rest of the document', () => {
+  // CommonMark forbids backticks in a backtick fence's info string, so this
+  // line is a paragraph, not an unclosed fence running to end of document.
+  const tail = '\n\nOrdinary prose that the scan must still see.';
+  const source = '```npm test``` runs the suite.' + tail;
+  const actual = applyExemptions(source);
+  assert.strictEqual(actual.length, source.length, 'string length must be preserved');
+  assert.strictEqual(actual.slice(-tail.length), tail, 'prose after the inline span must remain byte-for-byte unchanged');
+});
 exempt('blanks a multirow pipe-delimited table', '| name | note |\n| --- | --- |\n| alpha | "raw" |', '| name | note |\n| --- | --- |\n| alpha | "raw" |');
 exempt('blanks a table without outer pipes', 'name | note\n--- | ---\nalpha | "raw"', 'name | note\n--- | ---\nalpha | "raw"');
 exempt('blanks a three-space-indented table', '   name | note\n   --- | ---\n   alpha | "raw"', '   name | note\n   --- | ---\n   alpha | "raw"');
