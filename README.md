@@ -459,6 +459,11 @@ steps:
 The example pins the release tag. For stricter supply-chain controls, pin
 `uses:` to the full commit SHA for that release.
 
+Step outputs and the gate CLI's `--json` flag were added after `v3.35.0`. The
+tag pinned above has neither, so `steps.gate.outputs.*` resolves to empty
+strings there. To use them, pin `uses:` to a later release or to a commit SHA
+from `main`.
+
 The Action exposes step outputs via `$GITHUB_OUTPUT`:
 
 - `pass`: `'true'` when all scanned files are within threshold; `'false'` on a threshold failure or operational error.
