@@ -2407,11 +2407,12 @@ const AIDetector = (() => {
     // false positives on short or topic-narrow human prose are easy
     // to trigger and would drown out other signals. The detector-
     // research lens flagged TTR as one of four stylometric add-ons.
-    // Two of the others have since shipped in approximated form:
-    // `fnword-trigram-entropy` approximates POS-trigram entropy without
-    // a tagger, and `cross-para-burstiness` covers sentence-length
-    // burstiness across paragraphs. POS-bigram log-odds and function-
-    // word z-scores are still TODO.
+    // One of the other three has since shipped in approximated form:
+    // `cross-para-burstiness` covers sentence-length burstiness across
+    // paragraphs. `fnword-trigram-entropy` is a related tagger-free
+    // signal (it approximates POS-trigram entropy, not one of the
+    // three). POS-bigram log-odds and function-word z-scores are
+    // still TODO.
     if (tokens.length >= 200) {
       const unique = new Set(tokens).size;
       const ttr = unique / tokens.length;
