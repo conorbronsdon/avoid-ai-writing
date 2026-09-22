@@ -736,7 +736,7 @@ In longer pieces (200+ words), look at how much vocabulary the text actually use
 
 A very low TTR is not by itself proof of AI authorship — narrow topics, technical reference material, and second-language writing all legitimately compress vocabulary. But on general prose where you'd expect range (essays, articles, social content over ~200 words), a TTR below 0.40 is worth a second look. The fix is rarely to thesaurus the text. Use specific things and cases already present in the source, and repeat a technical term when it is the accurate term.
 
-This is the first of four stylometric signals on the roadmap. The others (sentence-length burstiness as a continuous measure, function-word z-scores against a human-prose reference, POS-bigram log-odds) require either a POS tagger or a reference distribution and aren't implemented as detector categories yet.
+This is the first of four stylometric signals on the roadmap. Sentence-length burstiness has since shipped in approximated form as the `cross-para-burstiness` detector category. The other two (function-word z-scores against a human-prose reference, POS-bigram log-odds) require either a POS tagger or a reference distribution and aren't implemented as detector categories yet.
 
 ### Paragraph-reshuffle immunity (structure test)
 - A writer-side diagnostic, not a regex: can you swap two body paragraphs without breaking the piece? If the order doesn't matter, you've written a list of points, not an argument that builds. AI prose often fails this — each paragraph is a self-contained module with no load-bearing connection to its neighbors.
