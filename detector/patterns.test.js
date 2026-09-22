@@ -3,7 +3,7 @@
  *
  * Node-runnable smoke tests for the detection engine. Intentionally small and
  * dependency-free so they run on any `node >= 18` without installing
- * anything. Invoked via `npm run test:detector` and in CI.
+ * anything. Invoked via `node detector/patterns.test.js` (inside `npm test`) and in CI.
  *
  * Failure modes worth catching:
  *   - AI-heavy text scoring as human (regression in pattern coverage)

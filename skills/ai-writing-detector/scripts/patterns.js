@@ -2267,15 +2267,14 @@ const AIDetector = (() => {
     // four stylometric signals identified in the May 2026 detection-
     // research review (docs/competitive/detection-research.md): no
     // POS tagger required, no model, pure JS.
-    //
     // Threshold tuning: flag only when the sample is large enough
     // that low TTR is meaningfully suspicious (>=200 tokens) AND TTR
     // is below 0.40 (very vocabulary-poor). Conservative on purpose;
     // false positives on short or topic-narrow human prose are easy
     // to trigger and would drown out other signals. The detector-
     // research lens flagged TTR as one of four stylometric add-ons;
-    // POS-bigram log-odds, function-word z-scores, and sentence-
-    // length burstiness are still TODO.
+    // POS-trigram entropy and sentence-length uniformity are implemented.
+    // POS-bigram log-odds is still TODO.
     if (tokens.length >= 200) {
       const unique = new Set(tokens).size;
       const ttr = unique / tokens.length;
@@ -2634,7 +2633,7 @@ const AIDetector = (() => {
     // detection should never read as low-confidence noise).
 
     // Soft probability distribution. Not calibrated against a labeled
-    // corpus yet (TODO when corpus exists — see roadmap.md). Largest
+    // corpus yet. Largest
     // class is computed as `1 - others` after rounding to guarantee
     // sum=1 exactly. Sub-1% drift would otherwise hide in toFixed.
     const aiSoft = Math.min(0.97, score / 100 + totalCorrob * 0.06 + strongCorrob * 0.08);
