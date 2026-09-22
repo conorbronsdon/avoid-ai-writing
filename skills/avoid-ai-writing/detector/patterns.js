@@ -2273,7 +2273,7 @@ const AIDetector = (() => {
     // false positives on short or topic-narrow human prose are easy
     // to trigger and would drown out other signals. The detector-
     // research lens flagged TTR as one of four stylometric add-ons;
-    // POS-trigram entropy and sentence-length uniformity are implemented.
+    // function-word trigram entropy and sentence-length uniformity are implemented.
     // POS-bigram log-odds is still TODO.
     if (tokens.length >= 200) {
       const unique = new Set(tokens).size;
