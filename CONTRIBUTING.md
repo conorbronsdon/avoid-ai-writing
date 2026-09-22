@@ -20,9 +20,10 @@ others for fellow newcomers, including while your PR is awaiting review.
 
 You are also welcome to propose your own issues and ideas.
 
-If you've already contributed here, choose a `help wanted` issue without the
+> [!IMPORTANT]
+> If you've already contributed here, choose a `help wanted` issue without the
 `good first issue` label, propose another improvement, or help review and test
-newcomer PRs.
+newcomer PRs. Please leave `good first issue`s for new contributors. 
 
 ## How the repo fits together
 
@@ -33,6 +34,7 @@ newcomer PRs.
 | `detector/patterns.js` | The deterministic engine — the executable subset of the rules. |
 | `detector/CATEGORIES.md` | The map between references/patterns.md rules and detector `type`s. Keep it current. |
 | `README.md` | The pitch and the numbered prose-pattern list. |
+| [`GLOSSARY.md`](GLOSSARY.md) | One-line definitions of the project's terms, each linked to its canonical source. |
 | `cursor-rules/`, `plugins/` | Editor and tool integrations. |
 
 ## Adding or changing a rule
@@ -44,6 +46,12 @@ First decide which kind of rule it is:
   add a row to `detector/CATEGORIES.md`. Cover it with a fixture in
   `detector/patterns.test.js` (both a true positive and a case that must *not*
   fire).
+  The category contract in `detector/categories.test.js` requires each type
+  to appear by name in that fixture file. The phrase-level gaps listed in its
+  `LEGACY_UNCOVERED_TYPES` are explicit exceptions while #213 and the related
+  false-positive fixes are open; remove an entry when its fixtures land, and
+  never add one. The name check prevents omissions but does not replace
+  assertions that the intended behavior fires and stays clean.
 - **Judgment-only** (needs reading for meaning — tone, structure, name-dropping)
   → add it to `references/patterns.md` prose and list it under "Skill-only" in
   `detector/CATEGORIES.md`. There is no detector type for these.
@@ -96,6 +104,15 @@ The rules from the [#88 license audit](https://github.com/conorbronsdon/avoid-ai
 
 ```bash
 npm test
+```
+
+`npm test` runs every suite via `scripts/run-tests.js` and prints a combined
+summary; earlier failures do not skip later files. To run one suite:
+
+```bash
+node scripts/run-tests.js detector/patterns.test.js
+# or invoke the file directly:
+node detector/patterns.test.js
 ```
 
 This runs the engine fixtures and the `CATEGORIES.md` contract checks: every
@@ -167,3 +184,6 @@ writing rule needs a minor version bump. Exempt changes need no version bump;
 leave published release entries intact.
 
 After changing either canonical file, run `bash scripts/sync-plugin-skill.sh && bash scripts/sync-cursor-rules.sh`. This regenerates both bundles, `SKILL.full.md`, and the portable paste/Cursor artifacts; CI checks parity. Do not edit generated copies.
+
+Maintainers should follow [the release recovery procedure](docs/releasing.md)
+instead of moving a tag or reusing a published version after a failed run.

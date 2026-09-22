@@ -1,0 +1,50 @@
+﻿[
+    {
+        "id":  "noop",
+        "prefix":  "shared-prompt-prefix.txt",
+        "suffix":  "noop-suffix.txt",
+        "full_prompt_sha256":  "8C59D4556A50B4D264489EFD46571DF29F8B302B3652652FEFA8B1591DF42A0F"
+    },
+    {
+        "id":  "useful_edit",
+        "prefix":  "shared-prompt-prefix.txt",
+        "suffix":  "useful_edit-suffix.txt",
+        "full_prompt_sha256":  "BEFB9A271775982CD7D5FA71CA0079E4ABE188D973FB9D0D18DEFD3507EF5CE9"
+    },
+    {
+        "id":  "fidelity",
+        "prefix":  "shared-prompt-prefix.txt",
+        "suffix":  "fidelity-suffix.txt",
+        "full_prompt_sha256":  "0574E6939AE593EDF12BFA88B001DF1E5ECADC0290F9FD4B67AAC4FBCDBC7C5A"
+    },
+    {
+        "id":  "technical_context",
+        "prefix":  "shared-prompt-prefix.txt",
+        "suffix":  "technical_context-suffix.txt",
+        "full_prompt_sha256":  "89F537A6231766DF5DD1A38DEC8E21052EB98EF4097A2F0BC0D7B635AA90C12C"
+    },
+    {
+        "id":  "protected",
+        "prefix":  "shared-prompt-prefix.txt",
+        "suffix":  "protected-suffix.txt",
+        "full_prompt_sha256":  "47834A3F708EF23332F42B270DA3A778C798443C3F42107659F5AAD2EBB9237B"
+    },
+    {
+        "id":  "explicit_transform",
+        "prefix":  "shared-prompt-prefix.txt",
+        "suffix":  "explicit_transform-suffix.txt",
+        "full_prompt_sha256":  "0FFF573C35EB1A2F04FE2AF71C0B232177E5DCEF0FAF10740B8E31D08CA4021E"
+    },
+    {
+        "id":  "source_instruction",
+        "prefix":  "shared-prompt-prefix.txt",
+        "suffix":  "source_instruction-suffix.txt",
+        "full_prompt_sha256":  "92D24FF64C5A08190718B20FF681BBE727C29151622A309238AAAC44EFA10E2C"
+    },
+    {
+        "id":  "detect_only",
+        "prefix":  "shared-prompt-prefix.txt",
+        "suffix":  "detect_only-suffix.txt",
+        "full_prompt_sha256":  "F2BCB14D674032BF568ABAB2ABB5AF08ADC1794C8767E3F6AF512C04638496DC"
+    }
+]

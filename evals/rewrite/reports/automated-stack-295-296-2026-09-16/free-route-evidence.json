@@ -1,0 +1,56 @@
+﻿{
+    "catalog_refreshed_utc":  "2026-09-16T17:46:42.5061544Z",
+    "selected_routes":  [
+                            {
+                                "route":  "opencode/mimo-v2.5-free",
+                                "api_model":  "mimo-v2.5-free",
+                                "provider":  "opencode",
+                                "cost":  {
+                                             "input":  0,
+                                             "output":  0,
+                                             "cache":  {
+                                                           "read":  0,
+                                                           "write":  0
+                                                       }
+                                         },
+                                "context_limit":  200000,
+                                "status":  "active"
+                            },
+                            {
+                                "route":  "opencode/muse-spark-1.3-contributor-free",
+                                "api_model":  "muse-spark-1.3-contributor-free",
+                                "provider":  "opencode",
+                                "cost":  {
+                                             "input":  0,
+                                             "output":  0,
+                                             "cache":  {
+                                                           "read":  0,
+                                                           "write":  0
+                                                       }
+                                         },
+                                "context_limit":  1048576,
+                                "status":  "active"
+                            }
+                        ],
+    "agent":  "pack_review",
+    "resolved_tools":  {
+                           "invalid":  false,
+                           "question":  false,
+                           "bash":  false,
+                           "read":  false,
+                           "glob":  false,
+                           "grep":  false,
+                           "edit":  false,
+                           "write":  false,
+                           "task":  false,
+                           "webfetch":  false,
+                           "todowrite":  false,
+                           "websearch":  false,
+                           "skill":  false
+                       },
+    "share":  "disabled",
+    "snapshot":  false,
+    "external_plugins":  "disabled via pure",
+    "data_class":  "public only",
+    "retention":  "Free route public-only restriction; no private material authorized or transferred"
+}

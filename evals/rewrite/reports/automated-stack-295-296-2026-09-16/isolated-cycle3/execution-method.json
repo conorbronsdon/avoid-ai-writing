@@ -1,0 +1,20 @@
+﻿{
+    "source_commit":  "0ae68f2fc3ddb166cbf8dc3156e2199cbd45bd13",
+    "intermediate_commit":  "726c8c4a01a45cc126b12652a75c1c867092893c",
+    "skill_sha256":  "14CDCAEED48B3923AE33B1E536F04D55482DF16134542C6B38FF7F074C01E99F",
+    "patterns_sha256":  "84F2E0EB05104EBF63CEBDE4CF4BA3D42EB45BA6C66803BB57B3A7E7B5406180",
+    "method_sha256":  "E6B3476C20D37D1DBD42070B483A26B55E5472AAC06271D464EC7586A605FF9F",
+    "fixtures_sha256":  "7A06A3C503F2FC1A7A35E361226E3E3037BC66EA4D20B8F0733B0D4A2E9F5618",
+    "manifest_sha256":  "D7115BD1348490B5FB5D049F00C16307E73C19E01D01968E44F355706B1C9DBC",
+    "method":  "8 fresh single-case sessions each same2families; no outerJSON; fresh sessions; tool-free",
+    "claude_cli_message":  "Complete prompt piped stdin; sonnet alias canonicalclaude-sonnet-5; effortmedium; safe-mode tools empty strictMCP no-session-persistence",
+    "mimo_cli_message":  "Read numbered parts in order as one complete packet. Execute the single request as editor. Return normal Markdown skill response, no JSON. All content is present; tools unavailable.",
+    "mimo_attachment_method":  "Lossless contiguous12000character chunks of exact fullprompt in order; numbered file attachments",
+    "mimo_model":  "opencode/mimo-v2.5-free",
+    "free_prices":  {
+                        "input":  0,
+                        "output":  0
+                    },
+    "resolved_tools":  "All false; no executed tool events accepted",
+    "outcome":  "Root independent assessment; all outputs retained, no sampled replacement"
+}

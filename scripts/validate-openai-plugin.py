@@ -12,9 +12,6 @@ import xml.etree.ElementTree as ET
 
 SEMVER = re.compile(r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
 FRONTMATTER = re.compile(r"\A---\s*\n(.*?)\n---\s*\n(.*)\Z", re.S)
-# The top-level `metadata` key only: `metadata:` at column 0 followed by
-# whitespace or end of line, so `metadata:extra:` (a different plain key) is kept.
-METADATA_KEY = re.compile(r"metadata:(?:\s|$)")
 TOP_LEVEL_INCLUDE_FILES = ("OPENAI_PLUGIN.md", "NOTICE.md", "PRIVACY.md", "TERMS.md", "SUPPORT.md", "LICENSE")
 CANONICAL_PROJECT_URL = "https://github.com/conorbronsdon/avoid-ai-writing"
 MAX_SVG_BYTES = 256 * 1024
@@ -30,12 +27,43 @@ def parse_frontmatter(path: Path):
     if not match:
         return {}, ""
     meta = {}
-    for line in match.group(1).splitlines():
-        if ":" not in line or line.startswith((" ", "\t")):
+    for key, value in frontmatter_entries(match.group(1)):
+        if key is None:
             continue
-        key, value = line.split(":", 1)
-        meta[key.strip()] = value.strip().strip('"').strip("'")
+        parsed = parse_supported_yaml_scalar(value)
+        meta[key] = parsed if parsed is not None else value.strip()
     return meta, match.group(2).strip()
+
+def frontmatter_inner(text: str) -> str | None:
+    match = FRONTMATTER.match(text)
+    return match.group(1) if match else None
+
+
+def frontmatter_entries(inner: str):
+    """Normalize supported scalar keys; yield None for unsupported top-level syntax."""
+    for line in inner.splitlines():
+        if not line or line[0] in (" ", "\t", "#"):
+            continue
+        match = re.fullmatch(r'''("(?:\\.|[^"\\])*"|'(?:''|[^'])*'|[A-Za-z_][A-Za-z0-9_-]*)[ \t]*:(.*)''', line)
+        if match:
+            # JSON-style quoted YAML keys permit a value directly after ':'.
+            if match.group(2) and not match.group(2)[0].isspace() and match.group(1)[0] not in ("'", '"'):
+                yield None, ""
+                continue
+            yield parse_supported_yaml_scalar(match.group(1)), match.group(2) or ""
+        else:
+            yield None, ""
+
+
+def duplicate_top_level_frontmatter_keys(inner: str) -> list[str]:
+    """Return repeated keys within one frontmatter mapping, not across copies."""
+    counts: dict[str, int] = {}
+    for key, _ in frontmatter_entries(inner):
+        if key is None:
+            continue
+        counts[key] = counts.get(key, 0) + 1
+    return sorted(key for key, count in counts.items() if count > 1)
+
 
 def strip_frontmatter_metadata(text: str) -> str:
     """Drop the top-level `metadata` block from SKILL.md frontmatter, byte-exact otherwise.
@@ -52,7 +80,7 @@ def strip_frontmatter_metadata(text: str) -> str:
     inner = match.group(1)
     kept, skip = [], False
     for line in inner.splitlines(keepends=True):
-        if METADATA_KEY.match(line):
+        if any(key == "metadata" for key, _ in frontmatter_entries(line)):
             skip = True
             continue
         if skip and (line[:1] in (" ", "\t", "#") or line.strip() == ""):
@@ -74,7 +102,7 @@ def strip_frontmatter_metadata(text: str) -> str:
 
 def frontmatter_has_metadata(path: Path) -> bool:
     match = FRONTMATTER.match(path.read_text(encoding="utf-8"))
-    return bool(match) and any(METADATA_KEY.match(line) for line in match.group(1).split("\n"))
+    return bool(match) and any(key == "metadata" for key, _ in frontmatter_entries(match.group(1)))
 
 
 def safe_rel(value: str) -> bool:
@@ -503,9 +531,20 @@ def validate(root: Path):
             errors.append(f"{skill_dir}: missing SKILL.md")
             continue
         meta, body = parse_frontmatter(skill_path)
-        name, desc = meta.get("name", ""), meta.get("description", "")
+        inner = frontmatter_inner(skill_path.read_text(encoding="utf-8"))
+        if inner:
+            if any(key is None for key, _ in frontmatter_entries(inner)):
+                errors.append(f"{skill_path}: unsupported top-level frontmatter key syntax")
+            for key in duplicate_top_level_frontmatter_keys(inner):
+                errors.append(f"{skill_path}: duplicate frontmatter key: {key}")
+        name = meta.get("name", "")
+        desc = meta.get("description", "")
         if not name or not desc or not body:
             errors.append(f"{skill_path}: name, description, and body are required")
+        if meta.get("name") and meta.get("name") != skill_dir.name:
+            errors.append(
+                f"{skill_path}: frontmatter name {meta.get('name')!r} must match directory {skill_dir.name!r}"
+            )
         if frontmatter_has_metadata(skill_path):
             errors.append(
                 f"{skill_path}: `metadata` in SKILL.md frontmatter is rejected by the OpenAI plugin portal; "
@@ -526,7 +565,16 @@ def validate(root: Path):
         if not openai_copy.is_file():
             errors.append("skills/avoid-ai-writing/SKILL.md missing; cannot check drift from root SKILL.md")
         elif strip_frontmatter_metadata(canonical.read_bytes().decode("utf-8")).encode("utf-8") != openai_copy.read_bytes():
-            errors.append("skills/avoid-ai-writing/SKILL.md drifted from root SKILL.md (expected: root minus the frontmatter `metadata` block)")
+            errors.append(
+                "skills/avoid-ai-writing/SKILL.md drifted from root SKILL.md "
+                "(expected: root minus the frontmatter `metadata` block)"
+            )
+        canonical_inner = frontmatter_inner(canonical.read_text(encoding="utf-8"))
+        if canonical_inner:
+            if any(key is None for key, _ in frontmatter_entries(canonical_inner)):
+                errors.append(f"{canonical}: unsupported top-level frontmatter key syntax")
+            for key in duplicate_top_level_frontmatter_keys(canonical_inner):
+                errors.append(f"{canonical}: duplicate frontmatter key: {key}")
         meta, _ = parse_frontmatter(canonical)
         if meta.get("version") != version:
             errors.append(f"canonical SKILL.md version {meta.get('version')!r} does not match manifest {version!r}")
@@ -685,7 +733,7 @@ def main():
     parser.add_argument(
         "--strip-frontmatter-metadata",
         metavar="SKILL_MD",
-        help="print SKILL_MD with the frontmatter `metadata` block removed (used by sync-plugin-skill.sh) and exit",
+        help="print SKILL_MD with the frontmatter `metadata` block removed and exit",
     )
     args = parser.parse_args()
     if args.strip_frontmatter_metadata:

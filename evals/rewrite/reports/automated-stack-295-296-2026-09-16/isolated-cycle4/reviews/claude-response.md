@@ -1,0 +1,11 @@
+**finalSHA:** 0fdaf07920d0406998e2fa4f64e3f99a07bd5c7b
+**Verdict:** No actionable findings ≥80% confidence in the affected delta.
+
+**What was checked:**
+- SKILL.md:226 and patterns.md:721–726 are near-duplicate additions. Cross-checked both against each other and against the pre-existing budget/no-op/pass-history rules they reference (SKILL.md:123, 125, 224, 238).
+- "Planned edit absent ≠ completed change" (SKILL.md:226, patterns.md:723) is consistent with, not a restatement conflict of, the pre-existing unauthorized-removal repair rule at SKILL.md:224 — the two cover opposite failure directions (wrongly removed vs. wrongly retained) and both correctly route through "the remaining/shared editing budget," so they don't create a double-spend or ambiguity on the budget pool.
+- "Reverted passes still count toward pass history" (SKILL.md:226) matches the pre-existing rule at SKILL.md:238 ("a later repair that restores the original text still retains the passes actually used") rather than contradicting it, and does not collapse reverted-pass into no-op (SKILL.md:236, 238 remain distinct).
+- Protected-span handling is untouched: neither new paragraph authorizes editing protected content to satisfy a "missing edit," since a missing edit is only "justified" under the existing scope/protection contract (SKILL.md:69–75), which this diff doesn't modify.
+- Truthful-unavailable-check language (SKILL.md:232, patterns.md:729–732) is unaffected by this diff — no change to those lines, no interaction introduced.
+
+**Minor note (below 80% confidence, not reported as a finding):** SKILL.md:226 scopes the "don't call it resolved" rule to text remaining in the "editable final span," while patterns.md:723 states the parallel rule ("must not be reported as completed") without that qualifier. In practice this doesn't diverge because protected-span residuals are already routed through the separate protected/intentional-residual reporting rule (SKILL.md:232), but the wording asymmetry is worth a glance if these two files are edited independently in the future.

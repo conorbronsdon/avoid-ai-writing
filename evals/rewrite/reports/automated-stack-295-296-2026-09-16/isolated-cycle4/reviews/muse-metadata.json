@@ -1,0 +1,19 @@
+{
+  "reviewed_sha": "0fdaf07920d0406998e2fa4f64e3f99a07bd5c7b",
+  "reviewer": "opencode/muse-spark-1.3-contributor-free",
+  "usage": {
+    "total": 13688,
+    "input": 11241,
+    "output": 127,
+    "reasoning": 2320,
+    "cache": {
+      "write": 0,
+      "read": 0
+    }
+  },
+  "finish_reason": "stop",
+  "cost": 0,
+  "tool_events": 0,
+  "transport": "complete inspected stdin packet; all tools denied",
+  "packet_sha256": "1793c37f5849d1ef9a8b1f720558ca5ba21572ad7625e5c46d6a4d64fbf0ce76"
+}

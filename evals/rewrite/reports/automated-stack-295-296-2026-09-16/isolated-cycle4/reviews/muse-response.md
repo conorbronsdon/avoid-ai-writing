@@ -1,0 +1,3 @@
+finalSHA: 0fdaf07920d0406998e2fa4f64e3f99a07bd5c7b — VERDICT: PASS
+
+No actionable new >=80% consistency defects in PR296 delta. New Final-artifact-derived Changes/Verification, absent-planned-edit-is-not-completed, remaining-shared-budget-only repair, reverted-pass-counts-separately-from-surviving-differences, and truthful-unavailable-checks rules are internally consistent and preserve authorized-scope / protected-span / no-op / pass-limit protections.

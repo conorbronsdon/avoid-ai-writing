@@ -1,0 +1,11 @@
+﻿diff --git a/skills/voice-preserving-rewriter/SKILL.md b/skills/voice-preserving-rewriter/SKILL.md
+index 50a4a4a..890f865 100644
+--- a/skills/voice-preserving-rewriter/SKILL.md
++++ b/skills/voice-preserving-rewriter/SKILL.md
+@@ -101,4 +101,6 @@ Stop when no justified in-scope edit remains, the requested pass limit is reache
+ 
+ ## Output
+ 
++Follow the canonical `../avoid-ai-writing/SKILL.md` rewrite-mode Output format, including its four Verification items. Carry the checks, residuals, and stop reason needed for that report through the handoff; a pass count alone does not explain why editing stopped.
++
+ Complete review and any available verification before responding. Return the full text exactly once under **Final rewrite**, followed by a concise change summary when useful and honest verification status for that final text. Add a detailed audit only when the user requests it; the audit must not contain another full rewrite. Report editing passes used and any intentional, protected, source-blocked, pass-limit, or verification residual. If a representation guard applied, mention only materially relevant preserved constraints rather than adding a separate visual-design report.

@@ -1,5 +1,19 @@
 # Rewrite preservation regressions
 
+## Current merge gate
+
+The [automated regression gate](automated-gate.md) governs the editing-contract
+and single-final-rewrite stack. It was adopted on 2026-09-16 with maintainer
+authorization. Human adjudication is optional follow-up work, not a merge
+requirement. The historical comparative experiment below retains its original
+frozen protocol and evidence rules; its results must not be relabeled as
+complete or human-reviewed to satisfy the new gate.
+
+The [2026-09-16 stack report](reports/automated-stack-295-296-2026-09-16/README.md)
+and its [follow-up](reports/automated-stack-295-296-2026-09-16/FOLLOWUP.md)
+record executed scenarios, retained failures, independent reviews, and remaining
+blockers. This evidence does not complete the historical pilot.
+
 `demo.json` records the quick demo's source, required facts, known forbidden
 additions, allowed edits, and contrasting outputs. Run `node scripts/rewrite-demo.test.js`.
 The check reads the published README pair, so fixture-only correctness cannot
@@ -8,7 +22,8 @@ hide a regression in the example readers see.
 These explicit patterns catch the original investor/integration inventions and
 missing dashboards. They accept more than one rewrite, but can reject an
 unlisted paraphrase or accept a negated, contradictory, or newly invented claim.
-They do not prove semantic fidelity. Human review remains necessary.
+They do not prove semantic fidelity. Model-assisted scenario review supplies
+additional regression evidence, not human-validated writing-quality evidence.
 
 ## Published example audit
 
@@ -31,7 +46,7 @@ Reviewed at main `d57265d` for issue #200:
 The examples are fictional. No real-world funding or product claim is verified
 by these fixtures. Wider editing evaluation is tracked in #201.
 
-## Editing evaluation pilot (#201)
+## Historical comparative evaluation pilot (#201)
 
 This is offline evaluation infrastructure, not a model runner or a published
 benchmark result. It makes no network calls and needs no model credentials.
@@ -70,15 +85,21 @@ case until then. All conditions use the same portable, no-tools environment. The
 exact skill entry and reference contents are included in the system prompt. This
 does not evaluate resource-loading efficiency.
 
-Rewrite mode still gives the skill conditions a four-section reporting format
-while the simple condition may return only prose. A common user instruction
-therefore requires every condition to place exactly one final artifact between
-the `<<<FINAL_REWRITE>>>` and `<<<END_FINAL_REWRITE>>>` boundary lines. If the
-skill's second pass changes section 2, only the corrected version in section 4
-goes between the boundaries. Result validation derives the complete payload
-from those markers; a reviewer cannot select a more favorable substring. This
-makes the prose sent to mechanical and human review the same kind of artifact
-without removing the skill's reporting behavior from the condition being tested.
+Skill snapshots can differ in their surrounding report: historical baselines
+may use the former four-section format, while current candidates present one
+final rewrite after review and available verification. A common user
+instruction therefore requires every condition to place exactly one final
+artifact between the `<<<FINAL_REWRITE>>>` and `<<<END_FINAL_REWRITE>>>`
+boundary lines. For a historical output where a second pass supersedes an
+earlier section, only the corrected version goes between the boundaries. Result
+validation derives the complete payload from those markers; a reviewer cannot
+select a more favorable substring. This keeps the frozen comparison compatible
+with old and new presentation contracts without changing the scored artifact.
+
+Manual forward checks for the current output, pass-budget, residual, and
+tool-status contract live in [`output-contract-scenarios.md`](./output-contract-scenarios.md).
+They supplement this frozen comparison and are not part of its cases, protocol,
+or score.
 
 ### Freeze a comparison
 
@@ -184,6 +205,97 @@ predate the plan's `created_at`; a result dated before the freeze is rejected.
 A failed or missing call leaves the comparison incomplete; log the error and
 rerun that task explicitly. Do not silently choose the best of several outputs.
 
+#### Optional OpenCode Zen executor
+
+`scripts/rewrite-eval-opencode.js` is an explicit, free-model executor for
+OpenCode 1.18.30. It does not change the frozen cases, prompts, metrics or
+reporting gates. It starts a new OpenCode process and session for every selected
+task, resolves a custom agent with every tool disabled, and stores the full
+OpenCode event stream and session export beside each result.
+
+OpenCode normally adds a coding-agent and environment system prompt. The
+executor loads a local file plugin that uses OpenCode's
+`experimental.chat.system.transform` hook to replace that assembled prompt with
+the plan's exact condition prompt immediately before dispatch. A second hook
+sets the frozen temperature, sampling and output-token parameters. Per-call
+audit files must exactly match the plan before a result is accepted. The task's
+user prompt is supplied over stdin and checked against the persisted session;
+OpenCode 1.18.30 adds display quotes when a multiline prompt is passed as one
+positional argument. `--pure` cannot be used for execution because it disables
+the audit plugin. The executor still sets sharing off, automatic updates off and
+all permissions to deny. It uses a dedicated config directory, disables project
+config discovery, enables only the OpenCode provider, and rejects the resolved
+configuration unless the generated audit plugin is the only external plugin,
+there are no provider or MCP overrides, and the resolved agent has no extra
+settings. Model audits pin the observed Zen URL and SDK transport and require
+every advertised cost dimension to be zero.
+This prevents another configured plugin from changing a message after an audit.
+
+The adapter accepts only the observed free Zen IDs `mimo-v2.5-free`,
+`ling-3.0-flash-fin-free` and `nemotron-3-ultra-free`, and only model settings it
+can apply and verify:
+
+```json
+{
+  "temperature": 0,
+  "top_p": null,
+  "top_k": null,
+  "max_output_tokens": 4096,
+  "provider_options": {},
+  "transport": "opencode-1.18.30-system-transform-v1",
+  "opencode_version": "1.18.30",
+  "model_alias_reproducibility": "Moving Zen alias; no immutable provider revision is exposed."
+}
+```
+
+Create an external runner configuration. Omit `task_ids` only after approving a
+complete run; a selected subset remains diagnostic and cannot satisfy the
+release policy.
+
+```json
+{
+  "schema_version": 1,
+  "purpose": "diagnostic",
+  "opencode_path": "/absolute/path/to/opencode",
+  "opencode_version": "1.18.30",
+  "timeout_ms": 420000,
+  "task_ids": ["CASE/MODEL/REPETITION/CONDITION"]
+}
+```
+
+Run and import only validated results:
+
+```bash
+node scripts/rewrite-eval-opencode.js run /tmp/plan.json /tmp/runner.json /tmp/run
+node scripts/rewrite-eval-opencode.js import /tmp/plan.json /tmp/run /tmp/results.json
+```
+
+The run directory is resumable but never retries a recorded failure or replaces
+a recorded success. Resume and import re-derive every request and revalidate the
+plugin, resolved config, no-tools agent, event stream, system and parameter
+audits (including every invocation when OpenCode repeats a hook), call timing,
+session export, model identity, cost, usage and result. A
+missing or contradictory receipt fails closed. Spawn errors and timeouts retain
+a failure record and batch status. Immutable artifacts use flushed temporary
+files and atomic no-clobber publication. If resume finds a malformed result, it
+moves the exact bytes to `invalid-result.json`, records a hashed failure and
+continues unrelated tasks; it never treats that file as a completed result.
+Interrupted config/plugin setup validates every existing artifact before it
+creates only the missing files, and conflicting contents still fail closed.
+Each run or import performs the full Git-backed plan/provenance check once (six
+pinned-file reads for this protocol); per-task and final row checks reuse that
+already-verified in-memory plan without launching 3,888 redundant Git jobs for
+a 648-task import. `opencode_path` must be absolute. On Windows it must name the
+native `opencode.exe`; npm's `opencode.cmd` and other command shims cannot be
+launched by this runner. A global npm installation typically places the native
+binary under `%APPDATA%\npm\node_modules\opencode-ai\bin\opencode.exe`. Verify
+that the selected binary reports the pinned version before starting a run. Use
+a new directory for an explicit retry so
+the rejected attempt remains in the experiment record. A configuration with
+`task_ids` must use `purpose: "diagnostic"`. Zen's free model IDs are moving
+aliases; record that limitation and do not describe them as immutable model
+versions. A transport smoke test is diagnostic, not a benchmark result.
+
 ### Blind human review
 
 ```bash
@@ -197,7 +309,7 @@ an extra or duplicated alias is rejected, and adjudication is counted per task,
 so a task judged twice through two aliases cannot stand in for one never judged.
 Reviewers may see the source and expected constraints but not condition labels.
 The packet contains the validated `final_text`, not the differently formatted
-`raw_output`, so the skill's four-section report cannot disclose its condition or
+`raw_output`, so the skill's surrounding report cannot disclose its condition or
 prime the judgment. Keep raw responses with the experiment record for a separate
 audit after judgments are frozen. The prose itself may still make a condition
 inferable: this is label blinding, not a guarantee that reviewers cannot infer
@@ -250,9 +362,12 @@ failures. Mechanical checks can flag missing protected text and the demo's known
 regressions, but do not establish semantic fidelity or quality. No detector score
 is used, and no automatic rollout approval is produced.
 
-### Release comparison and limits
+### Historical experiment release comparison and limits
 
-`protocol.json` freezes the policy before comparative runs. Use at least two
+The following policy applies only to completing or making claims from the
+historical comparative experiment. It is not the current merge gate; see
+[automated-gate.md](automated-gate.md). `protocol.json` freezes that experiment
+policy before comparative runs. Use at least two
 editor model families for a release comparison and report each separately. A
 single available family is diagnostic only. Require complete human review and
 three repetitions for every case/condition. The candidate must have no higher
@@ -268,4 +383,5 @@ before release. This small pilot is diagnostic, not statistical proof of general
 improvement. Report counts, sample sizes, disagreements and limitations.
 
 No comparative model run or human adjudication has been performed by adding this
-harness. Issue #201 remains open for those experiment results and release review.
+harness. Issue #201 records the revised acceptance criteria and any optional future
+comparative work.

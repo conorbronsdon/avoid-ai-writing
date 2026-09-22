@@ -6,14 +6,14 @@ the skill, decide here whether it's regex-detectable (give it a detector `type`)
 or LLM-only judgment (mark it so). When you add a detector `type`, point it back
 at the skill section it enforces.
 
-The engine exposes 54 issue `type`s (see `TYPE_LABELS` in `patterns.js`). The
+The engine exposes 53 issue `type`s (see `TYPE_LABELS` in `patterns.js`). The
 skill has more `###` sections than that — the gap is **not** missing coverage,
 it's rules that are judgment calls a regex can't make. The three groups below
 account for every entry on both sides.
 
 Three counts coexist on purpose and should not be forced to match: the README's
 **pattern-category count** (the human-facing prose catalog, derived from references/patterns.md
-and guarded in CI), the engine's **54 `type`s** (which split the vocabulary tiers
+and guarded in CI), the engine's **53 `type`s** (which split the vocabulary tiers
 and add stylometric signals), and references/patterns.md's `###` sections (which also include
 writer-side tests with no detectable form). The
 `categories.test.js` enforces the engine ↔ this-file mapping, and checks every
@@ -23,14 +23,13 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 
 | Detector `type` | Label | references/patterns.md section |
 |---|---|---|
-| `tier1` / `tier2` / `tier3` | AI vocabulary / Word cluster / Overused word | Words and phrases to replace (`load-bearing`: immediate abstract-noun allowlist only; literal, predicative, and unlisted forms pass) |
+| `tier1` / `tier2` / `tier3` | AI vocabulary / Word cluster / Overused word | Words and phrases to replace (`load-bearing`: immediate abstract-noun allowlist only; literal, predicative, and unlisted forms pass; `technical` context mode suppresses eight technical-legitimate terms: `robust`, `comprehensive`, `seamless`, `ecosystem`, `leverage`, `facilitate`, `underpin`, `streamline`) |
 | `tier1-clarity` | Wordiness | Words and phrases to replace (Tier 1B) |
 | `transition` | AI transition | Transition phrases to remove or rewrite |
 | `template-phrase` | Template phrase | Template phrases (avoid) |
 | `tier3-phrase` / `tier3-phrase-cluster` | Boilerplate phrase / cluster | Template phrases (avoid) |
 | `chatbot` | Chatbot artifact | Chatbot artifacts |
 | `sycophantic` | Sycophantic tone | Sycophantic tone |
-| `acknowledgment-loop` | Acknowledgment loop | Acknowledgment loops |
 | `filler` | Filler phrase | Filler phrases |
 | `hollow-intensifier` | Hollow intensifier | Filler phrases (intensifiers), except context-dependent `actually` (see §C) |
 | `generic-conclusion` | Generic conclusion | Generic conclusions |
@@ -42,7 +41,7 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 | `novelty-inflation` | Novelty inflation | Novelty inflation *(the invented-concept-labels sub-rule is LLM-judgment only — open-ended coinages aren't regex-matchable)* |
 | `real-actual-inflation` | "Real/actual" inflation | "Real/actual" adjective inflation |
 | `vague-attribution` | Vague attribution | Vague attributions |
-| `emotional-flatline` | Emotional flatline | Emotional flatline / Superficial -ing analyses |
+| `emotional-flatline` | Stock reaction framing | Stock reaction framing / Superficial -ing analyses *(stable API type; style-only for authorship scoring under the precision-first evidence policy)* |
 | `lingering-attention` | Lingering-attention claim | Lingering-attention claims *(noun-anchored frames only — the bare "I keep coming back to X" stays LLM-judgment, since a following reason clause makes it legitimate and isn't regex-detectable)* |
 | `cutoff-disclaimer` | Cutoff disclaimer | Cutoff disclaimers |
 | `false-concession` | False concession | False concession structure |
@@ -121,6 +120,7 @@ mistake their absence for a coverage gap:
 - Self-labeling significance
 - Wall-of-text replies (missing line breaks) *(tried as a detector — "reply-length, >=4 sentences, zero newlines" — and reverted; it fires on any ordinary short paragraph, not just conversational-reply register, so it stayed judgment-only. See the NOTE in `patterns.js` near the bullet-NP-list block)*
 - Recap-flattery opener
+- Acknowledgment loops *(tried as a detector — "you're asking about", "the question of whether", "to answer your question" — and retired (#239): the first opens ordinary replies and support answers ("You're asking about the retry limit. It is five by default..."), the third opens replies to a named earlier question ("To answer your question from Tuesday: the invoice went out on the 3rd..."), and the second is standard academic and analytical English. Both reply openers are document-initial in those examples, so position cannot separate them from the tell. Judging it needs reading whether the restatement adds anything before the answer arrives)*
 - Narrated candor *(tried as a detector and reverted: the phrasings are shared with idiomatic conflict-of-interest disclosure ("in the interest of full disclosure, I own shares in...") and with the ordinary English comparative ("I'd rather die than let you drive"), so any regex tight enough to avoid those stopped matching the tell. Judging it needs reading whether the clause carries information or only announces that information is coming)*
 - Immaculate typography in casual registers *(folded into the Formatting section — same weak-signal tier as curly quotes, not a standalone category)*
 - Subjectless fragments and agentless passives *(docs and changelog registers are carve-outs — the fragment is the correct form there)*
@@ -136,9 +136,11 @@ mistake their absence for a coverage gap:
 - Self-reference escape hatch
 - Output format
 
-> **Partial:** the skill's **Context profiles / Tolerance matrix / Auto-detection
-> cues** are partly realized by the engine's `options.contextMode`
-> (`general`, `technical`, `marketing`, `personal`). Only `technical` currently
-> changes flagging (e.g. suppresses context-inappropriate flags); `marketing` and
-> `personal` are accepted and reported in stats but score like `general`. Full
-> profile-based tolerance remains an LLM-side judgment.
+> **Partial:** the skill's six context profiles map to the engine's broader
+> `options.contextMode` values as documented in
+> `references/patterns.md#detector-mode-mapping`. Only `technical` currently
+> changes flagging behavior (skips title-case headers and suppresses eight
+> technical-legitimate terms: `robust`, `comprehensive`, `seamless`, `ecosystem`,
+> `leverage`, `facilitate`, `underpin`, `streamline`); `marketing` and `personal`
+> are accepted and reported in stats but score like `general`. Full profile-based
+> tolerance remains an LLM-side judgment.

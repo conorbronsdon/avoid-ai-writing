@@ -66,6 +66,32 @@ test('every type referenced in the tables is a real detector type', () => {
   );
 });
 
+// #242 establishes a ratchet without taking the newcomer fixtures from #213
+// or the phrase-level false-positive follow-ups. This is a name-presence guard,
+// not proof of assertions or runtime coverage. Remove an exception when its
+// fixture lands; new types must never be added to this historical list.
+const LEGACY_UNCOVERED_TYPES = [
+  'false-concession',
+  'lets-construction',
+  'novelty-inflation',
+  'rhetorical-question',
+  'significance-inflation',
+  'sycophantic',
+  'template-phrase',
+  'tier1-clarity',
+  'vague-attribution',
+];
+
+test('every detector type has a named fixture or an explicit legacy gap', () => {
+  const fixtures = fs.readFileSync(path.join(__dirname, 'patterns.test.js'), 'utf8');
+  const missing = typeKeys.filter(type =>
+    !fixtures.includes(`'${type}'`) && !fixtures.includes(`"${type}"`)
+  ).sort();
+  assert.deepEqual(missing, LEGACY_UNCOVERED_TYPES,
+    'Fixture coverage changed: add a fixture for a new/missing type, or remove ' +
+    'a legacy exception whose fixture has landed. Do not expand the exception list.');
+});
+
 // The engine's `type` total is a DERIVED fact: the true value is
 // TYPE_LABELS.length, and every sentence that states a number is a copy of it.
 // Copies rot. The README sat at 45 through the two releases that took the real

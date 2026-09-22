@@ -81,7 +81,8 @@ async function fetchWindow(offset) {
     headers: { Range: `bytes=${offset}-${offset + WINDOW_BYTES}` },
     signal: AbortSignal.timeout(180000),
   });
-  if (!res.ok && res.status !== 206) throw new Error(`HTTP ${res.status} at offset ${offset}`);
+  // A 200 means the host ignored Range and may be streaming the full 11.8 GB.
+  if (res.status !== 206) throw new Error(`expected HTTP 206 at offset ${offset}, got ${res.status}`);
   const raw = await res.text();
   const m = raw.match(RECORD_START);
   if (!m) return [];

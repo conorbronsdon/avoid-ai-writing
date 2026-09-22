@@ -1,0 +1,21 @@
+﻿{
+    "id":  "technical_context",
+    "model":  "opencode/mimo-v2.5-free",
+    "started_utc":  "2026-09-16T18:20:38.4720650Z",
+    "finished_utc":  "2026-09-16T18:21:09.9299057Z",
+    "exit_code":  0,
+    "finish_reason":  "stop",
+    "usage":  {
+                  "total":  36710,
+                  "input":  34027,
+                  "output":  288,
+                  "reasoning":  347,
+                  "cache":  {
+                                "write":  0,
+                                "read":  2048
+                            }
+              },
+    "cost":  0,
+    "tool_events":  0,
+    "prompt_sha256":  "89F537A6231766DF5DD1A38DEC8E21052EB98EF4097A2F0BC0D7B635AA90C12C"
+}

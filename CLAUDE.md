@@ -36,7 +36,7 @@ The skill has three modes (`rewrite` default, `detect` flag-only, `edit` in-plac
 2. **Pattern matching** — detection categories across content, language, structure, communication, and meta patterns (see references/patterns.md for the catalog; the count is in the README bullet)
 3. **Vocabulary flagging** — 3-tier system: Tier 1 (always flag), Tier 2 (flag in clusters), Tier 3 (flag at high density)
 4. **Severity classification** — P0 (credibility killers), P1 (obvious AI smell), P2 (stylistic polish)
-5. **Output** — rewrite mode: 4 sections including a second-pass audit; detect mode: 2 sections with problem vs. judgment-call assessment
+5. **Output** — rewrite mode: one final rewrite, useful change summary, and verification; detailed findings on request. Detect mode: findings and assessment
 
 ## Key constraints
 

@@ -1,0 +1,13 @@
+=== USER REQUEST ===
+Clean up only the ordinary prose. Keep the attributed quote, table, code, URL, and path unchanged.
+
+=== SOURCE ===
+Moreover, the rollout finished Friday.
+
+Mina said, "This seamless platform marks a pivotal moment for our team."
+
+| Metric | Value |
+| --- | --- |
+| Tickets | 31 |
+
+Run `client --dry-run` using /srv/config.json. See https://status.example.test/v2.

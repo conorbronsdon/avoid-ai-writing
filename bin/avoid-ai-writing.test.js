@@ -37,6 +37,13 @@ const optionsJson = JSON.parse(withOptions.stdout);
 assert.strictEqual(optionsJson.stats.contextMode, "technical");
 assert.strictEqual(optionsJson.stats.sourceMode, "rendered-markdown");
 
+// every context the engine and the gate CLI accept is accepted here too
+for (const context of ["general", "technical", "marketing", "personal"]) {
+  const res = run(["--context", context], SAMPLE);
+  assert.strictEqual(res.status, 0, `${context}: ${res.stderr}`);
+  assert.strictEqual(JSON.parse(res.stdout).stats.contextMode, context);
+}
+
 // --help prints usage and exits 0
 const help = run(["--help"]);
 assert.strictEqual(help.status, 0);
@@ -44,6 +51,10 @@ assert.ok(help.stdout.includes("Usage: avoid-ai-writing"), "expected usage text 
 assert.ok(
   help.stdout.includes("npx --package avoid-ai-writing-detector avoid-ai-writing"),
   "expected npx to name the package explicitly",
+);
+assert.ok(
+  help.stdout.includes("--context <general|technical|marketing|personal>"),
+  "expected --help to list the same contexts as the gate CLI",
 );
 
 // "--" ends option parsing, so dash-prefixed file names still work

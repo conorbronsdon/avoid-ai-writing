@@ -5,8 +5,24 @@
 const assert = require('assert');
 const { spawnSync } = require('child_process');
 const path = require('path');
+const fs = require('fs');
+const os = require('os');
+const { sha256 } = require('./corpus.js');
 
-const CLI = path.join(__dirname, 'fp-measure.js');
+// Exercise the real CLI against a tiny verified cache, independent of local
+// downloads. Populating the full corpus must not make npm test run it repeatedly.
+const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'fp-measure-cli-'));
+process.on('exit', () => fs.rmSync(fixtureRoot, { recursive: true, force: true }));
+for (const directory of ['scripts', 'detector', 'corpus/cache']) fs.mkdirSync(path.join(fixtureRoot, directory), { recursive: true });
+for (const file of ['scripts/fp-measure.js', 'scripts/fp-preprocess.js', 'scripts/corpus.js', 'detector/patterns.js']) {
+  fs.copyFileSync(path.join(__dirname, '..', file), path.join(fixtureRoot, file));
+}
+const fixtureText = Array.from({ length: 60 }, (_, i) => `word${i}`).join(' ');
+fs.writeFileSync(path.join(fixtureRoot, 'corpus/cache/fixture.txt'), fixtureText);
+fs.writeFileSync(path.join(fixtureRoot, 'corpus/manifest.json'), JSON.stringify({ documents: [
+  { id: 'fixture', class: 'human', register: 'docs', source: { type: 'url' }, sha256: sha256(fixtureText) },
+] }));
+const CLI = path.join(fixtureRoot, 'scripts/fp-measure.js');
 
 function run(args) {
   return spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8' });
@@ -45,5 +61,30 @@ for (const [label, args, expectedUnit] of validCases) {
   const parsed = JSON.parse(res.stdout);
   assert.strictEqual(parsed.unit, expectedUnit, `${label}: expected unit ${expectedUnit}`);
 }
+
+const dumpPath = path.join(fixtureRoot, 'units.jsonl');
+const dumped = run(['--json', '--dump-units', dumpPath]);
+assert.strictEqual(dumped.status, 0, dumped.stderr);
+const records = fs.readFileSync(dumpPath, 'utf8').trim().split('\n').map(JSON.parse);
+assert.strictEqual(records[0].recordKind, 'meta');
+assert.strictEqual(records[0].sources[0].status, 'verified');
+assert.strictEqual(records[1].status, 'selected');
+assert.strictEqual(records[1].inputWords, 60);
+assert.ok(!fs.readFileSync(dumpPath, 'utf8').includes('word0'), 'dump must omit source text');
+const original = fs.readFileSync(dumpPath, 'utf8');
+const overwrite = run(['--dump-units', dumpPath]);
+assert.strictEqual(overwrite.status, 2);
+assert.strictEqual(overwrite.stdout, '');
+assert.strictEqual(fs.readFileSync(dumpPath, 'utf8'), original);
+for (const args of [['--dump-units'], ['--dump-units', '--json'], ['--dump-units=x'], ['--dump-units', 'x', '--dump-units', 'y'], ['--typo']]) {
+  const result = run(args);
+  assert.strictEqual(result.status, 2, JSON.stringify(args));
+  assert.strictEqual(result.stdout, '');
+}
+fs.writeFileSync(path.join(fixtureRoot, 'corpus/cache/fixture.txt'), fixtureText + ' changed');
+const mismatch = run(['--json']);
+assert.strictEqual(mismatch.status, 2);
+assert.strictEqual(mismatch.stdout, '');
+assert.match(mismatch.stderr, /hash mismatch/);
 
 console.log('fp-measure cli: ok');

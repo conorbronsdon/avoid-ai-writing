@@ -26,22 +26,19 @@
  * Dependency-free; runs on node >= 18.
  */
 
+const fs = require('node:fs');
+const path = require('node:path');
+const { execFileSync } = require('node:child_process');
 const AIDetector = require('../detector/patterns.js');
-const { readManifest, loadRows } = require('./corpus.js');
+const { readManifest, rowsFromText, loadText, sha256 } = require('./corpus.js');
+const { prepareUnits, normalizeUnit, splitUnits, unitsForText } = require('./fp-preprocess.js');
 
 // Thresholds span the range the detector actually emits, not the range its
 // 0-100 scale implies. On real text of either class, paragraph scores top out
 // near 10; a table starting at 25 reports 0.0% everywhere and hides that fact
 // instead of showing it.
 const THRESHOLDS = [3, 5, 10, 15, 25, 50];
-
-/**
- * Units shorter than this are skipped: the detector no-ops under ~10 words and
- * short fragments produce unstable scores that would swamp the rates with
- * noise. The ceiling keeps one long document from dominating.
- */
-const MIN_WORDS = 50;
-const MAX_WORDS = 400;
+const LEGACY_REFERENCE = 'fabd62d9c8785dd0edda35201359bcc635b7d3de';
 
 /** Wilson interval. These rates run near the boundaries, where the normal
  *  approximation produces impossible bounds. */
@@ -76,49 +73,169 @@ function rocAuc(posScores, negScores) {
   return (rankSum - (n1 * (n1 + 1)) / 2) / (n1 * n0);
 }
 
-function splitUnits(text) {
-  return text
-    .split(/\n\s*\n/)
-    .map((p) => p.replace(/\s+/g, ' ').trim())
-    .filter((p) => {
-      const n = (p.match(/\S+/g) || []).length;
-      return n >= MIN_WORDS && n <= MAX_WORDS;
-    });
+const wordCount = (text) => (text.match(/\S+/g) || []).length;
+
+// Frozen preparation from main fabd62d, instrumented without changing which
+// text passes its paragraph filter. Both paths use the SAME current detector.
+function legacyPrepareUnits(text, mode = 'paragraph') {
+  const flatten = (s) => s.replace(/\s+/g, ' ').trim();
+  const ranges = [];
+  if (mode === 'document') ranges.push({ start: 0, end: text.length });
+  else {
+    let start = 0;
+    for (const match of text.matchAll(/\n\s*\n/g)) {
+      ranges.push({ start, end: match.index });
+      start = match.index + match[0].length;
+    }
+    ranges.push({ start, end: text.length });
+  }
+  return {
+    normalizedText: flatten(text),
+    decisions: ranges.map((span) => {
+      // The legacy separator begins at LF; exclude its preceding CR from the
+      // source identity, as the structural scanner does for every line ending.
+      if (mode === 'paragraph') {
+        while (span.end > span.start && /[\r\n]/.test(text[span.end - 1])) span.end--;
+      }
+      const normalized = flatten(text.slice(span.start, span.end));
+      const inputWords = wordCount(normalized);
+      const reason = mode === 'document' ? null : inputWords < 50 ? 'below-min' : inputWords > 400 ? 'above-max' : null;
+      return { text: normalized, spans: [span], kinds: ['legacy-flat'], headingAttached: false,
+        headingKind: null, inputWords, status: reason ? 'skipped' : 'selected', reason };
+    }),
+  };
+}
+
+function preprocessorFingerprint(preprocess) {
+  if (preprocess === 'legacy') {
+    return sha256(JSON.stringify({
+      implementation: 'legacy-inline',
+      reference: LEGACY_REFERENCE,
+      dependencies: [wordCount.toString(), legacyPrepareUnits.toString()],
+    }));
+  }
+  return sha256(JSON.stringify({
+    implementation: 'structural-module',
+    source: fs.readFileSync(path.join(__dirname, 'fp-preprocess.js'), 'utf8'),
+  }));
+}
+
+function measurementHarnessFingerprint() {
+  return sha256(
+    fs.readFileSync(__filename, 'utf8')
+    + fs.readFileSync(path.join(__dirname, 'fp-preprocess.js'), 'utf8'),
+  );
+}
+
+function accountingFor(records) {
+  const totals = { selected: 0, skipped: 0, unavailableSources: 0, reasons: {} };
+  const bySource = {};
+  for (const r of records) {
+    const bucket = bySource[r.doc] ||= { selected: 0, skipped: 0, unavailableSources: 0, reasons: {} };
+    for (const target of [totals, bucket]) {
+      if (r.recordKind === 'source') target.unavailableSources++;
+      else target[r.status]++;
+      if (r.reason) target.reasons[r.reason] = (target.reasons[r.reason] || 0) + 1;
+    }
+  }
+  return { ...totals, bySource };
+}
+
+function revision() {
+  try { return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: __dirname, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); }
+  catch { return null; }
 }
 
 const pct = (x) => `${(x * 100).toFixed(1)}%`;
 
 function measure(opts = {}) {
-  const manifest = readManifest();
+  const manifest = opts.manifest || readManifest();
   const unit = opts.unit || 'paragraph';
+  const preprocess = opts.preprocess || 'current';
+  if (!['paragraph', 'document'].includes(unit)) throw new Error('Invalid unit: use paragraph or document');
+  if (!['current', 'legacy'].includes(preprocess)) throw new Error('Invalid preprocessing: use current or legacy');
+  const prepare = preprocess === 'legacy' ? legacyPrepareUnits : prepareUnits;
+  const rowsFor = opts.loadRows || null;
+  const textFor = opts.loadText || (opts.loadRows ? null : loadText);
+  const detector = opts.detector || AIDetector;
   const units = [];
   const skipped = [];
+  const records = [];
+  const sources = [];
+  const rowIdentities = [];
 
   for (const doc of manifest.documents) {
-    const rows = loadRows(doc);
-    if (rows === null) { skipped.push(doc.id); continue; }
-    for (const row of rows) {
-      const chunks = unit === 'document'
-        ? [row.text.replace(/\s+/g, ' ').trim()]
-        : splitUnits(row.text);
-      for (const [i, chunk] of chunks.entries()) {
-        const r = AIDetector.analyzeText(chunk);
-        if (r.tooShort || r.label === 'Text too long') continue;
-        units.push({
-          doc: doc.id,
-          rowId: row.id,
-          cls: row.class || 'human',
-          register: row.register || doc.register,
-          model: row.model || null,
-          index: i,
-          score: r.score,
-          types: r.issues.map((x) => x.type),
-          excerpt: chunk.slice(0, 90),
-        });
+    const source = { doc: doc.id, expectedSha256: doc.sha256 || null, sha256: null, status: 'injected' };
+    let unavailable = false;
+    let verifiedText;
+    if (textFor) {
+      verifiedText = textFor(doc);
+      unavailable = verifiedText === null;
+      if (!unavailable) {
+        source.sha256 = sha256(verifiedText);
+        if (!doc.sha256 || source.sha256 !== doc.sha256) throw new Error('Corpus hash mismatch or missing hash: ' + doc.id + '; run corpus.js verify');
+        source.status = 'verified';
+      }
+    }
+    // The default path parses the exact bytes just verified. Explicit row
+    // loaders remain injectable for tests; they must not trigger a second read.
+    const rows = unavailable ? null : rowsFor ? rowsFor(doc) : rowsFromText(doc, verifiedText);
+    if (rows === null) {
+      source.status = 'unavailable';
+      sources.push(source);
+      skipped.push(doc.id);
+      records.push({ recordKind: 'source', doc: doc.id, rowId: null, status: 'skipped', reason: 'source-unavailable' });
+      continue;
+    }
+    sources.push(source);
+    for (const [rowIndex, row] of rows.entries()) {
+      if (typeof row.text !== 'string') throw new TypeError('Corpus row text must be a string: ' + doc.id);
+      const cls = row.class || doc.class || 'human';
+      if (!['human', 'machine'].includes(cls)) throw new Error('Invalid corpus class: ' + cls);
+      const rowSourceHash = sha256(row.text);
+      rowIdentities.push({ doc: doc.id, rowId: row.id ?? rowIndex, rowIndex, rowSourceHash });
+      let index = 0;
+      for (const decision of prepare(row.text, unit).decisions) {
+        const { text, ...selection } = decision;
+        const record = {
+          recordKind: 'unit', doc: doc.id, rowId: row.id ?? rowIndex, rowIndex, cls,
+          register: row.register || doc.register || 'unknown', model: row.model || null,
+          rowSourceHash, ...selection,
+          unitId: sha256(JSON.stringify([doc.id, row.id ?? rowIndex, rowIndex, rowSourceHash, decision.spans])),
+          normalizedHash: sha256(text), selectionStatus: decision.status,
+          index: decision.status === 'selected' ? index++ : null, detectorWords: null, detectorStatus: null,
+          score: null, types: [],
+        };
+        if (decision.status === 'selected') {
+          const r = detector.analyzeText(text, { contextMode: 'general', sourceMode: 'plain' });
+          record.detectorWords = r.stats?.wordCount ?? null;
+          record.detectorStatus = r.label;
+          if (r.tooLong || r.label === 'Text too long') record.reason = 'detector-too-long';
+          else if (r.tooShort || r.label === 'Too short') record.reason = 'detector-too-short';
+          else if (r.label === 'Empty' || r.document_classification === 'UNSCORED') record.reason = 'detector-unscored';
+          if (record.reason) record.status = 'skipped';
+          else {
+            record.score = r.score;
+            record.types = r.issues.map((x) => x.type);
+            units.push({ ...record, excerpt: text.slice(0, 90) });
+          }
+        }
+        records.push(record);
       }
     }
   }
-  return { units, skipped, unit };
+  const metadata = {
+    schemaVersion: 1, unit, preprocess, revision: revision(),
+    legacyReference: LEGACY_REFERENCE,
+    manifestHash: sha256(JSON.stringify(manifest)), sources, rows: rowIdentities,
+    detectorHash: detector === AIDetector ? sha256(fs.readFileSync(path.join(__dirname, '../detector/patterns.js'), 'utf8')) : null,
+    measurementHarnessHash: measurementHarnessFingerprint(),
+    preprocessorImplementation: preprocess === 'legacy' ? 'legacy-inline' : 'structural-module',
+    preprocessorHash: preprocessorFingerprint(preprocess),
+    detectorOptions: { contextMode: 'general', sourceMode: 'plain' },
+    spanEncoding: 'original UTF-16 code units; start inclusive, end exclusive',
+  };
+  return { units, skipped, unit, records, metadata, accounting: accountingFor(records) };
 }
 
 function rateTable(units, key) {
@@ -140,7 +257,7 @@ function rateTable(units, key) {
   return out;
 }
 
-function summarize({ units, skipped, unit }) {
+function summarize({ units, skipped, unit, accounting, metadata }) {
   const human = units.filter((u) => u.cls === 'human');
   const machine = units.filter((u) => u.cls === 'machine');
 
@@ -168,7 +285,7 @@ function summarize({ units, skipped, unit }) {
     bySource[src] = { human: h.length, machine: m.length, auc: rocAuc(m, h) };
   }
 
-  const catByClass = {};
+  const catByClass = Object.fromEntries(Object.keys(AIDetector.TYPE_LABELS).map((type) => [type, { human: 0, machine: 0 }]));
   for (const u of units) {
     for (const type of new Set(u.types)) {
       catByClass[type] = catByClass[type] || { human: 0, machine: 0 };
@@ -194,11 +311,18 @@ function summarize({ units, skipped, unit }) {
     byModel: rateTable(machine, 'model'),
     discrimination,
     skipped,
+    ...(accounting ? { accounting } : {}),
+    ...(metadata ? { metadata } : {}),
   };
 }
 
 function report(s, units) {
   console.log(`\ndetector accuracy — ${s.counts.human} human ${s.unit}s, ${s.counts.machine} machine ${s.unit}s\n`);
+  if (s.accounting) {
+    console.log(`Scored ${s.accounting.selected} units; skipped ${s.accounting.skipped} units; unavailable sources ${s.accounting.unavailableSources}.`);
+    for (const [reason, n] of Object.entries(s.accounting.reasons)) console.log(`  ${reason}: ${n}`);
+    console.log('');
+  }
   console.log('Human units are human by provenance; machine units are labelled by RAID.');
   console.log('A flag on a human unit is a false positive. A flag on a machine unit is a true positive.\n');
 
@@ -252,6 +376,15 @@ function report(s, units) {
   console.log('');
 }
 
+function dumpUnits(filename, measured) {
+  const lines = [
+    { recordKind: 'meta', ...measured.metadata, accounting: measured.accounting },
+    ...measured.records,
+  ];
+  // Dumps are opt-in and contain provenance/hashes, not corpus text.
+  fs.writeFileSync(filename, lines.map((r) => JSON.stringify(r)).join('\n') + '\n', { flag: 'wx' });
+}
+
 function main() {
   const args = process.argv.slice(2);
   const UNITS = ['paragraph', 'document'];
@@ -270,7 +403,24 @@ function main() {
     unit = val;
   }
 
+  const dumpFlags = args.filter((a) => a === '--dump-units' || a.startsWith('--dump-units='));
+  let dump = null;
+  if (dumpFlags.length) {
+    const flag = dumpFlags[0];
+    const value = args[args.indexOf(flag) + 1];
+    if (dumpFlags.length !== 1 || flag !== '--dump-units' || !value || value.startsWith('-')) {
+      throw new Error('Invalid --dump-units option. Pass it once as --dump-units PATH (a new file).');
+    }
+    dump = value;
+  }
+  const consumed = new Set();
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--unit' || args[i] === '--dump-units') { consumed.add(i); consumed.add(++i); }
+    else if (args[i] === '--json') consumed.add(i);
+  }
+  if (consumed.size !== args.length) throw new Error('Unknown argument. Use --json, --unit paragraph|document, or --dump-units PATH.');
   const measured = measure({ unit });
+  if (dump) dumpUnits(dump, measured);
   const s = summarize(measured);
 
   if (args.includes('--json')) {
@@ -280,6 +430,9 @@ function main() {
   report(s, measured.units);
 }
 
-if (require.main === module) main();
+if (require.main === module) {
+  try { main(); }
+  catch (error) { console.error('Error: ' + error.message); process.exitCode = 2; }
+}
 
-module.exports = { measure, summarize, wilson, rocAuc, THRESHOLDS };
+module.exports = { measure, summarize, wilson, rocAuc, THRESHOLDS, legacyPrepareUnits, accountingFor, dumpUnits, normalizeUnit, splitUnits, unitsForText };

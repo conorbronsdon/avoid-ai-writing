@@ -1,0 +1,11 @@
+{
+  "source_sha": "91b5cbebd66dab5df1b3c8a469720e7fb9c43256",
+  "claude": "No clear introduced defect; reviewer explicitly treats three hypothetical ambiguities as noncontradictions.",
+  "muse": "PASS affecteddelta; no new>=80% defects.",
+  "mimo": [
+    "Duplicate-rule futuredrift hypothetical; currently semantically consistent and intentionally repeated after longreference.",
+    "Audit-as-editingpass allegation contradicts explicit read-onlyaudit/review nonconsumption rule and no-op report instructions.",
+    "Unauthorizedremoval stale-language allegation false: actual newline226 says unauthorizedchange."
+  ],
+  "behavior": "14of16; Claude sourceinstruction deletion and MiMo technicalcontextmissingFinal remain failures."
+}

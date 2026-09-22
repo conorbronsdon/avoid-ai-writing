@@ -1,0 +1,42 @@
+﻿{
+    "reviewer":  "claude-sonnet-5",
+    "alias":  "sonnet",
+    "effort":  "medium",
+    "pr295_sha":  "a0c4ed4d9c581bfc415531bc65153926a9eda092",
+    "pr296_sha":  "924b21c9973b2e564fa341de47321ef147252171",
+    "usage":  {
+                  "input_tokens":  2,
+                  "cache_creation_input_tokens":  76462,
+                  "cache_read_input_tokens":  4439,
+                  "output_tokens":  15069,
+                  "output_tokens_details":  {
+                                                "thinking_tokens":  13664
+                                            },
+                  "server_tool_use":  {
+                                          "web_search_requests":  0,
+                                          "web_fetch_requests":  0
+                                      },
+                  "service_tier":  "standard",
+                  "cache_creation":  {
+                                         "ephemeral_1h_input_tokens":  76462,
+                                         "ephemeral_5m_input_tokens":  0
+                                     },
+                  "inference_geo":  "not_available",
+                  "iterations":  [
+                                     {
+                                         "input_tokens":  2,
+                                         "output_tokens":  15069,
+                                         "cache_read_input_tokens":  4439,
+                                         "cache_creation_input_tokens":  76462,
+                                         "cache_creation":  {
+                                                                "ephemeral_5m_input_tokens":  0,
+                                                                "ephemeral_1h_input_tokens":  76462
+                                                            },
+                                         "type":  "message"
+                                     }
+                                 ],
+                  "speed":  "standard"
+              },
+    "duration_ms":  157825,
+    "is_error":  false
+}

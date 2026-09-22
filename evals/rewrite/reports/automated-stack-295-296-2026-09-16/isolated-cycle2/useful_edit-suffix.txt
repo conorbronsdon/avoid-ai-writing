@@ -1,0 +1,5 @@
+=== USER REQUEST ===
+Rewrite this product update to remove AI-writing patterns, --iterate 1.
+
+=== SOURCE ===
+Moreover, the API now supports batch requests. In conclusion, the future looks bright.

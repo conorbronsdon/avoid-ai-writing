@@ -1,0 +1,17 @@
+﻿{
+    "reviewer":  "opencode/muse-spark-1.3-contributor-free",
+    "pr295_sha":  "a0c4ed4d9c581bfc415531bc65153926a9eda092",
+    "pr296_sha":  "924b21c9973b2e564fa341de47321ef147252171",
+    "usage":  {
+                  "total":  22743,
+                  "input":  19986,
+                  "output":  492,
+                  "reasoning":  2265,
+                  "cache":  {
+                                "write":  0,
+                                "read":  0
+                            }
+              },
+    "finish_reason":  "stop",
+    "cost":  0
+}

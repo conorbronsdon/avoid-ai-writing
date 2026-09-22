@@ -1,0 +1,21 @@
+﻿{
+    "id":  "protected",
+    "model":  "opencode/mimo-v2.5-free",
+    "started_utc":  "2026-09-16T18:21:09.9319039Z",
+    "finished_utc":  "2026-09-16T18:21:52.4901590Z",
+    "exit_code":  0,
+    "finish_reason":  "stop",
+    "usage":  {
+                  "total":  36941,
+                  "input":  34072,
+                  "output":  369,
+                  "reasoning":  452,
+                  "cache":  {
+                                "write":  0,
+                                "read":  2048
+                            }
+              },
+    "cost":  0,
+    "tool_events":  0,
+    "prompt_sha256":  "47834A3F708EF23332F42B270DA3A778C798443C3F42107659F5AAD2EBB9237B"
+}

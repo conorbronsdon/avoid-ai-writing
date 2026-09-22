@@ -1,0 +1,15 @@
+{
+    "version":  "isolated-scenarios-v2",
+    "reason":  "Retain failed batch runs; isolate requests to eliminate observed cross-scenario contamination and outer transport conflict",
+    "fixtures_sha256":  "7A06A3C503F2FC1A7A35E361226E3E3037BC66EA4D20B8F0733B0D4A2E9F5618",
+    "families":  [
+                     "claude-sonnet-5 via authenticated sonnet alias",
+                     "opencode/mimo-v2.5-free"
+                 ],
+    "sessions":  "Eight fresh sessions per family, exactly one scenario per session, sequential within each family; max2 externalCLIs concurrently",
+    "inputs":  "Complete final skill and required patterns, same frozen scenario request/source, actual no-tools statement; no expectations or prior responses",
+    "output":  "Complete normal Markdown skill response, no outerJSON or sentinels",
+    "isolation":  "Claude safe-mode/no-tools/strictMCP/no persistence; OpenCode resolved all tools false/pure/pack_review",
+    "assessment":  "Root Codex assesses all original expectations; deterministic literal checks separately; preserve every failure; no favorable selection or changed-source exclusions",
+    "limitations":  "Small targeted set; no benchmark, human claims, repeatability estimate, actual tool execution or instrumented internal editing passes"
+}

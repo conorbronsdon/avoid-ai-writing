@@ -34,8 +34,8 @@ A `FAIL` is a blocking workflow result. The rewrite/edit stage is not complete m
 
 ### Outgoing
 
-- `REPAIR` to `voice-preserving-rewriter` when returned text failed preservation.
-- `REPAIR` to `file-edit-in-place` when a named file failed preservation.
+- `REPAIR` to `voice-preserving-rewriter` when returned text failed preservation and the shared editing budget has room.
+- `REPAIR` to `file-edit-in-place` when a named file failed preservation and the shared editing budget has room.
 - `RECHECK` to `ai-writing-detector` only when convergence or a residual audit was part of the user's request.
 - Stop on `PASS` unless another user-requested stage remains.
 - Stop and report on a second verification failure. Do not start another repair loop.
@@ -63,13 +63,13 @@ For programmatic use:
 const { validate } = require("./scripts/validate.js");
 ```
 
-The validator checks protected structures and reports blocking errors separately from warnings. Never claim it ran unless the current host executed it.
+The validator checks protected structures and reports blocking errors separately from warnings. It does not decide whether a semantic change was grounded in an explicit user correction or whether the user specifically authorized editing a normally protected span. Never claim it ran unless the current host executed it.
 
 If execution is unavailable, compare the original and rewrite manually using the same preservation contract and label the result as `model_only`.
 
 ## Additional protected constraints
 
-In addition to the canonical validator's structural checks, honor protected semantic constraints carried in the handoff envelope.
+In addition to the canonical validator's structural checks, apply the canonical editing contract in a separate semantic review. Check remaining meaning, attribution, quantities and units, negation, conditions, causality, uncertainty, and speaker experience. Treat an explicit user correction as the intended change rather than an invention. If the user specifically placed a normally protected span in scope, verify that requested change and continue protecting its data and attribution; do not infer permission from a general cleanup, style, or voice request. Report this review as model-only rather than claiming the deterministic validator performed it.
 
 When `human_representation_sensitive: true`, review identity and representation details protected by the `agency-inclusive-visuals-specialist` lens. A structurally valid rewrite may still require `REVIEW` or `FAIL` if it erased or genericized material cultural, geographic, disability, attire, skin-tone/lighting, physical-reality, or anti-stereotype constraints.
 
@@ -83,7 +83,7 @@ No blocking preservation error was found. Continue only if another requested sta
 
 ### REVIEW
 
-Warnings or semantic changes need judgment but are not automatically blocking. Explain the exact uncertainty.
+Warnings or semantic changes need judgment but are not automatically blocking. This includes a literal validator difference that corresponds to a specifically requested edit of normally protected content: review it against that scope and its remaining data and attribution constraints instead of automatically repairing it back to the original. Explain the exact uncertainty.
 
 ### FAIL
 
@@ -92,11 +92,11 @@ Protected content changed or disappeared. Identify the correct repair owner from
 - returned text -> `voice-preserving-rewriter`
 - named file -> `file-edit-in-place`
 
-Pass only the blocking repair scope and existing envelope. Do not ask the repair owner to redo clean parts.
+Pass only the blocking repair scope and existing envelope. Do not ask the repair owner to redo clean parts. If `pass.index` has reached `pass.max`, report the unresolved failure instead of requesting another mutation.
 
 ## Repair-loop limit
 
-One repair re-entry is allowed. After repair, verify once more. If that second check still fails, stop and report the unresolved errors. Never cycle indefinitely.
+At most one repair re-entry is allowed, and only while the requested editing budget has room. The repair consumes the next editing pass. Verification itself does not consume a pass. After repair, verify once more. If that check still fails, stop and report the unresolved errors. Never cycle indefinitely.
 
 ## Output
 

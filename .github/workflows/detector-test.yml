@@ -20,28 +20,18 @@ on:
       - 'bin/**'
       - 'action.yml'
       - '.pre-commit-hooks.yaml'
+  # This job is a required-check candidate, so it must report on every PR.
+  # Workflow-level path filters would leave unrelated PRs pending forever.
   pull_request:
-    paths:
-      - "detector/**"
-      - "scripts/**"
-      - "examples/**"
-      - "evals/**"
-      - "package.json"
-      - ".github/workflows/detector-test.yml"
-      - "README.md"
-      - "SKILL.md"
-      - "SKILL.full.md"
-      - "references/**"
-      - "dist/**"
-      - "CHANGELOG.md"
-      - "CONTRIBUTING.md"
-      - "PROOF.md"
-      - 'bin/**'
-      - 'action.yml'
-      - '.pre-commit-hooks.yaml'
 
 permissions:
   contents: read
+
+concurrency:
+  # Pull requests share a stable group so newer commits cancel stale checks.
+  # Pushes use a unique group and always run to completion.
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # Kept as a single job on purpose: branch protection pins required checks by
@@ -49,14 +39,19 @@ jobs:
   # updates the rule.
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "20"
       - run: npm test
+      # Release runs trigger only on package.json changes, so a release PR that
+      # bumps CHANGELOG.md without package.json would otherwise merge green and
+      # never release. Enforce the agreement on every PR instead.
+      - run: node scripts/verify-release-versions.js
       # Scores this repo's own docs with this repo's own detector. A document
       # that drifts past its budget in scripts/self-scan.js fails here. PROOF.md
       # explains what the numbers mean and what they do not claim.

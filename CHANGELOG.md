@@ -6,13 +6,61 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- Require explicit skill names matching their directories and reject duplicate frontmatter keys, including mixed quoted/unquoted keys, while retaining required names in every generated distribution (#259).
+- Accept `--context marketing` and `--context personal` in the `avoid-ai-writing` scoring CLI, which previously rejected them with exit 2 even though the engine and the gate CLI support all four contexts. `--help` now lists the same values in both binaries (#207).
+
 ### Added
 
+- Add machine-readable `--json` output to `avoid-ai-writing-gate` and expose `pass`, `total-findings`, and `failed-files` step outputs in the GitHub Action (#252).
+- Note in the README that the pinned `v3.35.0` Action example predates the step outputs and `--json`, and cover the gate's `--json` operational-error paths and the Action's output writer with executed tests.
+
+### Changed
+
+- Return one final rewrite after audit, correction, and available verification instead of publishing a first-pass draft and a superseding copy. Corrective edits and preservation repairs now share the two-pass limit; `--iterate 1|2`, clean no-ops, protected or intentional residuals, edit-in-place reporting, and unavailable-check status remain explicit (#203).
+
+- Define one editing contract for rewrite and file-edit decisions. Cleanup now separates candidate matches, justified findings, and authorized edits; preserves source-supported facts, attribution, negation, uncertainty, technical terms, intentional rhetoric, protected content, and established voice; allows explicitly requested structure or register changes without invented evidence or experience; respects context skips before voice targets; leaves clean input unchanged when no separate transformation is requested; and no longer requires confirmation solely because a clearly scoped file is large (#202).
+
+- Link the GitHub Marketplace listing from the Action instructions and pin the
+  example workflow to the released `v3.35.0` tag.
+- Make acknowledgment loops a judgment-only rule. The detector no longer reports the `acknowledgment-loop` type: its three phrases also open ordinary email, support, and docs replies ("To answer your question from Tuesday: ...", "You're asking about the retry limit. It is five by default ..."), and "the question of whether" is standard analytical English. The engine now exposes 53 issue types. The skill keeps the rule, with the deletion test and carve-outs (#239).
+
+### Fixed
+
+- Detect unsegmented-script documents (Chinese/Japanese: no inter-word spaces) before the word gate and label them `Unsupported script` instead of `Too short`, with the reason and CJK character count in `stats`. The check recognizes the full Unicode Han and kana scripts (including supplementary-plane and halfwidth forms) and declines only when CJK characters dominate the non-whitespace text, so newline-wrapped lines cannot bypass it and short English documents with an incidental place name stay scorable. The gate CLI now exits 2 on such files — matching the documented unscannable-input exit code — instead of passing silently at every threshold, and the repository self-scan reports declined documents instead of scoring them as clean while keeping raw and exemption-aware declines distinct (#241).
+- Align false-positive preprocessing with CommonMark for backtick fence info strings and multiline setext headings, preserve unique normalized units as modified when only whitespace boundaries move their source spans, reject Windows OpenCode command shims with an actionable native-binary error, and recognize first-person `I` inside otherwise targeted Title Case headings (#314).
+- Restrict Title Case header word separators and trailing whitespace to horizontal whitespace, so a match can never run past one physical line. `\s` also ate newlines, which let two unrelated lines or a blank-line-separated fragment combine into a single heading match that neither line independently satisfied (#291).
+- Report the underlying OpenCode export launch error instead of a secondary `stderr.trim()` exception during rewrite evaluation.
+- Preserve non-tracking query parameters when removing AI-referrer parameters from URLs during rewrite validation (#210). Removing a tracker that sits directly before bold markers, a dash, or an ellipsis no longer reports the URL as altered.
+- Replace four superlinear Markdown scans reachable through the detector API with bounded or forward-only parsing. Validate corpus cache IDs, stage and retry cache replacements, isolate CLI-test files in private temporary directories, and require push-triggered releases to prove the package version changed.
+- Replace the preservation validator's fenced-code regex with a line scanner that tracks the opening fence marker and run length, so a fence closes only on the same marker at equal or greater length per CommonMark. A `~~~` line inside a ``` block (the normal way to document Markdown fences) is content, and a three-backtick line inside a four-backtick fence no longer closes it. The same scanner replaces the marker-agnostic matcher in `scripts/self-scan.js` (#236).
+- Stop the preservation validator's fence scanner from opening a fence on a backtick line whose info string contains a backtick, which CommonMark forbids. A prose line that began with a triple-backtick inline span opened a fence that ran to end of document, so every later prose edit reported `code-block-modified`. `scripts/self-scan.js` had the same gap and exempted the rest of the document from its scan.
+
+## [3.35.0] — 2026-09-13
+
+### Changed
+
+- Allow pre-commit `args` to override the gate defaults by moving the filename separator out of `entry` and into default `args` (#243).
+- Add npm package keywords, homepage, issue tracker, and author metadata.
+- Rename the user-facing "Emotional flatline" category to "Stock reaction framing" while preserving its `emotional-flatline` API type. Keep specific reactions, flag empty framing, and make the style finding neutral in authorship scoring until relevant positive evidence establishes a direction (#82).
+
+### Added
+
+- Add an explicit OpenCode 1.18.30 executor for frozen rewrite-evaluation plans. It limits calls to the observed free-model allowlist, disables tools, verifies prompt and model receipts, retains failed attempts, and revalidates evidence before import. Model runs remain opt-in; benchmark judgments and release gates remain separate (#201).
+- Add opt-in `fp-measure.js --dump-units PATH` provenance records and a fixed-detector `fp-compare.js` comparison of legacy and repaired preprocessing. Reports include selected and skipped units, source spans, corpus hashes, detector exclusions, and zero-observation categories (#288, #289).
 - Package the deterministic detector as a composite GitHub Action and pre-commit hook, backed by a new `avoid-ai-writing-gate` CLI. The gate uses per-file finding counts rather than the composite score, defaults to `technical` + `rendered-markdown`, and uses a corpus-backed threshold of 6 findings per file (1.9% human-control failure rate across 376 documents, versus 31.4% at zero). Strict zero-findings policies remain available with an explicit threshold of 0. Preservation validation stays separate because it requires before/after inputs (#86).
 
 ### Fixed
 
+- Recognize GFM tables without outer pipes in preservation validation and self-scan exemptions, including compact one- and two-hyphen delimiter cells, while requiring a delimiter row so prose containing a bare pipe remains editable (#209).
+- Suppress eight technical-legitimate vocabulary terms (`robust`, `comprehensive`, `seamless`, `ecosystem`, `leverage`, `facilitate`, `underpin`, `streamline`) when analyzing text under `--context technical` mode (#237).
+
+- Keep mid-paragraph years and other ordered markers above one in prose during false-positive measurement; expose blank-separated continuation merges and distinct measurement/preprocessor fingerprints; and pair attached headings with their unique legacy body span in comparison output without changing source spans or unit IDs (#293).
+- Preserve Markdown structure and document content during corpus measurement. Separate structural cleanup from paragraph selection, retain eligible 400-word bodies after headings, and account for oversized units without silently deleting text. Keep tab-indented fences atomic, reject source hash mismatches, and construct scored rows from the verified source snapshot (#178, #179, #180, #288, #289).
+- Report top detection categories for documents the self-scan scores in chunks. `scoreLongText()` now counts issue types across every accepted chunk, so `scanFile()` returns a populated `topTypes` for a chunked file and the `--check` over-budget diagnostic names categories instead of printing `none` (#264).
 - Validate CLI `--unit` argument in `scripts/fp-measure.js` before starting measurement, exiting with code 2 on missing, unrecognized, or repeated values, and on `--unit=VALUE` syntax (`paragraph` and `document` accepted).
+- Accept acronyms (`AI`, `API`, `CLI`) and the capitalised single-letter function word `A` as interior tokens in the Title Case header rule, so headings like `## The Future Of AI In Production` and `## Why Your Team Needs A Better Testing Strategy` are flagged like the original tell. First and last tokens still require an ordinary Title Case word, so all-caps banner lines such as `## HTTP API REFERENCE` stay clean (#240).
 - Consume bodyless punctuation runs once when splitting sentence highlights, avoiding the quadratic punctuation-prefix regression introduced in #260 while preserving trailing-fragment boundaries.
 - Remove four quadratic scans from `analyzeText()`: the sentence splitter behind highlight regions, its boundary-whitespace trim in rendered-Markdown mode, the Markdown table delimiter test, and the line-anchored `Interesting part:` opener all rescanned a long whitespace or blank-line run from every position, so a document that ended in blank lines or carried a large masked comment block took seconds instead of milliseconds. Sentence boundaries are unchanged; the regression test compares them against the former regex on every boundary shape and asserts linear growth by ratio rather than by a wall-clock budget (#235).
 - Preserve detector issue indexes and sentence-highlight ranges against the original source after blockquote and normalization preprocessing (#189).

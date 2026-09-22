@@ -1,0 +1,24 @@
+{
+  "pr295_sha": "726c8c4a01a45cc126b12652a75c1c867092893c",
+  "pr296_sha": "0ae68f2fc3ddb166cbf8dc3156e2199cbd45bd13",
+  "primary": {
+    "model": "claude-sonnet-5",
+    "reported_scope": "both final SHAs",
+    "outcome": "No >=80% verified blocker; sole75% documentation suggestion belowthreshold and conflicts with explicit canonicalpointer"
+  },
+  "free_context": {
+    "model": "opencode/muse-spark-1.3-contributor-free",
+    "reported_scope": "both final SHAs",
+    "outcome": "No new >=80% actionable defects"
+  },
+  "free_operational": {
+    "model": "opencode/mimo-v2.5-free",
+    "reported_pr296_sha": "66c997f6ed400511b97777ce65340936d458a6c0",
+    "packet_pr296_sha": "0ae68f2fc3ddb166cbf8dc3156e2199cbd45bd13",
+    "outcome": "Completed stdin review; three conditional verification suggestions, no reproduced defect",
+    "carry_forward": "Operational budget/handoff/repairconditions unchanged between66c and0ae; finalOutputpointer separately reviewedClaude/Muse. Raw verdict retains actual reportedSHA.",
+    "setup_failure": "Prior attachmentattempt emitted literal disabled readtool syntax; no tools executed; not counted."
+  },
+  "behavioral_gate": "BLOCKED: finalMiMo protected scenario returned unchanged source while falsely claiming Moreover removed and1pass. Frozen must_change/finalverification failure persists after thirdrepaircycle. No fourthcycle or merge.",
+  "assessment_owner": "Root Codex independently adjudicates frozen scenario assertions; contractreview is distinct from executed behavior."
+}

@@ -1,0 +1,5 @@
+=== USER REQUEST ===
+Clean up this technical result in a blunt voice without changing its evidence.
+
+=== SOURCE ===
+Moreover, the cache may reduce median latency by 12 ms if the working set fits in memory. It did not improve p99 latency in the 40-run test.

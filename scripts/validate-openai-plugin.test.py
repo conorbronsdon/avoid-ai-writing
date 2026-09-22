@@ -95,6 +95,48 @@ def validation_errors_for(*, manifest=None, tests=None, listing=None, pack=None)
         return errors
 
 
+def skill_name_errors(replacement: str):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        root = Path(temp_dir)
+        make_valid_plugin_root(root)
+        skill = root / "skills" / "voice-preserving-rewriter" / "SKILL.md"
+        text = skill.read_text(encoding="utf-8")
+        original = "name: voice-preserving-rewriter"
+        assert original in text
+        skill.write_text(text.replace(original, replacement, 1), encoding="utf-8")
+        return MODULE.validate(root)[0]
+
+
+for key in ("name", '"name"', "'name'", r'"\u006eame"'):
+    assert skill_name_errors(f'{key}: "voice-preserving-rewriter" # identity') == []
+    errors = skill_name_errors(f"{key}: wrong-name")
+    assert any("must match directory" in error for error in errors), errors
+    errors = skill_name_errors(f"name: voice-preserving-rewriter\n{key}: voice-preserving-rewriter")
+    assert any("duplicate frontmatter key: name" in error for error in errors), errors
+
+for replacement in ("", "name:", "name: ''", '"name": ""'):
+    errors = skill_name_errors(replacement)
+    assert any("name, description, and body are required" in error for error in errors), errors
+
+assert skill_name_errors('"name":"voice-preserving-rewriter"') == []
+errors = skill_name_errors('name: voice-preserving-rewriter\n"name" :"wrong-name"')
+assert any("duplicate frontmatter key: name" in error for error in errors), errors
+assert any("must match directory" in error for error in errors), errors
+
+for key_line in (r'"\x6eame": wrong-name', '? name\n: wrong-name'):
+    errors = skill_name_errors('name: voice-preserving-rewriter\n' + key_line)
+    assert any("unsupported top-level frontmatter key syntax" in error for error in errors), errors
+
+errors = skill_name_errors('"name": false-positive-reviewer')
+assert any("duplicate skill name 'false-positive-reviewer'" in error for error in errors), errors
+assert MODULE.duplicate_top_level_frontmatter_keys(
+    'name: first\nmetadata:\n  name: nested\n  name: nested-again\n# name: comment\n'
+) == []
+assert MODULE.duplicate_top_level_frontmatter_keys(
+    'description: first\n"description": second\n'
+) == ["description"]
+
+
 assert errors_for("  products: [CHAT, CODEX]\n") == []
 assert errors_for('  products: ["CHAT", "CODEX"]\n') == []
 assert errors_for("  products: ['CHAT', 'CODEX']\n") == []
@@ -245,18 +287,24 @@ with tempfile.TemporaryDirectory() as temp_dir:
 with tempfile.TemporaryDirectory() as temp_dir:
     root = Path(temp_dir)
     make_valid_plugin_root(root)
-    skill_dir = root / "skills" / "missing-name"
-    skill_dir.mkdir()
+    skill_dir = root / "skills" / "avoid-ai-writing"
     skill_path = skill_dir / "SKILL.md"
     skill_path.write_text(
-        "---\ndescription: Fixture without a name\n---\n# Missing name\n\nTest body.\n",
+        "---\nname: avoid-ai-writing\n---\n# Missing description\n\nTest body.\n",
         encoding="utf-8",
     )
-    agents_dir = skill_dir / "agents"
-    agents_dir.mkdir()
-    (agents_dir / "openai.yaml").write_text(PREFIX + "  products: [CHAT]\n", encoding="utf-8")
     errors, _, _ = MODULE.validate(root)
-    assert errors == [f"{skill_path}: name, description, and body are required"]
+    assert f"{skill_path}: name, description, and body are required" in errors
+
+with tempfile.TemporaryDirectory() as temp_dir:
+    root = Path(temp_dir)
+    make_valid_plugin_root(root)
+    skill_dir = root / "skills" / "avoid-ai-writing"
+    skill_path = skill_dir / "SKILL.md"
+    text = skill_path.read_text(encoding="utf-8")
+    skill_path.write_text(text.replace("name: avoid-ai-writing\n", "", 1), encoding="utf-8")
+    errors, _, _ = MODULE.validate(root)
+    assert any("name, description, and body are required" in error for error in errors), errors
 
 for payload in ("[]", "null"):
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -367,13 +415,14 @@ with tempfile.TemporaryDirectory() as temp_dir:
         assert any("symlink not allowed in plugin surface: LICENSE" in error for error in errors)
 
 # The OpenAI copy of the canonical skill must drop the frontmatter `metadata`
-# block (the portal rejects it) and otherwise match root SKILL.md exactly.
+# block (the portal rejects it) and preserve the required `name` field.
 ROOT_SKILL = (REPO_ROOT / "SKILL.md").read_text(encoding="utf-8")
 assert "\nmetadata:\n" in ROOT_SKILL, "fixture assumption: root SKILL.md carries a metadata block"
 STRIPPED = MODULE.strip_frontmatter_metadata(ROOT_SKILL)
 ROOT_HEAD, ROOT_BODY = ROOT_SKILL.split("\n---\n", 1)
 STRIPPED_HEAD, STRIPPED_BODY = STRIPPED.split("\n---\n", 1)
 assert "metadata:" not in STRIPPED_HEAD
+assert "name: avoid-ai-writing" in STRIPPED_HEAD
 assert "\nversion:" in STRIPPED_HEAD and "\nlicense:" in STRIPPED_HEAD and "\ncompatibility:" in STRIPPED_HEAD
 assert STRIPPED_BODY == ROOT_BODY, "body must be untouched"
 assert MODULE.strip_frontmatter_metadata("no frontmatter\nmetadata:\n  x: y\n") == "no frontmatter\nmetadata:\n  x: y\n"
@@ -389,18 +438,20 @@ assert STRIP("---\r\nname: x\r\nmetadata:\r\n  a: b\r\nlicense: MIT\r\n---\r\nBo
 # a column-zero comment inside the block belongs to it; `metadata:extra` is a different key and stays
 assert STRIP("---\nname: x\nmetadata:\n  author: y\n# note\n  repository: z\nlicense: MIT\n---\nBody\n") == "---\nname: x\nlicense: MIT\n---\nBody\n"
 assert STRIP("---\nname: x\nmetadata:extra: keep\n---\nBody\n") == "---\nname: x\nmetadata:extra: keep\n---\nBody\n"
+assert STRIP('---\nname: x\n"metadata":\n  author: y\n---\nBody\n') == '---\nname: x\n---\nBody\n'
 # missing closing delimiter: not a frontmatter, untouched
 assert STRIP("---\nname: x\nmetadata:\n  author: y\nBody\n") == "---\nname: x\nmetadata:\n  author: y\nBody\n"
-# the CLI path sync-plugin-skill.sh uses must be byte-exact with the function
+# sync-plugin-skill.sh uses metadata-only stripping and keeps `name`
 import subprocess
-cli = subprocess.run(
+metadata_only = subprocess.run(
     [sys.executable, str(MODULE_PATH), "--strip-frontmatter-metadata", str(REPO_ROOT / "SKILL.md")],
     capture_output=True, check=True,
 )
-assert cli.stdout == STRIPPED.encode("utf-8"), "CLI output differs from strip_frontmatter_metadata"
+assert metadata_only.stdout == MODULE.strip_frontmatter_metadata(ROOT_SKILL).encode("utf-8")
 assert STRIPPED == (REPO_ROOT / "skills" / "avoid-ai-writing" / "SKILL.md").read_text(encoding="utf-8"), (
     "run bash scripts/sync-plugin-skill.sh; the OpenAI copy is out of date"
 )
+assert "name: avoid-ai-writing" in (REPO_ROOT / "SKILL.full.md").read_text(encoding="utf-8").split("\n---\n", 1)[0]
 
 with tempfile.TemporaryDirectory() as temp_dir:
     root = Path(temp_dir)

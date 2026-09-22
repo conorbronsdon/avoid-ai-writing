@@ -1,0 +1,72 @@
+{
+  "reviewed_sha": "0fdaf07920d0406998e2fa4f64e3f99a07bd5c7b",
+  "reviewer": "claude-sonnet-5",
+  "alias": "sonnet",
+  "effort": "medium",
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 14852,
+    "cache_read_input_tokens": 4439,
+    "output_tokens": 4874,
+    "output_tokens_details": {
+      "thinking_tokens": 4125
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 14852,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 4874,
+        "cache_read_input_tokens": 4439,
+        "cache_creation_input_tokens": 14852,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 14852
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "model_usage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 10929,
+      "outputTokens": 18,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.011019,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-sonnet-5": {
+      "inputTokens": 2,
+      "outputTokens": 4874,
+      "cacheReadInputTokens": 4439,
+      "cacheCreationInputTokens": 14852,
+      "webSearchRequests": 0,
+      "costUSD": 0.10903979999999999,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "thinkingTokens": 4125,
+      "canonicalModel": "claude-sonnet-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "duration_ms": 52175,
+  "is_error": false,
+  "packet_sha256": "1793c37f5849d1ef9a8b1f720558ca5ba21572ad7625e5c46d6a4d64fbf0ce76"
+}

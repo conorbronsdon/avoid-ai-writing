@@ -1,0 +1,21 @@
+﻿{
+    "id":  "noop",
+    "model":  "opencode/mimo-v2.5-free",
+    "started_utc":  "2026-09-16T19:41:20.3728322Z",
+    "finished_utc":  "2026-09-16T19:41:52.8131230Z",
+    "exit_code":  0,
+    "finish_reason":  "stop",
+    "usage":  {
+                  "total":  37167,
+                  "input":  35556,
+                  "output":  108,
+                  "reasoning":  479,
+                  "cache":  {
+                                "write":  0,
+                                "read":  1024
+                            }
+              },
+    "cost":  0,
+    "tool_events":  0,
+    "prompt_sha256":  "D539AA26E404EA640F8C85BD29BB70473DC9C4FE50A8862C54A6351F96DC16A1"
+}

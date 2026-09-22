@@ -1,0 +1,5 @@
+=== USER REQUEST ===
+Remove AI-writing patterns from this note.
+
+=== SOURCE ===
+The migration starts Tuesday. Back up the database before you run it.

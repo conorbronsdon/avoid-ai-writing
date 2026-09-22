@@ -4,7 +4,9 @@ on:
   push:
     branches: [main]
     paths:
-      - "CHANGELOG.md"
+      - "package.json"
+  # Recovery dispatches must target main. The release environment enforces
+  # that boundary again outside this editable workflow file.
   workflow_dispatch:
 
 permissions:
@@ -14,48 +16,85 @@ permissions:
 # `gh release view` before `gh release create`, and publish-npm reads
 # `npm view` before `npm publish`. Overlapping runs can both read "not there
 # yet" and then collide. Two runs carrying the same version turn one of them
-# red; two runs carrying different versions can finish out of order and leave
-# npm's `latest` pointing at the older one. Serializing puts the second run's
-# checks after the first run's writes, so its `exists` guards see the truth and
-# skip — the guards and this block do the job together, neither one alone.
+# red; two runs carrying different versions can otherwise race their shared
+# tags and registry state. Serializing puts each run's checks after the prior
+# run's writes, so its `exists` guards see the truth. `queue: max` matters too:
+# without it, a newer trigger replaces an already-pending release even when
+# `cancel-in-progress` is false.
 #
 # The group omits `github.ref` on purpose: the registry and the release list are
-# repo-global, so a workflow_dispatch has to queue behind a main push too.
-# Never cancel — a cancelled run can die between its check and its publish, or
-# leave a GitHub release standing with nothing published against it.
+# repo-global. Never cancel — a cancelled run can die between its check and its
+# publish, or leave a GitHub release standing with nothing published against it.
 concurrency:
   group: release
+  queue: max
   cancel-in-progress: false
 
 jobs:
-  release:
+  # Validate the exact release commit without a write token or OIDC access.
+  # Nothing public exists until this job has proved the version, tests, and
+  # package payload all succeed.
+  preflight:
+    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.changelog.outputs.version }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
-      - name: Parse latest version from CHANGELOG.md
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Verify release versions
         id: changelog
+        run: node scripts/verify-release-versions.js --github-output "$GITHUB_OUTPUT"
+
+      - name: Verify a push changed the package version
+        if: github.event_name == 'push'
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
         run: |
-          HEADING_LINE="$(grep -m1 -E '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md || true)"
-          if [ -z "$HEADING_LINE" ]; then
-            echo "::error::Could not find a '## [X.Y.Z]' heading in CHANGELOG.md"
+          if ! [[ "$BEFORE_SHA" =~ ^[0-9a-f]{40}$ ]] || [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            echo "::error::Push event supplied an invalid previous commit SHA. Use workflow_dispatch for documented recovery."
             exit 1
           fi
-          VERSION="$(echo "$HEADING_LINE" | sed -E 's/^## \[([0-9]+\.[0-9]+\.[0-9]+)\].*/\1/')"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Latest CHANGELOG.md version: $VERSION"
-
-          PKG_VERSION="$(node -p "require('./package.json').version" 2>/dev/null || echo unknown)"
-          if [ "$PKG_VERSION" != "$VERSION" ]; then
-            echo "::warning::package.json version ($PKG_VERSION) does not match the top CHANGELOG.md entry ($VERSION). This is pre-existing drift, not something this workflow fixes."
+          if ! git cat-file -e "${BEFORE_SHA}^{commit}"; then
+            echo "::error::Previous commit $BEFORE_SHA is unavailable; refusing an unverified push-triggered release."
+            exit 1
           fi
+          git show "${BEFORE_SHA}:package.json" > "$RUNNER_TEMP/previous-package.json"
+          node scripts/verify-release-versions.js --previous-package-json "$RUNNER_TEMP/previous-package.json"
+
+      - name: Test the release commit
+        run: npm test
+
+      - name: Verify the npm package can be assembled
+        run: npm pack --dry-run --json
+
+  release:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Check if the release tag already exists
         id: tagcheck
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="v${{ steps.changelog.outputs.version }}"
+          TAG="v${{ needs.preflight.outputs.version }}"
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
             echo "Release $TAG already exists — nothing to do."
@@ -66,7 +105,7 @@ jobs:
       - name: Extract this version's changelog section
         if: steps.tagcheck.outputs.exists == 'false'
         run: |
-          VERSION="${{ steps.changelog.outputs.version }}"
+          VERSION="${{ needs.preflight.outputs.version }}"
           awk -v heading="## [$VERSION]" '
             $0 ~ /^## \[/ {
               if (found) exit
@@ -85,7 +124,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          VERSION="${{ steps.changelog.outputs.version }}"
+          VERSION="${{ needs.preflight.outputs.version }}"
           gh release create "v$VERSION" \
             --target "$GITHUB_SHA" \
             --title "v$VERSION" \
@@ -96,18 +135,22 @@ jobs:
   # all. This job closes that gap. It is independently idempotent (skips when
   # the version is already on npm), so re-runs and already-tagged pushes are
   # safe, and it publishes package.json's version only after proving it matches
-  # the CHANGELOG heading the release job used — the drift this workflow
-  # already warns about must block a publish, not ride into the registry.
+  # the CHANGELOG heading the release job used — the same version guard as the
+  # release job must block a publish, not ride into the registry.
   publish-npm:
-    needs: release
+    needs: [preflight, release]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: release
     permissions:
       contents: read
       id-token: write # npm Trusted Publishing (OIDC) + --provenance
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           # Node 22 ships npm 10, which cannot authenticate with npm OIDC.
           # https://docs.npmjs.com/trusted-publishers/
@@ -130,18 +173,7 @@ jobs:
           '
 
       - name: Refuse to publish a version that disagrees with CHANGELOG.md
-        run: |
-          PKG_VERSION="$(node -p "require('./package.json').version")"
-          HEADING_LINE="$(grep -m1 -E '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md || true)"
-          if [ -z "$HEADING_LINE" ]; then
-            echo "::error::Could not find a '## [X.Y.Z]' heading in CHANGELOG.md"
-            exit 1
-          fi
-          CHANGELOG_VERSION="$(echo "$HEADING_LINE" | sed -E 's/^## \[([0-9]+\.[0-9]+\.[0-9]+)\].*/\1/')"
-          if [ "$PKG_VERSION" != "$CHANGELOG_VERSION" ]; then
-            echo "::error::package.json ($PKG_VERSION) != CHANGELOG.md ($CHANGELOG_VERSION) — fix the drift, then re-run. Publishing a mismatched version bakes the drift into the registry."
-            exit 1
-          fi
+        run: node scripts/verify-release-versions.js
 
       - name: Skip if this version is already on npm
         id: npmcheck
@@ -186,10 +218,6 @@ jobs:
             exit 1
           fi
           echo "HEAD is the commit tagged $TAG ($TAG_SHA) — safe to publish."
-
-      - name: Test before publish
-        if: steps.npmcheck.outputs.exists == 'false'
-        run: npm test
 
       - name: Publish with provenance
         if: steps.npmcheck.outputs.exists == 'false'

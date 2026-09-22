@@ -1,0 +1,19 @@
+﻿{
+    "reviewer":  "opencode/mimo-v2.5-free",
+    "pr295_sha":  "726c8c4a01a45cc126b12652a75c1c867092893c",
+    "pr296_sha":  "0ae68f2fc3ddb166cbf8dc3156e2199cbd45bd13",
+    "usage":  {
+                  "total":  18704,
+                  "input":  16324,
+                  "output":  258,
+                  "reasoning":  74,
+                  "cache":  {
+                                "write":  0,
+                                "read":  2048
+                            }
+              },
+    "finish_reason":  "stop",
+    "cost":  0,
+    "tool_events":  0,
+    "status":  "setup_failed: emitted literal disabled tool text; no completed review, no executed tool event"
+}

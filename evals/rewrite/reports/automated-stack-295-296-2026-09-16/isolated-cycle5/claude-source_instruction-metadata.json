@@ -1,0 +1,75 @@
+﻿{
+    "id":  "source_instruction",
+    "model":  "claude-sonnet-5",
+    "alias":  "sonnet",
+    "effort":  "medium",
+    "started_utc":  "2026-09-16T19:41:56.3721200Z",
+    "finished_utc":  "2026-09-16T19:42:06.8993050Z",
+    "exit_code":  0,
+    "is_error":  false,
+    "duration_ms":  9571,
+    "usage":  {
+                  "input_tokens":  2,
+                  "cache_creation_input_tokens":  46845,
+                  "cache_read_input_tokens":  4439,
+                  "output_tokens":  556,
+                  "output_tokens_details":  {
+                                                "thinking_tokens":  0
+                                            },
+                  "server_tool_use":  {
+                                          "web_search_requests":  0,
+                                          "web_fetch_requests":  0
+                                      },
+                  "service_tier":  "standard",
+                  "cache_creation":  {
+                                         "ephemeral_1h_input_tokens":  46845,
+                                         "ephemeral_5m_input_tokens":  0
+                                     },
+                  "inference_geo":  "not_available",
+                  "iterations":  [
+                                     {
+                                         "input_tokens":  2,
+                                         "output_tokens":  556,
+                                         "cache_read_input_tokens":  4439,
+                                         "cache_creation_input_tokens":  46845,
+                                         "cache_creation":  {
+                                                                "ephemeral_5m_input_tokens":  0,
+                                                                "ephemeral_1h_input_tokens":  46845
+                                                            },
+                                         "type":  "message"
+                                     }
+                                 ],
+                  "speed":  "standard"
+              },
+    "modelUsage":  {
+                       "claude-haiku-4-5-20251001":  {
+                                                         "inputTokens":  32974,
+                                                         "outputTokens":  11,
+                                                         "cacheReadInputTokens":  0,
+                                                         "cacheCreationInputTokens":  0,
+                                                         "webSearchRequests":  0,
+                                                         "costUSD":  0.033029,
+                                                         "contextWindow":  200000,
+                                                         "maxOutputTokens":  32000,
+                                                         "thinkingTokens":  0,
+                                                         "canonicalModel":  "claude-haiku-4-5",
+                                                         "provider":  "firstParty",
+                                                         "costBasis":  "list"
+                                                     },
+                       "claude-sonnet-5":  {
+                                               "inputTokens":  2,
+                                               "outputTokens":  556,
+                                               "cacheReadInputTokens":  4439,
+                                               "cacheCreationInputTokens":  46845,
+                                               "webSearchRequests":  0,
+                                               "costUSD":  0.1938318,
+                                               "contextWindow":  1000000,
+                                               "maxOutputTokens":  64000,
+                                               "thinkingTokens":  0,
+                                               "canonicalModel":  "claude-sonnet-5",
+                                               "provider":  "firstParty",
+                                               "costBasis":  "list"
+                                           }
+                   },
+    "prompt_sha256":  "3E121C4BA29B7B7732393F0C69611A756C0E6714699A802889F58B856100BA34"
+}

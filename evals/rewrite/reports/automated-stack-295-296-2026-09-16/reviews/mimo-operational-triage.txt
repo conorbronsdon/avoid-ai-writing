@@ -1,0 +1,4 @@
+﻿Three review verification suggestions triaged by actual source:
+1. skill-graph conditions are orchestration labels, not an implemented expression parser; explicit pass.index < pass.max guards are present in handoff and owners. No demonstrated budget bypass.
+2. pass.max:1|2 is illustrative envelope schema; following prose explicitly assigns concrete1 or2. Reviewer itself says not a contractdefect.
+3. Verifier dispatch checks budget; mutationowner increments editing pass after successful repair. No instruction increments on verifierdispatch. No demonstrated doubleincrement.

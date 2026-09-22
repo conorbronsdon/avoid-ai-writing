@@ -1,0 +1,5 @@
+=== USER REQUEST ===
+Remove AI-writing patterns --context technical-blog. Keep the technical meaning and correction.
+
+=== SOURCE ===
+The estimate uses robust standard errors. The old guide says retries are disabled. They are actually enabled when retryLimit is above zero.

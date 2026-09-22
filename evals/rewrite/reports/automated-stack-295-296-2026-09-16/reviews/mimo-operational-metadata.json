@@ -1,0 +1,22 @@
+﻿{
+    "reviewer":  "opencode/mimo-v2.5-free",
+    "packet_pr295_sha":  "726c8c4a01a45cc126b12652a75c1c867092893c",
+    "packet_pr296_sha":  "0ae68f2fc3ddb166cbf8dc3156e2199cbd45bd13",
+    "reported_pr295_sha":  "726c8c4a01a45cc126b12652a75c1c867092893c",
+    "reported_pr296_sha":  "66c997f6ed400511b97777ce65340936d458a6c0",
+    "usage":  {
+                  "total":  17256,
+                  "input":  13121,
+                  "output":  610,
+                  "reasoning":  1477,
+                  "cache":  {
+                                "write":  0,
+                                "read":  2048
+                            }
+              },
+    "finish_reason":  "stop",
+    "cost":  0,
+    "tool_events":  0,
+    "transport":  "Full inspected public packet on stdin; no attachments or file access",
+    "carry_forward":  "Reported operational lens targets66c997f. Final0ae changes only reference Outputformat reminder and routedrewriter Outputpointer; reviewed pass.index/pass.max, repairguard, graphconditions and handoff rules unchanged. Final changed Outputpointer reviewed by Claude and Muse at0ae. Do not relabel raw verdict SHA."
+}

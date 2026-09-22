@@ -18,22 +18,86 @@ inputs:
     description: Detector source mode (plain or rendered-markdown).
     required: false
     default: rendered-markdown
+outputs:
+  pass:
+    description: "Whether all scanned files passed within the threshold (true/false); false on an operational error."
+    value: ${{ steps.gate.outputs.pass }}
+  total-findings:
+    description: "Total count of deterministic findings across all scanned files; unset when the scan exits with an operational error."
+    value: ${{ steps.gate.outputs.total-findings }}
+  failed-files:
+    description: "Count of files that exceeded the threshold; unset when the scan exits with an operational error."
+    value: ${{ steps.gate.outputs.failed-files }}
 runs:
   using: composite
   steps:
-    - name: Gate prose with avoid-ai-writing detector
+    - id: gate
+      name: Gate prose with avoid-ai-writing detector
       shell: bash
       env:
         AAW_GLOB: ${{ inputs.glob }}
         AAW_THRESHOLD: ${{ inputs.threshold }}
         AAW_CONTEXT: ${{ inputs.context }}
         AAW_SOURCE_MODE: ${{ inputs.source-mode }}
-      run: >-
-        node "$GITHUB_ACTION_PATH/bin/avoid-ai-writing-gate.js"
-        --glob "$AAW_GLOB"
-        --threshold "$AAW_THRESHOLD"
-        --context "$AAW_CONTEXT"
-        --source-mode "$AAW_SOURCE_MODE"
+      run: |
+        if [ -n "$GITHUB_OUTPUT" ]; then
+          if ! echo "pass=false" >> "$GITHUB_OUTPUT"; then
+            echo "avoid-ai-writing-gate: could not initialize action outputs" >&2
+            exit 2
+          fi
+        fi
+        TEMP_ROOT="${RUNNER_TEMP:-${TMPDIR:-/tmp}}"
+        TMP_JSON="$(mktemp "$TEMP_ROOT/aaw-gate.XXXXXX")" || {
+          echo "avoid-ai-writing-gate: could not create a temporary output file" >&2
+          exit 2
+        }
+        trap 'rm -f "$TMP_JSON"' EXIT
+        set +e
+        node "$GITHUB_ACTION_PATH/bin/avoid-ai-writing-gate.js" \
+          --glob "$AAW_GLOB" \
+          --threshold "$AAW_THRESHOLD" \
+          --context "$AAW_CONTEXT" \
+          --source-mode "$AAW_SOURCE_MODE" \
+          --json > "$TMP_JSON"
+        EXIT_CODE=$?
+        set -e
+
+        if [ "$EXIT_CODE" -ne 0 ] && [ "$EXIT_CODE" -ne 1 ] && [ "$EXIT_CODE" -ne 2 ]; then
+          echo "avoid-ai-writing-gate: gate process exited unexpectedly with status $EXIT_CODE" >&2
+          EXIT_CODE=2
+        fi
+
+        if [ "$EXIT_CODE" -eq 0 ] || [ "$EXIT_CODE" -eq 1 ]; then
+          set +e
+          node -e '
+            const fs = require("fs");
+            const raw = fs.readFileSync(process.argv[1], "utf8");
+            const data = JSON.parse(raw);
+            const githubOutput = process.env.GITHUB_OUTPUT;
+            if (githubOutput) {
+              fs.appendFileSync(githubOutput, `pass=${data.pass}\n`);
+              fs.appendFileSync(githubOutput, `total-findings=${data.totalFindings}\n`);
+              fs.appendFileSync(githubOutput, `failed-files=${data.failedFiles}\n`);
+            }
+            if (data.files.length === 0) {
+              process.stdout.write("avoid-ai-writing-gate: no matching files; nothing to scan\n");
+            } else {
+              for (const f of data.files) {
+                const label = f.pass ? "PASS" : "FAIL";
+                const typeSummary = f.types.length ? ` [${f.types.join(", ")}]` : "";
+                process.stdout.write(`${label} ${f.path} — ${f.findings} finding(s), threshold ${data.threshold}${typeSummary}\n`);
+              }
+            }
+          ' "$TMP_JSON"
+          PARSE_EXIT=$?
+          set -e
+          if [ "$PARSE_EXIT" -ne 0 ]; then
+            echo "avoid-ai-writing-gate: could not parse gate JSON output" >&2
+            EXIT_CODE=2
+          fi
+        fi
+
+        exit "$EXIT_CODE"
 branding:
   icon: edit-3
   color: purple

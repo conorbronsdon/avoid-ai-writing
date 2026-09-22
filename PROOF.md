@@ -11,17 +11,18 @@ git clone https://github.com/conorbronsdon/avoid-ai-writing && cd avoid-ai-writi
 node scripts/self-scan.js
 ```
 
-## Result (v3.22.0, measured 2026-07-31)
+## Result (v3.34.0, measured 2026-09-13)
 
 | Document | Words | Raw score | Exempt score | Budget |
 |---|---:|---:|---:|---:|
-| `README.md` | 3,977 | 65 | **21** | 30 |
-| `SKILL.full.md` | 14,008 | 89 | **12** | 25 |
-| `CONTRIBUTING.md` | 527 | 3 | **1** | 15 |
-| `detector/README.md` | 593 | 2 | **2** | 15 |
-| `detector/CATEGORIES.md` | 1,064 | 1 | **1** | 15 |
-| `CHANGELOG.md` | 7,192 | 62 | **32** | 40 |
-| `PROOF.md` | 995 | 15 | **14** | 20 |
+| `README.md` | 5,273 | 58 | **1** | 30 |
+| `SKILL.full.md` | 18,136 | 77 | **9** | 25 |
+| `CONTRIBUTING.md` | 1,345 | 1 | **1** | 15 |
+| `detector/README.md` | 1,174 | 1 | **1** | 15 |
+| `detector/CATEGORIES.md` | 1,615 | 1 | **0** | 15 |
+| `examples/README.md` | 931 | 1 | **1** | 10 |
+| `CHANGELOG.md` | 11,915 | 57 | **34** | 40 |
+| `PROOF.md` | 1,163 | 13 | **12** | 20 |
 
 The `PROOF.md` row is a snapshot and mildly self-referential: editing this page
 changes its own word count and score. CI gates the live number from
@@ -33,7 +34,7 @@ publishing only the flattering one is the behavior this project exists to
 criticize.
 
 **Raw** counts every match, including the 112-entry vocabulary table and every
-pattern this repo quotes to warn about it. `SKILL.md` scoring 92 raw
+pattern this repo quotes to warn about it. `SKILL.full.md` scoring 77 raw
 means the catalog contains the words it catalogs. That number is noise, and it
 is here so nobody has to wonder what was suppressed.
 
@@ -82,7 +83,7 @@ dash inside a heading still counts, because `SKILL.md` applies the em-dash rule
 to headings too. The scan is what surfaced it, which is the argument for having
 the scan.
 
-**3. This page is in the table, and it scores 14 for the reason it just
+**3. This page is in the table, and it scores 12 for the reason it just
 described.** Nearly every hit on `PROOF.md` comes from the italicized list of
 Tier 1 words two paragraphs above. Italics are not an exempt span; quotation
 marks, code, tables, and blockquotes are. The page explaining that release
@@ -90,10 +91,10 @@ notes trip the detector by naming patterns trips the detector by naming
 patterns. One hit was a real one, an "in order to" in the paragraph above the
 table, and it is now "to".
 
-**4. `README.md` at 21 is the honest number for a page that sells something.**
-The residue is promotional register, not vocabulary. That is the expected
-failure mode for a project README, and the tolerance matrix in `SKILL.md`
-relaxes exactly nothing for it.
+**4. `README.md` drops from 58 raw to 1 after exemptions.** Most raw findings
+come from the pattern catalog and examples the page quotes for documentation.
+The remaining exempt findings are one em dash, one formatting signal, and one
+low type-token-ratio signal.
 
 ## What this page does not claim
 
@@ -108,12 +109,15 @@ slightly changes document-level metrics that are computed over the whole text
 shrinks. Vocabulary and phrase categories are unaffected.
 
 A false-positive rate has been measured, and it is not quoted here as a claim.
-[`corpus/README.md`](corpus/README.md) publishes the full table against 875
-human and 779 machine paragraphs: at `score >= 5`, 4.2% FPR (95% CI 3.1–5.8)
-against 7.2% TPR. Paragraph-level ROC-AUC is 0.501 pooled — a coin flip — and
-0.623 at document level. Read plainly, the composite score cannot reliably
-separate machine text from human text, and no threshold on it buys a useful
-true-positive rate at a tolerable false-positive cost.
+[`corpus/README.md`](corpus/README.md) publishes the legacy-preparation table
+against 875 human and 779 machine paragraphs: at `score >= 5`, 4.2% FPR (95% CI
+3.1–5.8) against 7.2% TPR. Paragraph-level ROC-AUC is 0.501 pooled — a coin flip
+— and 0.623 at document level. The legacy and repaired paths were compared
+with a pinned detector in the immutable [#290 comparison
+evidence](https://github.com/conorbronsdon/avoid-ai-writing/tree/39accce14131723c796ee640d88c3fe1b0223815/corpus/reports/fp-preprocessing-86ef5ab3).
+Read plainly, the composite score cannot reliably separate machine text from
+human text, and no threshold on it buys a useful true-positive rate at a
+tolerable false-positive cost.
 
 Those numbers stay in the corpus write-up rather than becoming a headline
 because they do not clear this repo's own publication gate. The gate requires

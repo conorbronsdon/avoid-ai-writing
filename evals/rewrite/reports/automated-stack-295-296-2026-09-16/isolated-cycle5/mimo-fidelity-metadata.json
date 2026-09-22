@@ -1,0 +1,21 @@
+﻿{
+    "id":  "fidelity",
+    "model":  "opencode/mimo-v2.5-free",
+    "started_utc":  "2026-09-16T19:42:26.5742262Z",
+    "finished_utc":  "2026-09-16T19:42:52.0952709Z",
+    "exit_code":  0,
+    "finish_reason":  "stop",
+    "usage":  {
+                  "total":  37030,
+                  "input":  34573,
+                  "output":  179,
+                  "reasoning":  230,
+                  "cache":  {
+                                "write":  0,
+                                "read":  2048
+                            }
+              },
+    "cost":  0,
+    "tool_events":  0,
+    "prompt_sha256":  "C3F814DAB8806F485D5993741D281E3E745F79A6F600063B4781E0465099FD02"
+}

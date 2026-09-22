@@ -46,18 +46,21 @@ file rather than the composite score:
 avoid-ai-writing-gate --glob "**/*.md" --context technical
 avoid-ai-writing-gate --threshold 0 docs/strict-policy.md
 avoid-ai-writing-gate --threshold 2 docs/guide.md README.md
+avoid-ai-writing-gate --json --glob "**/*.md"
 ```
 
 Exit codes:
 
 - `0`: every scanned file is at or below the finding threshold;
 - `1`: at least one file exceeds the threshold;
-- `2`: usage, glob-expansion, file-read, UTF-8, or unscannable-input error (including documents above the detector's 10,000-word limit).
+- `2`: usage, glob-expansion, file-read, UTF-8, or unscannable-input error (including documents above the detector's 10,000-word limit and unsegmented-script documents the engine declined to score).
+
+The `--json` flag formats scan results as structured JSON on standard output with `schemaVersion`, per-file entries (`path`, `findings`, `pass`, `types`), and aggregates (`pass`, `totalFindings`, `failedFiles`).
 
 The GitHub Action in `action.yml` exposes `glob`, `threshold`, `context`,
-and `source-mode` inputs. The CLI, Action, and shipped pre-commit hook default
-to **6 findings per file** with `technical` context and `rendered-markdown`
-source mode.
+and `source-mode` inputs, and outputs `pass`, `total-findings`, and `failed-files`.
+The CLI, Action, and shipped pre-commit hook default to **6 findings per file**
+with `technical` context and `rendered-markdown` source mode.
 
 That default is measured rather than guessed. On the current 376-document human
 control corpus under those exact settings, threshold 0 rejects 31.4% of human
@@ -78,9 +81,9 @@ the workflow.
 Use the repository directly when developing or validating detector changes:
 
 ```bash
-npm test          # pattern, category-contract, and preservation tests (no deps)
-# or directly:
-node detector/patterns.test.js
+npm test          # all suites; failures in one file still run the rest (no deps)
+node scripts/run-tests.js detector/patterns.test.js   # one suite
+node detector/patterns.test.js                        # same, direct
 ```
 
 ```js
@@ -100,7 +103,7 @@ CommonJS).
 | Field | Type | Meaning |
 |---|---|---|
 | `score` | `0–100` | 0 = clean, 100 = heavy AI |
-| `label` | string | scored: `Clean` (0) / `Minimal AI signals` (1–15) / `Some AI patterns` (16–35) / `Moderate AI signals` (36–60) / `Strong AI signals` (61–80) / `Heavy AI patterns` (81–100). Unscored: `Empty` / `Too short` / `Text too long` |
+| `label` | string | scored: `Clean` (0) / `Minimal AI signals` (1–15) / `Some AI patterns` (16–35) / `Moderate AI signals` (36–60) / `Strong AI signals` (61–80) / `Heavy AI patterns` (81–100). Unscored: `Empty` / `Too short` / `Unsupported script` / `Text too long` |
 | `issues[]` | `{type, text, severity, …}` | one entry per detected pattern; `type` keys map to [`CATEGORIES.md`](./CATEGORIES.md) |
 | `stats` | object | `wordCount`, per-tier counts, `contextMode`, `sourceMode`, masked-span counts, `denseAIVocab`, normalization flags, etc. |
 | `document_classification` | string | `HUMAN_ONLY` / `MIXED` / `AI_ONLY` (shape mirrors GPTZero for swap-in), or `UNSCORED` on the early-exit paths |
@@ -108,17 +111,38 @@ CommonJS).
 | `confidence_category` | `low` / `medium` / `high` | |
 | `highlight_sentence_for_ai` | region[] | sentence spans with source offsets + per-region score, for UI highlighting |
 
-The three unscored labels share one result shape: `score` 0,
+The four unscored labels share one result shape: `score` 0,
 `document_classification` `UNSCORED`, an even `class_probabilities` split, and
 `confidence_category` `low`. Branch on that classification rather than on the
-score, since clean text also scores 0 and is labeled `Clean`.
+score, since clean text also scores 0 and is labeled `Clean`. `Unsupported
+script` marks a document dominated by an unsegmented script (Chinese/Japanese:
+Han and kana characters, whose language has no inter-word spaces for
+`countWords` to split on) that was declined, not scored. An incidental place
+name or single Han character in otherwise English text does not qualify;
+Korean (Hangul) is space-separated and scores normally.
 
 `options.contextMode` accepts `general` (default), `technical`, `marketing`, and
 `personal`. Technical mode suppresses flags that are legitimate in code-adjacent
-prose (e.g. Title Case headers); `marketing` and `personal` are accepted and
-reported in `stats.contextMode`, but currently score the same as `general`.
+prose (e.g. Title Case headers and eight technical-legitimate terms: `robust`,
+`comprehensive`, `seamless`, `ecosystem`, `leverage`, `facilitate`, `underpin`,
+`streamline`); `marketing` and `personal` are accepted and reported in
+`stats.contextMode`, but currently score the same as `general`.
 Invalid modes fall back to `general` and set `stats.contextModeFallback` to the
 value you passed.
+
+The skill's context profiles map to `contextMode` as follows:
+
+| Skill profile | Detector mode | What differs |
+|---|---|---|
+| `linkedin` | `marketing` | The skill applies the LinkedIn tolerance profile; detector `marketing` currently scores like `general`. |
+| `blog` | `general` | The skill applies the default blog tolerance profile; detector uses baseline behavior. |
+| `technical-blog` | `technical` | The skill applies technical-blog tolerances; detector enables technical-context suppressions. |
+| `investor-email` | `marketing` | The skill applies stricter investor-email tolerances; detector `marketing` currently scores like `general`. |
+| `docs` | `technical` | The skill applies docs tolerances; detector enables technical-context suppressions. |
+| `casual` | `personal` | The skill applies casual tolerances; detector `personal` currently scores like `general`. |
+
+See [`references/patterns.md`](../references/patterns.md#detector-mode-mapping)
+for the full context-profile definitions and tolerance matrix.
 
 `options.sourceMode` accepts `plain` (default) or `rendered-markdown`. Rendered
 Markdown mode masks initial YAML frontmatter and HTML comments before pattern

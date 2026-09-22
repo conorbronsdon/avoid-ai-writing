@@ -397,6 +397,29 @@ test('#190: many HTML comments avoid quadratic rescanning', () => {
   );
 });
 
+test('adversarial Markdown scans stay within a bounded time', () => {
+  const ordinary = 'one two three four five six seven eight nine ten';
+  const attacks = [
+    `${ordinary} ${'`'.repeat(2500)}${'a'.repeat(2500)}`,
+    `${ordinary} ${'<a'.repeat(10000)}`,
+    `## 1.1.1${'\t'.repeat(20000)}— x\n${ordinary}`,
+    `## 1.1.${'1'.repeat(64000)}]x — 2026-01-01\n${ordinary}`,
+    `- ${' '.repeat(10000)}X\rY\n${ordinary}`,
+  ];
+  for (const text of attacks) {
+    const started = performance.now();
+    AIDetector.analyzeText(text);
+    const elapsedMs = performance.now() - started;
+    assert.ok(elapsedMs < 900, `adversarial scan took ${elapsedMs.toFixed(1)}ms`);
+  }
+});
+
+test('version-heading dash carve-out does not swallow prose after a closed version label', () => {
+  const text = '## [1.1.1] Not a version label — 2026-01-01\n\nOne two three four five six seven eight nine ten.';
+  const issues = AIDetector.analyzeText(text).issues.filter((issue) => issue.type === 'em-dash');
+  assert.equal(issues.length, 1, 'text after a closed version label must keep its prose dash visible');
+});
+
 test('repeated Tier 1 phrase does not inflate score linearly', () => {
   const single = AIDetector.analyzeText('We delve into the landscape of many things today.');
   const fivefold = AIDetector.analyzeText(
@@ -1083,6 +1106,25 @@ test('emotional-flatline opener fires at position 0 (no leading newline)', () =>
   assert.ok(types.has('emotional-flatline'), 'expected emotional-flatline at position 0');
 });
 
+test('emotional-flatline stays visible without moving the authorship score', () => {
+  // #82: compare nearly identical prose so the assertion isolates the category
+  // weight instead of assuming every other scoring input remains at zero.
+  const text = 'What surprised me most was the rollback time: eleven seconds across all three production hosts after the database migration completed without retries.';
+  const control = 'The detail I remember best was the rollback time: eleven seconds across all three production hosts after the database migration completed without retries.';
+  const r = AIDetector.analyzeText(text);
+  const baseline = AIDetector.analyzeText(control);
+  const hits = r.issues.filter((i) => i.type === 'emotional-flatline');
+  assert.deepEqual(baseline.issues, [], `control sentence must stay clean: ${JSON.stringify(baseline.issues)}`);
+  assert.deepEqual(r.issues.map((i) => i.type), ['emotional-flatline'], `target sentence has confounding findings: ${JSON.stringify(r.issues)}`);
+  assert.equal(hits.length, 1, `expected one emotional-flatline hit, got ${JSON.stringify(hits)}`);
+  assert.equal(r.score, baseline.score, `style-only emotional-flatline changed score from ${baseline.score} to ${r.score}`);
+  assert.deepEqual(
+    r.highlight_sentence_for_ai,
+    [],
+    `style-only emotional-flatline must not create AI sentence highlights: ${JSON.stringify(r.highlight_sentence_for_ai)}`,
+  );
+});
+
 test('bullet-np-list ignores bullets inside fenced code blocks', () => {
   // CLI flag docs / option dumps inside ``` fences are not prose AI
   // scaffolding. False-positive that would fire on most READMEs.
@@ -1745,6 +1787,87 @@ test('#62: an interior function word still flags, in both forms', () => {
   ]) {
     assert.equal(titleCaseHits(heading + HEADING_BODY).length, 1, `must flag: ${heading}`);
   }
+});
+
+test('#240: an acronym or single-letter function word in the title still flags', () => {
+  // `TITLE_CASE_HEADER` previously required every interior token to be
+  // [A-Z][a-z]+ or a lowercase function word, so a capitalised `A` and any
+  // all-caps acronym (AI, API, CLI) broke the whole match. These are the
+  // common shapes in the content this rule actually targets.
+  for (const heading of [
+    '## Why Your Team Needs A Better Testing Strategy',
+    '## The Future Of AI In Production',
+    '## Choosing A Database For Your Startup',
+    '## Building An API Driven Strategy',
+  ]) {
+    assert.equal(titleCaseHits(heading + HEADING_BODY).length, 1, `must flag: ${heading}`);
+  }
+});
+
+test('#240: an all-caps banner line is not a title-case header', () => {
+  // The first and last tokens must remain ordinary [A-Z][a-z]+ words, so a
+  // fully uppercase line like a section banner never matches.
+  assert.equal(
+    titleCaseHits('## HTTP API REFERENCE' + HEADING_BODY).length,
+    0,
+    'all-caps banner must not flag',
+  );
+});
+
+test('#240: unrelated single-letter capitals do not widen the rule', () => {
+  assert.equal(
+    titleCaseHits('## What X Means And Other Things' + HEADING_BODY).length,
+    0,
+    'only the capitalised function word A may be a one-letter interior token',
+  );
+});
+
+test('#314: first-person I can appear inside a Title Case heading', () => {
+  assert.equal(
+    titleCaseHits('## What I Learned And Why It Matters' + HEADING_BODY).length,
+    1,
+    'a first-person title with a targeted capitalized function word must flag',
+  );
+  for (const heading of [
+    '## What X Learned And Why It Matters',
+    '## What I learned and why it matters',
+    '## What I Learned About Writing',
+  ]) {
+    assert.equal(titleCaseHits(heading + HEADING_BODY).length, 0, `must not flag: ${heading}`);
+  }
+});
+
+test('#291: blank lines do not manufacture a longer heading', () => {
+  // `\s+` between words also eats newlines, so two unrelated lines could
+  // combine into one heading match that neither line independently satisfies.
+  // The repro from #290's fixed-corpus review.
+  const filler = Array.from({ length: 30 }, (_, i) => 'word' + i).join(' ');
+  const cases = [
+    ['## Benefits\n\nOf Good Writing\n\n' + filler, 'blank-line separated fragments'],
+    ['## Benefits\nOf Good Writing\n\n' + filler, 'adjacent-line fragments'],
+    ['## Benefits\r\n\r\nOf Good Writing\r\n\r\n' + filler, 'CRLF variants'],
+  ];
+  for (const [text, why] of cases) {
+    assert.equal(
+      titleCaseHits(text).length,
+      0,
+      `must not combine lines into a heading: ${why}`,
+    );
+  }
+});
+
+test('#291: a single physical line still flags with horizontal whitespace', () => {
+  const filler = Array.from({ length: 30 }, (_, i) => 'word' + i).join(' ');
+  assert.equal(
+    titleCaseHits('## Benefits And Strategic Considerations\n\n' + filler).length,
+    1,
+    'a real one-line heading must still flag',
+  );
+  assert.equal(
+    titleCaseHits('##\tBenefits And Strategic Considerations\n\n' + filler).length,
+    1,
+    'tab-indented heading still flags',
+  );
 });
 
 test('#62: fences that a parity count gets wrong', () => {
@@ -2566,6 +2689,254 @@ test('#235: table delimiter rows still mask with surrounding whitespace and CR',
   const notTable = 'A dash line --- followed by a code-base mention that is ordinary prose here.\n| --- |';
   const prose = AIDetector.analyzeText(notTable).issues.filter((issue) => issue.type === 'unnecessary-hyphenation');
   assert.equal(prose.length, 1, `prose next to a single-cell delimiter still edits: ${JSON.stringify(prose)}`);
+});
+
+test('#237: technical context mode suppresses technical-legitimate vocabulary terms', () => {
+  const text = 'We built a robust, comprehensive, seamless pipeline that can leverage the ecosystem to facilitate and streamline the work that underpin delivery. '.repeat(3);
+
+  const generalResult = AIDetector.analyzeText(text, { contextMode: 'general' });
+  const technicalResult = AIDetector.analyzeText(text, { contextMode: 'technical' });
+
+  // Verify all eight exception terms fire under general mode
+  const genIssueTexts = generalResult.issues.map((i) => i.text.toLowerCase());
+  const exemptTerms = ['robust', 'comprehensive', 'seamless', 'leverage', 'ecosystem', 'facilitate', 'streamline', 'underpin'];
+  for (const term of exemptTerms) {
+    assert.ok(genIssueTexts.includes(term), `general mode must report issue for "${term}"`);
+  }
+
+  // Verify all eight exception terms stay suppressed under technical mode
+  assert.equal(technicalResult.score, 0, 'technical mode must score 0 on technical-legitimate terms');
+  assert.equal(technicalResult.issues.length, 0, 'technical mode must report 0 issues for technical-legitimate terms');
+
+  // Verify inflections also stay clean under technical mode
+  const inflections = 'Leveraging the leveraged leverages of the ecosystems and seamlessly streamlining what facilitates and underpins the underpinning underpinnings.';
+  const techInflect = AIDetector.analyzeText(inflections, { contextMode: 'technical' });
+  assert.equal(techInflect.issues.length, 0, `technical mode must suppress inflections: ${JSON.stringify(techInflect.issues.map((i) => i.text))}`);
+
+  // Non-exempt terms must STILL fire under technical mode
+  // Include harness alongside another Tier 2 term (navigate) to satisfy cluster threshold (2+ per paragraph)
+  const nonExemptText = 'We delve into the tapestry and beacon to embark on a testament to a game-changer. We harness the power to navigate.';
+  const techNonExempt = AIDetector.analyzeText(nonExemptText, { contextMode: 'technical' });
+  const nonExemptIssueTexts = techNonExempt.issues.map((i) => i.text.toLowerCase());
+  const requiredNonExempt = ['delve', 'tapestry', 'beacon', 'embark', 'testament to', 'game-changer', 'harness'];
+  for (const term of requiredNonExempt) {
+    assert.ok(nonExemptIssueTexts.includes(term), `technical mode must still flag non-exempt term "${term}"`);
+  }
+});
+
+test('reply openers and analytical framing are not reported as acknowledgment loops (#239)', () => {
+  // Acknowledgment loops are judgment-only: these phrases also open ordinary
+  // replies, and "the question of whether" is standard analytical English. The
+  // tell is a restatement that adds nothing, which the engine cannot read.
+  const clean = [
+    'The question of whether the effect persists after controlling for income is still open, and the two replications disagree with each other.',
+    'To answer your question from Tuesday: the invoice went out on the 3rd and the payment cleared last week, so nothing is outstanding on our side.',
+    "You're asking about the retry limit. It is five by default and configurable with RETRY_MAX, though we do not recommend raising it past ten.",
+  ];
+  for (const text of clean) {
+    for (const contextMode of [undefined, 'technical']) {
+      const r = AIDetector.analyzeText(text, contextMode ? { contextMode } : {});
+      const hits = r.issues.filter((i) => /question of whether|answer your question|asking about/i.test(i.text));
+      assert.deepEqual(hits.map((i) => `${i.type}:${i.text}`), [], `${contextMode || 'default'}: ${text}`);
+      assert.ok(!r.issues.some((i) => i.type === 'acknowledgment-loop'));
+    }
+  }
+});
+
+test('#241: unsegmented-script documents are declined, not scored "Too short"', () => {
+  // countWords counts \S+ runs; Chinese and Japanese carry no inter-word
+  // spaces, so segmentation cannot measure them. The script check runs
+  // before the word gate and declines only when CJK characters dominate
+  // the non-whitespace text. Han + kana ranges (including halfwidth
+  // katakana) signal an unsegmented script; Hangul is space-separated and
+  // segments fine, so it is excluded.
+  const zh = '这个函数返回一个承诺，调用方不应假设句柄之后仍可重用。'.repeat(50);
+  const rzh = AIDetector.analyzeText(zh);
+  assert.equal(rzh.label, 'Unsupported script', `expected Unsupported script, got ${rzh.label}`);
+  assert.equal(rzh.unsupportedScript, true);
+  assert.equal(rzh.document_classification, 'UNSCORED');
+  assert.ok(rzh.stats.cjkChars > 0, 'stats must carry the cjkChars count');
+  assert.match(rzh.stats.reason, /unsegmented-script/);
+
+  const ja = 'この関数はプロミスを返します。呼び出し側は、ハンドルがその後も再利用できると仮定してはいけません。'.repeat(40);
+  assert.equal(AIDetector.analyzeText(ja).label, 'Unsupported script');
+
+  // Halfwidth katakana (U+FF66–U+FF9D) is also an unsegmented script.
+  const jaHw = 'ﾃｽﾄ'.repeat(100);
+  assert.equal(AIDetector.analyzeText(jaHw).label, 'Unsupported script');
+
+  // Supplementary-plane Han and kana must be counted by code point. Explicit
+  // BMP ranges miss these characters and a non-Unicode regex counts each
+  // surrogate pair twice in the dominance denominator.
+  const zhSupplementary = '𠀀'.repeat(100); // CJK Unified Ideographs Extension B
+  const rzhSupplementary = AIDetector.analyzeText(zhSupplementary);
+  assert.equal(rzhSupplementary.label, 'Unsupported script');
+  assert.equal(rzhSupplementary.stats.cjkChars, 100);
+  const jaSupplementary = '𛀀'.repeat(100); // Kana Supplement
+  assert.equal(AIDetector.analyzeText(jaSupplementary).label, 'Unsupported script');
+
+  // Newline-wrapped CJK lines each count as a word, so the script check
+  // must not sit inside the minimum word-count condition.
+  const zhLines = Array(10).fill('这个函数返回一个承诺。').join('\n');
+  assert.equal(AIDetector.analyzeText(zhLines).label, 'Unsupported script');
+
+  // A genuinely short English document still reports Too short.
+  const en = AIDetector.analyzeText('Short text here.');
+  assert.equal(en.label, 'Too short');
+  assert.equal(en.unsupportedScript, undefined);
+
+  // An incidental CJK place name in a short English document is not an
+  // unsegmented-script document: the dominance check keeps it scorable.
+  const mixed = AIDetector.analyzeText('The Tokyo (東京) office owns the retry limit docs.');
+  assert.equal(mixed.label, 'Too short');
+  assert.equal(mixed.unsupportedScript, undefined);
+
+  // Korean is space-separated: it segments and scores normally.
+  const ko = '이 함수는 프라미스를 반환합니다. 호출자는 핸들이 나중에 재사용 가능하다고 가정해서는 안 됩니다. '.repeat(30);
+  const rko = AIDetector.analyzeText(ko);
+  assert.notEqual(rko.label, 'Unsupported script');
+  assert.equal(rko.unsupportedScript, undefined);
+});
+
+// #242: pin the stylometric signals independently of aggregate score, which
+// can stay green when another detector happens to fire on the same document.
+test('uniformity: five equal long sentences fire, varied rhythm stays clean', () => {
+  const sentence = 'The worker reads every queued message before it writes the result to disk.';
+  const issues = AIDetector.analyzeText(Array(5).fill(sentence).join(' ')).issues
+    .filter(i => i.type === 'uniformity');
+  assert.deepEqual(issues.map(i => i.text), [
+    'Sentence lengths cluster around 13 words (low variation)',
+  ]);
+  assert.equal(issues[0].severity, 'medium');
+
+  const varied = [
+    'Stop.', sentence, 'We waited for the retry.',
+    'After the connection closed, Mara checked the logs, restored the backup, and reran the batch with a smaller request limit.',
+    'It worked.',
+  ].join(' ');
+  assert.equal(AIDetector.analyzeText(varied).issues.filter(i => i.type === 'uniformity').length, 0);
+  assert.equal(AIDetector.analyzeText(Array(4).fill(sentence).join(' ')).issues
+    .filter(i => i.type === 'uniformity').length, 0, 'four sentences are below the sample gate');
+});
+
+test('uniformity: sentence-length spread pins the 0.25 variation threshold', () => {
+  // Identical sentences sit at CV 0, so they cannot tell 0.25 from 0.01.
+  // These bracket the threshold: 9/12/14/16/19 words is CV 0.243 and fires;
+  // widening the ends to 8 and 20 words is CV 0.286 and stays clean.
+  const middle = [
+    'The queue had cleared by noon, so we closed the incident early.',
+    'After the connection dropped, the worker retried twice before it finally gave up completely.',
+    'We restored the backup from Tuesday and reran the batch with a smaller request limit overnight.',
+  ];
+  const nearThreshold = [
+    'Mara checked the logs and found nothing unusual there.',
+    ...middle,
+    'Nobody could explain why the second worker still held the lock after the scheduler had already marked it done.',
+  ].join(' ');
+  const issues = AIDetector.analyzeText(nearThreshold).issues.filter(i => i.type === 'uniformity');
+  assert.deepEqual(issues.map(i => i.text), [
+    'Sentence lengths cluster around 14 words (low variation)',
+  ]);
+
+  const justOver = [
+    'Mara checked the logs and found nothing unusual.',
+    ...middle,
+    'Nobody could explain why the second worker still held the lock after the scheduler had already marked it as done.',
+  ].join(' ');
+  assert.equal(AIDetector.analyzeText(justOver).issues.filter(i => i.type === 'uniformity').length, 0,
+    'CV 0.286 must sit above the threshold');
+});
+
+test('uniformity: equal paragraph sizes fire, varied paragraph sizes stay clean', () => {
+  const paragraph = 'Mara checked the logs. The queue had cleared. We closed the incident.';
+  const issues = AIDetector.analyzeText(Array(4).fill(paragraph).join('\n\n')).issues
+    .filter(i => i.type === 'uniformity');
+  assert.deepEqual(issues.map(i => i.text), ['All paragraphs are ~3 sentences']);
+  assert.equal(issues[0].severity, 'low');
+
+  const varied = [
+    'Mara checked the logs.',
+    'The queue had cleared. We closed the incident.',
+    paragraph,
+    'One task failed. ' + paragraph + ' The workers stopped.',
+  ].join('\n\n');
+  assert.equal(AIDetector.analyzeText(varied).issues.filter(i => i.type === 'uniformity').length, 0);
+  assert.equal(AIDetector.analyzeText(Array(3).fill(paragraph).join('\n\n')).issues
+    .filter(i => i.type === 'uniformity').length, 0, 'three paragraphs are below the sample gate');
+});
+
+test('formatting: four bold spans fire, three ordinary emphases stay clean', () => {
+  const clauses = [
+    'Read the **log** before you change the limit.',
+    'Check the **queue** when the worker stops.',
+    'Keep a **backup** until the migration finishes.',
+    'Use the **timestamp** to find the failed request.',
+  ];
+  const issues = AIDetector.analyzeText(clauses.join(' ')).issues.filter(i => i.type === 'formatting');
+  assert.deepEqual(issues.map(i => i.text), ['4 bold phrases']);
+  assert.equal(AIDetector.analyzeText(clauses.slice(0, 3).join(' ')).issues
+    .filter(i => i.type === 'formatting').length, 0);
+});
+
+test('confidence-calibration: three raw matches fire, two stay clean', () => {
+  const clauses = [
+    'Interestingly, the retry completed after the connection reopened.',
+    'Surprisingly, the old worker still held the lock.',
+    'Importantly, no messages were lost during the restart.',
+  ];
+  const issues = AIDetector.analyzeText(clauses.join(' ')).issues
+    .filter(i => i.type === 'confidence-calibration');
+  assert.deepEqual(issues.map(i => i.text.toLowerCase()).sort(), [
+    'importantly', 'interestingly', 'surprisingly',
+  ]);
+  assert.equal(AIDetector.analyzeText(clauses.slice(0, 2).join(' ')).issues
+    .filter(i => i.type === 'confidence-calibration').length, 0);
+});
+
+test('confidence-calibration: repeated wording satisfies the pre-dedup gate', () => {
+  const sentence = 'Interestingly, the retry completed after the connection reopened.';
+  const issues = AIDetector.analyzeText(Array(3).fill(sentence).join(' ')).issues
+    .filter(i => i.type === 'confidence-calibration');
+  assert.equal(issues.length, 1, 'three raw matches become one displayed finding');
+  assert.equal(issues[0].text.toLowerCase(), 'interestingly');
+  assert.equal(AIDetector.analyzeText(Array(2).fill(sentence).join(' ')).issues
+    .filter(i => i.type === 'confidence-calibration').length, 0);
+});
+
+test('fnword-trigram-entropy: low entropy fires, varied grammar stays clean', () => {
+  const repeated = 'the and of '.repeat(50) + 'I can send it if you want to see what she has written.';
+  const issues = AIDetector.analyzeText(repeated).issues
+    .filter(i => i.type === 'fnword-trigram-entropy');
+  assert.equal(issues.length, 1);
+  assert.match(issues[0].text, /^Function-word trigram entropy .* \(low\)$/);
+  assert.equal(issues[0].severity, 'medium');
+
+  const varied = [
+    'Mara checked the logs before lunch and found no failed requests.',
+    'If you can reproduce this locally, send us the input and the timestamp.',
+    'She had already read our notes when the second worker stopped.',
+    'We will use the old queue until they tell us why their patch failed.',
+    'It was a small change, but he could not deploy it without a review.',
+    'The scheduler should wait for a response rather than assume that the task is done.',
+    'I have kept your backup here so that you can restore it when needed.',
+    'Those jobs were started by another process which has since exited.',
+    'Do not remove this check because it catches a failure we have seen before.',
+    'What happens after a timeout depends on whether there is room in the queue.',
+    'They may retry from the saved cursor or ask for a new snapshot.',
+    'Our test writes a file to disk and then reads its contents back.',
+  ].join(' ');
+  const clean = AIDetector.analyzeText(varied);
+  assert.ok(clean.stats.wordCount >= 150, 'negative control must reach the entropy gate');
+  assert.equal(clean.issues.filter(i => i.type === 'fnword-trigram-entropy').length, 0);
+});
+
+test('fnword-trigram-entropy: single trigram fires at 150 words, not 149', () => {
+  const issues = AIDetector.analyzeText('the '.repeat(150)).issues
+    .filter(i => i.type === 'fnword-trigram-entropy');
+  assert.deepEqual(issues.map(i => i.text), ['Single function-word trigram repeated across document']);
+  assert.equal(issues[0].severity, 'high');
+  assert.equal(AIDetector.analyzeText('the '.repeat(149)).issues
+    .filter(i => i.type === 'fnword-trigram-entropy').length, 0);
 });
 
 if (failed > 0) {

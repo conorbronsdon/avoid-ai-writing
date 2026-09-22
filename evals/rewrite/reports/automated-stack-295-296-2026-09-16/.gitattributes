@@ -1,0 +1,5 @@
+* -text -whitespace
+README.md text eol=lf whitespace
+FOLLOWUP.md text eol=lf whitespace
+check-literals.cjs text eol=lf whitespace
+.gitattributes text eol=lf whitespace

@@ -36,6 +36,17 @@ const CORPUS_DIR = path.join(ROOT, 'corpus');
 const MANIFEST = path.join(CORPUS_DIR, 'manifest.json');
 const CACHE = path.join(CORPUS_DIR, 'cache');
 
+/** Same bound as dataset ranged fetches in dataset-hc3.js / dataset-raid.js. */
+const FETCH_TIMEOUT_MS = 180000;
+
+function fetchHost(url) {
+  try {
+    return new URL(url).host;
+  } catch {
+    return String(url);
+  }
+}
+
 /**
  * Registers are the unit of analysis, not a label of convenience.
  *
@@ -178,7 +189,11 @@ function applySlice(text, slice) {
  * callers can treat both kinds uniformly.
  */
 function loadRows(doc) {
-  const text = loadText(doc);
+  return rowsFromText(doc, loadText(doc));
+}
+
+/** Construct rows from an already loaded source, including verified snapshots. */
+function rowsFromText(doc, text) {
   if (text === null) return null;
   if (doc.source.type !== 'dataset') {
     return [{ id: doc.id, text, register: doc.register, class: doc.class || 'human', model: null, domain: null }];
@@ -187,7 +202,41 @@ function loadRows(doc) {
 }
 
 function cachePath(doc) {
+  if (typeof doc.id !== 'string' || !/^[a-z0-9][a-z0-9._-]*$/i.test(doc.id)) {
+    throw new Error(`invalid document id: ${JSON.stringify(doc.id)}`);
+  }
   return path.join(CACHE, `${doc.id}.txt`);
+}
+
+function writeCacheFile(destination, content) {
+  fs.mkdirSync(CACHE, { recursive: true });
+  const stagingDir = fs.mkdtempSync(path.join(CACHE, '.write-'));
+  const staged = path.join(stagingDir, 'content');
+  try {
+    fs.writeFileSync(staged, content, { flag: 'wx' });
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      try {
+        fs.renameSync(staged, destination);
+        return;
+      } catch (err) {
+        if (err.code !== 'EEXIST' && err.code !== 'EPERM') throw err;
+        // With no retry left, preserve whichever complete cache file won the
+        // collision instead of deleting it and then throwing.
+        if (attempt === 3) throw err;
+        try {
+          fs.rmSync(destination, { force: true });
+        } catch (removeErr) {
+          // Windows can report the same temporary sharing violation while
+          // removing the occupied destination. Keep the staged file and let
+          // the next bounded rename attempt try again.
+          if (removeErr.code !== 'EEXIST' && removeErr.code !== 'EPERM') throw removeErr;
+        }
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 10 * (attempt + 1));
+      }
+    }
+  } finally {
+    fs.rmSync(stagingDir, { recursive: true, force: true });
+  }
 }
 
 /** Resolve a document's measured text, from cache or from its local path. */
@@ -201,10 +250,13 @@ function loadText(doc) {
   return fs.readFileSync(p, 'utf8');
 }
 
-async function fetchDoc(doc, force) {
+async function fetchDoc(doc, force, opts = {}) {
+  const timeoutMs = opts.timeoutMs ?? FETCH_TIMEOUT_MS;
   if (doc.source.type === 'local') return { id: doc.id, status: 'local' };
   const p = cachePath(doc);
-  if (fs.existsSync(p) && !force) return { id: doc.id, status: 'cached' };
+  if (fs.existsSync(p) && !force) {
+    return { id: doc.id, status: 'cached', bytes: fs.statSync(p).size };
+  }
 
   // A dataset entry is a whole sampled collection rather than one document.
   // The sampler is deterministic, so the cached JSONL and its hash are
@@ -214,31 +266,69 @@ async function fetchDoc(doc, force) {
     if (!builders[doc.source.dataset]) throw new Error(`unknown dataset: ${doc.source.dataset}`);
     const { build } = require(builders[doc.source.dataset]);
     const { jsonl, stats } = await build(doc.source.select, (m) => console.error(m));
-    fs.mkdirSync(CACHE, { recursive: true });
-    fs.writeFileSync(p, jsonl);
-    return { id: doc.id, status: 'fetched', sha256: sha256(jsonl), words: null, stats };
+    writeCacheFile(p, jsonl);
+    const bytes = Buffer.byteLength(jsonl, 'utf8');
+    return { id: doc.id, status: 'fetched', sha256: sha256(jsonl), words: null, stats, bytes };
   }
 
-  const res = await fetch(doc.source.url, { redirect: 'follow' });
-  if (!res.ok) return { id: doc.id, status: `HTTP ${res.status}` };
-  let text = await res.text();
+  const url = doc.source.url;
+  const host = fetchHost(url);
+  const signal = AbortSignal.timeout(timeoutMs);
+  let text;
+  try {
+    const res = await fetch(url, { redirect: 'follow', signal });
+    if (!res.ok) return { id: doc.id, status: `HTTP ${res.status}` };
+    text = await res.text();
+  } catch (err) {
+    if (err.name === 'TimeoutError' || signal.reason?.name === 'TimeoutError') {
+      throw new Error(`${doc.id}: timed out after ${timeoutMs}ms (${host})`);
+    }
+    throw new Error(`${doc.id}: ${err.message} (${host})`);
+  }
   if (doc.source.gutenberg) text = stripGutenberg(text);
   if (doc.source.html) text = htmlToText(text, doc.source.html);
   text = applySlice(text, doc.slice);
 
-  fs.mkdirSync(CACHE, { recursive: true });
-  fs.writeFileSync(p, text);
-  return { id: doc.id, status: 'fetched', sha256: sha256(text), words: (text.match(/\S+/g) || []).length };
+  writeCacheFile(p, text);
+  const bytes = Buffer.byteLength(text, 'utf8');
+  return {
+    id: doc.id,
+    status: 'fetched',
+    sha256: sha256(text),
+    words: (text.match(/\S+/g) || []).length,
+    bytes,
+  };
+}
+
+function logFetchProgress(phase, index, total, doc, detail) {
+  const line = `fetch ${index + 1}/${total}: ${doc.id}${detail ? ` ${detail}` : ''}`;
+  console.error(phase === 'start' ? `${line} ...` : line);
 }
 
 async function cmdFetch(force) {
   const m = readManifest();
   const results = [];
-  for (const doc of m.documents) {
+  const total = m.documents.length;
+  for (let i = 0; i < m.documents.length; i++) {
+    const doc = m.documents[i];
+    logFetchProgress('start', i, total, doc);
     try {
-      results.push(await fetchDoc(doc, force));
+      const r = await fetchDoc(doc, force);
+      results.push(r);
+      if (r.status === 'cached') {
+        logFetchProgress('done', i, total, doc, `cached (${r.bytes} bytes)`);
+      } else if (r.status === 'local') {
+        logFetchProgress('done', i, total, doc, 'local');
+      } else if (r.status === 'fetched') {
+        const hash = r.sha256 ? `, sha256 ${r.sha256.slice(0, 16)}` : '';
+        logFetchProgress('done', i, total, doc, `fetched (${r.bytes} bytes${hash})`);
+      } else {
+        logFetchProgress('done', i, total, doc, String(r.status));
+      }
     } catch (err) {
-      results.push({ id: doc.id, status: `error: ${err.message}` });
+      const r = { id: doc.id, status: `error: ${err.message}` };
+      results.push(r);
+      logFetchProgress('done', i, total, doc, r.status);
     }
   }
 
@@ -340,6 +430,10 @@ function cmdAddLocal(args) {
     console.error('usage: node scripts/corpus.js add-local <id> <path> --register R --author A --year Y [--title T]');
     return 2;
   }
+  if (!/^[a-z0-9][a-z0-9._-]*$/i.test(id)) {
+    console.error('id must contain only letters, numbers, dots, underscores, and hyphens');
+    return 2;
+  }
   const register = opt('register');
   if (!REGISTERS.includes(register)) {
     console.error(`--register must be one of: ${REGISTERS.join(', ')}`);
@@ -392,4 +486,19 @@ async function main() {
 
 if (require.main === module) main();
 
-module.exports = { readManifest, loadText, loadRows, sha256, REGISTERS, AUTHORSHIP, stripGutenberg, htmlToText, applySlice, cmdList };
+module.exports = {
+  readManifest,
+  loadText,
+  loadRows,
+  rowsFromText,
+  sha256,
+  REGISTERS,
+  AUTHORSHIP,
+  stripGutenberg,
+  htmlToText,
+  applySlice,
+  cmdList,
+  fetchDoc,
+  writeCacheFile,
+  FETCH_TIMEOUT_MS,
+};

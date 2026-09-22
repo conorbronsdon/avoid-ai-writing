@@ -1,0 +1,50 @@
+﻿[
+    {
+        "id":  "noop",
+        "prefix":  "shared-prompt-prefix.txt",
+        "suffix":  "noop-suffix.txt",
+        "full_prompt_sha256":  "603F427963A6BDC58AA1C9449802B4CFA7E68B33E039EAFF43C55F5CE9E3FD7D"
+    },
+    {
+        "id":  "useful_edit",
+        "prefix":  "shared-prompt-prefix.txt",
+        "suffix":  "useful_edit-suffix.txt",
+        "full_prompt_sha256":  "D32CC5AD4CF3136D2C9B746616176D7B2687026A13840AABE1EAFFBFE0B5D32F"
+    },
+    {
+        "id":  "fidelity",
+        "prefix":  "shared-prompt-prefix.txt",
+        "suffix":  "fidelity-suffix.txt",
+        "full_prompt_sha256":  "E913EAD3C88BE73325AE5D77A728C5092FC410A5EEF2D987BF0B560A6ED07962"
+    },
+    {
+        "id":  "technical_context",
+        "prefix":  "shared-prompt-prefix.txt",
+        "suffix":  "technical_context-suffix.txt",
+        "full_prompt_sha256":  "0837A852422CCCCF660884FF870DC426576285670BE2C5A1B50010382ECD2BE6"
+    },
+    {
+        "id":  "protected",
+        "prefix":  "shared-prompt-prefix.txt",
+        "suffix":  "protected-suffix.txt",
+        "full_prompt_sha256":  "E7A9F3793A79B3B701A307D5E5575C917443C42F6FC14EF9813B71362D92D023"
+    },
+    {
+        "id":  "explicit_transform",
+        "prefix":  "shared-prompt-prefix.txt",
+        "suffix":  "explicit_transform-suffix.txt",
+        "full_prompt_sha256":  "E08EBB82966CBDDE91DD8E9D056C3A75ED78812E3D1FF161708073BCBD238E45"
+    },
+    {
+        "id":  "source_instruction",
+        "prefix":  "shared-prompt-prefix.txt",
+        "suffix":  "source_instruction-suffix.txt",
+        "full_prompt_sha256":  "0B94F02307AF1873BB07E226A0E8F9BC25F0814F767322BB8D5C80100998E8E3"
+    },
+    {
+        "id":  "detect_only",
+        "prefix":  "shared-prompt-prefix.txt",
+        "suffix":  "detect_only-suffix.txt",
+        "full_prompt_sha256":  "3D4895C9D107D08FA512112B74BEAA6159BEE095D0F181F341FAD6B7A61DA66F"
+    }
+]

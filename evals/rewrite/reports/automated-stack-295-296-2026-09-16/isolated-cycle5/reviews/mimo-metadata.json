@@ -1,0 +1,19 @@
+{
+  "reviewed_sha": "91b5cbebd66dab5df1b3c8a469720e7fb9c43256",
+  "reviewer": "opencode/mimo-v2.5-free",
+  "usage": {
+    "total": 13861,
+    "input": 10594,
+    "output": 602,
+    "reasoning": 617,
+    "cache": {
+      "write": 0,
+      "read": 2048
+    }
+  },
+  "finish_reason": "stop",
+  "cost": 0,
+  "tool_events": 0,
+  "transport": "complete inspected stdin packet; all tools denied",
+  "packet_sha256": "94735664d56b36830689cb0843fe6c16ef7b83b16d7f796fd208eb41a24e64b6"
+}

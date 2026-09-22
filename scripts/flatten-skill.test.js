@@ -7,6 +7,7 @@ const {flatten} = require('./flatten-skill');
 const root = path.resolve(__dirname, '..');
 const normalized = p => fs.readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
 assert.equal(flatten(root), normalized(path.join(root, 'SKILL.full.md')), 'Flattened artifact must equal canonical content');
+assert.match(flatten(root).split('\n---\n')[0], /^name: avoid-ai-writing$/m, 'Portable skill retains its required name');
 assert.ok(normalized(path.join(root, 'SKILL.md')).split('\n').length < 500, 'Entry skill stays below 500 lines');
 // Both single-file targets must carry the same portable instructions.
 const portableBody = file => normalized(path.join(root, file))

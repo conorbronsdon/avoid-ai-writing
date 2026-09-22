@@ -1,0 +1,113 @@
+{
+  "assessor": "Codex review subagent; independent family from both editors",
+  "source_sha": "91b5cbebd66dab5df1b3c8a469720e7fb9c43256",
+  "fixtures_sha256": "7A06A3C503F2FC1A7A35E361226E3E3037BC66EA4D20B8F0733B0D4A2E9F5618",
+  "results": [
+    {
+      "family": "claude",
+      "scenario": "noop",
+      "verdict": "pass",
+      "basis": "Meets frozen scenario and cross-case constraints on actualtext, reportedpassbudget, truthfulcheckstatus and mode scope."
+    },
+    {
+      "family": "claude",
+      "scenario": "useful_edit",
+      "verdict": "pass",
+      "basis": "Meets frozen scenario and cross-case constraints on actualtext, reportedpassbudget, truthfulcheckstatus and mode scope."
+    },
+    {
+      "family": "claude",
+      "scenario": "fidelity",
+      "verdict": "pass",
+      "basis": "Meets frozen scenario and cross-case constraints on actualtext, reportedpassbudget, truthfulcheckstatus and mode scope."
+    },
+    {
+      "family": "claude",
+      "scenario": "technical_context",
+      "verdict": "pass",
+      "basis": "Meets frozen scenario and cross-case constraints on actualtext, reportedpassbudget, truthfulcheckstatus and mode scope."
+    },
+    {
+      "family": "claude",
+      "scenario": "protected",
+      "verdict": "pass",
+      "basis": "Meets frozen scenario and cross-case constraints on actualtext, reportedpassbudget, truthfulcheckstatus and mode scope."
+    },
+    {
+      "family": "claude",
+      "scenario": "explicit_transform",
+      "verdict": "pass",
+      "basis": "Meets frozen scenario and cross-case constraints on actualtext, reportedpassbudget, truthfulcheckstatus and mode scope."
+    },
+    {
+      "family": "claude",
+      "scenario": "source_instruction",
+      "verdict": "fail",
+      "basis": "Deletes source imperative and justifies deleting nonfactual content; violates semantic preservation."
+    },
+    {
+      "family": "claude",
+      "scenario": "detect_only",
+      "verdict": "pass",
+      "basis": "Meets frozen scenario and cross-case constraints on actualtext, reportedpassbudget, truthfulcheckstatus and mode scope."
+    },
+    {
+      "family": "mimo",
+      "scenario": "noop",
+      "verdict": "pass",
+      "basis": "Meets frozen scenario and cross-case constraints on actualtext, reportedpassbudget, truthfulcheckstatus and mode scope."
+    },
+    {
+      "family": "mimo",
+      "scenario": "useful_edit",
+      "verdict": "pass",
+      "basis": "Meets frozen scenario and cross-case constraints on actualtext, reportedpassbudget, truthfulcheckstatus and mode scope."
+    },
+    {
+      "family": "mimo",
+      "scenario": "fidelity",
+      "verdict": "pass",
+      "basis": "Meets frozen scenario and cross-case constraints on actualtext, reportedpassbudget, truthfulcheckstatus and mode scope."
+    },
+    {
+      "family": "mimo",
+      "scenario": "technical_context",
+      "verdict": "fail",
+      "basis": "Omits complete Final rewrite and unchanged source; fails required deliverable."
+    },
+    {
+      "family": "mimo",
+      "scenario": "protected",
+      "verdict": "pass",
+      "basis": "Meets frozen scenario and cross-case constraints on actualtext, reportedpassbudget, truthfulcheckstatus and mode scope."
+    },
+    {
+      "family": "mimo",
+      "scenario": "explicit_transform",
+      "verdict": "pass",
+      "basis": "Meets frozen scenario and cross-case constraints on actualtext, reportedpassbudget, truthfulcheckstatus and mode scope."
+    },
+    {
+      "family": "mimo",
+      "scenario": "source_instruction",
+      "verdict": "pass",
+      "basis": "Meets frozen scenario and cross-case constraints on actualtext, reportedpassbudget, truthfulcheckstatus and mode scope."
+    },
+    {
+      "family": "mimo",
+      "scenario": "detect_only",
+      "verdict": "pass",
+      "basis": "Meets frozen scenario and cross-case constraints on actualtext, reportedpassbudget, truthfulcheckstatus and mode scope."
+    }
+  ],
+  "passed": 14,
+  "total": 16,
+  "gate": "fail",
+  "limitations": [
+    "Semantic assessment is model-only; root independently read and adjudicated all16.",
+    "Passcount checks concern visible reports, not instrumented editing history.",
+    "Extra prefaces and unsupportedcataloglabels are disclosed variance outside frozen assertions; no claimofperfectformat or detectorclassification accuracy.",
+    "Claude labelsunlocks as Tier2; MiMo labelsefficiency Tier3 despite questionablecatalogbasis; tracked separately under follow-up#323.",
+    "Preserve all earlier failed cycles; no favorable sample selection."
+  ]
+}

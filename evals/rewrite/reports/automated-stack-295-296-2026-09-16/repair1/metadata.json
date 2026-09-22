@@ -1,0 +1,68 @@
+﻿{
+    "source_sha":  "924b21c9973b2e564fa341de47321ef147252171",
+    "skill_sha256":  "65953DCC767F6FC589BC678B68A23CE01E619BAE865239F800B46442B6E25482",
+    "patterns_sha256":  "3BD9119174E3F0B846D7A34BE52AEEDE3908CF484CA76FCFBA716015FEC0F2D3",
+    "prompt_sha256":  "376CE66D7F5265C3E10D63E1992E1B689F69612E6863FC8CE9BFBF6F5B9E8C16",
+    "fixtures_sha256":  "7A06A3C503F2FC1A7A35E361226E3E3037BC66EA4D20B8F0733B0D4A2E9F5618",
+    "claude":  {
+                   "tools":  "none",
+                   "alias":  "sonnet",
+                   "result":  "completed; root assessment pending",
+                   "effort":  "medium",
+                   "canonical_model":  "claude-sonnet-5",
+                   "usage":  {
+                                 "input_tokens":  2,
+                                 "cache_creation_input_tokens":  46223,
+                                 "cache_read_input_tokens":  4439,
+                                 "output_tokens":  5680,
+                                 "output_tokens_details":  {
+                                                               "thinking_tokens":  3016
+                                                           },
+                                 "server_tool_use":  {
+                                                         "web_search_requests":  0,
+                                                         "web_fetch_requests":  0
+                                                     },
+                                 "service_tier":  "standard",
+                                 "cache_creation":  {
+                                                        "ephemeral_1h_input_tokens":  46223,
+                                                        "ephemeral_5m_input_tokens":  0
+                                                    },
+                                 "inference_geo":  "not_available",
+                                 "iterations":  [
+                                                    {
+                                                        "input_tokens":  2,
+                                                        "output_tokens":  5680,
+                                                        "cache_read_input_tokens":  4439,
+                                                        "cache_creation_input_tokens":  46223,
+                                                        "cache_creation":  {
+                                                                               "ephemeral_5m_input_tokens":  0,
+                                                                               "ephemeral_1h_input_tokens":  46223
+                                                                           },
+                                                        "type":  "message"
+                                                    }
+                                                ],
+                                 "speed":  "standard"
+                             },
+                   "duration_ms":  55979
+               },
+    "mimo":  {
+                 "cost":  0,
+                 "family":  "Xiaomi",
+                 "tools":  "all resolved false",
+                 "model":  "opencode/mimo-v2.5-free",
+                 "tokens":  {
+                                "total":  38644,
+                                "input":  35200,
+                                "output":  1229,
+                                "reasoning":  1191,
+                                "cache":  {
+                                              "write":  0,
+                                              "read":  1024
+                                          }
+                            },
+                 "attempts":  [
+                                  "completed batch; nestedobjects violate requestedtransport; actualcontent scoredfailed by independentroot: source deletion, unnecessarycontextedit, crosscasecontamination, reporting omissions"
+                              ]
+             },
+    "limitations":  "one batch per family; no benchmark; self-reported passes not instrumentation; no real tools or files; root Codex independent assessor"
+}

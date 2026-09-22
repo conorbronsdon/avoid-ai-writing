@@ -1,0 +1,3 @@
+﻿Fourth repair cycle explicitly authorized by user after third-cycle frozen protected-scenario failure.
+Same frozen8scenarios, expectations, two editor families and isolatedmethod. Previous failures retained.
+No calls before root supplies exact newsourceSHA. No independent reviews certify their own behavioral outputs; root Codex assesses all outputs.

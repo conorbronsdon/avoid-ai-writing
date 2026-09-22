@@ -1,0 +1,4 @@
+﻿Attempt: MiMo direct-message transport, before any model execution.
+Command could not launch on Windows: Program opencode.cmd failed to run: The filename or extension is too long.
+Exit code1; zero model output; no model usage; public prompt unchanged.
+Fallback used ordered12000character attachments. No tools enabled, no prior failed response supplied.

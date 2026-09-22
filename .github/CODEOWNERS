@@ -1,0 +1,7 @@
+# Default owner for review requests
+* @conorbronsdon
+
+# Canonical skill and detector sources
+/SKILL.md @conorbronsdon
+/references/patterns.md @conorbronsdon
+/detector/ @conorbronsdon

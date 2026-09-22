@@ -12,7 +12,8 @@ analyzeText() result as JSON to stdout. Read-only: nothing is modified.
 Exits 0 after a successful analysis, 2 on usage or I/O errors.
 
 Options:
-  --context <general|technical>          Analysis context (default: general)
+  --context <general|technical|marketing|personal>
+                                         Analysis context (default: general)
   --source-mode <plain|rendered-markdown>
                                          Plain text (default) or rendered
                                          Markdown, which excludes YAML
@@ -28,7 +29,7 @@ Examples:
   npx --package avoid-ai-writing-detector avoid-ai-writing --source-mode rendered-markdown -- --draft.md
 `;
 
-const CONTEXTS = ["general", "technical"];
+const CONTEXTS = ["general", "technical", "marketing", "personal"];
 const SOURCE_MODES = ["plain", "rendered-markdown"];
 
 function parseArgs(argv) {

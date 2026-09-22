@@ -1,0 +1,5 @@
+=== USER REQUEST ===
+Rewrite this as an impersonal decision note without first-person pronouns. Preserve the stated preference, reason, and uncertainty. --iterate 1
+
+=== SOURCE ===
+I prefer staged rollouts because we can stop after the first batch. A full rollout might save time, but we have not measured that.

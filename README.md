@@ -6,6 +6,8 @@ Audit & rewrite content to remove AI writing patterns. A practical skill for any
 
 [![GitHub stars](https://img.shields.io/github/stars/conorbronsdon/avoid-ai-writing?style=social)](https://github.com/conorbronsdon/avoid-ai-writing/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
+[![npm version](https://img.shields.io/npm/v/avoid-ai-writing-detector.svg)](https://www.npmjs.com/package/avoid-ai-writing-detector)
+[![detector](https://github.com/conorbronsdon/avoid-ai-writing/actions/workflows/detector-test.yml/badge.svg)](https://github.com/conorbronsdon/avoid-ai-writing/actions/workflows/detector-test.yml)
 [![Podcast](https://img.shields.io/badge/Podcast-Chain_of_Thought-purple?style=flat-square)](https://chainofthought.show/?utm_source=github&utm_medium=referral&utm_campaign=repo-readme&utm_content=avoid-ai-writing)
 [![X](https://img.shields.io/badge/X-@ConorBronsdon-black?style=flat-square&logo=x)](https://x.com/ConorBronsdon)
 
@@ -18,21 +20,63 @@ Audit & rewrite content to remove AI writing patterns. A practical skill for any
 A portable writing skill for [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [OpenClaw](https://github.com/openclaw/openclaw), [Hermes](https://github.com/NousResearch/hermes-agent), and any other [agentskills.io](https://agentskills.io)-compatible agent. Audits and rewrites content to remove AI writing patterns ("AI-isms").
 
 **Three modes:**
-- **Rewrite** (default) — flags AI patterns and rewrites the text to fix them. A built-in second pass catches patterns that survived the first edit.
+- **Rewrite** (default) — flags AI patterns, applies up to two editing passes, verifies the result when possible, and returns one final version.
 - **Detect** — flags AI patterns without rewriting. Shows which flags are real problems vs. judgment calls. Useful when patterns might be intentional, when auditing content you don't want altered, or when you just want a quick scan.
 - **Edit** — edits a prose file in place (via the Edit tool) with minimal, targeted changes, preserving passages that are already human. Source code, configuration, and generated data are refused because prose rewrites can corrupt structured content. Returns an edits-made + verification report, not the full file.
 
-Use `--iterate N` when you want the skill to repeat the audit and rewrite cycle until no patterns remain or the requested pass limit is reached. The limit is capped at 2: the initial rewrite plus one corrective pass. Rewrite mode already includes that corrective second pass; `--iterate` does not add passes on top of it. The skill reports how many passes it took.
+Use `--iterate 1|2` to set the editing-pass ceiling. `--iterate 1` allows the initial rewrite only. `--iterate 2` uses the default maximum of an initial rewrite plus one correction or preservation repair, and stops early when no justified in-scope edit remains. Checks do not consume a pass, but any change they prompt does. The skill reports how many editing passes it used and any intentional, protected, or unresolved finding.
 
 An optional **voice profile** (casual / professional / technical / warm / blunt) sets how the prose should sound, independent of the audience context profile.
+
+The [glossary](GLOSSARY.md) defines the terms these docs use: word tiers, severity tiers, modes, profiles, and detector options.
+
+## Table of contents
+- [Quick demo](#quick-demo)
+- [Why a skill, not just a prompt](#why-a-skill-not-just-a-prompt)
+- [Installation & Usage](#installation--usage)
+    * [Install the complete skill directory](#install-the-complete-skill-directory)
+    * [Claude Code](#claude-code)
+    * [Claude Cowork — install as a plugin](#claude-cowork--install-as-a-plugin)
+    * [OpenClaw](#openclaw)
+    * [Cursor](#cursor)
+    * [Hermes](#hermes)
+    * [OpenAI Codex](#openai-codex)
+    * [Native ChatGPT and Codex plugin package](#native-chatgpt-and-codex-plugin-package)
+    * [Other agents](#other-agents)
+    * [Triggering the skill](#triggering-the-skill)
+- [Pattern reference](#pattern-reference)
+    * [Content Patterns](#content-patterns)
+    * [Language Patterns](#language-patterns)
+    * [Structure Patterns](#structure-patterns)
+    * [Communication Patterns](#communication-patterns)
+    * [Meta Patterns](#meta-patterns)
+    * [Structural Detection (v3.4)](#structural-detection-v34)
+    * [AI-tool fingerprints & later additions (v3.5–3.8)](#ai-tool-fingerprints--later-additions-v3538)
+    * [Conversational-register patterns (v3.15)](#conversational-register-patterns-v315)
+    * [Share-post framing (v3.20)](#share-post-framing-v320)
+    * [Narrated candor (v3.21)](#narrated-candor-v321)
+    * [Unnecessary hyphenation (v3.24)](#unnecessary-hyphenation-v324)
+- [Full Example](#full-example)
+- [Run the detector](#run-the-detector)
+    * [Score a file or piped text from the command line](#score-a-file-or-piped-text-from-the-command-line)
+    * [Gate prose in GitHub Actions or pre-commit](#gate-prose-in-github-actions-or-pre-commit)
+    * [Use the detector over MCP](#use-the-detector-over-mcp)
+- [House style is a different job](#house-style-is-a-different-job)
+- [More from me](#more-from-me)
+- [Credits](#credits)
+- [Community / Multilingual](#community--multilingual)
+- [Disclaimer](#disclaimer)
+- [License](#license)
 
 ## Quick demo
 
 **Input:**
 > Certainly! Acme Analytics, a vibrant startup nestled in the heart of Boulder's thriving tech ecosystem, has secured $40M in Series B funding — marking a watershed moment for the observability landscape. The platform serves as a unified hub, featuring real-time dashboards, boasting sub-second queries, and presenting a seamless integration layer. Moreover, experts believe Acme is poised to disrupt the market. In conclusion, the future looks bright!
 
-**Output:**
+**Final rewrite:**
 > Acme Analytics, a Boulder-based startup, raised a $40M Series B. Its observability platform has real-time dashboards, runs queries in under a second, and includes an integration layer.
+
+**Verification:** One editing pass. Review found no further justified in-scope edit; no deterministic preservation check ran in this prose-only demo.
 
 **What it caught:** the chatbot opener ("Certainly!"), promotional modifiers, inflated significance, roundabout verbs, vague attribution, and the generic conclusion. The rewrite keeps the funding, location, and three product capabilities. It removes the unsupported market prediction without inventing an investor or an integration mechanism.
 
@@ -40,8 +84,8 @@ An optional **voice profile** (casual / professional / technical / warm / blunt)
 
 A one-shot "make this sound human" prompt catches the obvious stuff. This skill is different:
 
-- **Structured audit** — returns identified issues with quoted text, the rewrite, a change summary, and a second-pass audit in four discrete sections. You see exactly what changed and why.
-- **Two-pass detection** — the second pass re-reads the rewrite and catches patterns that survive the first edit: recycled transitions, lingering inflation, copula swaps that snuck through.
+- **Single final rewrite** — completes its audit, correction, and available verification before returning one full version. A short change summary follows when useful; a detailed audit remains available on request without adding a competing draft.
+- **Two-pass editing** — review can catch patterns that survive the first edit, while one shared limit covers both corrective edits and preservation repairs.
 - **112-entry word replacement table across 3 tiers + 10 Tier 3 phrases** — not vibes-based. Every flagged word has a specific, plainer alternative. "Leverage" → "use." "Commence" → "start." Tier 1 matches flag unless a listed exception applies, Tier 2 words flag when they cluster, Tier 3 words flag only at high density. Tier 1 itself splits into **1A frequency markers** (`delve`, `tapestry`) and **1B clarity edits** (`in order to`, `utilize`) — same fix, but only 1A is evidence about how a passage was produced, and 1B is weighted lower so a wordiness fix cannot push a document toward an AI classification. Tier 3 *phrases* (multi-word boilerplate like "the integration of," "decentralized compute") flag on per-phrase repetition or when 3+ distinct phrases stack in one piece — the LLM-self-varies-boilerplate shape.
 - **74 pattern categories** — representative examples below, each with before/after. Includes structural detection (hashtag stuffing, bare-NP bullet lists, hedge-stacked predictions), AI-tool fingerprints (placeholders, citation markup, UTM params), rhythm/uniformity checks, conversational-register tells, and writer-side tests. The full catalog lives in [`references/patterns.md`](./references/patterns.md); this count is enforced against it in CI.
 - **Detect mode** — flag patterns without rewriting. See which flags are real problems vs. judgment calls. Useful when patterns might be intentional or you're auditing content you don't want altered.
@@ -159,7 +203,7 @@ The [plugin package](./OPENAI_PLUGIN.md) keeps the canonical `SKILL.md` as its e
 - `preservation-verifier` — checks meaning and constraints before and after a rewrite
 - `false-positive-reviewer` — reviews detector findings that need context
 
-Build and validate the package with:
+From a cloned checkout, build and validate the package with:
 
 ```bash
 python3 scripts/package-openai-plugin.py . /tmp/avoid-ai-writing.zip --json
@@ -187,12 +231,13 @@ Once installed, ask your assistant to clean up AI writing:
 - "Make this sound less like AI"
 - "Clean up AI writing in this paragraph"
 
-In **rewrite mode** (default), the skill returns four sections:
+In **rewrite mode** (default), the skill completes its review and available verification before returning the rewritten text exactly once:
 
-1. **Issues found** — every AI-ism identified, with the text quoted
-2. **Rewritten version** — clean version with all AI-isms removed
-3. **What changed** — summary of the major edits
-4. **Second-pass audit** — re-reads the rewrite and catches any surviving tells
+1. **Final rewrite** — the verified or honestly qualified final version
+2. **Changes** — a short summary when edits were made and the summary is useful
+3. **Verification** — editing passes used, checks that ran, stop reason, and any intentional, protected, source-blocked, or unresolved findings
+
+Ask for a detailed or exhaustive audit to add quoted findings before the final rewrite. The response still contains one full version. Clean input can be returned unchanged with zero editing passes.
 
 In **detect mode**, the skill returns two sections:
 
@@ -203,7 +248,7 @@ Trigger detect mode with: "detect," "flag only," "audit only," "just flag," "sca
 
 ## Pattern reference
 
-> Representative examples from the catalog — not the exhaustive list (that's [`references/patterns.md`](./references/patterns.md)). The skill's human-facing prose catalog and the [detector engine](./detector/) use **different counts on purpose**: the engine implements 54 `type` categories because it splits the vocabulary tiers and adds stylometric/fingerprint signals (punctuation distribution, function-word entropy, bypass-trick detection) that work as math over a document rather than as a rule you'd look up. The two are mapped in [`detector/CATEGORIES.md`](./detector/CATEGORIES.md); don't "fix" one count to match the other.
+> Representative examples from the catalog — not the exhaustive list (that's [`references/patterns.md`](./references/patterns.md)). The skill's human-facing prose catalog and the [detector engine](./detector/) use **different counts on purpose**: the engine implements 53 `type` categories because it splits the vocabulary tiers and adds stylometric/fingerprint signals (punctuation distribution, function-word entropy, bypass-trick detection) that work as math over a document rather than as a rule you'd look up. The two are mapped in [`detector/CATEGORIES.md`](./detector/CATEGORIES.md); don't "fix" one count to match the other.
 
 ### Content Patterns
 
@@ -251,7 +296,7 @@ Trigger detect mode with: "detect," "flag only," "audit only," "just flag," "sca
 | 25 | **"Let's" constructions** | "Let's explore," "Let's break this down" | Just start with the point |
 | 26 | **Cutoff disclaimers** | "While details are limited in available sources..." | Find sources or remove |
 | 27 | **Generic conclusions** | "The future looks bright," "Only time will tell" | Specific closing thought or cut |
-| 28 | **Emotional flatline** | "What surprised me most," "I was fascinated to discover" | Earn the emotion or cut the claim |
+| 28 | **Stock reaction framing** | "What surprised me most," "I was fascinated to discover" | Keep specific, authentic reactions; cut empty stock framing or make the reaction concrete |
 | 29 | **Reasoning chain artifacts** | "Let me think step by step," "Breaking this down" | State conclusion, then evidence |
 | 30 | **Sycophantic tone** | "Great question!", "You're absolutely right!" | Remove entirely |
 | 31 | **Acknowledgment loops** | "You're asking about," "To answer your question" | Just answer directly |
@@ -365,6 +410,9 @@ It's also the single source of the numeric score: the skill itself (and `detect`
 npm install avoid-ai-writing-detector
 ```
 
+The npm package includes the detector runtime and CLI entry points, but not the
+repository's `scripts/` utilities. Clone the repository to run those scripts.
+
 ```js
 const AIDetector = require("avoid-ai-writing-detector");
 const { score, label, issues } = AIDetector.analyzeText("Your text here…");
@@ -393,19 +441,65 @@ The repository also ships a deterministic gate that fails on **finding count per
 file**, not the composite 0–100 score. That keeps CI policy independent of score
 recalibration work such as #70.
 
+[View Avoid AI Writing Gate on the GitHub Marketplace](https://github.com/marketplace/actions/avoid-ai-writing-gate),
+or add it directly to a workflow:
+
 ```yaml
 # .github/workflows/prose.yml
 steps:
-  - uses: actions/checkout@v4
-  - uses: conorbronsdon/avoid-ai-writing@main
+  - uses: actions/checkout@v7
+  - id: gate
+    uses: conorbronsdon/avoid-ai-writing@v3.35.0
     with:
       glob: "**/*.md"
       threshold: "6"
       context: technical
 ```
 
-For long-lived production workflows, pin `uses:` to a release tag or commit SHA
-that contains `action.yml`.
+The example pins the release tag. For stricter supply-chain controls, pin
+`uses:` to the full commit SHA for that release.
+
+Step outputs and the gate CLI's `--json` flag were added after `v3.35.0`. The
+tag pinned above has neither, so `steps.gate.outputs.*` resolves to empty
+strings there. To use them, pin `uses:` to a later release or to a commit SHA
+from `main`.
+
+The Action exposes step outputs via `$GITHUB_OUTPUT`:
+
+- `pass`: `'true'` when all scanned files are within threshold; `'false'` on a threshold failure or operational error.
+- `total-findings`: total count of deterministic findings across scanned files; unset on an operational error (exit 2).
+- `failed-files`: count of files exceeding the threshold; unset on an operational error (exit 2).
+
+Downstream steps can consume these outputs:
+
+```yaml
+  - name: Report gate summary
+    if: always() && steps.gate.outputs.total-findings != ''
+    run: |
+      echo "Pass: ${{ steps.gate.outputs.pass }}"
+      echo "Total findings: ${{ steps.gate.outputs.total-findings }}"
+      echo "Failed files: ${{ steps.gate.outputs.failed-files }}"
+```
+
+The underlying `avoid-ai-writing-gate` CLI also accepts `--json` to emit structured JSON on stdout:
+
+```json
+{
+  "schemaVersion": 1,
+  "threshold": 6,
+  "context": "technical",
+  "sourceMode": "rendered-markdown",
+  "pass": false,
+  "totalFindings": 9,
+  "failedFiles": 1,
+  "files": [
+    { "path": "README.md", "findings": 2, "pass": true, "types": ["em-dash", "tier1"] },
+    { "path": "docs/guide.md", "findings": 7, "pass": false, "types": ["hedge-stack", "tier1", "tier2"] }
+  ]
+}
+```
+
+Top-level fields report `schemaVersion`, `threshold`, `context`, `sourceMode`, `pass` (boolean), `totalFindings`, `failedFiles`, and `files` (preserving scan order). Each file item reports `path`, `findings`, `pass`, and sorted distinct detector `types`. When no files match the input or glob, `files` is empty with `pass: true`.
 
 `threshold` is the maximum number of deterministic findings allowed in **each**
 file. The shipped default is **6**, chosen from the current human-control corpus
@@ -433,8 +527,16 @@ repos:
 
 Pin `rev` to a release tag or commit SHA in shared repositories. The hook scans
 staged `.md` / `.mdx` files with the same **6-findings** corpus-backed default.
-Override the entry in your pre-commit config when you need a stricter or more
-permissive finding threshold.
+Use `args` to override the threshold, context, or source mode:
+
+```yaml
+      - id: avoid-ai-writing
+        args: ["--threshold", "0", "--context", "technical", "--source-mode", "plain", "--"]
+```
+
+Pre-commit replaces the hook's default `args: ["--"]` when you provide `args`.
+End an overriding list with `"--"` to protect filenames that begin with a dash.
+The entry keeps its defaults; later options in `args` take precedence.
 
 The gate only **detects**. Preservation validation still requires an original and
 a rewritten file and remains a separate command:
@@ -503,12 +605,12 @@ optional `--style` input takes a house-style config you supply: a `register` lis
 the model applies, and a `mechanics` object whose checkable rules
 `scripts/check-style.js` verifies deterministically (quote form and Latin
 abbreviations gate the exit code; heading case, em-dash rate, and number spelling
-are advisory). [`examples/`](./examples/) has the schema. You can skip the input
+are advisory). This script requires a cloned checkout. [`examples/`](./examples/) has the schema. You can skip the input
 entirely and put your guide in your agent's context alongside a
 [voice profile](./references/patterns.md#voice-profiles), as instructions rather than as a checked
 rule set.
 
-After a rewrite, `node scripts/normalize-quotes.js draft.md --reference original.md`
+From a cloned checkout, after a rewrite, `node scripts/normalize-quotes.js draft.md --reference original.md`
 prints prose marks normalized to the original document's convention; add `--write`
 to save it. Explicit `--quotes straight|curly` overrides inference. It shares the
 checker's Markdown protection. See the
