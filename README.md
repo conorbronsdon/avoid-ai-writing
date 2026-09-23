@@ -449,7 +449,7 @@ or add it directly to a workflow:
 steps:
   - uses: actions/checkout@v7
   - id: gate
-    uses: conorbronsdon/avoid-ai-writing@v3.35.0
+    uses: conorbronsdon/avoid-ai-writing@v3.36.0
     with:
       glob: "**/*.md"
       threshold: "6"
@@ -459,10 +459,8 @@ steps:
 The example pins the release tag. For stricter supply-chain controls, pin
 `uses:` to the full commit SHA for that release.
 
-Step outputs and the gate CLI's `--json` flag were added after `v3.35.0`. The
-tag pinned above has neither, so `steps.gate.outputs.*` resolves to empty
-strings there. To use them, pin `uses:` to a later release or to a commit SHA
-from `main`.
+Step outputs and the gate CLI's `--json` flag require `v3.36.0` or later. On
+`v3.35.0` and earlier, `steps.gate.outputs.*` resolves to empty strings.
 
 The Action exposes step outputs via `$GITHUB_OUTPUT`:
 
