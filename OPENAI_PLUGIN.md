@@ -2,7 +2,7 @@
 
 This repository contains a native ChatGPT and Codex plugin package while keeping the existing Claude plugin and the canonical `SKILL.md` and `references/patterns.md`.
 
-The package is published as [Avoid AI Writing](https://chatgpt.com/plugins/plugins_6a9b77b18b8881918efa9c1255868164) in the OpenAI Plugins Directory (version 3.29.0, approved and published 2026-09-04).
+The [Avoid AI Writing directory listing](https://chatgpt.com/plugins/plugins_6a9b77b18b8881918efa9c1255868164) showed version 3.29.0 on 2026-09-23; that submission was approved and published on 2026-09-04. The version in this repository may be newer than the published plugin. Check the listing for the version currently available to install.
 
 ## Architecture
 
