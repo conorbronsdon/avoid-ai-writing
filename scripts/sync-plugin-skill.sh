@@ -72,7 +72,7 @@ if [ -z "$skill_version" ]; then
 fi
 
 read_manifest_version() {
-  python3 - "$1" <<'PY'
+  "$python_bin" - "$1" <<'PY'
 import json
 import sys
 

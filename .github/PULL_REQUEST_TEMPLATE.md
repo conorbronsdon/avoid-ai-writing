@@ -5,6 +5,9 @@
 ## Checklist
 
 - [ ] `npm test` passes (engine fixtures + `CATEGORIES.md` contract check)
+- [ ] If I changed `SKILL.md`, `references/patterns.md`, or `detector/`: I ran `bash scripts/sync-plugin-skill.sh && bash scripts/sync-cursor-rules.sh` and committed the generated changes
+- [ ] If I changed a [scanned document](https://github.com/conorbronsdon/avoid-ai-writing/blob/main/scripts/self-scan.js): `npm run self-scan:check` passes
+- [ ] If I reworded prose registered in `.ssot-local.yaml`: I updated any affected manifest patterns and ran `python3 ../ssot-check/ssot_check.py check --manifest .ssot-local.yaml` using the [checker setup instructions](https://github.com/conorbronsdon/avoid-ai-writing/blob/main/CONTRIBUTING.md#documentation-drift)
 - [ ] If I added a detector `type`: it's documented in `detector/CATEGORIES.md` and has a fixture in `detector/patterns.test.js` (a true positive **and** a must-not-fire case)
 - [ ] If I added a judgment-only rule: it's listed under "Skill-only" in `detector/CATEGORIES.md`
 - [ ] I considered false positives and added carve-outs for legitimate human writing
