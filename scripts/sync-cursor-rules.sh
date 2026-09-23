@@ -23,9 +23,10 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+python_bin="$(command -v python3 || command -v python)"
 
 node "$repo_root/scripts/flatten-skill.js"
-python3 - "$repo_root/SKILL.full.md" "$repo_root/cursor-rules/avoid-ai-writing.mdc" <<'PY'
+"$python_bin" - "$repo_root/SKILL.full.md" "$repo_root/cursor-rules/avoid-ai-writing.mdc" <<'PY'
 import io
 from pathlib import Path
 import re
