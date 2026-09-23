@@ -92,6 +92,32 @@ first seem (smart quotes, for instance, are a typing-time default on macOS and i
 Word, not a publication-step artifact). A claim with a citation can be verified;
 an asserted one can't. Put the links in the PR description or inline in the rule.
 
+## Language adaptations
+
+This skill and its deterministic detector are calibrated for English. Start a
+non-English adaptation in a separately maintained fork or repository, with its
+own language-specific rules and release process. We can discuss bringing a
+well-maintained adaptation into this repo later if its maintainers want shared
+ownership and we can sustain its tests and review. A translated word list alone
+does not establish that the rules work in another language.
+
+Identify the target language, dialect, audience, and registers. Rebuild lexical
+tiers from native-language writing rather than translating English entries;
+check which structural rules transfer and add language-specific exceptions.
+Show positive and must-not-fire examples across relevant registers, especially
+ordinary human writing that a rule might flag. Describe your sample provenance,
+what was measured, and what remains editorial judgment. Do not publish
+authorship or false-positive claims without evidence for that language and
+register. State known limitations, including dialect and formal-register cases.
+Keep the upstream license and attribution when adapting this work.
+
+To request a link in the [community section](README.md#community--multilingual),
+open an issue with the repository URL, maintainer, language and dialect, a short
+description of the native-language changes, evidence and limitations, and where
+users should report problems. We review links for a clear scope, an accountable
+maintainer, and honest claims. A link helps readers discover your adaptation;
+it does not mean this repository maintains it or certifies its accuracy.
+
 ## Style guides and licensing
 
 The rules from the [#88 license audit](https://github.com/conorbronsdon/avoid-ai-writing/issues/88), recorded here so nobody has to rediscover them:
