@@ -2268,6 +2268,24 @@ test('#238: inch marks, empty quotes and code quotes do not hide prose', () => {
   }
 });
 
+test('#238: comparison lines, CR-only text and early-exit stats', () => {
+  // A line opening with `>=` is prose, not a blockquote.
+  const comparison = 'Requirements:\n\n>=5 items must be in stock before we ship, and the warehouse team must delve into the backlog this quarter.\n\nThat is the policy.';
+  for (const sourceMode of ['plain', 'rendered-markdown']) {
+    const r = AIDetector.analyzeText(comparison, { sourceMode });
+    assert.equal(r.stats.quotedLines, 0, sourceMode);
+    assert.ok(r.issues.some((i) => i.type === 'tier1' && i.text === 'delve'), sourceMode);
+  }
+  // CR-only line endings: the quote must not take the later prose with it.
+  const crOnly = '> We quoted this line from the model.\rLater we delve into the landscape of our own codebase and leverage what the team built.';
+  const cr = AIDetector.analyzeText(crOnly);
+  assert.ok(cr.issues.some((i) => i.type === 'tier1' && i.text === 'delve'));
+  const short = AIDetector.analyzeText('She said "we must delve into the landscape and leverage synergy" today.');
+  assert.equal(short.label, 'Too short');
+  assert.equal(short.stats.maskedQuotes, 1);
+  assert.equal(short.stats.quotedLines, 0);
+});
+
 test('#238: apostrophes are not treated as quotes', () => {
   const text = "It's the team's plan, and we don't want to delve into someone's rules today, so let's go and ship what's ready.";
   const r = AIDetector.analyzeText(text);

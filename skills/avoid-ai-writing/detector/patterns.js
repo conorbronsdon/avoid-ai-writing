@@ -1232,7 +1232,8 @@ const AIDetector = (() => {
     const masked = text.replace(QUOTED_SPAN_RE, (span) => {
       if (span.length === 2) return span;
       maskedQuotes += 1;
-      return span[0] + ' '.repeat(span.length - 2) + span[span.length - 1];
+      // Keep sentence punctuation so getSentences splits where it did before.
+      return span[0] + span.slice(1, -1).replace(/[^.!?]/g, ' ') + span[span.length - 1];
     });
     return { text: masked, maskedQuotes };
   }
@@ -1249,7 +1250,7 @@ const AIDetector = (() => {
 
     let quotedLines = 0;
     for (const line of lines) {
-      if (/^\s*>\s/.test(line.text)) {
+      if (/^\s*>(?:\s|$)/.test(line.text)) {
         blankRange(chars, line.start, line.end);
         quotedLines += 1;
       }
@@ -1265,7 +1266,9 @@ const AIDetector = (() => {
     const rawLines = text.split(/\r?\n/);
     const stripIndexes = new Set();
     for (let i = 0; i < rawLines.length; i += 1) {
-      if (/^\s*>\s/.test(rawLines[i])) stripIndexes.add(i);
+      // A bare CR is not split here, so a CR-only document is one element.
+      // Deleting it would take the unquoted lines after the quote with it.
+      if (/^\s*>(?:\s|$)/.test(rawLines[i]) && !rawLines[i].includes('\r')) stripIndexes.add(i);
     }
     const kept = rawLines
       .map((_, index) => index)
@@ -1795,7 +1798,7 @@ const AIDetector = (() => {
         score: 0,
         label: 'Unsupported script',
         issues: [],
-        stats: { wordCount, cjkChars, reason: 'unsegmented-script document: no inter-word spaces to count', contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments },
+        stats: { wordCount, cjkChars, reason: 'unsegmented-script document: no inter-word spaces to count', contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments, quotedLines, maskedQuotes },
         unsupportedScript: true,
       };
     }
@@ -1805,7 +1808,7 @@ const AIDetector = (() => {
         score: 0,
         label: 'Too short',
         issues: [],
-        stats: { wordCount, contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments },
+        stats: { wordCount, contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments, quotedLines, maskedQuotes },
         tooShort: true,
       };
     }
@@ -1815,7 +1818,7 @@ const AIDetector = (() => {
         score: 0,
         label: 'Text too long',
         issues: [],
-        stats: { wordCount, contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments },
+        stats: { wordCount, contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments, quotedLines, maskedQuotes },
         tooLong: true,
       };
     }
