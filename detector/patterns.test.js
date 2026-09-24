@@ -2299,6 +2299,15 @@ test('performed-insight: nested emotional flatline counts once', () => {
   assert.equal(r.stats.patternCount, r.issues.length);
 });
 
+test('performed-insight: older phrases preserve their nested flatline finding', () => {
+  const r = AIDetector.analyzeText(
+    'That is why the most interesting part mattered to the team during the launch.'
+  );
+  const types = r.issues.map((i) => i.type);
+  assert.ok(types.includes('performed-insight'));
+  assert.ok(types.includes('emotional-flatline'));
+});
+
 test('performed-insight: literal turned-out and story uses stay clean', () => {
   const r = AIDetector.analyzeText(
     "The cheaper vendor turned out to be the most expensive option once support was priced in. The real story was covered by two local papers, and the real estate market cooled that spring."

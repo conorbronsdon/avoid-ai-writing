@@ -874,6 +874,9 @@ const AIDetector = (() => {
     /\bthe\s+only\s+[\w'\u2019-]+\s+that\s+(?:matters|counts)\b/gi,
     /\bis\s+dead\s*[.;,:\u2013\u2014]\s*long\s+live\b/gi,
     /\b(?:that|this)(?:['\u2019]s|\s+(?:is|was))\s+why\s+[^.!?\n]{0,60}\s+mattered\b/gi,
+  ];
+
+  const STAGED_DISCOVERY = [
     // Staged discovery: a judgment framed as a twist the writer found ("the recording
     // turned out to be the least interesting part"). Superlative + insight noun keeps
     // ordinary "turned out to be the most expensive option" clean.
@@ -1918,6 +1921,8 @@ const AIDetector = (() => {
     issues.push(...matchPatterns(text, REAL_ACTUAL_INFLATION, 'real-actual-inflation', 'medium'));
     issues.push(...matchPatterns(text, SOCIAL_CTA_CLOSER, 'social-cta-closer', 'high'));
     issues.push(...matchPatterns(text, PERFORMED_INSIGHT, 'performed-insight', 'medium'));
+    const stagedDiscoveryIssues = matchPatterns(text, STAGED_DISCOVERY, 'performed-insight', 'medium');
+    issues.push(...stagedDiscoveryIssues);
     issues.push(...matchPatterns(text, NEGATION_CHAIN, 'negation-chain', 'high'));
     issues.push(...matchPatterns(text, DEV_BLOG_BOILERPLATE, 'dev-blog-boilerplate', 'medium'));
     issues.push(...findUnnecessaryHyphenation(text));
@@ -2470,13 +2475,12 @@ const AIDetector = (() => {
     // The staged-discovery phrase can contain the older "the most interesting
     // part" flatline match. Report the enclosing signal once, with its more
     // specific category, while leaving unrelated flatline hits intact.
-    const performedInsightSpans = issues
-      .filter((issue) => issue.type === 'performed-insight' && Number.isInteger(issue.index))
+    const stagedDiscoverySpans = stagedDiscoveryIssues
       .map((issue) => ({ start: issue.index, end: issue.index + issue.text.length }));
     const nonOverlappingIssues = issues.filter((issue) =>
       issue.type !== 'emotional-flatline' ||
       !Number.isInteger(issue.index) ||
-      !performedInsightSpans.some((span) =>
+      !stagedDiscoverySpans.some((span) =>
         issue.index >= span.start && issue.index + issue.text.length <= span.end
       )
     );
