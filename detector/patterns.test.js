@@ -2279,6 +2279,23 @@ test('performed-insight: essayist tics fire', () => {
   assert.ok(hits.length >= 3, `expected >=3 performed-insight hits, got ${JSON.stringify(hits)}`);
 });
 
+test('performed-insight: staged discovery fires once per phrase', () => {
+  const r = AIDetector.analyzeText(
+    "I have the device on my desk, and the recording turned out to be the least interesting part. The real story was the queue of work it created."
+  );
+  const hits = r.issues.filter((i) => i.type === 'performed-insight').map((i) => i.text.toLowerCase());
+  assert.ok(hits.some((h) => h.includes('turned out to be the least interesting part')), `missing staged discovery: ${JSON.stringify(hits)}`);
+  assert.ok(hits.some((h) => h.includes('the real story was')), `missing real story: ${JSON.stringify(hits)}`);
+});
+
+test('performed-insight: literal turned-out and story uses stay clean', () => {
+  const r = AIDetector.analyzeText(
+    "The cheaper vendor turned out to be the most expensive option once support was priced in. The story was covered by two local papers, and the real estate market cooled that spring."
+  );
+  const hits = r.issues.filter((i) => i.type === 'performed-insight');
+  assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
 test('performed-insight: ordinary uses do not fire', () => {
   const r = AIDetector.analyzeText(
     "She sat with him through the appointment and the long drive home afterward. The whole family gathered for the reunion photos on Saturday. Naming names in the report was the part of the job he liked least of all."

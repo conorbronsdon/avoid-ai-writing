@@ -874,6 +874,11 @@ const AIDetector = (() => {
     /\bthe\s+only\s+[\w'\u2019-]+\s+that\s+(?:matters|counts)\b/gi,
     /\bis\s+dead\s*[.;,:\u2013\u2014]\s*long\s+live\b/gi,
     /\b(?:that|this)(?:['\u2019]s|\s+(?:is|was))\s+why\s+[^.!?\n]{0,60}\s+mattered\b/gi,
+    // Staged discovery: a judgment framed as a twist the writer found ("the recording
+    // turned out to be the least interesting part"). Superlative + insight noun keeps
+    // ordinary "turned out to be the most expensive option" clean.
+    /\b(?:turned|turns|turning)\s+out\s+to\s+be\s+the\s+(?:least|most)\s+(?:interesting|important|surprising|revealing|valuable|useful)\s+(?:part|thing|piece|bit)\b/gi,
+    /\bthe\s+real\s+story\s+(?:here\s+)?(?:is|was)\b/gi,
   ];
 
   // ─── Negation chains ───────────────────────────────────────────────

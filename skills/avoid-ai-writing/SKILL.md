@@ -295,7 +295,7 @@ The instruction above — put voice back on purpose — has a predictable failur
 
 None of the following may be **added** to a text that did not already contain it. Every one is a rewrite failure even when the result scores clean:
 
-- **Fabricated speaker perspective.** "I've seen this a hundred times," "in my experience," or "I'll admit" without source support invents a speaker or experience. An explicit voice transformation may recast an existing stance in or out of first person, but it cannot create an experience, opinion, preference, or reaction.
+- **Fabricated speaker perspective.** "I've seen this a hundred times," "in my experience," or "I'll admit" without source support invents a speaker or experience. An explicit voice transformation may recast an existing stance in or out of first person, but it cannot create an experience, opinion, preference, or reaction. The same applies when drafting new copy in someone else's voice: do not give them a possession, trial, or reaction the source never records ("I have one on my desk", "the recording turned out to be the least interesting part"). Flag the gap for the author instead.
 - **Manufactured stakes.** "In a world where," "now more than ever," "the stakes have never been higher." Covered as a detection rule under Speculative scenario openers; listed again here because the rewrite side is where it gets *introduced*.
 - **Forced contrarianism.** "Everyone says X, but they're wrong," "the conventional wisdom is backwards." Only legitimate when the source actually argued it. Inventing a foil is inventing a claim.
 - **Performed candor.** "Let's be honest," "real talk," "here's the thing." See Narrated candor and Infomercial engagement hooks. A rewrite that adds one is failing two rules at once.
