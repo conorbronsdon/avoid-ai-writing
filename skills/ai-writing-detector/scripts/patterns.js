@@ -2473,12 +2473,13 @@ const AIDetector = (() => {
     // distinct issue contributes its category weight — so the number
     // reflects the same signals the user actually sees.
     // The staged-discovery phrase can contain the older "the most interesting
-    // part" flatline match. Report the enclosing signal once, with its more
-    // specific category, while leaving unrelated flatline hits intact.
+    // part" flatline match or sentence-initial "Turns out". Report the
+    // enclosing signal once while leaving unrelated findings intact.
     const stagedDiscoverySpans = stagedDiscoveryIssues
       .map((issue) => ({ start: issue.index, end: issue.index + issue.text.length }));
     const nonOverlappingIssues = issues.filter((issue) =>
-      issue.type !== 'emotional-flatline' ||
+      (issue.type !== 'emotional-flatline' && issue.type !== 'performed-insight') ||
+      stagedDiscoveryIssues.includes(issue) ||
       !Number.isInteger(issue.index) ||
       !stagedDiscoverySpans.some((span) =>
         issue.index >= span.start && issue.index + issue.text.length <= span.end

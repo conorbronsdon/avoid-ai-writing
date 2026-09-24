@@ -2284,8 +2284,15 @@ test('performed-insight: staged discovery fires once per phrase', () => {
     "I have the device on my desk, and the recording turned out to be the least interesting part. The real story was the queue of work it created."
   );
   const hits = r.issues.filter((i) => i.type === 'performed-insight').map((i) => i.text.toLowerCase());
-  assert.ok(hits.some((h) => h.includes('turned out to be the least interesting part')), `missing staged discovery: ${JSON.stringify(hits)}`);
-  assert.ok(hits.some((h) => h.includes('the real story was')), `missing real story: ${JSON.stringify(hits)}`);
+  assert.deepEqual(hits, ['turned out to be the least interesting part', 'the real story was']);
+});
+
+test('performed-insight: sentence-initial Turns out is subsumed by staged discovery', () => {
+  const r = AIDetector.analyzeText(
+    'Turns out to be the most interesting part was the detour, according to the post.'
+  );
+  const hits = r.issues.filter((i) => i.type === 'performed-insight').map((i) => i.text.toLowerCase());
+  assert.deepEqual(hits, ['turns out to be the most interesting part']);
 });
 
 test('performed-insight: nested emotional flatline counts once', () => {
