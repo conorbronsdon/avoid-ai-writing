@@ -878,7 +878,9 @@ const AIDetector = (() => {
     // turned out to be the least interesting part"). Superlative + insight noun keeps
     // ordinary "turned out to be the most expensive option" clean.
     /\b(?:turned|turns|turning)\s+out\s+to\s+be\s+the\s+(?:least|most)\s+(?:interesting|important|surprising|revealing|valuable|useful)\s+(?:part|thing|piece|bit)\b/gi,
-    /\bthe\s+real\s+story\s+(?:here\s+)?(?:is|was)\b/gi,
+    // Require a reveal-style continuation; "the real story was covered by..."
+    // describes a literal story and is not a staged discovery.
+    /\bthe\s+real\s+story\s+(?:here\s+)?(?:is|was)\b(?=\s+(?:the|that|how|why|what)\b)/gi,
   ];
 
   // ─── Negation chains ───────────────────────────────────────────────

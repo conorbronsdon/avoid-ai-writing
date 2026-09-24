@@ -2301,7 +2301,7 @@ test('performed-insight: nested emotional flatline counts once', () => {
 
 test('performed-insight: literal turned-out and story uses stay clean', () => {
   const r = AIDetector.analyzeText(
-    "The cheaper vendor turned out to be the most expensive option once support was priced in. The story was covered by two local papers, and the real estate market cooled that spring."
+    "The cheaper vendor turned out to be the most expensive option once support was priced in. The real story was covered by two local papers, and the real estate market cooled that spring."
   );
   const hits = r.issues.filter((i) => i.type === 'performed-insight');
   assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
