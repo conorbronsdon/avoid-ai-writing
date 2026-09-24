@@ -1219,7 +1219,25 @@ const AIDetector = (() => {
     return { text: chars.join(''), maskedFrontmatter, maskedHtmlComments };
   }
 
-  function maskMultilineBlockquotes(text) {
+  // Blank the content of double-quoted spans and keep the quote marks, so
+  // offsets and the curly-quote signal survive. Based on QUOTED_SPAN in
+  // scripts/self-scan.js minus its single-quote branch: apostrophes in
+  // contractions and possessives would pair up across ordinary prose. A
+  // straight quote touching a letter or digit on its outer side is an inch
+  // mark, not a quotation. Empty `""` pairs are consumed so they cannot
+  // shift the pairing, and a span never crosses a backtick into code.
+  const QUOTED_SPAN_RE = /(?<![\p{L}\p{N}])"[^"`\n]{0,300}"(?![\p{L}\p{N}])|“[^“”`\n]{0,300}”/gu;
+  function maskQuotedSpans(text) {
+    let maskedQuotes = 0;
+    const masked = text.replace(QUOTED_SPAN_RE, (span) => {
+      if (span.length === 2) return span;
+      maskedQuotes += 1;
+      return span[0] + ' '.repeat(span.length - 2) + span[span.length - 1];
+    });
+    return { text: masked, maskedQuotes };
+  }
+
+  function maskBlockquotes(text) {
     const chars = text.split('');
     const lines = [];
     const lineRe = /[^\r\n]*(?:\r\n|\n|\r|$)/g;
@@ -1230,10 +1248,9 @@ const AIDetector = (() => {
     }
 
     let quotedLines = 0;
-    const isQuote = lines.map((line) => /^\s*>\s/.test(line.text));
-    for (let i = 0; i < lines.length; i += 1) {
-      if (isQuote[i] && ((isQuote[i - 1] && i > 0) || isQuote[i + 1])) {
-        blankRange(chars, lines[i].start, lines[i].end);
+    for (const line of lines) {
+      if (/^\s*>\s/.test(line.text)) {
+        blankRange(chars, line.start, line.end);
         quotedLines += 1;
       }
     }
@@ -1244,12 +1261,11 @@ const AIDetector = (() => {
   // Keep the historical deletion behavior for default plain mode. Paragraph-
   // scoped rules depend on the surrounding lines being rejoined exactly this
   // way, so changing this prepass would change scores for existing callers.
-  function stripMultilineBlockquotes(text, sourceMap) {
+  function stripBlockquotes(text, sourceMap) {
     const rawLines = text.split(/\r?\n/);
-    const isQuote = rawLines.map((line) => /^\s*>\s/.test(line));
     const stripIndexes = new Set();
     for (let i = 0; i < rawLines.length; i += 1) {
-      if (isQuote[i] && ((isQuote[i - 1] && i > 0) || isQuote[i + 1])) stripIndexes.add(i);
+      if (/^\s*>\s/.test(rawLines[i])) stripIndexes.add(i);
     }
     const kept = rawLines
       .map((_, index) => index)
@@ -1731,13 +1747,12 @@ const AIDetector = (() => {
 
     // Pre-pass: mask Markdown blockquotes before scoring. A human
     // reacting to AI text by quoting it shouldn't have the quoted block
-    // counted against their own writing. Requires ≥2 consecutive `> `
-    // lines to count as a blockquote — single-line `> ls -la` shell
-    // prompts in technical docs stay in the text. Masking instead of deleting
-    // keeps later issue and highlight offsets aligned with the source file.
+    // counted against their own writing. A single `> ` line counts too
+    // (#238). Masking instead of deleting keeps later issue and highlight
+    // offsets aligned with the source file.
     const blockquotes = sourceMode === 'rendered-markdown'
-      ? maskMultilineBlockquotes(text)
-      : stripMultilineBlockquotes(text, sourceMap);
+      ? maskBlockquotes(text)
+      : stripBlockquotes(text, sourceMap);
     text = blockquotes.text;
     if (blockquotes.sourceMap) sourceMap = blockquotes.sourceMap;
     const { quotedLines } = blockquotes;
@@ -1748,6 +1763,15 @@ const AIDetector = (() => {
     const norm = normalizeText(text, sourceMap);
     text = norm.text;
     sourceMap = norm.sourceMap;
+
+    // Pre-pass: the inline half of the blockquote escape hatch. Words inside
+    // a double-quoted span belong to whoever is quoted (#238). The
+    // smart-punctuation check below reads the unmasked text, because the
+    // blanked span would otherwise count as a double space.
+    const unquotedText = text;
+    const quotes = maskQuotedSpans(text);
+    text = quotes.text;
+    const { maskedQuotes } = quotes;
 
     const wordCount = countWords(text);
     // Unsegmented-script check (GH-241): Chinese and Japanese carry no
@@ -2052,7 +2076,7 @@ const AIDetector = (() => {
       const hasEmDash = totalEmDashes > separatorEmDashes;
       const oxfordHit = text.match(/\b\w+,\s+\w+,\s+and\s+\w+/g);
       const hasOxford = (oxfordHit?.length || 0) >= 1;
-      const doubleSpaces = (text.match(/[^.!?]  +/g) || []).length;
+      const doubleSpaces = (unquotedText.match(/[^.!?]  +/g) || []).length;
       const missingApos = /\b(?:dont|wont|cant|isnt|wasnt|shouldnt|wouldnt|couldnt|youre|theyre|its\s+a\s+\w+ing)\b/i.test(text);
       const clean = doubleSpaces === 0 && !missingApos;
       const signals = [hasCurly, hasEmDash, hasOxford, clean].filter(Boolean).length;
@@ -2564,6 +2588,7 @@ const AIDetector = (() => {
         maskedHtmlComments,
         normalization: norm.flags,
         quotedLines,
+        maskedQuotes,
         unmappedHighlights: regions._unmapped ?? 0,
         denseAIVocab,
         tier1Distinct,

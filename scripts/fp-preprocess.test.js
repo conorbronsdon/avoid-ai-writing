@@ -348,7 +348,10 @@ test('detector deltas are pinned against the frozen legacy preparation', () => {
     .map((decision) => AIDetector.analyzeText(decision.text, { contextMode: 'general', sourceMode: 'plain' }));
   const types = (results) => results.flatMap((result) => result.issues.map((issue) => issue.type));
 
+  // The lead-in line keeps the flattened legacy unit from starting with `>`,
+  // which the detector would now mask as a single-line blockquote (#238).
   const quote = [
+    'The archive note read:',
     '> The record was genuinely useful.',
     '> At dawn, the second group carefully recorded every ordinary observation from the northern room before returning home.',
     '> The smaller result was truly useful.',

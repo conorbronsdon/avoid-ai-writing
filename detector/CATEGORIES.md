@@ -133,7 +133,7 @@ mistake their absence for a coverage gap:
 - Colon into a triple *(three-item lists are often simply true, especially in technical writing — weigh by genre, not per hit)*
 - When to rewrite from scratch vs. patch
 - Severity tiers (P0 / P1 / P2)
-- Self-reference escape hatch
+- Self-reference escape hatch *(the engine applies the quoted-material half: blockquote lines and double-quoted spans are masked before scoring, see [`README.md`](./README.md). Single-quoted spans and text marked as illustrative stay judgment-only)*
 - Output format
 
 > **Partial:** the skill's six context profiles map to the engine's broader

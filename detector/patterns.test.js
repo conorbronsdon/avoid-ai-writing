@@ -2229,11 +2229,61 @@ test('v2: canonical "As an AI language model" disclaimer fires cutoff-disclaimer
   assert.equal(r.confidence_category, 'high', `expected high confidence on canonical disclaimer, got ${r.confidence_category}`);
 });
 
-test('v2: single-line shell prompt > is NOT stripped as blockquote', () => {
-  // Blockquote strip now requires ≥2 consecutive lines.
-  const text = 'To check the directory:\n\n> ls -la\n\nThen review the output and look for any unexpected files. The team uses this command frequently when debugging deployment issues that involve filesystem permissions.';
+test('#238: single-line blockquote is masked like a multi-line one', () => {
+  const quoted = 'I asked the model about our roadmap and it said:\n\n> We must delve into the landscape and leverage our synergy.\n\nThen I closed the tab and wrote the plan myself.';
+  for (const sourceMode of ['plain', 'rendered-markdown']) {
+    const r = AIDetector.analyzeText(quoted, { sourceMode });
+    assert.equal(r.stats.quotedLines, 1, sourceMode);
+    assert.deepEqual(r.issues.filter((i) => i.type === 'tier1'), [], sourceMode);
+  }
+});
+
+test('#238: double-quoted spans do not score, the same words outside do', () => {
+  const inside = 'She told me, "We must delve into the landscape and leverage our synergy," and then she laughed at her own words for a while.';
+  const curly = 'She told me, “We must delve into the landscape and leverage our synergy,” and then she laughed at her own words for a while.';
+  const outside = 'She told me we must delve into the landscape and leverage our synergy, and then she laughed at her own words for a while.';
+  for (const text of [inside, curly]) {
+    const r = AIDetector.analyzeText(text);
+    assert.equal(r.stats.maskedQuotes, 1);
+    assert.deepEqual(r.issues.filter((i) => i.type === 'tier1'), []);
+  }
+  const two = AIDetector.analyzeText('He said "delve into it" and she said “leverage the synergy” before we left the office for the long weekend.');
+  assert.equal(two.stats.maskedQuotes, 2);
+  assert.deepEqual(two.issues.filter((i) => i.type === 'tier1'), []);
+  const r = AIDetector.analyzeText(outside);
+  assert.equal(r.stats.maskedQuotes, 0);
+  assert.ok(r.issues.some((i) => i.type === 'tier1' && i.text === 'delve'));
+});
+
+test('#238: inch marks, empty quotes and code quotes do not hide prose', () => {
+  const cases = [
+    'A 15" laptop works well, but we must delve into the landscape before buying the 24" monitor for the office.',
+    'She set opt="" and said we must delve into the landscape before "leaving" the office for the day.',
+    'Run `grep -r "test` or review how we delve into the landscape before the "audit" phase starts next week.',
+    'The symbol “ marks a quote, but we must delve into the landscape before “launching” the product next week.',
+  ];
+  for (const text of cases) {
+    const r = AIDetector.analyzeText(text);
+    assert.ok(r.issues.some((i) => i.type === 'tier1' && i.text === 'delve'), text);
+  }
+});
+
+test('#238: apostrophes are not treated as quotes', () => {
+  const text = "It's the team's plan, and we don't want to delve into someone's rules today, so let's go and ship what's ready.";
   const r = AIDetector.analyzeText(text);
-  assert.equal(r.stats.quotedLines, 0, `single > line should not strip, got quotedLines=${r.stats.quotedLines}`);
+  assert.equal(r.stats.maskedQuotes, 0);
+  assert.ok(r.issues.some((i) => i.type === 'tier1' && i.text === 'delve'));
+});
+
+test('#238: issue offsets still address the source after quote masking', () => {
+  const source = 'He wrote "it is important to note that we delve" and moved on. It is important to note that the system works well and the team shipped it on time.';
+  for (const sourceMode of ['plain', 'rendered-markdown']) {
+    const result = AIDetector.analyzeText(source, { sourceMode });
+    assert.equal(result.stats.maskedQuotes, 1, sourceMode);
+    const fillers = result.issues.filter((i) => i.type === 'filler');
+    assert.deepEqual(fillers.map((i) => i.index), [source.lastIndexOf('It is important')], sourceMode);
+    assertIndexedIssuesSliceExactly(source, result.issues, `quoted span ${sourceMode}`);
+  }
 });
 
 test('v2: stats.denseAIVocab and stats.tier1Distinct surface for observability', () => {
