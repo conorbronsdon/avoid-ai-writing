@@ -2465,7 +2465,20 @@ const AIDetector = (() => {
     // above a list of two items. Now the dedup runs first, then each
     // distinct issue contributes its category weight — so the number
     // reflects the same signals the user actually sees.
-    const deduped = deduplicateIssues(issues);
+    // The staged-discovery phrase can contain the older "the most interesting
+    // part" flatline match. Report the enclosing signal once, with its more
+    // specific category, while leaving unrelated flatline hits intact.
+    const performedInsightSpans = issues
+      .filter((issue) => issue.type === 'performed-insight' && Number.isInteger(issue.index))
+      .map((issue) => ({ start: issue.index, end: issue.index + issue.text.length }));
+    const nonOverlappingIssues = issues.filter((issue) =>
+      issue.type !== 'emotional-flatline' ||
+      !Number.isInteger(issue.index) ||
+      !performedInsightSpans.some((span) =>
+        issue.index >= span.start && issue.index + issue.text.length <= span.end
+      )
+    );
+    const deduped = deduplicateIssues(nonOverlappingIssues);
     for (const issue of deduped) {
       rawScore += ISSUE_WEIGHTS[issue.type] ?? 2;
     }

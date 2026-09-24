@@ -2288,6 +2288,17 @@ test('performed-insight: staged discovery fires once per phrase', () => {
   assert.ok(hits.some((h) => h.includes('the real story was')), `missing real story: ${JSON.stringify(hits)}`);
 });
 
+test('performed-insight: nested emotional flatline counts once', () => {
+  const r = AIDetector.analyzeText(
+    'The recording turned out to be the most interesting part. The most interesting thing was the battery life.'
+  );
+  const performed = r.issues.filter((i) => i.type === 'performed-insight');
+  const flatline = r.issues.filter((i) => i.type === 'emotional-flatline');
+  assert.deepEqual(performed.map((i) => i.text.toLowerCase()), ['turned out to be the most interesting part']);
+  assert.deepEqual(flatline.map((i) => i.text.toLowerCase()), ['the most interesting thing']);
+  assert.equal(r.stats.patternCount, r.issues.length);
+});
+
 test('performed-insight: literal turned-out and story uses stay clean', () => {
   const r = AIDetector.analyzeText(
     "The cheaper vendor turned out to be the most expensive option once support was priced in. The story was covered by two local papers, and the real estate market cooled that spring."

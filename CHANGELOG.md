@@ -12,7 +12,7 @@ All notable changes to this project are documented here.
 
 ### Changed
 
-- Performed-insight phrases now cover staged discoveries: a judgment framed as a twist the writer found ("the recording turned out to be the least interesting part", "the real story was"). The detector matches the superlative-plus-insight-noun form only, so literal uses such as "turned out to be the most expensive option" stay clean. In short social copy, one staged discovery carrying the payoff is enough to fix. The fabricated-speaker-perspective guardrail now also covers drafting new copy in someone else's voice. No new category.
+- Performed-insight phrases now cover staged discoveries: a judgment framed as a twist the writer found ("the recording turned out to be the least interesting part", "the real story was"). The detector matches the superlative-plus-insight-noun form only, so literal uses such as "turned out to be the most expensive option" stay clean. Nested emotional-flatline wording counts once as performed insight. In short social copy, one staged discovery carrying the payoff is enough to fix. The fabricated-speaker-perspective guardrail now also covers drafting new copy in someone else's voice. No new category.
 - Cover two phrasings flagged in #325 as judgment-only examples: cold-outreach flattery asks ("I'd value your take on this") under sycophantic tone, and the teaser form of the crowd contrast ("the call most leaders still won't make"). No detector change and no new category.
 
 ## [3.36.0] — 2026-09-23
