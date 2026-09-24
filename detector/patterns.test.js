@@ -2304,6 +2304,50 @@ test('#238: issue offsets still address the source after quote masking', () => {
   }
 });
 
+test('#238: CR-only blockquote lines are masked in both modes with source offsets', () => {
+  const quote = '> We must delve into the landscape and leverage our synergy.';
+  const prose = 'It is important to note that the team wrote a careful and ordinary response.';
+  const cases = [
+    `${quote}\r${prose}`,
+    `Then I wrote a careful and ordinary reply.\r${quote}\r${prose}`,
+    `\r${quote}\r${prose}`,
+  ];
+  for (const sourceMode of ['plain', 'rendered-markdown']) {
+    for (const source of cases) {
+      const result = AIDetector.analyzeText(source, { sourceMode });
+      assert.equal(result.stats.quotedLines, 1, sourceMode);
+      assert.deepEqual(result.issues.filter((i) => i.type === 'tier1'), [], sourceMode);
+      const fillers = result.issues.filter((i) => i.type === 'filler');
+      assert.deepEqual(fillers.map((i) => i.index), [source.indexOf('It is important')], sourceMode);
+      assertIndexedIssuesSliceExactly(source, result.issues, `CR-only blockquote ${sourceMode}`);
+    }
+  }
+});
+
+test('#238: escaped quotes stay inside the quoted span', () => {
+  const source = 'We delve first. She said "We must \\"leverage\\" the landscape and our synergy" and then the landscape shifted for real.';
+  for (const sourceMode of ['plain', 'rendered-markdown']) {
+    const result = AIDetector.analyzeText(source, { sourceMode });
+    assert.equal(result.stats.maskedQuotes, 1, sourceMode);
+    const tier1 = result.issues.filter((i) => i.type === 'tier1').map((i) => i.text).sort();
+    assert.deepEqual(tier1, ['delve', 'landscape'], sourceMode);
+    assertIndexedIssuesSliceExactly(source, result.issues, `escaped quote ${sourceMode}`);
+  }
+  const path = AIDetector.analyzeText('He said, "save the landscape file at C:\\Temp\\" before leaving the office for the long weekend.');
+  assert.equal(path.stats.maskedQuotes, 1);
+  assert.deepEqual(path.issues.filter((i) => i.type === 'tier1'), []);
+  const pathThenQuote = AIDetector.analyzeText('Run "C:\\Temp\\" and then delve into "--flag" before the team ships the release next week.');
+  assert.equal(pathThenQuote.stats.maskedQuotes, 2);
+  assert.ok(pathThenQuote.issues.some((i) => i.type === 'tier1' && i.text === 'delve'));
+  const sentence = 'We must delve into the landscape and leverage synergy today. ';
+  const chained = AIDetector.analyzeText(`He explained: "${`\\"${sentence}\\"`.repeat(10)}" and that was all.`);
+  assert.equal(chained.stats.maskedQuotes, 0);
+  assert.ok(chained.issues.some((i) => i.type === 'tier1' && i.text === 'delve'));
+  const emoji = AIDetector.analyzeText(`She wrote: "we must delve into the landscape ${'\u{1F600}'.repeat(230)}" in her message, nothing else notable.`);
+  assert.equal(emoji.stats.maskedQuotes, 1);
+  assert.deepEqual(emoji.issues.filter((i) => i.type === 'tier1'), []);
+});
+
 test('v2: stats.denseAIVocab and stats.tier1Distinct surface for observability', () => {
   const r = AIDetector.analyzeText('We delve into the landscape with robust comprehensive seamless innovative cutting-edge solutions.');
   assert.equal(typeof r.stats.denseAIVocab, 'boolean', 'denseAIVocab should be boolean');

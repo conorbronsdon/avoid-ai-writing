@@ -1225,12 +1225,17 @@ const AIDetector = (() => {
   // contractions and possessives would pair up across ordinary prose. A
   // straight quote touching a letter or digit on its outer side is an inch
   // mark, not a quotation. Empty `""` pairs are consumed so they cannot
-  // shift the pairing, and a span never crosses a backtick into code.
-  const QUOTED_SPAN_RE = /(?<![\p{L}\p{N}])"[^"`\n]{0,300}"(?![\p{L}\p{N}])|“[^“”`\n]{0,300}”/gu;
+  // shift the pairing, and a span never crosses a backtick into code. A
+  // nested quotation escaped as a pair (`\"…\"`) stays inside the span. A
+  // lone `\"` still closes it, so a path such as `"C:\Temp\"` cannot run on
+  // into the next quotation.
+  const QUOTED_SPAN_RE = /(?<![\p{L}\p{N}])"(?:\\"[^"`\n]{0,300}\\"|[^"`\n]){0,300}"(?![\p{L}\p{N}])|“[^“”`\n]{0,300}”/gu;
   function maskQuotedSpans(text) {
     let maskedQuotes = 0;
     const masked = text.replace(QUOTED_SPAN_RE, (span) => {
-      if (span.length === 2) return span;
+      // Escaped pairs can chain past the 300-character cap; score those.
+      // Count code points, as the `u` regex does, so emoji do not trip it.
+      if (span.length === 2 || [...span].length > 302) return span;
       maskedQuotes += 1;
       // Keep sentence punctuation so getSentences splits where it did before.
       return span[0] + span.slice(1, -1).replace(/[^.!?]/g, ' ') + span[span.length - 1];
@@ -1265,17 +1270,28 @@ const AIDetector = (() => {
   function stripBlockquotes(text, sourceMap) {
     const rawLines = text.split(/\r?\n/);
     const stripIndexes = new Set();
+    let blankedLines = 0;
     for (let i = 0; i < rawLines.length; i += 1) {
       // A bare CR is not split here, so a CR-only document is one element.
-      // Deleting it would take the unquoted lines after the quote with it.
-      if (/^\s*>(?:\s|$)/.test(rawLines[i]) && !rawLines[i].includes('\r')) stripIndexes.add(i);
+      // Deleting it would take the unquoted lines after the quote with it,
+      // so blank each quoted CR-separated line in place instead. Blanking
+      // keeps the element length, so the offsets below still line up.
+      if (rawLines[i].includes('\r')) {
+        rawLines[i] = rawLines[i].split('\r').map((line) => {
+          if (!/^\s*>(?:\s|$)/.test(line)) return line;
+          blankedLines += 1;
+          return ' '.repeat(line.length);
+        }).join('\r');
+      } else if (/^\s*>(?:\s|$)/.test(rawLines[i])) {
+        stripIndexes.add(i);
+      }
     }
     const kept = rawLines
       .map((_, index) => index)
       .filter((index) => !stripIndexes.has(index));
     const result = {
       text: kept.map((index) => rawLines[index]).join('\n'),
-      quotedLines: stripIndexes.size,
+      quotedLines: stripIndexes.size + blankedLines,
     };
     if (!Array.isArray(sourceMap)) return result;
 

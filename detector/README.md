@@ -167,7 +167,9 @@ In both source modes, quoted material does not count against the writer. Every
 Markdown blockquote line (`> `) is excluded, whether it stands alone or in a
 block, and `stats.quotedLines` counts them. The content of each double-quoted
 span (straight `"…"` or curly `“…”`, one line, up to 300 characters) is
-blanked, and `stats.maskedQuotes` counts the spans. A straight quote right
+blanked, and `stats.maskedQuotes` counts the spans. A nested quotation
+escaped as a pair (`\"…\"`) stays inside the span, within the same
+300-character limit. A straight quote right
 after a letter or digit, such as the inch mark in `15"`, cannot open a span,
 and a span never crosses a backtick, so a quotation holding inline code is
 still scored. Single quotes are left alone because
