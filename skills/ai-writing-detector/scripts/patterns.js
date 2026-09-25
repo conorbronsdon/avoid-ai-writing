@@ -1243,6 +1243,12 @@ const AIDetector = (() => {
     return { text: masked, maskedQuotes };
   }
 
+  // A `>` opens a blockquote line when a space, the line end, a letter, a
+  // nested `>`, an opening double quote, emphasis, or a link follows it. That
+  // covers compact Markdown (`>text`) without swallowing comparisons such as
+  // `>=5`. A single quote is left out, as in the inline quote pass.
+  const BLOCKQUOTE_LINE_RE = /^\s*>(?:$|[\s\p{L}>"“*_[])/u;
+
   function maskBlockquotes(text) {
     const chars = text.split('');
     const lines = [];
@@ -1255,7 +1261,7 @@ const AIDetector = (() => {
 
     let quotedLines = 0;
     for (const line of lines) {
-      if (/^\s*>(?:\s|$)/.test(line.text)) {
+      if (BLOCKQUOTE_LINE_RE.test(line.text)) {
         blankRange(chars, line.start, line.end);
         quotedLines += 1;
       }
@@ -1278,11 +1284,11 @@ const AIDetector = (() => {
       // keeps the element length, so the offsets below still line up.
       if (rawLines[i].includes('\r')) {
         rawLines[i] = rawLines[i].split('\r').map((line) => {
-          if (!/^\s*>(?:\s|$)/.test(line)) return line;
+          if (!BLOCKQUOTE_LINE_RE.test(line)) return line;
           blankedLines += 1;
           return ' '.repeat(line.length);
         }).join('\r');
-      } else if (/^\s*>(?:\s|$)/.test(rawLines[i])) {
+      } else if (BLOCKQUOTE_LINE_RE.test(rawLines[i])) {
         stripIndexes.add(i);
       }
     }
@@ -1776,21 +1782,24 @@ const AIDetector = (() => {
     if (blockquotes.sourceMap) sourceMap = blockquotes.sourceMap;
     const { quotedLines } = blockquotes;
 
+    // Pre-pass: the inline half of the blockquote escape hatch. Words inside
+    // a double-quoted span belong to whoever is quoted (#238). Masking runs
+    // before normalization, as blockquotes do, so bypass characters inside a
+    // quotation raise no normalization flag. Masking keeps the length, so
+    // the source map needs no update. The smart-punctuation check below
+    // reads the unmasked text, because the blanked span would otherwise
+    // count as a double space.
+    const unquotedText = normalizeText(text).text;
+    const quotes = maskQuotedSpans(text);
+    text = quotes.text;
+    const { maskedQuotes } = quotes;
+
     // Pre-pass: strip bypass-trick chars before pattern matching so
     // "delve" with a Cyrillic 'е' still hits Tier 1. Compose the map while
     // deleting characters so later offsets still address the source.
     const norm = normalizeText(text, sourceMap);
     text = norm.text;
     sourceMap = norm.sourceMap;
-
-    // Pre-pass: the inline half of the blockquote escape hatch. Words inside
-    // a double-quoted span belong to whoever is quoted (#238). The
-    // smart-punctuation check below reads the unmasked text, because the
-    // blanked span would otherwise count as a double space.
-    const unquotedText = text;
-    const quotes = maskQuotedSpans(text);
-    text = quotes.text;
-    const { maskedQuotes } = quotes;
 
     const wordCount = countWords(text);
     // Unsegmented-script check (GH-241): Chinese and Japanese carry no

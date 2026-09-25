@@ -2348,6 +2348,50 @@ test('#238: escaped quotes stay inside the quoted span', () => {
   assert.deepEqual(emoji.issues.filter((i) => i.type === 'tier1'), []);
 });
 
+test('#238: compact blockquotes without a space are masked, comparisons are not', () => {
+  const prose = 'It is important to note that the team wrote a careful and ordinary response.';
+  const cases = [
+    `>We must delve into the landscape and leverage our synergy.\n${prose}`,
+    `Then I wrote a careful and ordinary reply.\r>We must delve into the landscape and leverage our synergy.\r${prose}`,
+    `>*We must delve into the landscape and leverage our synergy.*\n${prose}`,
+    `>[We must delve](https://example.com) into the landscape and leverage our synergy.\n${prose}`,
+    `>>We must delve into the landscape and leverage our synergy.\n${prose}`,
+    `>> We must delve into the landscape and leverage our synergy.\n${prose}`,
+  ];
+  for (const sourceMode of ['plain', 'rendered-markdown']) {
+    for (const source of cases) {
+      const result = AIDetector.analyzeText(source, { sourceMode });
+      assert.equal(result.stats.quotedLines, 1, sourceMode);
+      assert.deepEqual(result.issues.filter((i) => i.type === 'tier1'), [], sourceMode);
+      const fillers = result.issues.filter((i) => i.type === 'filler');
+      assert.deepEqual(fillers.map((i) => i.index), [source.indexOf('It is important')], sourceMode);
+      assertIndexedIssuesSliceExactly(source, result.issues, `compact blockquote ${sourceMode}`);
+    }
+    for (const line of ['>=5 items', '>5 items', '>-1 items', ">'cause the items"]) {
+      const r = AIDetector.analyzeText(`${line} must be in stock before we ship, and the warehouse team must delve into the backlog this quarter.`, { sourceMode });
+      assert.equal(r.stats.quotedLines, 0, `${line} ${sourceMode}`);
+      assert.ok(r.issues.some((i) => i.type === 'tier1' && i.text === 'delve'), `${line} ${sourceMode}`);
+    }
+  }
+});
+
+test('#238: bypass characters inside quotes raise no normalization flag', () => {
+  const zeroWidth = 'we must del​ve into the lands​cape';
+  const homoglyph = 'we must dеlvе into the lаndscаpe';
+  const roleplay = '*nods* we must delve into it *sighs*';
+  for (const sourceMode of ['plain', 'rendered-markdown']) {
+    for (const span of [zeroWidth, homoglyph, roleplay]) {
+      const source = `She told me, "${span}," and then she laughed at her own words for a while before we left.`;
+      const quoted = AIDetector.analyzeText(source, { sourceMode });
+      assert.equal(quoted.stats.maskedQuotes, 1, `${span} ${sourceMode}`);
+      assert.deepEqual(quoted.issues.filter((i) => i.type === 'normalization-flag' || i.type === 'tier1'), [], `${span} ${sourceMode}`);
+      assertIndexedIssuesSliceExactly(source, quoted.issues, `quoted bypass ${sourceMode}`);
+      const bare = AIDetector.analyzeText(source.replace(/"/g, ''), { sourceMode });
+      assert.ok(bare.issues.some((i) => i.type === 'normalization-flag'), `${span} ${sourceMode}`);
+    }
+  }
+});
+
 test('v2: stats.denseAIVocab and stats.tier1Distinct surface for observability', () => {
   const r = AIDetector.analyzeText('We delve into the landscape with robust comprehensive seamless innovative cutting-edge solutions.');
   assert.equal(typeof r.stats.denseAIVocab, 'boolean', 'denseAIVocab should be boolean');
