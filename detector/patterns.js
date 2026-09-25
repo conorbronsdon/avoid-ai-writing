@@ -1244,10 +1244,11 @@ const AIDetector = (() => {
   }
 
   // A `>` opens a blockquote line when a space, the line end, a letter, a
-  // nested `>`, an opening double quote, emphasis, or a link follows it. That
-  // covers compact Markdown (`>text`) without swallowing comparisons such as
-  // `>=5`. A single quote is left out, as in the inline quote pass.
-  const BLOCKQUOTE_LINE_RE = /^\s*>(?:$|[\s\p{L}>"“*_[])/u;
+  // nested `>`, an opening double quote, emphasis, a link, or a list marker
+  // (`- `, `+ `, `1. `) follows it. That covers compact Markdown (`>text`)
+  // without swallowing comparisons such as `>=5` or `>-1`. A single quote is
+  // left out, as in the inline quote pass.
+  const BLOCKQUOTE_LINE_RE = /^\s*>(?:$|[\s\p{L}>"“*_[]|[-+]\s|\d{1,9}[.)]\s)/u;
 
   function maskBlockquotes(text) {
     const chars = text.split('');

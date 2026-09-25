@@ -2357,6 +2357,12 @@ test('#238: compact blockquotes without a space are masked, comparisons are not'
     `>[We must delve](https://example.com) into the landscape and leverage our synergy.\n${prose}`,
     `>>We must delve into the landscape and leverage our synergy.\n${prose}`,
     `>> We must delve into the landscape and leverage our synergy.\n${prose}`,
+    `>- We must delve into the landscape and leverage our synergy.\n${prose}`,
+    `>+ We must delve into the landscape and leverage our synergy.\n${prose}`,
+    `>* We must delve into the landscape and leverage our synergy.\n${prose}`,
+    `>10. We must delve into the landscape and leverage our synergy.\n${prose}`,
+    `>1. We must delve into the landscape and leverage our synergy.\n${prose}`,
+    `>2) We must delve into the landscape and leverage our synergy.\n${prose}`,
   ];
   for (const sourceMode of ['plain', 'rendered-markdown']) {
     for (const source of cases) {
@@ -2367,7 +2373,7 @@ test('#238: compact blockquotes without a space are masked, comparisons are not'
       assert.deepEqual(fillers.map((i) => i.index), [source.indexOf('It is important')], sourceMode);
       assertIndexedIssuesSliceExactly(source, result.issues, `compact blockquote ${sourceMode}`);
     }
-    for (const line of ['>=5 items', '>5 items', '>-1 items', ">'cause the items"]) {
+    for (const line of ['>=5 items', '>5 items', '>-1 items', '>1.5 items', '>2024 items', ">'cause the items"]) {
       const r = AIDetector.analyzeText(`${line} must be in stock before we ship, and the warehouse team must delve into the backlog this quarter.`, { sourceMode });
       assert.equal(r.stats.quotedLines, 0, `${line} ${sourceMode}`);
       assert.ok(r.issues.some((i) => i.type === 'tier1' && i.text === 'delve'), `${line} ${sourceMode}`);
