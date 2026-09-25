@@ -49,6 +49,7 @@ const BUDGETS = {
   'detector/README.md': 15,
   'detector/CATEGORIES.md': 15,
   'examples/README.md': 10,
+  'GLOSSARY.md': 10,
   // Higher than the rest on purpose. A changelog enumerates the pattern names
   // it added ("bustling, intricate, ever-evolving"), unquoted, which the
   // exemption cannot reach, and Keep-a-Changelog headings carry a
