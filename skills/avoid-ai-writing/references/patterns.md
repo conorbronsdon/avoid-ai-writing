@@ -247,7 +247,7 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - Carve-out: quotations and established idioms ("time is money") are attributed speech or common coin — leave them. Adapted from `blader/humanizer` P32.
 
 ### Generic future-narrative closers
-- "May become one of the most important narratives of the next market cycle," "could become the defining trend of the coming decade," "is poised to become the next major chapter in [X]." AI defaults to this shape when it needs to land a closing thought without committing to a falsifiable claim. The closer is grammatically a prediction but contains no testable content.
+- "May become one of the most important narratives of the next market cycle," "could become the defining trend of the coming decade," "is poised to become the next major chapter in [X]." This shape lands a closing thought without committing to a falsifiable claim. The closer is grammatically a prediction but contains no testable content.
 - Pattern: modal (may / could / will / is poised to) + "become" + (one of) the most [adjective] + (narrative / story / trend / theme / chapter / movement / force).
 - Fix: use a falsifiable version only when the source supplies the claim and its details; otherwise cut the empty closer or flag the missing detail. "DePIN compute may exceed AWS spot pricing for embarrassingly parallel workloads by 2027" is a prediction when those terms came from the source. "The intersection of AI and DePIN may become one of the most important narratives of the next market cycle" is not.
 
@@ -279,7 +279,7 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - Fix: 2-3 specific tags max, or none. If a hashtag wouldn't help a reader find related work, it's filler.
 
 ### Bullet lists of bare noun phrases
-- A list of 5+ consecutive bullet items where each item is a short (≤6 word) adjective-plus-noun phrase with no verb. "Stable mining efficiency / Reliable pool connectivity / Optimized RandomX performance / Low failed share rates / Effective hardware utilization / Consistent thermal stability." Reads as a marketing one-pager because that's the shape LLMs default to when asked to summarize features.
+- A list of 5+ consecutive bullet items where each item is a short (≤6 word) adjective-plus-noun phrase with no verb. "Stable mining efficiency / Reliable pool connectivity / Optimized RandomX performance / Low failed share rates / Effective hardware utilization / Consistent thermal stability." Reads as a marketing one-pager: each item names a desirable quality without asserting anything checkable. This is an editorial observation, not a measured LLM frequency claim.
 - The tell is the *symmetry*: every item is the same grammatical shape, every item is parallel in length, none of them assert anything checkable. A genuine list of observations would have varying length, occasional verbs, and at least one item that doesn't fit the pattern.
 - Fix: when structural editing is authorized, convert the list to prose or rewrite items as full claims using details the source provides. If the source records a rate and measurement period, state those values instead of "Low failed share rates"; do not invent them. If the list is genuinely the right form, preserve it rather than changing item count or shape merely for variation.
 - This rule does *not* apply to genuine list content (changelog entries, todo lists, parameter docs, ingredient lists) where bare noun phrases are the correct form. The detector keys on absence of finite verbs to separate the two — but in prose audits, ask whether the bullets are summarizing claims (rewrite) or enumerating items (leave).
@@ -289,7 +289,7 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - Default to "is" or "has" unless a more specific verb genuinely adds meaning.
 
 ### Subjectless fragments and agentless passives
-- Sentences with the subject dropped or the actor hidden: "No configuration file needed." "The results are preserved automatically." "Support for nested queries was added." The clipped no-subject form is a shape LLMs reach for when compressing feature descriptions, and the passive hides who does what.
+- Sentences with the subject dropped or the actor hidden: "No configuration file needed." "The results are preserved automatically." "Support for nested queries was added." In flowing prose, the clipped form can hide the subject, and the passive can hide who does what. This is a clarity judgment, not a measured authorship signal.
 - Fix: name the actor when the source identifies it and the actor clarifies the sentence. Prefer active voice unless the actor is irrelevant; do not invent `you`, a team, or a system component.
 - Carve-out: terse reference registers where the fragment is the correct form — README feature lists, changelog entries, parameter docs, commit subjects ("No breaking changes"). Flag in flowing prose; skip in docs and casual registers (see the tolerance matrix). A single deliberate fragment for emphasis is rhythm, not a tell. Adapted from `blader/humanizer` P13.
 
@@ -320,14 +320,14 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - Also watch for: "In this article, we will explore…" or "Let's dive in!" — these are AI-generated meta-narration. Cut or rewrite with a direct opening.
 
 ### "Let's" constructions
-- "Let's explore," "Let's take a look," "Let's break this down," "Let's examine" — AI uses "let's" as a false-collaborative opener to ease into a topic. It's filler that delays the actual point. Just start with the point. "Let's dive in" is covered above under chatbot artifacts, but the pattern is broader than that — flag any "let's + verb" that's functioning as a transition rather than a genuine invitation to act.
+- "Let's explore," "Let's take a look," "Let's break this down," "Let's examine" — as a false-collaborative opener, "let's" can delay the actual point. Just start with the point. "Let's dive in" is covered above under chatbot artifacts, but the pattern is broader than that — flag any "let's + verb" that's functioning as a transition rather than a genuine invitation to act. This is a context-dependent edit, not a measured AI frequency claim.
 
 ### Notability name-dropping
-- AI text piles on prestigious citations to manufacture credibility: "cited in The New York Times, BBC, Financial Times, and The Hindu." If a supplied source matters, use its existing context. Do not invent an interview date, venue, or argument to replace the list. One relevant, supported reference beats four name-drops.
+- A stack of prestigious citations can try to borrow credibility without showing why any source matters: "cited in The New York Times, BBC, Financial Times, and The Hindu." If a supplied source matters, use its existing context. Do not invent an interview date, venue, or argument to replace the list. One relevant, supported reference beats four name-drops.
 - Related — **historical analogy stacking**: rapid-fire lists of past technologies or companies to borrow their weight ("like the printing press, the telegraph, and the internet before it"). The montage substitutes for the argument. Name the one parallel that does analytical work and say what it explains, or cut. Source: tropes.fyi (Historical Analogy Stacking).
 
 ### Vague third-party validation
-- AI manufactures credibility by pointing at an **unnamed** external authority, usually paired with a generic superlative: "an outside party measuring the same models everyone runs and putting us on top," "independent testing confirms," "third-party benchmarks show we lead," "analysts agree," "studies consistently show." The authority is faceless and the claim unfalsifiable — the reader can't tell who measured what, against whom, or go check.
+- An **unnamed** external authority, especially with a generic superlative, lends a claim apparent credibility without making it checkable: "an outside party measuring the same models everyone runs and putting us on top," "independent testing confirms," "third-party benchmarks show we lead," "analysts agree," "studies consistently show." The reader can't tell who measured what, against whom, or where to check.
 - Fix: name the source, test, and result only when those facts appear in the supplied material or an explicit user correction. If they are missing, flag the gap or cut the unsupported validation claim rather than inventing a benchmark, date, rank, or metric.
 - Carve-out: specifically attributed, checkable validation is legitimate and stays unflagged — a named benchmark, a linked report, a dated audit ("SOC 2 Type II, audited by Prescient Assurance"). The tell is the *vagueness*, not the act of citing outside proof.
 - Distinct from **Notability name-dropping**: that flags piling on *specific* prestigious names to borrow their weight; this is the inverse move — the authority is deliberately *unnamed*, which is both harder to check and easier to invent. A passage can run both at once (a vague authority plus a superlative); judge each on its own terms. Raised in #39.
@@ -337,7 +337,7 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - The same move shows up without the -ing: declarative "meaning-telling" that glosses a mundane subject as if it were profound — "this represents a broader shift," "the decision symbolizes a commitment to excellence," "it speaks to a larger trend in the industry." Use a specific consequence only when the source supplies it; otherwise cut the unsupported gloss. Adapted from `Aboudjem/humanizer-skill` P40.
 
 ### Promotional language
-- AI defaults to tourism-brochure prose: "nestled within the breathtaking foothills," "a vibrant hub of innovation," "a thriving ecosystem." Use a plain description grounded in the source, such as an existing location or startup count. If the source supplies no concrete replacement, cut the promotional modifier rather than inventing one.
+- Tourism-brochure prose such as "nestled within the breathtaking foothills," "a vibrant hub of innovation," or "a thriving ecosystem" adds promotional color without a concrete claim. Use a plain description grounded in the source, such as an existing location or startup count. If the source supplies no concrete replacement, cut the promotional modifier rather than inventing one.
 
 ### Formulaic challenges
 - "Despite challenges, [subject] continues to thrive" or "While facing headwinds, the organization remains resilient." This is a non-statement. Name the challenge and response only when the source supplies them; otherwise cut the unsupported sentence or flag the gap.
