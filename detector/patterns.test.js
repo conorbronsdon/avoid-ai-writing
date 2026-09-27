@@ -2765,11 +2765,60 @@ test('ignore markers: HTML code containers and frontmatter hold no directives', 
       assert.ok(!c.issues.some((i) => i.text === 'delve'), `${note} ${sourceMode}: specimen must stay ignored`);
     }
   }
+  // Round 4: one left-to-right scan decides ownership. Whichever construct
+  // opens first owns the text until its own close.
+  const tail = ['', 'The team met on Tuesday to agree next steps.', IGNORE_START, SPECIMEN, IGNORE_END].join('\n');
+  const owned = {
+    fenceInsideComment: ['<!--', '```', 'not a fence here', '-->'].join('\n') + '\n' + tail,
+    tildeFenceInsideComment: ['<!-- ~~~ -->'].join('\n') + '\n' + tail,
+    commentInsideFence: ['```html', '<!-- an unclosed comment inside a fence', '```'].join('\n') + '\n' + tail,
+    preInsideFence: ['```', '<pre>', '```'].join('\n') + '\n' + tail,
+    fenceInsidePre: ['<pre>', '```', '</pre>'].join('\n') + '\n' + tail,
+    commentInsideInlineCode: 'Write `<!--` to open a comment.\n' + tail,
+    preInsideInlineCode: 'Wrap samples in `<pre>` tags.\n' + tail,
+    commentInsideIndentedCode: ['Example:', '', '    <!-- unclosed', ''].join('\n') + '\n' + tail,
+  };
+  for (const [name, source] of Object.entries(owned)) {
+    for (const eol of ['\n', '\r\n']) {
+      for (const sourceMode of ['plain', 'rendered-markdown']) {
+        const input = source.replace(/\n/g, eol);
+        const o = AIDetector.analyzeText(input, { sourceMode });
+        assert.equal(o.stats.ignoredRegions, 1, `${name} ${JSON.stringify(eol)} ${sourceMode}`);
+        assert.ok(!o.issues.some((i) => i.text === 'delve'), `${name} ${JSON.stringify(eol)} ${sourceMode}: specimen must stay ignored`);
+      }
+    }
+  }
+  // And the reverse: a marker inside a fence that sits inside a comment, or a
+  // comment that sits inside a fence, still does nothing.
+  const inert = {
+    markerInFenceInComment: ['<!--', '```', IGNORE_START, '```', '-->'].join('\n') + `\n\n${SPECIMEN}`,
+    markerInFenceAfterComment: ['```', '<!-- note -->', IGNORE_START, '```'].join('\n') + `\n\n${SPECIMEN}`,
+    markerInPreInComment: ['<!-- <pre> -->', '<pre>', IGNORE_START, '</pre>'].join('\n') + `\n\n${SPECIMEN}`,
+  };
+  for (const [name, source] of Object.entries(inert)) {
+    const i = AIDetector.analyzeText(source);
+    assert.equal(i.stats.ignoredRegions, 0, name);
+    assert.ok(i.issues.some((x) => x.text === 'delve'), `${name}: prose must still score`);
+  }
   // A real marker after a closed container still works.
   const later = ['<pre>', IGNORE_START, '</pre>', '', 'The team met on Tuesday to agree next steps.', IGNORE_START, SPECIMEN, IGNORE_END].join('\n');
   const r = AIDetector.analyzeText(later);
   assert.equal(r.stats.ignoredRegions, 1);
   assert.ok(!r.issues.some((i) => i.text === 'delve'));
+});
+
+test('ignore markers: the marker scan stays linear on adversarial input', () => {
+  const ordinary = 'one two three four five six seven eight nine ten';
+  const shapes = {
+    backticks: (k) => `${'` `` '.repeat(k)}\n${IGNORE_START}\n${ordinary}`,
+    comments: (k) => `${'<!-- x --> '.repeat(k)}\n${IGNORE_START}\n${ordinary}`,
+    unclosedTags: (k) => `${IGNORE_START}\n${ordinary}\n${IGNORE_END}\n${'<pr <cod '.repeat(k)}`,
+    fences: (k) => `${IGNORE_START}\n${'```\nx\n```\n'.repeat(k)}${IGNORE_END}\n${ordinary}`,
+  };
+  for (const [name, build] of Object.entries(shapes)) {
+    const { small, large } = timeScaling(build, 1500);
+    assert.ok(large < small * 8, `${name}: 4x input took ${(large / small).toFixed(1)}x time (${small.toFixed(1)}ms vs ${large.toFixed(1)}ms)`);
+  }
 });
 
 test('ignore markers: an unclosed start runs to the end of the text', () => {

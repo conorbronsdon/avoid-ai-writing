@@ -1323,72 +1323,174 @@ const AIDetector = (() => {
   // as a specimen of AI prose quoted on purpose, by wrapping it in
   //   <!-- avoid-ai-writing:ignore-start --> … <!-- avoid-ai-writing:ignore-end -->
   // A marker counts only as a whole line: the full comment, at most three
-  // spaces of indent, nothing else on the line. That keeps a marker mentioned
-  // inline in prose or a quotation from acting, and a four-space indented
-  // code block cannot hold one. Fenced code is masked first, so a marker shown
-  // in a fence does nothing either, and neither does one inside an HTML
-  // <pre>, <code>, <script>, or <style> element or in initial YAML
-  // frontmatter (in every source mode). Starts nest: each start needs its own
-  // end, and the region runs from the outermost start to its matching end.
-  // An unclosed start runs to the end of the text; an end with no open start
-  // is ignored. The region is blanked in place, so offsets still address the
-  // source.
-  const IGNORE_MARKER_RE = /^ {0,3}<!--[ \t]*avoid-ai-writing:ignore-(start|end)[ \t]*-->[ \t]*\r?$/gim;
-  const HTML_CODE_OPEN_RE = /<(pre|code|script|style)\b[^>]*>/gi;
+  // spaces of indent, nothing else on the line. Starts nest: each start needs
+  // its own end, and the region runs from the outermost start to its matching
+  // end. An unclosed start runs to the end of the text; an end with no open
+  // start is ignored. The region is blanked in place, so offsets still
+  // address the source.
+  //
+  // Markers are found by ONE left-to-right scan rather than a stack of masks,
+  // because separate masks disagree about who owns overlapping text: a fence
+  // inside a comment would swallow the comment's `-->`, and a `<pre>` inside
+  // a comment would open a container. After skipping initial YAML
+  // frontmatter, the scan recognizes, in order of appearance, an HTML
+  // comment, a Markdown fence, a top-level indented code line, an inline code
+  // span, and an HTML <pre>, <code>, <script>, or <style> element. Whichever
+  // construct opens first owns the text until its own close, so a marker, a
+  // fence, a tag, or a comment inside another construct is inert. Anything
+  // unclosed runs to the end of the text: when in doubt, the marker does
+  // nothing and the prose stays scored. Every character is visited a bounded
+  // number of times.
+  const IGNORE_MARKER_LINE_RE = /^ {0,3}<!--[ \t]*avoid-ai-writing:ignore-(start|end)[ \t]*-->[ \t]*$/i;
+  const MARKER_FENCE_RE = /^ {0,3}(`{3,}|~{3,})(.*)$/;
+  const HTML_CODE_OPEN_RE = /<(pre|code|script|style)\b[^>]*>/iy;
+  const HTML_CODE_CLOSE_RE = {
+    pre: /<\/pre/gi,
+    code: /<\/code/gi,
+    script: /<\/script/gi,
+    style: /<\/style/gi,
+  };
 
-  // Blank HTML code containers so a marker shown as code is not a directive.
-  // An unclosed container runs to the end of the text: when in doubt, the
-  // marker does nothing and the prose stays scored.
-  function maskHtmlCodeContainers(chars) {
-    const source = chars.join('');
-    const lower = source.toLowerCase();
-    HTML_CODE_OPEN_RE.lastIndex = 0;
-    let match;
-    while ((match = HTML_CODE_OPEN_RE.exec(source)) !== null) {
-      const close = lower.indexOf(`</${match[1].toLowerCase()}`, match.index + match[0].length);
-      const end = close === -1 ? source.length : close;
-      blankRange(chars, match.index, end);
-      HTML_CODE_OPEN_RE.lastIndex = Math.max(end, match.index + match[0].length);
-    }
-  }
+  function findIgnoreMarkers(text) {
+    const n = text.length;
+    const markers = [];
+    const lineEndAt = (from) => {
+      let i = from;
+      while (i < n && text[i] !== '\n' && text[i] !== '\r') i += 1;
+      return i;
+    };
+    const nextLineAt = (end) => (text[end] === '\r' && text[end + 1] === '\n' ? end + 2 : end + 1);
+    const isLineStart = (i) => i === 0 || text[i - 1] === '\n' || (text[i - 1] === '\r' && text[i] !== '\n');
 
-  // Blank every HTML comment except the ignore markers themselves, so a tag
-  // or marker written inside a comment ("<!-- <pre> -->") cannot open a code
-  // container or act as a directive. An unclosed comment runs to the end.
-  const IGNORE_MARKER_COMMENT_RE = /^<!--[ \t]*avoid-ai-writing:ignore-(?:start|end)[ \t]*-->$/i;
-  function maskOrdinaryHtmlComments(chars) {
-    const source = chars.join('');
-    let cursor = source.indexOf('<!--');
-    while (cursor !== -1) {
-      const close = source.indexOf('-->', cursor + 4);
-      const end = close === -1 ? source.length : close + 3;
-      if (!IGNORE_MARKER_COMMENT_RE.test(source.slice(cursor, end))) blankRange(chars, cursor, end);
-      cursor = source.indexOf('<!--', end);
+    // Backtick runs in [from, to), keyed by start, each with the end of the
+    // next run of the same length on the line (-1 when unmatched).
+    const backtickRuns = (from, to) => {
+      const list = [];
+      for (let i = from; i < to;) {
+        if (text[i] !== '`') { i += 1; continue; }
+        const start = i;
+        while (i < to && text[i] === '`') i += 1;
+        list.push({ start, end: i, length: i - start, closeEnd: -1 });
+      }
+      const nextByLength = new Map();
+      for (let i = list.length - 1; i >= 0; i -= 1) {
+        const next = nextByLength.get(list[i].length);
+        if (next) list[i].closeEnd = next.end;
+        nextByLength.set(list[i].length, list[i]);
+      }
+      return new Map(list.map((run) => [run.start, run]));
+    };
+
+    let pos = 0;
+    const frontmatter = initialFrontmatterRange(text);
+    if (frontmatter) pos = frontmatter.end;
+
+    let lineEnd = -1;
+    let runs = null;
+    let prevBlank = true;
+    let inIndented = false;
+    let listContext = false;
+
+    while (pos < n) {
+      if (pos > lineEnd) {
+        // Entering a new line, or resuming mid-line after a construct that
+        // spanned lines. Only a true line start gets the line-level checks.
+        lineEnd = lineEndAt(pos);
+        runs = null;
+        if (isLineStart(pos)) {
+          const line = text.slice(pos, lineEnd);
+          const blank = line.trim() === '';
+          const fence = MARKER_FENCE_RE.exec(line);
+          if (fence && !(fence[1][0] === '`' && fence[2].includes('`'))) {
+            let close = n;
+            for (let scan = nextLineAt(lineEnd); scan < n;) {
+              const end = lineEndAt(scan);
+              const closing = MARKER_FENCE_RE.exec(text.slice(scan, end));
+              if (
+                closing
+                && closing[1][0] === fence[1][0]
+                && closing[1].length >= fence[1].length
+                && closing[2].trim() === ''
+              ) {
+                close = end;
+                break;
+              }
+              scan = nextLineAt(end);
+            }
+            pos = close;
+            prevBlank = false;
+            inIndented = false;
+            continue;
+          }
+          const indented = !blank && /^(?: {4}|\t)/.test(line);
+          if (indented && (inIndented || (prevBlank && !listContext))) {
+            inIndented = true;
+            prevBlank = false;
+            pos = lineEnd;
+            continue;
+          }
+          if (!blank) {
+            inIndented = false;
+            if (/^ {0,3}(?:[-*+]|\d{1,9}[.)])(?:\s|$)/.test(line)) listContext = true;
+            else if (/^\S/.test(line)) listContext = false;
+          }
+          prevBlank = blank;
+          const marker = IGNORE_MARKER_LINE_RE.exec(line);
+          if (marker) {
+            markers.push({ kind: marker[1].toLowerCase(), start: pos, end: lineEnd });
+            pos = lineEnd;
+            continue;
+          }
+        }
+      }
+
+      const ch = text[pos];
+      if (ch === '<') {
+        if (text.startsWith('<!--', pos)) {
+          const close = text.indexOf('-->', pos + 4);
+          pos = close === -1 ? n : close + 3;
+          runs = null;
+          continue;
+        }
+        HTML_CODE_OPEN_RE.lastIndex = pos;
+        const open = HTML_CODE_OPEN_RE.exec(text);
+        if (open) {
+          const closeRe = HTML_CODE_CLOSE_RE[open[1].toLowerCase()];
+          closeRe.lastIndex = pos + open[0].length;
+          const close = closeRe.exec(text);
+          pos = close === null ? n : close.index;
+          runs = null;
+          continue;
+        }
+      } else if (ch === '`') {
+        if (!runs) runs = backtickRuns(pos, lineEnd);
+        const run = runs.get(pos);
+        if (run && run.closeEnd !== -1) {
+          pos = run.closeEnd;
+          continue;
+        }
+        pos += run ? run.length : 1;
+        continue;
+      }
+      pos += 1;
     }
+    return markers;
   }
 
   function maskIgnoreRegions(text) {
     if (!/avoid-ai-writing:ignore-/i.test(text)) return { text, ignoredRegions: 0 };
-    const visibleChars = maskCode(text).split('');
-    const frontmatter = initialFrontmatterRange(text);
-    if (frontmatter) blankRange(visibleChars, frontmatter.start, frontmatter.end);
-    maskOrdinaryHtmlComments(visibleChars);
-    maskHtmlCodeContainers(visibleChars);
-    const visible = visibleChars.join('');
     const chars = text.split('');
     let ignoredRegions = 0;
     let depth = 0;
     let openAt = -1;
-    let match;
-    IGNORE_MARKER_RE.lastIndex = 0;
-    while ((match = IGNORE_MARKER_RE.exec(visible)) !== null) {
-      if (match[1].toLowerCase() === 'start') {
-        if (depth === 0) openAt = match.index;
+    for (const marker of findIgnoreMarkers(text)) {
+      if (marker.kind === 'start') {
+        if (depth === 0) openAt = marker.start;
         depth += 1;
       } else if (depth > 0) {
         depth -= 1;
         if (depth === 0) {
-          blankRange(chars, openAt, match.index + match[0].length);
+          blankRange(chars, openAt, marker.end);
           ignoredRegions += 1;
         }
       }

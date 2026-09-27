@@ -170,8 +170,11 @@ counts only as a whole line: the full comment, at most three spaces of indent,
 and nothing else on the line. Markers inside fenced code, indented code, inline
 code, running prose, or quotations therefore do nothing, as do markers inside an HTML `<pre>`, `<code>`,
 `<script>`, or `<style>` element, inside another HTML comment, or in initial
-YAML frontmatter, in either source mode. Starts nest: the
-region runs from the outermost start to its matching end. An unclosed start
+YAML frontmatter, in either source mode. Markers are found in one
+left-to-right scan: whichever of these constructs opens first owns the text
+until its own close, so a fence inside a comment and a comment inside a fence
+are both inert. An unclosed construct runs to the end of the text. Starts nest:
+the region runs from the outermost start to its matching end. An unclosed start
 runs to the end of the text, and an end with no open start is ignored. Masking
 preserves offsets, and `stats.ignoredRegions` counts the regions.
 
