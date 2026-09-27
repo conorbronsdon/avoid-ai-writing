@@ -8,13 +8,7 @@ All notable changes to this project are documented here.
 
 ### Fixed
 
-- Cyrillic and Greek prose no longer reads as a homoglyph bypass. The detector decides script dominance per sentence
-  or line, using `.`, `!`, `?`, and newlines as boundaries. When Cyrillic and Greek letters together are at least as
-  common as Latin ones in that unit, only mixed-script words ("pаypal") are swapped. A word of two or more letters
-  spelled entirely in lookalike letters ("аст" for "act") is swapped when no Russian or Greek prose surrounds it, so
-  Russian padding cannot hide it in an English sentence. Russian words next to other Russian words, hyphenated
-  compounds ("API-сервис"), and one-letter prepositions are not swapped. Known limits: a fully substituted word next
-  to Russian words, or a one-letter lookalike split off by a hyphen, is not detected.
+- Cyrillic and Greek prose no longer reads as a homoglyph bypass. Script dominance is decided per sentence, and only mixed-script or fully substituted words surrounded by non-Russian text are swapped; limits are documented in `detector/patterns.js` (#352).
 
 ### Added
 
