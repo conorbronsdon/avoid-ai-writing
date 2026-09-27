@@ -212,6 +212,8 @@ When writing *about* AI writing patterns (blog posts, tutorials, skill documenta
 
 ## Output format
 
+Before delivering prose to a specific surface, check how that surface renders single newlines. For GitHub issue/PR bodies, chat, web copy, and other destinations, unwrap hard-wrapped paragraphs only when single newlines remain visible in the rendered result, so sentences do not break at an arbitrary editor column. Keep intentional line breaks in poetry, lists, code, addresses, and other structured text. If the destination is unknown, preserve the source layout and say that the rendered view was not checked; do not treat a fixed-width Markdown source file as a defect merely because its lines wrap.
+
 ### Rewrite mode (default)
 
 Complete the audit, authorized editing passes, marks pass, and available verification before responding. Return the full rewritten content exactly once, under **Final rewrite**. Never publish a first-pass draft and then supersede it with another full version.
