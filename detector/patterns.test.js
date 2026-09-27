@@ -2672,6 +2672,347 @@ test('negation-chain: two-item sentence-initial factual inventories stay clean',
   assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
 });
 
+// ── Issue #351 — negative parallelism, ignore markers, word joiners ────
+
+const npHits = (text, options) => AIDetector.analyzeText(text, options)
+  .issues.filter((i) => i.type === 'negative-parallelism');
+
+test('negative-parallelism: the #351 repro no longer scores Clean', () => {
+  const text = "Our new retrieval layer is fast. It's not just a search index, it's a foundation for trust. The breakthrough was simple: it quietly reshaped how teams actually work.";
+  const r = AIDetector.analyzeText(text);
+  const hits = r.issues.filter((i) => i.type === 'negative-parallelism');
+  assert.deepEqual(hits.map((i) => i.text), ["It's not just a search index, it's"]);
+  assert.equal(text.slice(hits[0].index, hits[0].index + hits[0].text.length), hits[0].text);
+  assert.ok(r.score > 0, `expected a non-zero score, got ${r.score}`);
+  assert.equal(AIDetector.TYPE_LABELS['negative-parallelism'], 'Negative parallelism');
+});
+
+test('negative-parallelism: a minimizer reveal flags on its own across joiners', () => {
+  for (const sentence of [
+    // Maintainer ruling on #353 review: the minimizer reveal is the tell even
+    // in an everyday sentence.
+    "It isn't just raining, it's pouring.",
+    "This isn't just about speed — it's about trust.",
+    'The release was not merely a patch; it was a rewrite.',
+    'It’s not simply a cache: it’s the source of truth.',
+    "These dashboards aren't simply reports -- they're the operating plan.",
+    "The new layer isn't just faster, this is a different way to work.",
+  ]) {
+    const hits = npHits(`${sentence} The team shipped it on Tuesday after a long review.`);
+    assert.equal(hits.length, 1, `${sentence} -> ${JSON.stringify(hits.map((i) => i.text))}`);
+  }
+});
+
+test('negative-parallelism: one plain correction stays clean', () => {
+  for (const text of [
+    "It isn't raining, it's snowing. We waited at the bus stop for twenty minutes before walking home.",
+    "This isn't about money, it's about respect, and the union said so plainly at the meeting.",
+    "The new layer isn't just faster. It's a different way to think about retrieval for every team.",
+    // Pre-LLM human prose from the control corpus (#351): "not only" is a
+    // contrast, not a reveal, so it needs a nearby second frame.
+    'Clean energy is cheaper than ever, and fossil fuels are not only bad for our environment, they’re a losing bet in the long run as well as the short term.',
+  ]) {
+    assert.deepEqual(npHits(text), [], text);
+  }
+});
+
+test('negative-parallelism: contrasts flag when another frame is within three sentences', () => {
+  const plain = npHits("It isn't raining, it's snowing. The problem isn't the bus, it's the schedule. We walked home.");
+  assert.deepEqual(plain.map((i) => i.text), ["isn't raining, it's", "isn't the bus, it's"]);
+  const split = npHits("It's not just a tool, it's a platform. The rollout isn't just fast. It's invisible to users.");
+  assert.equal(split.length, 2, JSON.stringify(split.map((i) => i.text)));
+  const gapOfOne = npHits("The layer isn't a cache, it's a store. We measured it twice. The API isn't a wrapper, it's the contract.");
+  assert.equal(gapOfOne.length, 2, JSON.stringify(gapOfOne.map((i) => i.text)));
+});
+
+test('negative-parallelism: repeated identical contrasts do not pass a distinct-findings gate', () => {
+  const repeated = "It isn't raining, it's snowing. It isn't raining, it's snowing.";
+  assert.deepEqual(npHits(repeated), []);
+  const distinct = "It isn't raining, it's snowing. The problem isn't the bus, it's the schedule.";
+  assert.equal(npHits(distinct).length, 2);
+});
+
+test('negative-parallelism: unrelated corrections far apart stay clean', () => {
+  const text = [
+    "It isn't raining, it's snowing, so the school closed early and the buses stopped at noon.",
+    '',
+    'We spent the afternoon at the library. The heating worked. Nobody minded the walk back.',
+    'By evening the roads were clear again and the plows had moved on to the side streets.',
+    '',
+    "The bill isn't due today, it's due Friday, according to the notice the landlord left on the door.",
+  ].join('\n');
+  assert.deepEqual(npHits(text), []);
+  // Adjacent sentences in separate paragraphs do not pair either.
+  const adjacentParagraphs = "It isn't raining, it's snowing.\n\nThe invoice isn't due today, it's due Friday.";
+  for (const eol of ['\n', '\r\n', '\r']) {
+    for (const sourceMode of ['plain', 'rendered-markdown']) {
+      assert.deepEqual(npHits(adjacentParagraphs.replace(/\n/g, eol), { sourceMode }), [], `${JSON.stringify(eol)} ${sourceMode}`);
+    }
+  }
+  // A single line break inside a paragraph is not a break, in any line ending.
+  for (const eol of ['\n', '\r\n', '\r']) {
+    const oneBreak = adjacentParagraphs.replace('\n\n', eol);
+    assert.equal(npHits(oneBreak).length, 2, `single ${JSON.stringify(eol)} keeps one paragraph`);
+  }
+  assert.equal(npHits(adjacentParagraphs.replace('\n\n', ' ')).length, 2, 'precondition: same paragraph pairs');
+  // A reveal far from a contrast flags alone and does not pull the contrast in.
+  const mixed = npHits(text.replace("It isn't raining, it's snowing", "It isn't just raining, it's pouring"));
+  assert.deepEqual(mixed.map((i) => i.text), ["isn't just raining, it's"]);
+});
+
+test('negative-parallelism: correlatives and ordinary negations are not frames', () => {
+  for (const text of [
+    'The result is not only faster but also cheaper, which the finance team noticed within a week.',
+    'The problem is not the code but the process, and nobody on the team disputes that anymore.',
+    "It's not just a tool but a whole workflow, according to the vendor's own documentation page.",
+    "It's not just me who noticed the delay; the support queue doubled over the same weekend.",
+    "This isn't just a bug; its effects spread to every downstream service we operate in the region.",
+    "It is not only possible to run it locally but also cheap, since the model fits on one laptop.",
+    "The contract isn't signed yet, and we are still waiting on legal to send the final version.",
+  ]) {
+    assert.deepEqual(npHits(text).map((i) => i.text), [], text);
+    // Next to one plain contrast, a correlative that counted as a frame would
+    // pair with it and flag.
+    assert.deepEqual(npHits(`It isn't a feature, it's a platform. ${text}`).map((i) => i.text), [], `paired: ${text}`);
+  }
+});
+
+test('negative-parallelism: a quoted frame belongs to the speaker', () => {
+  const text = 'The vendor told us, "It\'s not just a tool, it\'s a platform," and then asked for a three-year contract.';
+  assert.deepEqual(npHits(text), []);
+  assert.equal(npHits(text.replace(/"/g, '')).length, 1, 'precondition: unquoted frame fires');
+});
+
+const SPECIMEN = "In today's ever-evolving landscape, we delve into the intricate tapestry of innovation. It's not just a tool, it's a paradigm.";
+const IGNORE_START = '<!-- avoid-ai-writing:ignore-start -->';
+const IGNORE_END = '<!-- avoid-ai-writing:ignore-end -->';
+const stripIgnoreMarkers = (source) => source.split(IGNORE_START).join('').split(IGNORE_END).join('');
+
+test('ignore markers: the unmarked control removes only directive markers', () => {
+  const otherComment = '<!-- ordinary note -->';
+  const multilineComment = '<!-- ordinary\nnote -->';
+  const source = [IGNORE_START, otherComment, multilineComment, SPECIMEN, IGNORE_END].join('\n');
+  assert.equal(stripIgnoreMarkers(source), ['', otherComment, multilineComment, SPECIMEN, ''].join('\n'));
+});
+
+test('ignore markers: a marked specimen is excluded and the rest is still scored', () => {
+  const source = [
+    'Here is the kind of paragraph we warn readers about on this robust page.',
+    '',
+    '<!-- avoid-ai-writing:ignore-start -->',
+    SPECIMEN,
+    '<!-- avoid-ai-writing:ignore-end -->',
+    '',
+    'The rest of the page explains what each of those phrases hides from a reader.',
+  ].join('\n');
+  for (const sourceMode of ['plain', 'rendered-markdown']) {
+    const r = AIDetector.analyzeText(source, { sourceMode });
+    assert.equal(r.stats.ignoredRegions, 1, sourceMode);
+    assert.deepEqual(r.issues.map((i) => i.text), ['robust'], `${sourceMode}: ${JSON.stringify(r.issues.map((i) => i.text))}`);
+    assertIndexedIssuesSliceExactly(source, r.issues, `ignore ${sourceMode}`);
+    for (const region of r.highlight_sentence_for_ai) {
+      assert.ok(!source.slice(region.start, region.end).includes('tapestry'), `${sourceMode}: highlight reached the ignored region`);
+    }
+  }
+  const unmarked = AIDetector.analyzeText(stripIgnoreMarkers(source));
+  assert.ok(unmarked.issues.some((i) => i.text === 'delve'), 'precondition: the specimen scores without markers');
+});
+
+test('ignore markers: CRLF source masks the same region', () => {
+  const source = ['Intro line with a robust claim in it for the page.', IGNORE_START, SPECIMEN, IGNORE_END, 'The closing line explains the specimen to readers.'].join('\r\n');
+  const r = AIDetector.analyzeText(source);
+  assert.equal(r.stats.ignoredRegions, 1);
+  assert.deepEqual(r.issues.map((i) => i.text), ['robust']);
+});
+
+test('ignore markers: nested starts need their own ends', () => {
+  const source = [
+    'The team met on Tuesday and agreed the next steps for the release.',
+    IGNORE_START,
+    'We must delve into the first specimen here.',
+    IGNORE_START,
+    'The second specimen is a vibrant tapestry.',
+    IGNORE_END,
+    'This line is still inside the outer region, a robust claim.',
+    IGNORE_END,
+    'The release went out on Friday without trouble or delay.',
+  ].join('\n');
+  const r = AIDetector.analyzeText(source);
+  assert.equal(r.stats.ignoredRegions, 1);
+  assert.deepEqual(r.issues.map((i) => i.text), []);
+});
+
+test('ignore markers: an unmatched inner start keeps the outer region open', () => {
+  const source = [
+    'The team met on Tuesday and agreed the next steps for the release.',
+    IGNORE_START,
+    'We must delve into the first specimen here.',
+    IGNORE_START,
+    'The second specimen is a vibrant tapestry.',
+    IGNORE_END,
+    'This robust line remains inside the unclosed outer region.',
+  ].join('\n');
+  for (const sourceMode of ['plain', 'rendered-markdown']) {
+    const result = AIDetector.analyzeText(source, { sourceMode });
+    assert.equal(result.stats.ignoredRegions, 1, sourceMode);
+    assert.deepEqual(result.issues, [], sourceMode);
+  }
+});
+
+test('ignore markers: code, inline mentions, quotations, and stray ends do not act', () => {
+  const after = `\n\n${SPECIMEN}`;
+  const cases = {
+    fenced: ['```html', IGNORE_START, '```'].join('\n') + after,
+    indented: ['Example:', '', `    ${IGNORE_START}`, ''].join('\n') + after,
+    inlineCode: `Use \`${IGNORE_START}\` to start a region.` + after,
+    quoted: `The docs say to write "${IGNORE_START}" before the specimen.` + after,
+    prose: `Write ${IGNORE_START} on its own line.` + after,
+    strayEnd: IGNORE_END + after,
+  };
+  for (const [name, source] of Object.entries(cases)) {
+    for (const sourceMode of ['plain', 'rendered-markdown']) {
+      const r = AIDetector.analyzeText(source, { sourceMode });
+      assert.equal(r.stats.ignoredRegions, 0, `${name} ${sourceMode}`);
+      assert.ok(r.issues.some((i) => i.text === 'delve'), `${name} ${sourceMode}: prose after the marker must still score`);
+    }
+  }
+});
+
+test('ignore markers: HTML code containers and frontmatter hold no directives', () => {
+  const after = `\n\n${SPECIMEN}`;
+  const cases = {
+    preCode: ['<pre><code>', IGNORE_START, '</code></pre>'].join('\n') + after,
+    code: ['<code>', IGNORE_START, '</code>'].join('\n') + after,
+    preUpper: ['<PRE class="html">', IGNORE_START, '</PRE>'].join('\n') + after,
+    script: ['<script type="text/plain">', IGNORE_START, '</script>'].join('\n') + after,
+    style: ['<style>', IGNORE_START, '</style>'].join('\n') + after,
+    unclosedPre: ['<pre>', IGNORE_START].join('\n') + after,
+    frontmatter: ['---', 'title: Tells', 'example: |', `  ${IGNORE_START}`, '---'].join('\n') + after,
+    frontmatterLeftAligned: ['---', 'title: Tells', 'example: |', IGNORE_START, '---'].join('\n') + after,
+  };
+  for (const [name, source] of Object.entries(cases)) {
+    for (const sourceMode of ['plain', 'rendered-markdown']) {
+      const r = AIDetector.analyzeText(source, { sourceMode });
+      assert.equal(r.stats.ignoredRegions, 0, `${name} ${sourceMode}`);
+      assert.ok(r.issues.some((i) => i.text === 'delve'), `${name} ${sourceMode}: prose after the container must still score`);
+    }
+  }
+  // A tag or marker inside an ordinary HTML comment opens nothing, so a
+  // later valid region still applies.
+  for (const note of ['<!-- remember to wrap samples in <pre> -->', `<!--\n<code>\n${IGNORE_START}\n-->`]) {
+    const commented = [note, '', 'The team met on Tuesday to agree next steps.', IGNORE_START, SPECIMEN, IGNORE_END].join('\n');
+    for (const sourceMode of ['plain', 'rendered-markdown']) {
+      const c = AIDetector.analyzeText(commented, { sourceMode });
+      assert.equal(c.stats.ignoredRegions, 1, `${note} ${sourceMode}`);
+      assert.ok(!c.issues.some((i) => i.text === 'delve'), `${note} ${sourceMode}: specimen must stay ignored`);
+    }
+  }
+  // Round 4: one left-to-right scan decides ownership. Whichever construct
+  // opens first owns the text until its own close.
+  const tail = ['', 'The team met on Tuesday to agree next steps.', IGNORE_START, SPECIMEN, IGNORE_END].join('\n');
+  const owned = {
+    fenceInsideComment: ['<!--', '```', 'not a fence here', '-->'].join('\n') + '\n' + tail,
+    tildeFenceInsideComment: ['<!-- ~~~ -->'].join('\n') + '\n' + tail,
+    commentInsideFence: ['```html', '<!-- an unclosed comment inside a fence', '```'].join('\n') + '\n' + tail,
+    preInsideFence: ['```', '<pre>', '```'].join('\n') + '\n' + tail,
+    fenceInsidePre: ['<pre>', '```', '</pre>'].join('\n') + '\n' + tail,
+    commentInsideInlineCode: 'Write `<!--` to open a comment.\n' + tail,
+    preInsideInlineCode: 'Wrap samples in `<pre>` tags.\n' + tail,
+    commentInsideIndentedCode: ['Example:', '', '    <!-- unclosed', ''].join('\n') + '\n' + tail,
+  };
+  for (const [name, source] of Object.entries(owned)) {
+    for (const eol of ['\n', '\r\n']) {
+      for (const sourceMode of ['plain', 'rendered-markdown']) {
+        const input = source.replace(/\n/g, eol);
+        const o = AIDetector.analyzeText(input, { sourceMode });
+        assert.equal(o.stats.ignoredRegions, 1, `${name} ${JSON.stringify(eol)} ${sourceMode}`);
+        assert.ok(!o.issues.some((i) => i.text === 'delve'), `${name} ${JSON.stringify(eol)} ${sourceMode}: specimen must stay ignored`);
+      }
+    }
+  }
+  // And the reverse: a marker inside a fence that sits inside a comment, or a
+  // comment that sits inside a fence, still does nothing.
+  const inert = {
+    markerInFenceInComment: ['<!--', '```', IGNORE_START, '```', '-->'].join('\n') + `\n\n${SPECIMEN}`,
+    markerInFenceAfterComment: ['```', '<!-- note -->', IGNORE_START, '```'].join('\n') + `\n\n${SPECIMEN}`,
+    markerInPreInComment: ['<!-- <pre> -->', '<pre>', IGNORE_START, '</pre>'].join('\n') + `\n\n${SPECIMEN}`,
+  };
+  for (const [name, source] of Object.entries(inert)) {
+    const i = AIDetector.analyzeText(source);
+    assert.equal(i.stats.ignoredRegions, 0, name);
+    assert.ok(i.issues.some((x) => x.text === 'delve'), `${name}: prose must still score`);
+  }
+  // A real marker after a closed container still works.
+  const later = ['<pre>', IGNORE_START, '</pre>', '', 'The team met on Tuesday to agree next steps.', IGNORE_START, SPECIMEN, IGNORE_END].join('\n');
+  const r = AIDetector.analyzeText(later);
+  assert.equal(r.stats.ignoredRegions, 1);
+  assert.ok(!r.issues.some((i) => i.text === 'delve'));
+});
+
+test('ignore markers: the marker scan stays linear on adversarial input', () => {
+  const ordinary = 'one two three four five six seven eight nine ten';
+  const shapes = {
+    backticks: (k) => `${'` `` '.repeat(k)}\n${IGNORE_START}\n${ordinary}`,
+    comments: (k) => `${'<!-- x --> '.repeat(k)}\n${IGNORE_START}\n${ordinary}`,
+    unclosedTags: (k) => `${IGNORE_START}\n${ordinary}\n${IGNORE_END}\n${'<pr <cod '.repeat(k)}`,
+    fences: (k) => `${IGNORE_START}\n${'```\nx\n```\n'.repeat(k)}${IGNORE_END}\n${ordinary}`,
+  };
+  for (const [name, build] of Object.entries(shapes)) {
+    const { small, large } = timeScaling(build, 1500);
+    assert.ok(large < small * 8, `${name}: 4x input took ${(large / small).toFixed(1)}x time (${small.toFixed(1)}ms vs ${large.toFixed(1)}ms)`);
+  }
+});
+
+test('ignore markers: a long line mixing code spans and <code> stays linear', () => {
+  // Round-5 review: rebuilding the backtick table after each <code> element
+  // made this shape quadratic (116 KB took about 2 s).
+  const build = (k) => `${IGNORE_START}\nThe team met on Tuesday.\n${IGNORE_END}\n${'`x` <code>y</code> '.repeat(k)}`;
+  const { small, large } = timeScaling(build, 1500);
+  assert.ok(large < small * 6, `4x input took ${(large / small).toFixed(1)}x time (${small.toFixed(1)}ms vs ${large.toFixed(1)}ms)`);
+  const big = build(Math.ceil(116000 / '`x` <code>y</code> '.length));
+  assert.ok(big.length >= 116000);
+  const started = performance.now();
+  const r = AIDetector.analyzeText(big);
+  const elapsed = performance.now() - started;
+  assert.equal(r.stats.ignoredRegions, 1);
+  assert.ok(elapsed < 500, `116 KB mixed line took ${elapsed.toFixed(0)}ms`);
+});
+
+test('ignore markers: an unclosed start runs to the end of the text', () => {
+  const source = `The team met on Tuesday and agreed the next steps for the release.\n\n   <!-- AVOID-AI-WRITING:IGNORE-START -->  \n${SPECIMEN}`;
+  const r = AIDetector.analyzeText(source);
+  assert.equal(r.stats.ignoredRegions, 1);
+  assert.deepEqual(r.issues, []);
+});
+
+test('word joiners: U+2060 around URLs is stripped without a bypass flag', () => {
+  const wj = '\u2060';
+  const text = `Listen at ${wj}https://example.com/ep75${wj} or on ${wj}https://podcasts.example.com/show${wj} and share it with a friend who likes long interviews.`;
+  const r = AIDetector.analyzeText(text);
+  assert.equal(r.stats.normalization.zeroWidth, 0);
+  assert.ok(!r.issues.some((i) => i.type === 'normalization-flag'), JSON.stringify(r.issues));
+  assert.notEqual(r.document_classification, 'AI_ONLY');
+  assert.ok(!AIDetector.normalizeText(text).text.includes(wj), 'word joiners are still stripped');
+});
+
+test('word joiners: U+2060 inside a word still counts as a bypass character', () => {
+  const wj = '\u2060';
+  for (const [word, count] of [[`del${wj}ve`, 1], [`del${wj}${wj}ve`, 2], [`del${wj}\u200Bve`, 2]]) {
+    const r = AIDetector.analyzeText(`We must ${word} into this now and then talk it over with the rest of the team next week.`);
+    assert.equal(r.stats.normalization.zeroWidth, count, word);
+    assert.ok(r.issues.some((i) => i.type === 'normalization-flag'), word);
+    assert.ok(r.issues.some((i) => i.type === 'tier1' && i.text === 'delve'), word);
+  }
+});
+
+test('word joiners: astral letters on both sides count as a bypass character', () => {
+  const word = '\u{10400}\u2060\u{10428}';
+  assert.equal(AIDetector.normalizeText(word).flags.zeroWidth, 1);
+  const result = AIDetector.analyzeText(`We read ${word} and then met the team to discuss the plan at length.`);
+  assert.equal(result.stats.normalization.zeroWidth, 1);
+  assert.ok(result.issues.some((issue) => issue.type === 'normalization-flag'));
+});
+
 test('dev-blog-boilerplate: simplicity slogans fire', () => {
   const r = AIDetector.analyzeText(
     "The framework ships with sane defaults, and honestly it just works out of the box from the first install. The whole API is small enough to fit in your head after one afternoon of reading."

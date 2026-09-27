@@ -6,14 +6,14 @@ the skill, decide here whether it's regex-detectable (give it a detector `type`)
 or LLM-only judgment (mark it so). When you add a detector `type`, point it back
 at the skill section it enforces.
 
-The engine exposes 53 issue `type`s (see `TYPE_LABELS` in `patterns.js`). The
+The engine exposes 54 issue `type`s (see `TYPE_LABELS` in `patterns.js`). The
 skill has more `###` sections than that — the gap is **not** missing coverage,
 it's rules that are judgment calls a regex can't make. The three groups below
 account for every entry on both sides.
 
 Three counts coexist on purpose and should not be forced to match: the README's
 **pattern-category count** (the human-facing prose catalog, derived from references/patterns.md
-and guarded in CI), the engine's **53 `type`s** (which split the vocabulary tiers
+and guarded in CI), the engine's **54 `type`s** (which split the vocabulary tiers
 and add stylometric signals), and references/patterns.md's `###` sections (which also include
 writer-side tests with no detectable form). The
 `categories.test.js` enforces the engine ↔ this-file mapping, and checks every
@@ -67,6 +67,7 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 | `fake-casual-prop` | Fake-casual prop | Fake-casual register *(six asterisk stage directions and the four (yes\|no) x (really\|seriously) parentheticals, nothing else. "chef's kiss" requires its apostrophe, and neighbours like "*checks calendar*" and "(yes, honestly)" are disclosed misses. Verdict closers, label-prefix openers, the self-QA volley and "because of course it does" stay LLM-judgment)* |
 | `performed-insight` | Performed-insight phrase | Performed-insight phrases — *partial; literal-sense exclusions documented in references/patterns.md* |
 | `negation-chain` | Negation chain | Negation chains — *partial; three-item deterministic threshold documented in references/patterns.md* |
+| `negative-parallelism` | Negative parallelism | Sentence structure: "It's not X — it's Y" — *partial: the joined frame needs a restated "it / this / that / they" + be after a comma, semicolon, colon, or dash. "isn't just / merely / simply X, it's Y" flags alone; the plain "isn't X, it's Y", "isn't about X, it's about Y", and "isn't only X, it's Y" frames and the split-sentence "isn't just X. It's Y." flag only when another frame starts within three sentences (the same sentence, the next, or the one after) in the same paragraph, so one correction per piece passes and unrelated corrections far apart stay clean. "not only X but Y" and "not X but Y" are ordinary correlatives and stay LLM-judgment, as do the multi-negation countdown and the tailing negation* |
 | `dev-blog-boilerplate` | Dev-blog boilerplate | Dev-blog boilerplate — *partial; literal-sense exclusion documented in references/patterns.md* |
 
 > **Partial map:** `smart-punct-signature` fires only when curly quotes co-occur
@@ -80,6 +81,8 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 > surface forms remain judgment rules rather than deterministic matches.
 > `negation-chain` requires three short sentence-initial "no …" items; two-item
 > chains remain judgment calls.
+> `negative-parallelism` flags a plain contrast only with a second frame within
+> three sentences; a single "It isn't raining, it's snowing." stays clean.
 
 ## B. Detector-only (stylometric / fingerprint — no skill prose)
 
@@ -108,7 +111,7 @@ mistake their absence for a coverage gap:
 - Copula avoidance
 - Promotional language
 - Context-dependent `actually` as a hollow intensifier *(delete it when it only adds emphasis; keep it when it carries a named correction or expectation gap). The same token performs both jobs, so matching it unconditionally would flag ordinary corrective prose.*
-- Sentence structure: "It's not X — it's Y" / split-sentence form / multi-negation countdown / tailing negation
+- Sentence structure: split-sentence negation without a minimizer ("The headline isn't the speed. The real story is Y.") / multi-negation countdown / tailing negation / "not only X but Y" and "not X but Y" correlatives *(the joined "It's not X, it's Y" frame is `negative-parallelism` in §A)*
 - Structural issues / Excessive structure / Inline-header lists / Numbered list inflation
 - Moral-adjective category errors (including ontological slop on assumptions, gratuitous universal quantifiers)
 - Invented contrast-pair mirroring

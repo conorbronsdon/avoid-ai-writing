@@ -81,19 +81,41 @@ const AIDetector = (() => {
   const ROLEPLAY_VERBS_RE = /^(?:nods|sighs|laughs|smiles|frowns|shrugs|grins|winks|chuckles|gasps|pauses|thinks|wonders|whispers|shouts|gestures|raises|leans|turns|looks|glances|smirks|blinks|nodding|sighing|laughing|smiling|thinking|gesturing)\b/i;
   const ROLEPLAY_MARKER_RE = /(?<!\*)\*([^*\n]{1,80}?)\*(?!\*)/gu;
 
+  // A word joiner (U+2060) only counts as a bypass character when it splits a
+  // word: letters on both sides, the shape a humanizer uses to break "delve"
+  // apart. Show-notes and CMS editors insert word joiners next to URLs and
+  // punctuation to control line breaking (#351); those are still stripped so
+  // matching sees clean text, but they are typesetting, not AI evidence.
+  // Neighbours are read past a short adjacent zero-width run, so a doubled
+  // joiner inside a word still counts. The bound keeps a long run linear.
+  const LETTER_END_RE = /\p{L}$/u;
+  const LETTER_START_RE = /^\p{L}/u;
+  const MAX_ZERO_WIDTH_SKIP = 8;
+  function countsAsBypass(chars, i) {
+    if (chars[i] !== '\u2060') return true;
+    let before = i - 1;
+    while (before >= 0 && i - before <= MAX_ZERO_WIDTH_SKIP && ZERO_WIDTH_RE.test(chars[before])) before -= 1;
+    let after = i + 1;
+    while (after < chars.length && after - i <= MAX_ZERO_WIDTH_SKIP && ZERO_WIDTH_RE.test(chars[after])) after += 1;
+    // A two-unit slice lets the Unicode regex see a supplementary-plane letter.
+    return LETTER_END_RE.test(chars.slice(Math.max(0, before - 1), before + 1))
+      && LETTER_START_RE.test(chars.slice(after, after + 2));
+  }
+
   function normalizeText(text, sourceMap) {
     const flags = { zeroWidth: 0, homoglyph: 0, roleplay: 0 };
     let out = text;
     let map = Array.isArray(sourceMap) ? sourceMap : null;
 
     // 1. Strip zero-width chars (ZWSP U+200B, ZWNJ U+200C, ZWJ U+200D,
-    //    BOM U+FEFF, word joiner U+2060).
+    //    BOM U+FEFF, word joiner U+2060). Word joiners outside a word are
+    //    stripped without being counted; see countsAsBypass.
     if (map) {
       const chars = [];
       const nextMap = [];
       for (let i = 0; i < out.length; i += 1) {
         if (ZERO_WIDTH_RE.test(out[i])) {
-          flags.zeroWidth += 1;
+          if (countsAsBypass(out, i)) flags.zeroWidth += 1;
           continue;
         }
         chars.push(out[i]);
@@ -102,8 +124,8 @@ const AIDetector = (() => {
       out = chars.join('');
       map = nextMap;
     } else {
-      out = out.replace(ZERO_WIDTH_GLOBAL_RE, () => {
-        flags.zeroWidth += 1;
+      out = out.replace(ZERO_WIDTH_GLOBAL_RE, (_, offset, whole) => {
+        if (countsAsBypass(whole, offset)) flags.zeroWidth += 1;
         return '';
       });
     }
@@ -462,6 +484,10 @@ const AIDetector = (() => {
     'performed-insight': 3,
     // Negation chains are a strong single-hit structural tell.
     'negation-chain': 5,
+    // Negative parallelism ("It's not just X, it's Y"). The frame is also
+    // how people state a real correction, so it is weighted below the
+    // negation chain; the per-piece gate in analyzeText does the rest.
+    'negative-parallelism': 4,
     'dev-blog-boilerplate': 3,
     'formulaic-opener': 8,
     // Speculative scenario opener ("Imagine a world where…"). Weighted like
@@ -961,6 +987,86 @@ const AIDetector = (() => {
     /\b(?:do\s+not|don['\u2019]t)\s+(?:just\s+)?(\w+)\s+it\b[^.!?\n]{0,60}[.!?;:,][\s'"\u201d\u2019]*(?:just\s+)?\1\s+it\b/gi,
   ];
 
+  // ─── Negative parallelism ──────────────────────────────────────────
+  // "It's not just a search index, it's a foundation for trust." A frame is
+  // a negated copula, a body X, then a restatement: "it / this / that /
+  // they" + be. The engine splits frames in two (#351):
+  //
+  //   reveal    a minimizer (just / merely / simply), then a comma,
+  //             semicolon, colon, or dash and the restatement ("isn't just
+  //             raining, it's pouring"). The minimizer-then-upgrade move is
+  //             the tell itself, so a reveal flags on its own.
+  //   contrast  the same joined frame without the minimizer ("isn't X, it's
+  //             Y", "isn't about X, it's about Y", "are not only X, they're
+  //             Y") and the split-sentence reveal ("isn't just X. It's Y.").
+  //             A single plain correction ("It isn't raining, it's
+  //             snowing.") is ordinary English, and references/patterns.md
+  //             allows one frame per piece, so a contrast flags only when
+  //             another frame of either kind starts within
+  //             NP_WINDOW_SENTENCES sentences of it. The stacked cadence is
+  //             the tell; two unrelated corrections paragraphs apart are
+  //             ordinary prose. "only" is not a reveal minimizer: the human
+  //             control corpus holds "fossil fuels are not only bad for our
+  //             environment, they're a losing bet".
+  //
+  // The restated pronoun is the gate. "not only X but (also) Y" and "not X
+  // but Y" are ordinary correlatives and are not matched: on the human
+  // control corpus "not only ... but" appeared 16 times in 143k human words
+  // against 5 in 115k machine words. X is capped at 80 characters with no
+  // comma or sentence punctuation, so a frame cannot reach across clauses.
+  const NP_NEG = "(?:\\b(?:is|are|was|were)(?:n['\\u2019]t|\\s+not)|\\b(?:it|this|that|they|he|she|we|you)['\\u2019](?:s|re)\\s+not)";
+  const NP_MINIMIZER = "(?:just|merely|simply)";
+  const NP_BODY = "[^,;:.!?\\n\\u2014\\u2013]{1,80}?";
+  const NP_JOIN = "(?:\\s*[,;:]|\\s*[\\u2014\\u2013]|\\s+--)\\s*";
+  const NP_RESTATE = "(?:it|this|that|they)(?:['\\u2019](?:s|re)|\\s+(?:is|are|was|were))\\b";
+  const NEGATIVE_PARALLELISM_REVEAL = [
+    new RegExp(NP_NEG + "\\s+" + NP_MINIMIZER + "\\s+" + NP_BODY + NP_JOIN + NP_RESTATE, 'gi'),
+  ];
+  const NEGATIVE_PARALLELISM_CONTRAST = [
+    new RegExp(NP_NEG + "\\s+(?!" + NP_MINIMIZER + "\\b)" + NP_BODY + NP_JOIN + NP_RESTATE, 'gi'),
+    // Split-sentence reveal: the restatement opens the next sentence.
+    new RegExp(NP_NEG + "\\s+" + NP_MINIMIZER + "\\s+" + NP_BODY + "[.!]\\s+" + NP_RESTATE, 'gi'),
+  ];
+  // Two frames pair when their starting sentences are at most this many
+  // sentences apart: the same sentence, the next, or the one after.
+  const NP_WINDOW_SENTENCES = 2;
+  // A blank line in LF, CRLF, or CR-only text.
+  const NP_PARAGRAPH_BREAK = /(?:\r\n|\r(?!\n)|\n)[ \t]*(?:\r\n|\r|\n)/;
+
+  // Reveals always flag. A contrast flags only when some other frame, reveal
+  // or contrast, starts nearby. Sentence indexes come from the same coarse
+  // splitter the highlight regions use.
+  function negativeParallelismIssues(text, reveals, contrasts) {
+    // Apply the proximity gate to the same distinct frames the caller reports.
+    const distinctReveals = deduplicateIssues(reveals);
+    const distinctContrasts = deduplicateIssues(contrasts);
+    if (distinctContrasts.length === 0 || distinctReveals.length + distinctContrasts.length < 2) return distinctReveals;
+    const frames = [...distinctReveals, ...distinctContrasts];
+    const starts = splitSentenceSpans(text).map(([start]) => start);
+    const sentenceOf = (index) => {
+      let lo = 0;
+      let hi = starts.length - 1;
+      while (lo < hi) {
+        const mid = (lo + hi + 1) >> 1;
+        if (starts[mid] <= index) lo = mid;
+        else hi = mid - 1;
+      }
+      return lo;
+    };
+    const sentences = frames.map((frame) => sentenceOf(frame.index));
+    // Paired frames must also share a paragraph: no blank line between them.
+    const sameParagraph = (a, b) => !NP_PARAGRAPH_BREAK.test(text.slice(Math.min(a, b), Math.max(a, b)));
+    const paired = distinctContrasts.filter((contrast, c) => {
+      const i = distinctReveals.length + c;
+      return sentences.some((other, j) =>
+        j !== i
+        && frames[j].index !== contrast.index
+        && Math.abs(other - sentences[i]) <= NP_WINDOW_SENTENCES
+        && sameParagraph(frames[j].index, contrast.index));
+    });
+    return [...distinctReveals, ...paired].sort((a, b) => a.index - b.index);
+  }
+
   // ─── Dev-blog boilerplate ──────────────────────────────────────────
   // Stock simplicity slogans from developer marketing. Adapted from
   // Simon Willison's LLM cliché highlighter.
@@ -1270,6 +1376,191 @@ const AIDetector = (() => {
     const maskedHtmlComments = maskHtmlCommentsOutsideCode(chars);
 
     return { text: chars.join(''), maskedFrontmatter, maskedHtmlComments };
+  }
+
+  // Ignore regions (#351): an author can exclude a passage from scoring, such
+  // as a specimen of AI prose quoted on purpose, by wrapping it in
+  //   <!-- avoid-ai-writing:ignore-start --> … <!-- avoid-ai-writing:ignore-end -->
+  // A marker counts only as a whole line: the full comment, at most three
+  // spaces of indent, nothing else on the line. Starts nest: each start needs
+  // its own end, and the region runs from the outermost start to its matching
+  // end. An unclosed start runs to the end of the text; an end with no open
+  // start is ignored. The region is blanked in place, so offsets still
+  // address the source.
+  //
+  // Markers are found by ONE left-to-right scan rather than a stack of masks,
+  // because separate masks disagree about who owns overlapping text: a fence
+  // inside a comment would swallow the comment's `-->`, and a `<pre>` inside
+  // a comment would open a container. After skipping initial YAML
+  // frontmatter, the scan recognizes, in order of appearance, an HTML
+  // comment, a Markdown fence, a top-level indented code line, an inline code
+  // span, and an HTML <pre>, <code>, <script>, or <style> element. Whichever
+  // construct opens first owns the text until its own close, so a marker, a
+  // fence, a tag, or a comment inside another construct is inert. Anything
+  // unclosed runs to the end of the text: when in doubt, the marker does
+  // nothing and the prose stays scored. Every character is visited a bounded
+  // number of times.
+  const IGNORE_MARKER_LINE_RE = /^ {0,3}<!--[ \t]*avoid-ai-writing:ignore-(start|end)[ \t]*-->[ \t]*$/i;
+  const MARKER_FENCE_RE = /^ {0,3}(`{3,}|~{3,})(.*)$/;
+  const HTML_CODE_OPEN_RE = /<(pre|code|script|style)\b[^>]*>/iy;
+  const HTML_CODE_CLOSE_RE = {
+    pre: /<\/pre/gi,
+    code: /<\/code/gi,
+    script: /<\/script/gi,
+    style: /<\/style/gi,
+  };
+
+  function findIgnoreMarkers(text) {
+    const n = text.length;
+    const markers = [];
+    const lineEndAt = (from) => {
+      let i = from;
+      while (i < n && text[i] !== '\n' && text[i] !== '\r') i += 1;
+      return i;
+    };
+    const nextLineAt = (end) => (text[end] === '\r' && text[end + 1] === '\n' ? end + 2 : end + 1);
+    const isLineStart = (i) => i === 0 || text[i - 1] === '\n' || (text[i - 1] === '\r' && text[i] !== '\n');
+
+    // Backtick runs in [from, to), keyed by start, each with the end of the
+    // next run of the same length on the line (-1 when unmatched). Built at
+    // most once per line segment and never rebuilt after a comment or HTML
+    // element closes mid-line: rebuilding made a long line that alternates
+    // code spans and <code> elements quadratic. Runs inside a construct the
+    // scan jumps over are simply never visited.
+    const backtickRuns = (from, to) => {
+      const list = [];
+      for (let i = from; i < to;) {
+        if (text[i] !== '`') { i += 1; continue; }
+        const start = i;
+        while (i < to && text[i] === '`') i += 1;
+        list.push({ start, end: i, length: i - start, closeEnd: -1 });
+      }
+      const nextByLength = new Map();
+      for (let i = list.length - 1; i >= 0; i -= 1) {
+        const next = nextByLength.get(list[i].length);
+        if (next) list[i].closeEnd = next.end;
+        nextByLength.set(list[i].length, list[i]);
+      }
+      return new Map(list.map((run) => [run.start, run]));
+    };
+
+    let pos = 0;
+    const frontmatter = initialFrontmatterRange(text);
+    if (frontmatter) pos = frontmatter.end;
+
+    let lineEnd = -1;
+    let runs = null;
+    let prevBlank = true;
+    let inIndented = false;
+    let listContext = false;
+
+    while (pos < n) {
+      if (pos > lineEnd) {
+        // Entering a new line, or resuming mid-line after a construct that
+        // spanned lines. Only a true line start gets the line-level checks.
+        lineEnd = lineEndAt(pos);
+        runs = null;
+        if (isLineStart(pos)) {
+          const line = text.slice(pos, lineEnd);
+          const blank = line.trim() === '';
+          const fence = MARKER_FENCE_RE.exec(line);
+          if (fence && !(fence[1][0] === '`' && fence[2].includes('`'))) {
+            let close = n;
+            for (let scan = nextLineAt(lineEnd); scan < n;) {
+              const end = lineEndAt(scan);
+              const closing = MARKER_FENCE_RE.exec(text.slice(scan, end));
+              if (
+                closing
+                && closing[1][0] === fence[1][0]
+                && closing[1].length >= fence[1].length
+                && closing[2].trim() === ''
+              ) {
+                close = end;
+                break;
+              }
+              scan = nextLineAt(end);
+            }
+            pos = close;
+            prevBlank = false;
+            inIndented = false;
+            continue;
+          }
+          const indented = !blank && /^(?: {4}|\t)/.test(line);
+          if (indented && (inIndented || (prevBlank && !listContext))) {
+            inIndented = true;
+            prevBlank = false;
+            pos = lineEnd;
+            continue;
+          }
+          if (!blank) {
+            inIndented = false;
+            if (/^ {0,3}(?:[-*+]|\d{1,9}[.)])(?:\s|$)/.test(line)) listContext = true;
+            else if (/^\S/.test(line)) listContext = false;
+          }
+          prevBlank = blank;
+          const marker = IGNORE_MARKER_LINE_RE.exec(line);
+          if (marker) {
+            markers.push({ kind: marker[1].toLowerCase(), start: pos, end: lineEnd });
+            pos = lineEnd;
+            continue;
+          }
+        }
+      }
+
+      const ch = text[pos];
+      if (ch === '<') {
+        if (text.startsWith('<!--', pos)) {
+          const close = text.indexOf('-->', pos + 4);
+          pos = close === -1 ? n : close + 3;
+          continue;
+        }
+        HTML_CODE_OPEN_RE.lastIndex = pos;
+        const open = HTML_CODE_OPEN_RE.exec(text);
+        if (open) {
+          const closeRe = HTML_CODE_CLOSE_RE[open[1].toLowerCase()];
+          closeRe.lastIndex = pos + open[0].length;
+          const close = closeRe.exec(text);
+          pos = close === null ? n : close.index;
+          continue;
+        }
+      } else if (ch === '`') {
+        if (!runs) runs = backtickRuns(pos, lineEnd);
+        const run = runs.get(pos);
+        if (run && run.closeEnd !== -1) {
+          pos = run.closeEnd;
+          continue;
+        }
+        pos += run ? run.length : 1;
+        continue;
+      }
+      pos += 1;
+    }
+    return markers;
+  }
+
+  function maskIgnoreRegions(text) {
+    if (!/avoid-ai-writing:ignore-/i.test(text)) return { text, ignoredRegions: 0 };
+    const chars = text.split('');
+    let ignoredRegions = 0;
+    let depth = 0;
+    let openAt = -1;
+    for (const marker of findIgnoreMarkers(text)) {
+      if (marker.kind === 'start') {
+        if (depth === 0) openAt = marker.start;
+        depth += 1;
+      } else if (depth > 0) {
+        depth -= 1;
+        if (depth === 0) {
+          blankRange(chars, openAt, marker.end);
+          ignoredRegions += 1;
+        }
+      }
+    }
+    if (depth > 0) {
+      blankRange(chars, openAt, chars.length);
+      ignoredRegions += 1;
+    }
+    return { text: chars.join(''), ignoredRegions };
   }
 
   // Blank the content of double-quoted spans and keep the quote marks, so
@@ -1817,6 +2108,14 @@ const AIDetector = (() => {
     const sourceModeFallback = requestedSourceMode !== sourceMode ? requestedSourceMode : undefined;
     let maskedFrontmatter = 0;
     let maskedHtmlComments = 0;
+
+    // Author-marked ignore regions go first, in every source mode, so no
+    // later pass sees the excluded passage. Masking keeps the length, so the
+    // source map needs no update.
+    const ignored = maskIgnoreRegions(text);
+    text = ignored.text;
+    const { ignoredRegions } = ignored;
+
     if (sourceMode === 'rendered-markdown') {
       const rendered = maskRenderedMarkdown(text);
       text = rendered.text;
@@ -1877,7 +2176,7 @@ const AIDetector = (() => {
         score: 0,
         label: 'Unsupported script',
         issues: [],
-        stats: { wordCount, cjkChars, reason: 'unsegmented-script document: no inter-word spaces to count', contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments, quotedLines, maskedQuotes },
+        stats: { wordCount, cjkChars, reason: 'unsegmented-script document: no inter-word spaces to count', contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments, ignoredRegions, quotedLines, maskedQuotes },
         unsupportedScript: true,
       };
     }
@@ -1887,7 +2186,7 @@ const AIDetector = (() => {
         score: 0,
         label: 'Too short',
         issues: [],
-        stats: { wordCount, contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments, quotedLines, maskedQuotes },
+        stats: { wordCount, contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments, ignoredRegions, quotedLines, maskedQuotes },
         tooShort: true,
       };
     }
@@ -1897,7 +2196,7 @@ const AIDetector = (() => {
         score: 0,
         label: 'Text too long',
         issues: [],
-        stats: { wordCount, contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments, quotedLines, maskedQuotes },
+        stats: { wordCount, contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments, ignoredRegions, quotedLines, maskedQuotes },
         tooLong: true,
       };
     }
@@ -2030,6 +2329,12 @@ const AIDetector = (() => {
     const stagedDiscoveryIssues = matchPatterns(text, STAGED_DISCOVERY, 'performed-insight', 'medium');
     issues.push(...stagedDiscoveryIssues);
     issues.push(...matchPatterns(text, NEGATION_CHAIN, 'negation-chain', 'high'));
+    // Reveals flag alone; contrasts need a nearby frame. See NEGATIVE_PARALLELISM_*.
+    issues.push(...negativeParallelismIssues(
+      text,
+      matchPatterns(text, NEGATIVE_PARALLELISM_REVEAL, 'negative-parallelism', 'high'),
+      matchPatterns(text, NEGATIVE_PARALLELISM_CONTRAST, 'negative-parallelism', 'high'),
+    ));
     issues.push(...matchPatterns(text, DEV_BLOG_BOILERPLATE, 'dev-blog-boilerplate', 'medium'));
     issues.push(...findUnnecessaryHyphenation(text));
 
@@ -2668,6 +2973,7 @@ const AIDetector = (() => {
         sourceModeFallback,
         maskedFrontmatter,
         maskedHtmlComments,
+        ignoredRegions,
         normalization: norm.flags,
         quotedLines,
         maskedQuotes,
@@ -3024,6 +3330,7 @@ const AIDetector = (() => {
     'unnecessary-hyphenation': 'Unnecessary hyphenation',
     'performed-insight': 'Performed-insight phrase',
     'negation-chain': 'Negation chain',
+    'negative-parallelism': 'Negative parallelism',
     'dev-blog-boilerplate': 'Dev-blog boilerplate',
   };
 

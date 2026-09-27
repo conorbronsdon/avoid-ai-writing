@@ -251,7 +251,7 @@ Trigger detect mode with: "detect," "flag only," "audit only," "just flag," "sca
 
 ## Pattern reference
 
-> Representative examples from the catalog — not the exhaustive list (that's [`references/patterns.md`](./references/patterns.md)). The skill's human-facing prose catalog and the [detector engine](./detector/) use **different counts on purpose**: the engine implements 53 `type` categories because it splits the vocabulary tiers and adds stylometric/fingerprint signals (punctuation distribution, function-word entropy, bypass-trick detection) that work as math over a document rather than as a rule you'd look up. The two are mapped in [`detector/CATEGORIES.md`](./detector/CATEGORIES.md); don't "fix" one count to match the other.
+> Representative examples from the catalog — not the exhaustive list (that's [`references/patterns.md`](./references/patterns.md)). The skill's human-facing prose catalog and the [detector engine](./detector/) use **different counts on purpose**: the engine implements 54 `type` categories because it splits the vocabulary tiers and adds stylometric/fingerprint signals (punctuation distribution, function-word entropy, bypass-trick detection) that work as math over a document rather than as a rule you'd look up. The two are mapped in [`detector/CATEGORIES.md`](./detector/CATEGORIES.md); don't "fix" one count to match the other.
 
 ### Content Patterns
 
@@ -561,6 +561,25 @@ When the input is a Markdown source file, pass
 `{ sourceMode: "rendered-markdown" }` to exclude initial YAML frontmatter and
 HTML comments from the score while keeping issue offsets aligned with the
 original file. Plain-text behavior remains the default.
+
+To keep a passage out of the score, such as a specimen of AI prose a page
+quotes on purpose, wrap it in ignore markers. They work in every source mode
+and in HTML source:
+
+```html
+<!-- avoid-ai-writing:ignore-start -->
+It's not just a search index, it's a foundation for trust.
+<!-- avoid-ai-writing:ignore-end -->
+```
+
+Each marker must sit on a line of its own. The markers and the text between
+them are blanked before scoring, and `stats.ignoredRegions` counts the regions.
+Markers inside code blocks, HTML `<pre>` or `<code>` elements, YAML
+frontmatter, inline prose, or quotations do nothing. Starts
+nest, so each needs its own end, and a start with no end runs to the end of the
+text. The
+detector reads source text, not rendered HTML, so an HTML-to-text step that
+drops comments also drops the markers.
 
 See [`detector/README.md`](./detector/README.md) for the full `analyzeText` API
 and [`detector/CATEGORIES.md`](./detector/CATEGORIES.md) for the rule ↔ category
