@@ -107,32 +107,37 @@ const AIDetector = (() => {
     }
 
     // 2. Swap Cyrillic / Greek Latin-lookalike chars back to Latin so
-    //    pattern matching catches obfuscated tokens. When Cyrillic and Greek
-    //    letters together are at least as common as Latin ones, the text is
-    //    written in those scripts: swapping every а, е, о there reported
-    //    thousands of "homoglyph swaps" on plain Russian text. Such text only
-    //    gets its mixed-script words swapped ("pаypal"). Latin-dominant text
-    //    keeps the per-character swap, so a fully substituted word is caught.
-    //    The trade-off: a word spelled entirely in lookalike letters inside
-    //    the Latin part of a Cyrillic-dominant document is left alone. Few
-    //    English words can be spelled that way, and deciding per paragraph
-    //    instead flagged Russian prepositions ("в", "с", "на") by the hundred
-    //    in bilingual technical text.
+    //    pattern matching catches obfuscated tokens. Swapping every а, е, о
+    //    reported thousands of "homoglyph swaps" on plain Russian text, and
+    //    swapping inside ordinary Russian words flagged bilingual technical
+    //    text, so only two word shapes are swapped:
+    //    - mixed-script words ("pаypal", "dеlve"), anywhere;
+    //    - words of two or more letters spelled entirely in lookalike
+    //      letters ("аст" for "act"), inside a Latin-dominant sentence or
+    //      line. Deciding dominance per unit, not per document, keeps
+    //      Russian padding from hiding such a word in an English sentence.
+    //    Ordinary Russian words contain non-lookalike letters (з, п, и, н),
+    //    and one-letter prepositions (с, о, у) are too short, so neither
+    //    is swapped.
+    const lookalikeFor = (m) => CYRILLIC_LOOKALIKES[m] ?? GREEK_LOOKALIKES[m];
     const swapLookalike = (m) => {
-      const swap = CYRILLIC_LOOKALIKES[m] ?? GREEK_LOOKALIKES[m];
+      const swap = lookalikeFor(m);
       if (swap) { flags.homoglyph++; return swap; }
       return m;
     };
-    const lookalikeScriptLetters = (out.match(HOMOGLYPH_GLOBAL_RE) || []).length;
-    const latinLetters = (out.match(LATIN_LETTER_GLOBAL_RE) || []).length;
-    if (lookalikeScriptLetters > 0 && lookalikeScriptLetters >= latinLetters) {
-      out = out.replace(LETTER_RUN_GLOBAL_RE, (word) =>
-        HOMOGLYPH_RE.test(word) && LATIN_LETTER_RE.test(word)
-          ? word.replace(HOMOGLYPH_GLOBAL_RE, swapLookalike)
-          : word);
-    } else {
-      out = out.replace(HOMOGLYPH_GLOBAL_RE, swapLookalike);
-    }
+    const allLookalike = (word) => word.length >= 2 && [...word].every((ch) => lookalikeFor(ch));
+    out = out.replace(/[^.!?\r\n]+/g, (unit) => {
+      const lookalikeScriptLetters = (unit.match(HOMOGLYPH_GLOBAL_RE) || []).length;
+      const latinLetters = (unit.match(LATIN_LETTER_GLOBAL_RE) || []).length;
+      const latinDominant = lookalikeScriptLetters < latinLetters;
+      return unit.replace(LETTER_RUN_GLOBAL_RE, (word) => {
+        if (!HOMOGLYPH_RE.test(word)) return word;
+        if (LATIN_LETTER_RE.test(word) || (latinDominant && allLookalike(word))) {
+          return word.replace(HOMOGLYPH_GLOBAL_RE, swapLookalike);
+        }
+        return word;
+      });
+    });
 
     // 3. Strip *roleplay-action* markers — paired *...* containing an
     //    action verb (nods, sighs, laughs, smiles, etc.) anchored to

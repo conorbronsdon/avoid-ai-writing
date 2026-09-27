@@ -8,10 +8,11 @@ All notable changes to this project are documented here.
 
 ### Fixed
 
-- Cyrillic and Greek prose no longer reads as a homoglyph bypass. The detector swapped every Latin-lookalike letter
-  ("а", "е", "о", "р" and the rest) and counted each swap, so a plain Russian page reported thousands of swaps and a critical
-  `normalization-flag`. When Cyrillic and Greek letters together are at least as common as Latin ones, only words that
-  mix the scripts ("pаypal") are swapped; Latin-dominant text keeps the per-character swap.
+- Cyrillic and Greek prose no longer reads as a homoglyph bypass. The detector decides script dominance per sentence
+  or line, using `.`, `!`, `?`, and newlines as boundaries. When Cyrillic and Greek letters together are at least as
+  common as Latin ones in that unit, only mixed-script words ("pаypal") are swapped. In a Latin-dominant unit, words of
+  two or more letters spelled entirely in lookalike letters ("аст" for "act") are swapped too, so Russian padding cannot
+  hide them. Ordinary Russian words and one-letter prepositions are never swapped.
 
 ### Added
 

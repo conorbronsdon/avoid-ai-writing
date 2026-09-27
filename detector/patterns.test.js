@@ -1417,12 +1417,20 @@ test('v2: Cyrillic homoglyph swap restores Tier 1 hit', () => {
   assert.ok(r.stats.normalization.homoglyph >= 2, `expected >=2 homoglyph swaps, got ${r.stats.normalization.homoglyph}`);
 });
 
+const russianParagraph = 'Мы проверили новый отчёт вместе с командой и нашли три ошибки в расчётах. '
+  + 'Все они касались округления, поэтому исправление заняло меньше часа.';
+const russianPadding = Array(6).fill(russianParagraph).join(' ');
+
 test('Cyrillic-dominant prose reports no homoglyph swaps', () => {
-  const text = 'Мы проверили новый отчёт вместе с командой и нашли три ошибки в расчётах. '
-    + 'Все они касались округления, поэтому исправление заняло меньше часа.';
-  const r = AIDetector.analyzeText(text);
+  const r = AIDetector.analyzeText(russianParagraph);
   assert.equal(r.stats.normalization.homoglyph, 0);
   assert.ok(!r.issues.some((i) => i.type === 'normalization-flag'), 'plain Russian must not look like a bypass tool');
+});
+
+test('Russian padding and one plain English sentence report no homoglyph attack', () => {
+  const r = AIDetector.analyzeText(`${russianPadding} The team reviewed the report today.`);
+  assert.equal(r.stats.normalization.homoglyph, 0);
+  assert.ok(!r.issues.some((i) => i.type === 'normalization-flag'));
 });
 
 test('Greek-dominant prose reports no homoglyph swaps', () => {
@@ -1450,6 +1458,43 @@ test('Latin-dominant text still swaps a fully substituted word', () => {
   const normalized = AIDetector.normalizeText('The team reviewed the report together and found an аре');
   assert.equal(normalized.text, 'The team reviewed the report together and found an ape');
   assert.equal(normalized.flags.homoglyph, 3);
+});
+
+test('fully substituted аст in English is flagged with or without Russian padding', () => {
+  const sentence = 'Your account is at risk. аст now to secure it.';
+  for (const text of [sentence, `${sentence} ${russianPadding}`, `${sentence}\n${russianPadding}`]) {
+    const r = AIDetector.analyzeText(text);
+    assert.equal(r.stats.normalization.homoglyph, 3);
+    assert.ok(r.issues.some((i) => i.type === 'normalization-flag'));
+    assert.equal(r.document_classification, 'AI_ONLY');
+  }
+});
+
+test('fully substituted аст in a single English sentence is swapped', () => {
+  const normalized = AIDetector.normalizeText('аст now to secure it.');
+  assert.equal(normalized.text, 'act now to secure it.');
+  assert.equal(normalized.flags.homoglyph, 3);
+});
+
+test('an ordinary Russian word in an English line is left alone', () => {
+  const text = 'The note uses жизнь to mean life.';
+  const normalized = AIDetector.normalizeText(text);
+  assert.equal(normalized.text, text);
+  assert.equal(normalized.flags.homoglyph, 0);
+  assert.ok(!AIDetector.analyzeText(text).issues.some((i) => i.type === 'normalization-flag'));
+});
+
+test('bilingual technical sentences keep Russian words and one-letter prepositions intact', () => {
+  const text = 'Запустите docker compose up с флагом build and then watch the container logs closely.';
+  const normalized = AIDetector.normalizeText(text);
+  assert.equal(normalized.text, text);
+  assert.equal(normalized.flags.homoglyph, 0);
+});
+
+test('equal Latin and Cyrillic counts keep the Cyrillic-dominant tie rule', () => {
+  const normalized = AIDetector.normalizeText('а a');
+  assert.equal(normalized.text, 'а a');
+  assert.equal(normalized.flags.homoglyph, 0);
 });
 
 test('v2: formulaic opener fires', () => {
