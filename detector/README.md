@@ -163,6 +163,13 @@ Comment contents are fully excluded in rendered mode. Use plain mode or a
 source-hygiene linter when TODO placeholders inside comments should still be
 reported.
 
+In both source modes, `<!-- avoid-ai-writing:ignore-start -->` and
+`<!-- avoid-ai-writing:ignore-end -->` exclude everything between them, markers
+included, before any other pass runs. Matching is case-insensitive. Markers
+inside fenced or inline code do nothing, an unclosed start runs to the end of
+the text, and an end with no open start is ignored. Masking preserves offsets,
+and `stats.ignoredRegions` counts the regions.
+
 In both source modes, quoted material does not count against the writer. Every
 Markdown blockquote line (`> `, `>> `, or the compact `>text`) is excluded,
 whether it stands alone or in a block, and `stats.quotedLines` counts them. A

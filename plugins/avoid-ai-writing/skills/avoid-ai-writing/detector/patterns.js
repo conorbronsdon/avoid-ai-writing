@@ -75,19 +75,38 @@ const AIDetector = (() => {
   const ROLEPLAY_VERBS_RE = /^(?:nods|sighs|laughs|smiles|frowns|shrugs|grins|winks|chuckles|gasps|pauses|thinks|wonders|whispers|shouts|gestures|raises|leans|turns|looks|glances|smirks|blinks|nodding|sighing|laughing|smiling|thinking|gesturing)\b/i;
   const ROLEPLAY_MARKER_RE = /(?<!\*)\*([^*\n]{1,80}?)\*(?!\*)/gu;
 
+  // A word joiner (U+2060) only counts as a bypass character when it splits a
+  // word: letters on both sides, the shape a humanizer uses to break "delve"
+  // apart. Show-notes and CMS editors insert word joiners next to URLs and
+  // punctuation to control line breaking (#351); those are still stripped so
+  // matching sees clean text, but they are typesetting, not AI evidence.
+  // Neighbours are read past a short adjacent zero-width run, so a doubled
+  // joiner inside a word still counts. The bound keeps a long run linear.
+  const LETTER_RE = /\p{L}/u;
+  const MAX_ZERO_WIDTH_SKIP = 8;
+  function countsAsBypass(chars, i) {
+    if (chars[i] !== '\u2060') return true;
+    let before = i - 1;
+    while (before >= 0 && i - before <= MAX_ZERO_WIDTH_SKIP && ZERO_WIDTH_RE.test(chars[before])) before -= 1;
+    let after = i + 1;
+    while (after < chars.length && after - i <= MAX_ZERO_WIDTH_SKIP && ZERO_WIDTH_RE.test(chars[after])) after += 1;
+    return LETTER_RE.test(chars[before] ?? '') && LETTER_RE.test(chars[after] ?? '');
+  }
+
   function normalizeText(text, sourceMap) {
     const flags = { zeroWidth: 0, homoglyph: 0, roleplay: 0 };
     let out = text;
     let map = Array.isArray(sourceMap) ? sourceMap : null;
 
     // 1. Strip zero-width chars (ZWSP U+200B, ZWNJ U+200C, ZWJ U+200D,
-    //    BOM U+FEFF, word joiner U+2060).
+    //    BOM U+FEFF, word joiner U+2060). Word joiners outside a word are
+    //    stripped without being counted; see countsAsBypass.
     if (map) {
       const chars = [];
       const nextMap = [];
       for (let i = 0; i < out.length; i += 1) {
         if (ZERO_WIDTH_RE.test(out[i])) {
-          flags.zeroWidth += 1;
+          if (countsAsBypass(out, i)) flags.zeroWidth += 1;
           continue;
         }
         chars.push(out[i]);
@@ -96,8 +115,8 @@ const AIDetector = (() => {
       out = chars.join('');
       map = nextMap;
     } else {
-      out = out.replace(ZERO_WIDTH_GLOBAL_RE, () => {
-        flags.zeroWidth += 1;
+      out = out.replace(ZERO_WIDTH_GLOBAL_RE, (_, offset, whole) => {
+        if (countsAsBypass(whole, offset)) flags.zeroWidth += 1;
         return '';
       });
     }
@@ -409,6 +428,10 @@ const AIDetector = (() => {
     'performed-insight': 3,
     // Negation chains are a strong single-hit structural tell.
     'negation-chain': 5,
+    // Negative parallelism ("It's not just X, it's Y"). The frame is also
+    // how people state a real correction, so it is weighted below the
+    // negation chain; the per-piece gate in analyzeText does the rest.
+    'negative-parallelism': 4,
     'dev-blog-boilerplate': 3,
     'formulaic-opener': 8,
     // Speculative scenario opener ("Imagine a world where…"). Weighted like
@@ -908,6 +931,42 @@ const AIDetector = (() => {
     /\b(?:do\s+not|don['\u2019]t)\s+(?:just\s+)?(\w+)\s+it\b[^.!?\n]{0,60}[.!?;:,][\s'"\u201d\u2019]*(?:just\s+)?\1\s+it\b/gi,
   ];
 
+  // ─── Negative parallelism ──────────────────────────────────────────
+  // "It's not just a search index, it's a foundation for trust." The
+  // sentence-structure rule in references/patterns.md allows one of these
+  // per piece, so the engine splits the joined form in two (#351):
+  //
+  //   reveal    a minimizer (just / merely / simply) after the negated
+  //             copula, then a comma, semicolon, colon, or dash and a
+  //             restated "it / this / that / they" + be. Flags on its own.
+  //   contrast  the same frame without the minimizer ("isn't X, it's Y",
+  //             "isn't about X, it's about Y", "are not only X, they're Y")
+  //             and the split-sentence reveal ("isn't just X. It's Y.").
+  //             Flags only when the piece holds two or more frames of either
+  //             kind, because a single plain correction ("It isn't raining,
+  //             it's snowing.") is ordinary English. "only" stays out of the
+  //             minimizer list: the human control corpus holds "fossil fuels
+  //             are not only bad for our environment, they're a losing bet".
+  //
+  // The restated pronoun is the gate. "not only X but (also) Y" and "not X
+  // but Y" are ordinary correlatives and are not matched: on the human
+  // control corpus "not only ... but" appeared 16 times in 143k human words
+  // against 5 in 115k machine words. X is capped at 80 characters with no
+  // comma or sentence punctuation, so a frame cannot reach across clauses.
+  const NP_NEG = "(?:\\b(?:is|are|was|were)(?:n['\\u2019]t|\\s+not)|\\b(?:it|this|that|they|he|she|we|you)['\\u2019](?:s|re)\\s+not)";
+  const NP_MINIMIZER = "(?:just|merely|simply)";
+  const NP_BODY = "[^,;:.!?\\n\\u2014\\u2013]{1,80}?";
+  const NP_JOIN = "(?:\\s*[,;:]|\\s*[\\u2014\\u2013]|\\s+--)\\s*";
+  const NP_RESTATE = "(?:it|this|that|they)(?:['\\u2019](?:s|re)|\\s+(?:is|are|was|were))\\b";
+  const NEGATIVE_PARALLELISM_REVEAL = [
+    new RegExp(NP_NEG + "\\s+" + NP_MINIMIZER + "\\s+" + NP_BODY + NP_JOIN + NP_RESTATE, 'gi'),
+  ];
+  const NEGATIVE_PARALLELISM_CONTRAST = [
+    new RegExp(NP_NEG + "\\s+(?!" + NP_MINIMIZER + "\\b)" + NP_BODY + NP_JOIN + NP_RESTATE, 'gi'),
+    // Split-sentence reveal: the restatement opens the next sentence.
+    new RegExp(NP_NEG + "\\s+" + NP_MINIMIZER + "\\s+" + NP_BODY + "[.!]\\s+" + NP_RESTATE, 'gi'),
+  ];
+
   // ─── Dev-blog boilerplate ──────────────────────────────────────────
   // Stock simplicity slogans from developer marketing. Adapted from
   // Simon Willison's LLM cliché highlighter.
@@ -1217,6 +1276,39 @@ const AIDetector = (() => {
     const maskedHtmlComments = maskHtmlCommentsOutsideCode(chars);
 
     return { text: chars.join(''), maskedFrontmatter, maskedHtmlComments };
+  }
+
+  // Ignore regions (#351): an author can exclude a passage from scoring, such
+  // as a specimen of AI prose quoted on purpose, by wrapping it in
+  //   <!-- avoid-ai-writing:ignore-start --> … <!-- avoid-ai-writing:ignore-end -->
+  // The markers and everything between them are blanked in place, so offsets
+  // still address the source. Markers inside fenced or inline code are
+  // examples, not instructions, and do nothing. An unclosed start runs to the
+  // end of the text; an end with no open start is ignored.
+  const IGNORE_MARKER_RE = /<!--[ \t]*avoid-ai-writing:ignore-(start|end)[ \t]*-->/gi;
+  function maskIgnoreRegions(text) {
+    if (!/avoid-ai-writing:ignore-/i.test(text)) return { text, ignoredRegions: 0 };
+    const visible = maskCode(text);
+    const chars = text.split('');
+    let ignoredRegions = 0;
+    let openAt = -1;
+    let match;
+    IGNORE_MARKER_RE.lastIndex = 0;
+    while ((match = IGNORE_MARKER_RE.exec(visible)) !== null) {
+      const isStart = match[1].toLowerCase() === 'start';
+      if (isStart && openAt === -1) {
+        openAt = match.index;
+      } else if (!isStart && openAt !== -1) {
+        blankRange(chars, openAt, match.index + match[0].length);
+        ignoredRegions += 1;
+        openAt = -1;
+      }
+    }
+    if (openAt !== -1) {
+      blankRange(chars, openAt, chars.length);
+      ignoredRegions += 1;
+    }
+    return { text: chars.join(''), ignoredRegions };
   }
 
   // Blank the content of double-quoted spans and keep the quote marks, so
@@ -1764,6 +1856,14 @@ const AIDetector = (() => {
     const sourceModeFallback = requestedSourceMode !== sourceMode ? requestedSourceMode : undefined;
     let maskedFrontmatter = 0;
     let maskedHtmlComments = 0;
+
+    // Author-marked ignore regions go first, in every source mode, so no
+    // later pass sees the excluded passage. Masking keeps the length, so the
+    // source map needs no update.
+    const ignored = maskIgnoreRegions(text);
+    text = ignored.text;
+    const { ignoredRegions } = ignored;
+
     if (sourceMode === 'rendered-markdown') {
       const rendered = maskRenderedMarkdown(text);
       text = rendered.text;
@@ -1824,7 +1924,7 @@ const AIDetector = (() => {
         score: 0,
         label: 'Unsupported script',
         issues: [],
-        stats: { wordCount, cjkChars, reason: 'unsegmented-script document: no inter-word spaces to count', contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments, quotedLines, maskedQuotes },
+        stats: { wordCount, cjkChars, reason: 'unsegmented-script document: no inter-word spaces to count', contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments, ignoredRegions, quotedLines, maskedQuotes },
         unsupportedScript: true,
       };
     }
@@ -1834,7 +1934,7 @@ const AIDetector = (() => {
         score: 0,
         label: 'Too short',
         issues: [],
-        stats: { wordCount, contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments, quotedLines, maskedQuotes },
+        stats: { wordCount, contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments, ignoredRegions, quotedLines, maskedQuotes },
         tooShort: true,
       };
     }
@@ -1844,7 +1944,7 @@ const AIDetector = (() => {
         score: 0,
         label: 'Text too long',
         issues: [],
-        stats: { wordCount, contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments, quotedLines, maskedQuotes },
+        stats: { wordCount, contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments, ignoredRegions, quotedLines, maskedQuotes },
         tooLong: true,
       };
     }
@@ -1977,6 +2077,11 @@ const AIDetector = (() => {
     const stagedDiscoveryIssues = matchPatterns(text, STAGED_DISCOVERY, 'performed-insight', 'medium');
     issues.push(...stagedDiscoveryIssues);
     issues.push(...matchPatterns(text, NEGATION_CHAIN, 'negation-chain', 'high'));
+    // One plain contrast frame per piece is allowed; see NEGATIVE_PARALLELISM_*.
+    const npReveals = matchPatterns(text, NEGATIVE_PARALLELISM_REVEAL, 'negative-parallelism', 'high');
+    const npContrasts = matchPatterns(text, NEGATIVE_PARALLELISM_CONTRAST, 'negative-parallelism', 'high');
+    issues.push(...npReveals);
+    if (npReveals.length + npContrasts.length >= 2) issues.push(...npContrasts);
     issues.push(...matchPatterns(text, DEV_BLOG_BOILERPLATE, 'dev-blog-boilerplate', 'medium'));
     issues.push(...findUnnecessaryHyphenation(text));
 
@@ -2615,6 +2720,7 @@ const AIDetector = (() => {
         sourceModeFallback,
         maskedFrontmatter,
         maskedHtmlComments,
+        ignoredRegions,
         normalization: norm.flags,
         quotedLines,
         maskedQuotes,
@@ -2971,6 +3077,7 @@ const AIDetector = (() => {
     'unnecessary-hyphenation': 'Unnecessary hyphenation',
     'performed-insight': 'Performed-insight phrase',
     'negation-chain': 'Negation chain',
+    'negative-parallelism': 'Negative parallelism',
     'dev-blog-boilerplate': 'Dev-blog boilerplate',
   };
 

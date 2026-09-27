@@ -2561,6 +2561,139 @@ test('negation-chain: two-item sentence-initial factual inventories stay clean',
   assert.equal(hits.length, 0, `false positives: ${JSON.stringify(hits.map((i) => i.text))}`);
 });
 
+// ── Issue #351 — negative parallelism, ignore markers, word joiners ────
+
+const npHits = (text, options) => AIDetector.analyzeText(text, options)
+  .issues.filter((i) => i.type === 'negative-parallelism');
+
+test('negative-parallelism: the #351 repro no longer scores Clean', () => {
+  const text = "Our new retrieval layer is fast. It's not just a search index, it's a foundation for trust. The breakthrough was simple: it quietly reshaped how teams actually work.";
+  const r = AIDetector.analyzeText(text);
+  const hits = r.issues.filter((i) => i.type === 'negative-parallelism');
+  assert.deepEqual(hits.map((i) => i.text), ["It's not just a search index, it's"]);
+  assert.equal(text.slice(hits[0].index, hits[0].index + hits[0].text.length), hits[0].text);
+  assert.ok(r.score > 0, `expected a non-zero score, got ${r.score}`);
+  assert.equal(AIDetector.TYPE_LABELS['negative-parallelism'], 'Negative parallelism');
+});
+
+test('negative-parallelism: a minimizer reveal flags on its own across joiners', () => {
+  for (const sentence of [
+    "This isn't just about speed — it's about trust.",
+    'The release was not merely a patch; it was a rewrite.',
+    'It’s not simply a cache: it’s the source of truth.',
+    "These dashboards aren't simply reports -- they're the operating plan.",
+    "The new layer isn't just faster, this is a different way to work.",
+  ]) {
+    const hits = npHits(`${sentence} The team shipped it on Tuesday after a long review.`);
+    assert.equal(hits.length, 1, `${sentence} -> ${JSON.stringify(hits.map((i) => i.text))}`);
+  }
+});
+
+test('negative-parallelism: one plain correction per piece stays clean', () => {
+  for (const text of [
+    "It isn't raining, it's snowing. We waited at the bus stop for twenty minutes before walking home.",
+    "This isn't about money, it's about respect, and the union said so plainly at the meeting.",
+    "The new layer isn't just faster. It's a different way to think about retrieval for every team.",
+    // Pre-LLM human prose from the control corpus (#351): "not only" counts
+    // toward the per-piece gate instead of flagging on its own.
+    'Clean energy is cheaper than ever, and fossil fuels are not only bad for our environment, they’re a losing bet in the long run as well as the short term.',
+  ]) {
+    assert.deepEqual(npHits(text), [], text);
+  }
+});
+
+test('negative-parallelism: a second frame in the piece flags every frame', () => {
+  const plain = npHits("It isn't raining, it's snowing. The problem isn't the bus, it's the schedule. We walked home.");
+  assert.deepEqual(plain.map((i) => i.text), ["isn't raining, it's", "isn't the bus, it's"]);
+  const split = npHits("It's not just a tool, it's a platform. The rollout isn't just fast. It's invisible to users.");
+  assert.equal(split.length, 2, JSON.stringify(split.map((i) => i.text)));
+});
+
+test('negative-parallelism: correlatives and ordinary negations stay clean', () => {
+  for (const text of [
+    'The result is not only faster but also cheaper, which the finance team noticed within a week.',
+    'The problem is not the code but the process, and nobody on the team disputes that anymore.',
+    "It's not just a tool but a whole workflow, according to the vendor's own documentation page.",
+    "It's not just me who noticed the delay; the support queue doubled over the same weekend.",
+    "This isn't just a bug; its effects spread to every downstream service we operate in the region.",
+    "It is not only possible to run it locally but also cheap, since the model fits on one laptop.",
+    "The contract isn't signed yet, and we are still waiting on legal to send the final version.",
+  ]) {
+    assert.deepEqual(npHits(text).map((i) => i.text), [], text);
+  }
+});
+
+test('negative-parallelism: a quoted frame belongs to the speaker', () => {
+  const text = 'The vendor told us, "It\'s not just a tool, it\'s a platform," and then asked for a three-year contract.';
+  assert.deepEqual(npHits(text), []);
+  assert.equal(npHits(text.replace(/"/g, '')).length, 1, 'precondition: unquoted frame fires');
+});
+
+const SPECIMEN = "In today's ever-evolving landscape, we delve into the intricate tapestry of innovation. It's not just a tool, it's a paradigm.";
+
+test('ignore markers: a marked specimen is excluded and the rest is still scored', () => {
+  const source = [
+    'Here is the kind of paragraph we warn readers about on this robust page.',
+    '',
+    '<!-- avoid-ai-writing:ignore-start -->',
+    SPECIMEN,
+    '<!-- avoid-ai-writing:ignore-end -->',
+    '',
+    'The rest of the page explains what each of those phrases hides from a reader.',
+  ].join('\n');
+  for (const sourceMode of ['plain', 'rendered-markdown']) {
+    const r = AIDetector.analyzeText(source, { sourceMode });
+    assert.equal(r.stats.ignoredRegions, 1, sourceMode);
+    assert.deepEqual(r.issues.map((i) => i.text), ['robust'], `${sourceMode}: ${JSON.stringify(r.issues.map((i) => i.text))}`);
+    assertIndexedIssuesSliceExactly(source, r.issues, `ignore ${sourceMode}`);
+    for (const region of r.highlight_sentence_for_ai) {
+      assert.ok(!source.slice(region.start, region.end).includes('tapestry'), `${sourceMode}: highlight reached the ignored region`);
+    }
+  }
+  const unmarked = AIDetector.analyzeText(source.replace(/<!--.*?-->/g, ''));
+  assert.ok(unmarked.issues.some((i) => i.text === 'delve'), 'precondition: the specimen scores without markers');
+});
+
+test('ignore markers: code examples, stray ends, and unclosed starts', () => {
+  const fenced = ['```html', '<!-- avoid-ai-writing:ignore-start -->', '```', '', SPECIMEN, '', '```', '<!-- avoid-ai-writing:ignore-end -->', '```'].join('\n');
+  const fencedResult = AIDetector.analyzeText(fenced);
+  assert.equal(fencedResult.stats.ignoredRegions, 0);
+  assert.ok(fencedResult.issues.some((i) => i.text === 'delve'), 'markers inside fences must not hide prose');
+
+  const inline = `Use \`<!-- avoid-ai-writing:ignore-start -->\` to start a region. ${SPECIMEN}`;
+  assert.equal(AIDetector.analyzeText(inline).stats.ignoredRegions, 0);
+
+  const stray = `<!-- avoid-ai-writing:ignore-end --> ${SPECIMEN}`;
+  const strayResult = AIDetector.analyzeText(stray);
+  assert.equal(strayResult.stats.ignoredRegions, 0);
+  assert.ok(strayResult.issues.some((i) => i.text === 'delve'), 'a stray end must not hide prose');
+
+  const unclosed = `The team met on Tuesday and agreed the next steps for the release.\n\n<!-- AVOID-AI-WRITING:IGNORE-START -->\n${SPECIMEN}`;
+  const unclosedResult = AIDetector.analyzeText(unclosed);
+  assert.equal(unclosedResult.stats.ignoredRegions, 1);
+  assert.deepEqual(unclosedResult.issues, []);
+});
+
+test('word joiners: U+2060 around URLs is stripped without a bypass flag', () => {
+  const wj = '\u2060';
+  const text = `Listen at ${wj}https://example.com/ep75${wj} or on ${wj}https://podcasts.example.com/show${wj} and share it with a friend who likes long interviews.`;
+  const r = AIDetector.analyzeText(text);
+  assert.equal(r.stats.normalization.zeroWidth, 0);
+  assert.ok(!r.issues.some((i) => i.type === 'normalization-flag'), JSON.stringify(r.issues));
+  assert.notEqual(r.document_classification, 'AI_ONLY');
+  assert.ok(!AIDetector.normalizeText(text).text.includes(wj), 'word joiners are still stripped');
+});
+
+test('word joiners: U+2060 inside a word still counts as a bypass character', () => {
+  const wj = '\u2060';
+  for (const [word, count] of [[`del${wj}ve`, 1], [`del${wj}${wj}ve`, 2], [`del${wj}\u200Bve`, 2]]) {
+    const r = AIDetector.analyzeText(`We must ${word} into this now and then talk it over with the rest of the team next week.`);
+    assert.equal(r.stats.normalization.zeroWidth, count, word);
+    assert.ok(r.issues.some((i) => i.type === 'normalization-flag'), word);
+    assert.ok(r.issues.some((i) => i.type === 'tier1' && i.text === 'delve'), word);
+  }
+});
+
 test('dev-blog-boilerplate: simplicity slogans fire', () => {
   const r = AIDetector.analyzeText(
     "The framework ships with sane defaults, and honestly it just works out of the box from the first install. The whole API is small enough to fit in your head after one afternoon of reading."
