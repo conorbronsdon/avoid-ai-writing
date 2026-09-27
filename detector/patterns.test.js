@@ -1494,20 +1494,25 @@ test('two-letter Russian words next to Russian words are not swapped in English 
   }
 });
 
-test('an isolated fully substituted word is swapped across punctuation, hyphen, and apostrophe boundaries', () => {
+test('an isolated fully substituted word is swapped when punctuation separates it', () => {
   const sentence = AIDetector.normalizeText('Your account is at risk. аст. Now secure it immediately through this form before it expires.');
   assert.ok(sentence.text.includes(' act. Now'));
   assert.equal(sentence.flags.homoglyph, 3);
-  for (const [input, expected] of [['Please а-ct now.', 'Please a-ct now.'], ["Please а'ct now.", "Please a'ct now."]]) {
-    const normalized = AIDetector.normalizeText(input);
-    assert.equal(normalized.text, expected);
-    assert.equal(normalized.flags.homoglyph, 1);
-  }
 });
 
-test('a fully substituted word inside a Russian sentence is a documented limit', () => {
-  const text = 'The new service launches tomorrow and the team expects a detailed report. МЕТА поможет нам после проверки.';
-  assert.equal(AIDetector.normalizeText(text).flags.homoglyph, 0);
+test('hyphenated bilingual compounds keep their Russian half', () => {
+  const text = 'Our API-сервис handles deployment requests while the team monitors logs and reviews customer feedback each day.';
+  const normalized = AIDetector.normalizeText(text);
+  assert.equal(normalized.text, text);
+  assert.equal(normalized.flags.homoglyph, 0);
+  assert.notEqual(AIDetector.analyzeText(text).document_classification, 'AI_ONLY');
+});
+
+test('fully substituted words beside Russian words are a documented limit', () => {
+  const inside = 'The new service launches tomorrow and the team expects a detailed report. МЕТА поможет нам после проверки.';
+  assert.equal(AIDetector.normalizeText(inside).flags.homoglyph, 0);
+  const beside = 'Your account is at risk. пароль: аст now to secure it immediately through this form before it expires.';
+  assert.equal(AIDetector.normalizeText(beside).flags.homoglyph, 0);
 });
 
 test('bilingual technical sentences keep Russian words and one-letter prepositions intact', () => {

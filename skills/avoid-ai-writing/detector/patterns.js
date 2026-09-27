@@ -75,9 +75,9 @@ const AIDetector = (() => {
   const HOMOGLYPH_GLOBAL_RE = /[Ѐ-ӿͰ-Ͽ]/gu;
   const LATIN_LETTER_RE = /\p{Script=Latin}/u;
   const LATIN_LETTER_GLOBAL_RE = /\p{Script=Latin}/gu;
-  // Letter runs joined by a hyphen or apostrophe count as one word, so a
-  // lookalike cannot hide as its own one-letter run ("а-ct", "а'ct").
-  const JOINED_WORD_GLOBAL_RE = /[\p{L}\p{M}]+(?:['’-][\p{L}\p{M}]+)*/gu;
+  // Words are letter runs; a hyphen splits them, so "API-сервис" stays two
+  // words and its Russian half is not swapped.
+  const LETTER_RUN_GLOBAL_RE = /[\p{L}\p{M}]+/gu;
   const ROLEPLAY_VERBS_RE = /^(?:nods|sighs|laughs|smiles|frowns|shrugs|grins|winks|chuckles|gasps|pauses|thinks|wonders|whispers|shouts|gestures|raises|leans|turns|looks|glances|smirks|blinks|nodding|sighing|laughing|smiling|thinking|gesturing)\b/i;
   const ROLEPLAY_MARKER_RE = /(?<!\*)\*([^*\n]{1,80}?)\*(?!\*)/gu;
 
@@ -113,8 +113,7 @@ const AIDetector = (() => {
     //    reported thousands of "homoglyph swaps" on plain Russian text, and
     //    swapping inside ordinary Russian words flagged bilingual technical
     //    text, so only two word shapes are swapped:
-    //    - mixed-script words ("pаypal", "dеlve", "а-ct"), anywhere; a hyphen
-    //      or apostrophe does not split a word;
+    //    - mixed-script words ("pаypal", "dеlve"), anywhere;
     //    - words of two or more letters spelled entirely in lookalike
     //      letters ("аст" for "act"), when the sentence or line around them
     //      is not Russian or Greek prose: either Latin letters dominate and
@@ -124,9 +123,13 @@ const AIDetector = (() => {
     //      such a word in an English sentence.
     //    Ordinary Russian words contain non-lookalike letters (з, п, и, н);
     //    short words such as "со" next to other Russian words stay put, and
-    //    one-letter prepositions (с, о, у) are too short. A fully
-    //    substituted word inside a Russian sentence ("МЕТА поможет") is
-    //    left alone: it cannot be told apart from Russian prose.
+    //    one-letter prepositions (с, о, у) are too short.
+    //    Known limits, because no letter-level rule separates these from
+    //    real Russian: a fully substituted word inside or next to Russian
+    //    words ("МЕТА поможет", "пароль: аст") is left alone; a one-letter
+    //    lookalike split off by a hyphen ("а-ct") is left alone; and a short
+    //    Russian sentence spelled only in lookalike letters ("Он сам.") is
+    //    swapped.
     const lookalikeFor = (m) => CYRILLIC_LOOKALIKES[m] ?? GREEK_LOOKALIKES[m];
     const swapLookalike = (m) => {
       const swap = lookalikeFor(m);
@@ -141,7 +144,7 @@ const AIDetector = (() => {
       const latinLetters = (unit.match(LATIN_LETTER_GLOBAL_RE) || []).length;
       const latinDominant = scriptLetters.length < latinLetters;
       const onlyLookalikes = scriptLetters.length > 0 && scriptLetters.every((ch) => lookalikeFor(ch));
-      const words = [...unit.matchAll(JOINED_WORD_GLOBAL_RE)];
+      const words = [...unit.matchAll(LETTER_RUN_GLOBAL_RE)];
       let result = '';
       let last = 0;
       words.forEach((match, i) => {
