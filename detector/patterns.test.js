@@ -2821,6 +2821,21 @@ test('ignore markers: the marker scan stays linear on adversarial input', () => 
   }
 });
 
+test('ignore markers: a long line mixing code spans and <code> stays linear', () => {
+  // Round-5 review: rebuilding the backtick table after each <code> element
+  // made this shape quadratic (116 KB took about 2 s).
+  const build = (k) => `${IGNORE_START}\nThe team met on Tuesday.\n${IGNORE_END}\n${'`x` <code>y</code> '.repeat(k)}`;
+  const { small, large } = timeScaling(build, 1500);
+  assert.ok(large < small * 6, `4x input took ${(large / small).toFixed(1)}x time (${small.toFixed(1)}ms vs ${large.toFixed(1)}ms)`);
+  const big = build(Math.ceil(116000 / '`x` <code>y</code> '.length));
+  assert.ok(big.length >= 116000);
+  const started = performance.now();
+  const r = AIDetector.analyzeText(big);
+  const elapsed = performance.now() - started;
+  assert.equal(r.stats.ignoredRegions, 1);
+  assert.ok(elapsed < 500, `116 KB mixed line took ${elapsed.toFixed(0)}ms`);
+});
+
 test('ignore markers: an unclosed start runs to the end of the text', () => {
   const source = `The team met on Tuesday and agreed the next steps for the release.\n\n   <!-- AVOID-AI-WRITING:IGNORE-START -->  \n${SPECIMEN}`;
   const r = AIDetector.analyzeText(source);

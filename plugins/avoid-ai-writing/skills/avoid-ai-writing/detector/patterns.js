@@ -1363,7 +1363,11 @@ const AIDetector = (() => {
     const isLineStart = (i) => i === 0 || text[i - 1] === '\n' || (text[i - 1] === '\r' && text[i] !== '\n');
 
     // Backtick runs in [from, to), keyed by start, each with the end of the
-    // next run of the same length on the line (-1 when unmatched).
+    // next run of the same length on the line (-1 when unmatched). Built at
+    // most once per line segment and never rebuilt after a comment or HTML
+    // element closes mid-line: rebuilding made a long line that alternates
+    // code spans and <code> elements quadratic. Runs inside a construct the
+    // scan jumps over are simply never visited.
     const backtickRuns = (from, to) => {
       const list = [];
       for (let i = from; i < to;) {
@@ -1449,7 +1453,6 @@ const AIDetector = (() => {
         if (text.startsWith('<!--', pos)) {
           const close = text.indexOf('-->', pos + 4);
           pos = close === -1 ? n : close + 3;
-          runs = null;
           continue;
         }
         HTML_CODE_OPEN_RE.lastIndex = pos;
@@ -1459,7 +1462,6 @@ const AIDetector = (() => {
           closeRe.lastIndex = pos + open[0].length;
           const close = closeRe.exec(text);
           pos = close === null ? n : close.index;
-          runs = null;
           continue;
         }
       } else if (ch === '`') {
