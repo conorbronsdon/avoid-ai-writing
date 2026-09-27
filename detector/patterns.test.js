@@ -1439,6 +1439,13 @@ test('mixed-script words are still swapped inside Cyrillic prose', () => {
   assert.equal(normalized.flags.homoglyph, 1);
 });
 
+test('Cyrillic padding does not hide mixed-script obfuscation', () => {
+  const padding = 'Мы проверили новый отчёт вместе с командой и нашли три ошибки в расчётах. '.repeat(3);
+  const normalized = AIDetector.normalizeText(`We will dеlve into the report today.\n\n${padding}`);
+  assert.ok(normalized.text.startsWith('We will delve into the report today.'));
+  assert.equal(normalized.flags.homoglyph, 1);
+});
+
 test('Latin-dominant text still swaps a fully substituted word', () => {
   const normalized = AIDetector.normalizeText('The team reviewed the report together and found an аре');
   assert.equal(normalized.text, 'The team reviewed the report together and found an ape');

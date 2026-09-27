@@ -107,12 +107,17 @@ const AIDetector = (() => {
     }
 
     // 2. Swap Cyrillic / Greek Latin-lookalike chars back to Latin so
-    //    pattern matching catches obfuscated tokens. When Cyrillic or Greek
-    //    letters are at least as common as Latin ones, the text is written in
-    //    that language: swapping every а, е, о there reported thousands of
-    //    "homoglyph swaps" on plain Russian text. Such text only gets its
-    //    mixed-script words swapped ("pаypal"). Latin-dominant text keeps the
-    //    per-character swap, so a fully substituted word is still caught.
+    //    pattern matching catches obfuscated tokens. When Cyrillic and Greek
+    //    letters together are at least as common as Latin ones, the text is
+    //    written in those scripts: swapping every а, е, о there reported
+    //    thousands of "homoglyph swaps" on plain Russian text. Such text only
+    //    gets its mixed-script words swapped ("pаypal"). Latin-dominant text
+    //    keeps the per-character swap, so a fully substituted word is caught.
+    //    The trade-off: a word spelled entirely in lookalike letters inside
+    //    the Latin part of a Cyrillic-dominant document is left alone. Few
+    //    English words can be spelled that way, and deciding per paragraph
+    //    instead flagged Russian prepositions ("в", "с", "на") by the hundred
+    //    in bilingual technical text.
     const swapLookalike = (m) => {
       const swap = CYRILLIC_LOOKALIKES[m] ?? GREEK_LOOKALIKES[m];
       if (swap) { flags.homoglyph++; return swap; }

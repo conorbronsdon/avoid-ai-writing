@@ -10,8 +10,8 @@ All notable changes to this project are documented here.
 
 - Cyrillic and Greek prose no longer reads as a homoglyph bypass. The detector swapped every Latin-lookalike letter
   ("а", "е", "о", "р" and the rest) and counted each swap, so a plain Russian page reported thousands of swaps and a critical
-  `normalization-flag`. When Cyrillic or Greek letters are at least as common as Latin ones, only words that mix the
-  scripts ("pаypal") are swapped; Latin-dominant text keeps the per-character swap.
+  `normalization-flag`. When Cyrillic and Greek letters together are at least as common as Latin ones, only words that
+  mix the scripts ("pаypal") are swapped; Latin-dominant text keeps the per-character swap.
 
 ### Added
 
