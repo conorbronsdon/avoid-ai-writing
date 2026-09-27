@@ -165,10 +165,13 @@ reported.
 
 In both source modes, `<!-- avoid-ai-writing:ignore-start -->` and
 `<!-- avoid-ai-writing:ignore-end -->` exclude everything between them, markers
-included, before any other pass runs. Matching is case-insensitive. Markers
-inside fenced or inline code do nothing, an unclosed start runs to the end of
-the text, and an end with no open start is ignored. Masking preserves offsets,
-and `stats.ignoredRegions` counts the regions.
+included, before any other pass runs. Matching is case-insensitive. A marker
+counts only as a whole line: the full comment, at most three spaces of indent,
+and nothing else on the line. Markers inside fenced code, indented code, inline
+code, running prose, or quotations therefore do nothing. Starts nest: the
+region runs from the outermost start to its matching end. An unclosed start
+runs to the end of the text, and an end with no open start is ignored. Masking
+preserves offsets, and `stats.ignoredRegions` counts the regions.
 
 In both source modes, quoted material does not count against the writer. Every
 Markdown blockquote line (`> `, `>> `, or the compact `>text`) is excluded,

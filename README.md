@@ -572,9 +572,11 @@ It's not just a search index, it's a foundation for trust.
 <!-- avoid-ai-writing:ignore-end -->
 ```
 
-The markers and the text between them are blanked before scoring;
-`stats.ignoredRegions` counts the regions. Markers inside code blocks or inline
-code do nothing, and a start with no end runs to the end of the text. The
+Each marker must sit on a line of its own. The markers and the text between
+them are blanked before scoring, and `stats.ignoredRegions` counts the regions.
+Markers inside code blocks, inline prose, or quotations do nothing. Starts
+nest, so each needs its own end, and a start with no end runs to the end of the
+text. The
 detector reads source text, not rendered HTML, so an HTML-to-text step that
 drops comments also drops the markers.
 

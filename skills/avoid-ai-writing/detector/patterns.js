@@ -932,21 +932,26 @@ const AIDetector = (() => {
   ];
 
   // ─── Negative parallelism ──────────────────────────────────────────
-  // "It's not just a search index, it's a foundation for trust." The
-  // sentence-structure rule in references/patterns.md allows one of these
-  // per piece, so the engine splits the joined form in two (#351):
+  // "It's not just a search index, it's a foundation for trust." A frame is
+  // a negated copula, a body X, then a restatement: "it / this / that /
+  // they" + be. The engine splits frames in two (#351):
   //
-  //   reveal    a minimizer (just / merely / simply) after the negated
-  //             copula, then a comma, semicolon, colon, or dash and a
-  //             restated "it / this / that / they" + be. Flags on its own.
-  //   contrast  the same frame without the minimizer ("isn't X, it's Y",
-  //             "isn't about X, it's about Y", "are not only X, they're Y")
-  //             and the split-sentence reveal ("isn't just X. It's Y.").
-  //             Flags only when the piece holds two or more frames of either
-  //             kind, because a single plain correction ("It isn't raining,
-  //             it's snowing.") is ordinary English. "only" stays out of the
-  //             minimizer list: the human control corpus holds "fossil fuels
-  //             are not only bad for our environment, they're a losing bet".
+  //   reveal    a minimizer (just / merely / simply), then a comma,
+  //             semicolon, colon, or dash and the restatement ("isn't just
+  //             raining, it's pouring"). The minimizer-then-upgrade move is
+  //             the tell itself, so a reveal flags on its own.
+  //   contrast  the same joined frame without the minimizer ("isn't X, it's
+  //             Y", "isn't about X, it's about Y", "are not only X, they're
+  //             Y") and the split-sentence reveal ("isn't just X. It's Y.").
+  //             A single plain correction ("It isn't raining, it's
+  //             snowing.") is ordinary English, and references/patterns.md
+  //             allows one frame per piece, so a contrast flags only when
+  //             another frame of either kind starts within
+  //             NP_WINDOW_SENTENCES sentences of it. The stacked cadence is
+  //             the tell; two unrelated corrections paragraphs apart are
+  //             ordinary prose. "only" is not a reveal minimizer: the human
+  //             control corpus holds "fossil fuels are not only bad for our
+  //             environment, they're a losing bet".
   //
   // The restated pronoun is the gate. "not only X but (also) Y" and "not X
   // but Y" are ordinary correlatives and are not matched: on the human
@@ -966,6 +971,35 @@ const AIDetector = (() => {
     // Split-sentence reveal: the restatement opens the next sentence.
     new RegExp(NP_NEG + "\\s+" + NP_MINIMIZER + "\\s+" + NP_BODY + "[.!]\\s+" + NP_RESTATE, 'gi'),
   ];
+  // Two frames pair when their starting sentences are at most this many
+  // sentences apart: the same sentence, the next, or the one after.
+  const NP_WINDOW_SENTENCES = 2;
+
+  // Reveals always flag. A contrast flags only when some other frame, reveal
+  // or contrast, starts nearby. Sentence indexes come from the same coarse
+  // splitter the highlight regions use.
+  function negativeParallelismIssues(text, reveals, contrasts) {
+    if (contrasts.length === 0 || reveals.length + contrasts.length < 2) return reveals;
+    const frames = [...reveals, ...contrasts];
+    const starts = splitSentenceSpans(text).map(([start]) => start);
+    const sentenceOf = (index) => {
+      let lo = 0;
+      let hi = starts.length - 1;
+      while (lo < hi) {
+        const mid = (lo + hi + 1) >> 1;
+        if (starts[mid] <= index) lo = mid;
+        else hi = mid - 1;
+      }
+      return lo;
+    };
+    const sentences = frames.map((frame) => sentenceOf(frame.index));
+    const paired = contrasts.filter((contrast, c) => {
+      const i = reveals.length + c;
+      return sentences.some((other, j) =>
+        j !== i && frames[j].index !== contrast.index && Math.abs(other - sentences[i]) <= NP_WINDOW_SENTENCES);
+    });
+    return [...reveals, ...paired].sort((a, b) => a.index - b.index);
+  }
 
   // ─── Dev-blog boilerplate ──────────────────────────────────────────
   // Stock simplicity slogans from developer marketing. Adapted from
@@ -1281,30 +1315,38 @@ const AIDetector = (() => {
   // Ignore regions (#351): an author can exclude a passage from scoring, such
   // as a specimen of AI prose quoted on purpose, by wrapping it in
   //   <!-- avoid-ai-writing:ignore-start --> … <!-- avoid-ai-writing:ignore-end -->
-  // The markers and everything between them are blanked in place, so offsets
-  // still address the source. Markers inside fenced or inline code are
-  // examples, not instructions, and do nothing. An unclosed start runs to the
-  // end of the text; an end with no open start is ignored.
-  const IGNORE_MARKER_RE = /<!--[ \t]*avoid-ai-writing:ignore-(start|end)[ \t]*-->/gi;
+  // A marker counts only as a whole line: the full comment, at most three
+  // spaces of indent, nothing else on the line. That keeps a marker mentioned
+  // inline in prose or a quotation from acting, and a four-space indented
+  // code block cannot hold one. Fenced code is masked first, so a marker shown
+  // in a fence does nothing either. Starts nest: each start needs its own
+  // end, and the region runs from the outermost start to its matching end.
+  // An unclosed start runs to the end of the text; an end with no open start
+  // is ignored. The region is blanked in place, so offsets still address the
+  // source.
+  const IGNORE_MARKER_RE = /^ {0,3}<!--[ \t]*avoid-ai-writing:ignore-(start|end)[ \t]*-->[ \t]*\r?$/gim;
   function maskIgnoreRegions(text) {
     if (!/avoid-ai-writing:ignore-/i.test(text)) return { text, ignoredRegions: 0 };
     const visible = maskCode(text);
     const chars = text.split('');
     let ignoredRegions = 0;
+    let depth = 0;
     let openAt = -1;
     let match;
     IGNORE_MARKER_RE.lastIndex = 0;
     while ((match = IGNORE_MARKER_RE.exec(visible)) !== null) {
-      const isStart = match[1].toLowerCase() === 'start';
-      if (isStart && openAt === -1) {
-        openAt = match.index;
-      } else if (!isStart && openAt !== -1) {
-        blankRange(chars, openAt, match.index + match[0].length);
-        ignoredRegions += 1;
-        openAt = -1;
+      if (match[1].toLowerCase() === 'start') {
+        if (depth === 0) openAt = match.index;
+        depth += 1;
+      } else if (depth > 0) {
+        depth -= 1;
+        if (depth === 0) {
+          blankRange(chars, openAt, match.index + match[0].length);
+          ignoredRegions += 1;
+        }
       }
     }
-    if (openAt !== -1) {
+    if (depth > 0) {
       blankRange(chars, openAt, chars.length);
       ignoredRegions += 1;
     }
@@ -2077,11 +2119,12 @@ const AIDetector = (() => {
     const stagedDiscoveryIssues = matchPatterns(text, STAGED_DISCOVERY, 'performed-insight', 'medium');
     issues.push(...stagedDiscoveryIssues);
     issues.push(...matchPatterns(text, NEGATION_CHAIN, 'negation-chain', 'high'));
-    // One plain contrast frame per piece is allowed; see NEGATIVE_PARALLELISM_*.
-    const npReveals = matchPatterns(text, NEGATIVE_PARALLELISM_REVEAL, 'negative-parallelism', 'high');
-    const npContrasts = matchPatterns(text, NEGATIVE_PARALLELISM_CONTRAST, 'negative-parallelism', 'high');
-    issues.push(...npReveals);
-    if (npReveals.length + npContrasts.length >= 2) issues.push(...npContrasts);
+    // Reveals flag alone; contrasts need a nearby frame. See NEGATIVE_PARALLELISM_*.
+    issues.push(...negativeParallelismIssues(
+      text,
+      matchPatterns(text, NEGATIVE_PARALLELISM_REVEAL, 'negative-parallelism', 'high'),
+      matchPatterns(text, NEGATIVE_PARALLELISM_CONTRAST, 'negative-parallelism', 'high'),
+    ));
     issues.push(...matchPatterns(text, DEV_BLOG_BOILERPLATE, 'dev-blog-boilerplate', 'medium'));
     issues.push(...findUnnecessaryHyphenation(text));
 

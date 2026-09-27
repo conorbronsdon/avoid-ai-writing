@@ -67,7 +67,7 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 | `fake-casual-prop` | Fake-casual prop | Fake-casual register *(six asterisk stage directions and the four (yes\|no) x (really\|seriously) parentheticals, nothing else. "chef's kiss" requires its apostrophe, and neighbours like "*checks calendar*" and "(yes, honestly)" are disclosed misses. Verdict closers, label-prefix openers, the self-QA volley and "because of course it does" stay LLM-judgment)* |
 | `performed-insight` | Performed-insight phrase | Performed-insight phrases — *partial; literal-sense exclusions documented in references/patterns.md* |
 | `negation-chain` | Negation chain | Negation chains — *partial; three-item deterministic threshold documented in references/patterns.md* |
-| `negative-parallelism` | Negative parallelism | Sentence structure: "It's not X — it's Y" — *partial: the joined frame needs a restated "it / this / that / they" + be after a comma, semicolon, colon, or dash. "isn't just / merely / simply X, it's Y" flags alone; the plain "isn't X, it's Y", "isn't about X, it's about Y", and "isn't only X, it's Y" frames and the split-sentence "isn't just X. It's Y." flag only at two or more frames per piece, matching the max-one-per-piece rule. "not only X but Y" and "not X but Y" are ordinary correlatives and stay LLM-judgment, as do the multi-negation countdown and the tailing negation* |
+| `negative-parallelism` | Negative parallelism | Sentence structure: "It's not X — it's Y" — *partial: the joined frame needs a restated "it / this / that / they" + be after a comma, semicolon, colon, or dash. "isn't just / merely / simply X, it's Y" flags alone; the plain "isn't X, it's Y", "isn't about X, it's about Y", and "isn't only X, it's Y" frames and the split-sentence "isn't just X. It's Y." flag only when another frame starts within three sentences (the same sentence, the next, or the one after), so one correction per piece passes and unrelated corrections far apart stay clean. "not only X but Y" and "not X but Y" are ordinary correlatives and stay LLM-judgment, as do the multi-negation countdown and the tailing negation* |
 | `dev-blog-boilerplate` | Dev-blog boilerplate | Dev-blog boilerplate — *partial; literal-sense exclusion documented in references/patterns.md* |
 
 > **Partial map:** `smart-punct-signature` fires only when curly quotes co-occur
@@ -81,8 +81,8 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 > surface forms remain judgment rules rather than deterministic matches.
 > `negation-chain` requires three short sentence-initial "no …" items; two-item
 > chains remain judgment calls.
-> `negative-parallelism` allows one plain contrast frame per piece; a single
-> "It isn't raining, it's snowing." stays clean.
+> `negative-parallelism` flags a plain contrast only with a second frame within
+> three sentences; a single "It isn't raining, it's snowing." stays clean.
 
 ## B. Detector-only (stylometric / fingerprint — no skill prose)
 

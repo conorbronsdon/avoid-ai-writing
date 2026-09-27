@@ -2578,6 +2578,9 @@ test('negative-parallelism: the #351 repro no longer scores Clean', () => {
 
 test('negative-parallelism: a minimizer reveal flags on its own across joiners', () => {
   for (const sentence of [
+    // Maintainer ruling on #353 review: the minimizer reveal is the tell even
+    // in an everyday sentence.
+    "It isn't just raining, it's pouring.",
     "This isn't just about speed — it's about trust.",
     'The release was not merely a patch; it was a rewrite.',
     'It’s not simply a cache: it’s the source of truth.',
@@ -2589,27 +2592,44 @@ test('negative-parallelism: a minimizer reveal flags on its own across joiners',
   }
 });
 
-test('negative-parallelism: one plain correction per piece stays clean', () => {
+test('negative-parallelism: one plain correction stays clean', () => {
   for (const text of [
     "It isn't raining, it's snowing. We waited at the bus stop for twenty minutes before walking home.",
     "This isn't about money, it's about respect, and the union said so plainly at the meeting.",
     "The new layer isn't just faster. It's a different way to think about retrieval for every team.",
-    // Pre-LLM human prose from the control corpus (#351): "not only" counts
-    // toward the per-piece gate instead of flagging on its own.
+    // Pre-LLM human prose from the control corpus (#351): "not only" is a
+    // contrast, not a reveal, so it needs a nearby second frame.
     'Clean energy is cheaper than ever, and fossil fuels are not only bad for our environment, they’re a losing bet in the long run as well as the short term.',
   ]) {
     assert.deepEqual(npHits(text), [], text);
   }
 });
 
-test('negative-parallelism: a second frame in the piece flags every frame', () => {
+test('negative-parallelism: contrasts flag when another frame is within three sentences', () => {
   const plain = npHits("It isn't raining, it's snowing. The problem isn't the bus, it's the schedule. We walked home.");
   assert.deepEqual(plain.map((i) => i.text), ["isn't raining, it's", "isn't the bus, it's"]);
   const split = npHits("It's not just a tool, it's a platform. The rollout isn't just fast. It's invisible to users.");
   assert.equal(split.length, 2, JSON.stringify(split.map((i) => i.text)));
+  const gapOfOne = npHits("The layer isn't a cache, it's a store. We measured it twice. The API isn't a wrapper, it's the contract.");
+  assert.equal(gapOfOne.length, 2, JSON.stringify(gapOfOne.map((i) => i.text)));
 });
 
-test('negative-parallelism: correlatives and ordinary negations stay clean', () => {
+test('negative-parallelism: unrelated corrections far apart stay clean', () => {
+  const text = [
+    "It isn't raining, it's snowing, so the school closed early and the buses stopped at noon.",
+    '',
+    'We spent the afternoon at the library. The heating worked. Nobody minded the walk back.',
+    'By evening the roads were clear again and the plows had moved on to the side streets.',
+    '',
+    "The bill isn't due today, it's due Friday, according to the notice the landlord left on the door.",
+  ].join('\n');
+  assert.deepEqual(npHits(text), []);
+  // A reveal far from a contrast flags alone and does not pull the contrast in.
+  const mixed = npHits(text.replace("It isn't raining, it's snowing", "It isn't just raining, it's pouring"));
+  assert.deepEqual(mixed.map((i) => i.text), ["isn't just raining, it's"]);
+});
+
+test('negative-parallelism: correlatives and ordinary negations are not frames', () => {
   for (const text of [
     'The result is not only faster but also cheaper, which the finance team noticed within a week.',
     'The problem is not the code but the process, and nobody on the team disputes that anymore.',
@@ -2620,6 +2640,9 @@ test('negative-parallelism: correlatives and ordinary negations stay clean', () 
     "The contract isn't signed yet, and we are still waiting on legal to send the final version.",
   ]) {
     assert.deepEqual(npHits(text).map((i) => i.text), [], text);
+    // Next to one plain contrast, a correlative that counted as a frame would
+    // pair with it and flag.
+    assert.deepEqual(npHits(`It isn't a feature, it's a platform. ${text}`).map((i) => i.text), [], `paired: ${text}`);
   }
 });
 
@@ -2654,24 +2677,57 @@ test('ignore markers: a marked specimen is excluded and the rest is still scored
   assert.ok(unmarked.issues.some((i) => i.text === 'delve'), 'precondition: the specimen scores without markers');
 });
 
-test('ignore markers: code examples, stray ends, and unclosed starts', () => {
-  const fenced = ['```html', '<!-- avoid-ai-writing:ignore-start -->', '```', '', SPECIMEN, '', '```', '<!-- avoid-ai-writing:ignore-end -->', '```'].join('\n');
-  const fencedResult = AIDetector.analyzeText(fenced);
-  assert.equal(fencedResult.stats.ignoredRegions, 0);
-  assert.ok(fencedResult.issues.some((i) => i.text === 'delve'), 'markers inside fences must not hide prose');
+const IGNORE_START = '<!-- avoid-ai-writing:ignore-start -->';
+const IGNORE_END = '<!-- avoid-ai-writing:ignore-end -->';
 
-  const inline = `Use \`<!-- avoid-ai-writing:ignore-start -->\` to start a region. ${SPECIMEN}`;
-  assert.equal(AIDetector.analyzeText(inline).stats.ignoredRegions, 0);
+test('ignore markers: CRLF source masks the same region', () => {
+  const source = ['Intro line with a robust claim in it for the page.', IGNORE_START, SPECIMEN, IGNORE_END, 'The closing line explains the specimen to readers.'].join('\r\n');
+  const r = AIDetector.analyzeText(source);
+  assert.equal(r.stats.ignoredRegions, 1);
+  assert.deepEqual(r.issues.map((i) => i.text), ['robust']);
+});
 
-  const stray = `<!-- avoid-ai-writing:ignore-end --> ${SPECIMEN}`;
-  const strayResult = AIDetector.analyzeText(stray);
-  assert.equal(strayResult.stats.ignoredRegions, 0);
-  assert.ok(strayResult.issues.some((i) => i.text === 'delve'), 'a stray end must not hide prose');
+test('ignore markers: nested starts need their own ends', () => {
+  const source = [
+    'The team met on Tuesday and agreed the next steps for the release.',
+    IGNORE_START,
+    'We must delve into the first specimen here.',
+    IGNORE_START,
+    'The second specimen is a vibrant tapestry.',
+    IGNORE_END,
+    'This line is still inside the outer region, a robust claim.',
+    IGNORE_END,
+    'The release went out on Friday without trouble or delay.',
+  ].join('\n');
+  const r = AIDetector.analyzeText(source);
+  assert.equal(r.stats.ignoredRegions, 1);
+  assert.deepEqual(r.issues.map((i) => i.text), []);
+});
 
-  const unclosed = `The team met on Tuesday and agreed the next steps for the release.\n\n<!-- AVOID-AI-WRITING:IGNORE-START -->\n${SPECIMEN}`;
-  const unclosedResult = AIDetector.analyzeText(unclosed);
-  assert.equal(unclosedResult.stats.ignoredRegions, 1);
-  assert.deepEqual(unclosedResult.issues, []);
+test('ignore markers: code, inline mentions, quotations, and stray ends do not act', () => {
+  const after = `\n\n${SPECIMEN}`;
+  const cases = {
+    fenced: ['```html', IGNORE_START, '```'].join('\n') + after,
+    indented: ['Example:', '', `    ${IGNORE_START}`, ''].join('\n') + after,
+    inlineCode: `Use \`${IGNORE_START}\` to start a region.` + after,
+    quoted: `The docs say to write "${IGNORE_START}" before the specimen.` + after,
+    prose: `Write ${IGNORE_START} on its own line.` + after,
+    strayEnd: IGNORE_END + after,
+  };
+  for (const [name, source] of Object.entries(cases)) {
+    for (const sourceMode of ['plain', 'rendered-markdown']) {
+      const r = AIDetector.analyzeText(source, { sourceMode });
+      assert.equal(r.stats.ignoredRegions, 0, `${name} ${sourceMode}`);
+      assert.ok(r.issues.some((i) => i.text === 'delve'), `${name} ${sourceMode}: prose after the marker must still score`);
+    }
+  }
+});
+
+test('ignore markers: an unclosed start runs to the end of the text', () => {
+  const source = `The team met on Tuesday and agreed the next steps for the release.\n\n   <!-- AVOID-AI-WRITING:IGNORE-START -->  \n${SPECIMEN}`;
+  const r = AIDetector.analyzeText(source);
+  assert.equal(r.stats.ignoredRegions, 1);
+  assert.deepEqual(r.issues, []);
 });
 
 test('word joiners: U+2060 around URLs is stripped without a bypass flag', () => {
