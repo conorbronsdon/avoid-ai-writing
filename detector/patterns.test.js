@@ -2624,6 +2624,12 @@ test('negative-parallelism: unrelated corrections far apart stay clean', () => {
     "The bill isn't due today, it's due Friday, according to the notice the landlord left on the door.",
   ].join('\n');
   assert.deepEqual(npHits(text), []);
+  // Adjacent sentences in separate paragraphs do not pair either.
+  const adjacentParagraphs = "It isn't raining, it's snowing.\n\nThe invoice isn't due today, it's due Friday.";
+  for (const eol of ['\n', '\r\n']) {
+    assert.deepEqual(npHits(adjacentParagraphs.replace(/\n/g, eol)), [], JSON.stringify(eol));
+  }
+  assert.equal(npHits(adjacentParagraphs.replace('\n\n', ' ')).length, 2, 'precondition: same paragraph pairs');
   // A reveal far from a contrast flags alone and does not pull the contrast in.
   const mixed = npHits(text.replace("It isn't raining, it's snowing", "It isn't just raining, it's pouring"));
   assert.deepEqual(mixed.map((i) => i.text), ["isn't just raining, it's"]);
@@ -2721,6 +2727,32 @@ test('ignore markers: code, inline mentions, quotations, and stray ends do not a
       assert.ok(r.issues.some((i) => i.text === 'delve'), `${name} ${sourceMode}: prose after the marker must still score`);
     }
   }
+});
+
+test('ignore markers: HTML code containers and frontmatter hold no directives', () => {
+  const after = `\n\n${SPECIMEN}`;
+  const cases = {
+    preCode: ['<pre><code>', IGNORE_START, '</code></pre>'].join('\n') + after,
+    code: ['<code>', IGNORE_START, '</code>'].join('\n') + after,
+    preUpper: ['<PRE class="html">', IGNORE_START, '</PRE>'].join('\n') + after,
+    script: ['<script type="text/plain">', IGNORE_START, '</script>'].join('\n') + after,
+    style: ['<style>', IGNORE_START, '</style>'].join('\n') + after,
+    unclosedPre: ['<pre>', IGNORE_START].join('\n') + after,
+    frontmatter: ['---', 'title: Tells', 'example: |', `  ${IGNORE_START}`, '---'].join('\n') + after,
+    frontmatterLeftAligned: ['---', 'title: Tells', 'example: |', IGNORE_START, '---'].join('\n') + after,
+  };
+  for (const [name, source] of Object.entries(cases)) {
+    for (const sourceMode of ['plain', 'rendered-markdown']) {
+      const r = AIDetector.analyzeText(source, { sourceMode });
+      assert.equal(r.stats.ignoredRegions, 0, `${name} ${sourceMode}`);
+      assert.ok(r.issues.some((i) => i.text === 'delve'), `${name} ${sourceMode}: prose after the container must still score`);
+    }
+  }
+  // A real marker after a closed container still works.
+  const later = ['<pre>', IGNORE_START, '</pre>', '', 'The team met on Tuesday to agree next steps.', IGNORE_START, SPECIMEN, IGNORE_END].join('\n');
+  const r = AIDetector.analyzeText(later);
+  assert.equal(r.stats.ignoredRegions, 1);
+  assert.ok(!r.issues.some((i) => i.text === 'delve'));
 });
 
 test('ignore markers: an unclosed start runs to the end of the text', () => {

@@ -974,6 +974,7 @@ const AIDetector = (() => {
   // Two frames pair when their starting sentences are at most this many
   // sentences apart: the same sentence, the next, or the one after.
   const NP_WINDOW_SENTENCES = 2;
+  const NP_PARAGRAPH_BREAK = /\n[ \t]*\r?\n/;
 
   // Reveals always flag. A contrast flags only when some other frame, reveal
   // or contrast, starts nearby. Sentence indexes come from the same coarse
@@ -993,10 +994,15 @@ const AIDetector = (() => {
       return lo;
     };
     const sentences = frames.map((frame) => sentenceOf(frame.index));
+    // Paired frames must also share a paragraph: no blank line between them.
+    const sameParagraph = (a, b) => !NP_PARAGRAPH_BREAK.test(text.slice(Math.min(a, b), Math.max(a, b)));
     const paired = contrasts.filter((contrast, c) => {
       const i = reveals.length + c;
       return sentences.some((other, j) =>
-        j !== i && frames[j].index !== contrast.index && Math.abs(other - sentences[i]) <= NP_WINDOW_SENTENCES);
+        j !== i
+        && frames[j].index !== contrast.index
+        && Math.abs(other - sentences[i]) <= NP_WINDOW_SENTENCES
+        && sameParagraph(frames[j].index, contrast.index));
     });
     return [...reveals, ...paired].sort((a, b) => a.index - b.index);
   }
@@ -1319,15 +1325,39 @@ const AIDetector = (() => {
   // spaces of indent, nothing else on the line. That keeps a marker mentioned
   // inline in prose or a quotation from acting, and a four-space indented
   // code block cannot hold one. Fenced code is masked first, so a marker shown
-  // in a fence does nothing either. Starts nest: each start needs its own
+  // in a fence does nothing either, and neither does one inside an HTML
+  // <pre>, <code>, <script>, or <style> element or in initial YAML
+  // frontmatter (in every source mode). Starts nest: each start needs its own
   // end, and the region runs from the outermost start to its matching end.
   // An unclosed start runs to the end of the text; an end with no open start
   // is ignored. The region is blanked in place, so offsets still address the
   // source.
   const IGNORE_MARKER_RE = /^ {0,3}<!--[ \t]*avoid-ai-writing:ignore-(start|end)[ \t]*-->[ \t]*\r?$/gim;
+  const HTML_CODE_OPEN_RE = /<(pre|code|script|style)\b[^>]*>/gi;
+
+  // Blank HTML code containers so a marker shown as code is not a directive.
+  // An unclosed container runs to the end of the text: when in doubt, the
+  // marker does nothing and the prose stays scored.
+  function maskHtmlCodeContainers(chars) {
+    const source = chars.join('');
+    const lower = source.toLowerCase();
+    HTML_CODE_OPEN_RE.lastIndex = 0;
+    let match;
+    while ((match = HTML_CODE_OPEN_RE.exec(source)) !== null) {
+      const close = lower.indexOf(`</${match[1].toLowerCase()}`, match.index + match[0].length);
+      const end = close === -1 ? source.length : close;
+      blankRange(chars, match.index, end);
+      HTML_CODE_OPEN_RE.lastIndex = Math.max(end, match.index + match[0].length);
+    }
+  }
+
   function maskIgnoreRegions(text) {
     if (!/avoid-ai-writing:ignore-/i.test(text)) return { text, ignoredRegions: 0 };
-    const visible = maskCode(text);
+    const visibleChars = maskCode(text).split('');
+    const frontmatter = initialFrontmatterRange(text);
+    if (frontmatter) blankRange(visibleChars, frontmatter.start, frontmatter.end);
+    maskHtmlCodeContainers(visibleChars);
+    const visible = visibleChars.join('');
     const chars = text.split('');
     let ignoredRegions = 0;
     let depth = 0;
