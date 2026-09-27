@@ -2626,8 +2626,15 @@ test('negative-parallelism: unrelated corrections far apart stay clean', () => {
   assert.deepEqual(npHits(text), []);
   // Adjacent sentences in separate paragraphs do not pair either.
   const adjacentParagraphs = "It isn't raining, it's snowing.\n\nThe invoice isn't due today, it's due Friday.";
-  for (const eol of ['\n', '\r\n']) {
-    assert.deepEqual(npHits(adjacentParagraphs.replace(/\n/g, eol)), [], JSON.stringify(eol));
+  for (const eol of ['\n', '\r\n', '\r']) {
+    for (const sourceMode of ['plain', 'rendered-markdown']) {
+      assert.deepEqual(npHits(adjacentParagraphs.replace(/\n/g, eol), { sourceMode }), [], `${JSON.stringify(eol)} ${sourceMode}`);
+    }
+  }
+  // A single line break inside a paragraph is not a break, in any line ending.
+  for (const eol of ['\n', '\r\n', '\r']) {
+    const oneBreak = adjacentParagraphs.replace('\n\n', eol);
+    assert.equal(npHits(oneBreak).length, 2, `single ${JSON.stringify(eol)} keeps one paragraph`);
   }
   assert.equal(npHits(adjacentParagraphs.replace('\n\n', ' ')).length, 2, 'precondition: same paragraph pairs');
   // A reveal far from a contrast flags alone and does not pull the contrast in.
@@ -2746,6 +2753,16 @@ test('ignore markers: HTML code containers and frontmatter hold no directives', 
       const r = AIDetector.analyzeText(source, { sourceMode });
       assert.equal(r.stats.ignoredRegions, 0, `${name} ${sourceMode}`);
       assert.ok(r.issues.some((i) => i.text === 'delve'), `${name} ${sourceMode}: prose after the container must still score`);
+    }
+  }
+  // A tag or marker inside an ordinary HTML comment opens nothing, so a
+  // later valid region still applies.
+  for (const note of ['<!-- remember to wrap samples in <pre> -->', `<!--\n<code>\n${IGNORE_START}\n-->`]) {
+    const commented = [note, '', 'The team met on Tuesday to agree next steps.', IGNORE_START, SPECIMEN, IGNORE_END].join('\n');
+    for (const sourceMode of ['plain', 'rendered-markdown']) {
+      const c = AIDetector.analyzeText(commented, { sourceMode });
+      assert.equal(c.stats.ignoredRegions, 1, `${note} ${sourceMode}`);
+      assert.ok(!c.issues.some((i) => i.text === 'delve'), `${note} ${sourceMode}: specimen must stay ignored`);
     }
   }
   // A real marker after a closed container still works.

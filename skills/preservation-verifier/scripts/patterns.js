@@ -974,7 +974,8 @@ const AIDetector = (() => {
   // Two frames pair when their starting sentences are at most this many
   // sentences apart: the same sentence, the next, or the one after.
   const NP_WINDOW_SENTENCES = 2;
-  const NP_PARAGRAPH_BREAK = /\n[ \t]*\r?\n/;
+  // A blank line in LF, CRLF, or CR-only text.
+  const NP_PARAGRAPH_BREAK = /(?:\r\n|\r(?!\n)|\n)[ \t]*(?:\r\n|\r|\n)/;
 
   // Reveals always flag. A contrast flags only when some other frame, reveal
   // or contrast, starts nearby. Sentence indexes come from the same coarse
@@ -1351,11 +1352,27 @@ const AIDetector = (() => {
     }
   }
 
+  // Blank every HTML comment except the ignore markers themselves, so a tag
+  // or marker written inside a comment ("<!-- <pre> -->") cannot open a code
+  // container or act as a directive. An unclosed comment runs to the end.
+  const IGNORE_MARKER_COMMENT_RE = /^<!--[ \t]*avoid-ai-writing:ignore-(?:start|end)[ \t]*-->$/i;
+  function maskOrdinaryHtmlComments(chars) {
+    const source = chars.join('');
+    let cursor = source.indexOf('<!--');
+    while (cursor !== -1) {
+      const close = source.indexOf('-->', cursor + 4);
+      const end = close === -1 ? source.length : close + 3;
+      if (!IGNORE_MARKER_COMMENT_RE.test(source.slice(cursor, end))) blankRange(chars, cursor, end);
+      cursor = source.indexOf('<!--', end);
+    }
+  }
+
   function maskIgnoreRegions(text) {
     if (!/avoid-ai-writing:ignore-/i.test(text)) return { text, ignoredRegions: 0 };
     const visibleChars = maskCode(text).split('');
     const frontmatter = initialFrontmatterRange(text);
     if (frontmatter) blankRange(visibleChars, frontmatter.start, frontmatter.end);
+    maskOrdinaryHtmlComments(visibleChars);
     maskHtmlCodeContainers(visibleChars);
     const visible = visibleChars.join('');
     const chars = text.split('');
