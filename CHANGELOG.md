@@ -6,6 +6,13 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- Cyrillic and Greek prose no longer reads as a homoglyph bypass. The detector swapped every Latin-lookalike letter
+  ("а", "е", "о", "р" and the rest) and counted each swap, so a plain Russian page reported thousands of swaps and a critical
+  `normalization-flag`. When Cyrillic or Greek letters are at least as common as Latin ones, only words that mix the
+  scripts ("pаypal") are swapped; Latin-dominant text keeps the per-character swap.
+
 ### Added
 
 - The bundled `ai-writing-detector` script accepts `--source-mode <plain|rendered-markdown>`, so the published plugin can reach rendered-Markdown scoring instead of flagging YAML frontmatter as the author's prose. It also accepts the `marketing` and `personal` contexts the root CLI and the detector already support, which it previously rejected. Blank input reports the selected context and source mode instead of an empty `stats` object, matching the root CLI. A bad argument now prints the usage message and exits 2 instead of throwing an uncaught stack trace (#244).

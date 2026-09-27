@@ -71,7 +71,11 @@ const AIDetector = (() => {
 
   const ZERO_WIDTH_RE = /[​-‍﻿⁠]/u;
   const ZERO_WIDTH_GLOBAL_RE = /[​-‍﻿⁠]/gu;
+  const HOMOGLYPH_RE = /[Ѐ-ӿͰ-Ͽ]/u;
   const HOMOGLYPH_GLOBAL_RE = /[Ѐ-ӿͰ-Ͽ]/gu;
+  const LATIN_LETTER_RE = /\p{Script=Latin}/u;
+  const LATIN_LETTER_GLOBAL_RE = /\p{Script=Latin}/gu;
+  const LETTER_RUN_GLOBAL_RE = /[\p{L}\p{M}]+/gu;
   const ROLEPLAY_VERBS_RE = /^(?:nods|sighs|laughs|smiles|frowns|shrugs|grins|winks|chuckles|gasps|pauses|thinks|wonders|whispers|shouts|gestures|raises|leans|turns|looks|glances|smirks|blinks|nodding|sighing|laughing|smiling|thinking|gesturing)\b/i;
   const ROLEPLAY_MARKER_RE = /(?<!\*)\*([^*\n]{1,80}?)\*(?!\*)/gu;
 
@@ -103,12 +107,27 @@ const AIDetector = (() => {
     }
 
     // 2. Swap Cyrillic / Greek Latin-lookalike chars back to Latin so
-    //    pattern matching catches obfuscated tokens.
-    out = out.replace(HOMOGLYPH_GLOBAL_RE, (m) => {
+    //    pattern matching catches obfuscated tokens. When Cyrillic or Greek
+    //    letters are at least as common as Latin ones, the text is written in
+    //    that language: swapping every а, е, о there reported thousands of
+    //    "homoglyph swaps" on plain Russian text. Such text only gets its
+    //    mixed-script words swapped ("pаypal"). Latin-dominant text keeps the
+    //    per-character swap, so a fully substituted word is still caught.
+    const swapLookalike = (m) => {
       const swap = CYRILLIC_LOOKALIKES[m] ?? GREEK_LOOKALIKES[m];
       if (swap) { flags.homoglyph++; return swap; }
       return m;
-    });
+    };
+    const lookalikeScriptLetters = (out.match(HOMOGLYPH_GLOBAL_RE) || []).length;
+    const latinLetters = (out.match(LATIN_LETTER_GLOBAL_RE) || []).length;
+    if (lookalikeScriptLetters > 0 && lookalikeScriptLetters >= latinLetters) {
+      out = out.replace(LETTER_RUN_GLOBAL_RE, (word) =>
+        HOMOGLYPH_RE.test(word) && LATIN_LETTER_RE.test(word)
+          ? word.replace(HOMOGLYPH_GLOBAL_RE, swapLookalike)
+          : word);
+    } else {
+      out = out.replace(HOMOGLYPH_GLOBAL_RE, swapLookalike);
+    }
 
     // 3. Strip *roleplay-action* markers — paired *...* containing an
     //    action verb (nods, sighs, laughs, smiles, etc.) anchored to

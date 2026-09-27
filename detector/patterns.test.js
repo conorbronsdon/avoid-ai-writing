@@ -1417,6 +1417,34 @@ test('v2: Cyrillic homoglyph swap restores Tier 1 hit', () => {
   assert.ok(r.stats.normalization.homoglyph >= 2, `expected >=2 homoglyph swaps, got ${r.stats.normalization.homoglyph}`);
 });
 
+test('Cyrillic-dominant prose reports no homoglyph swaps', () => {
+  const text = 'Мы проверили новый отчёт вместе с командой и нашли три ошибки в расчётах. '
+    + 'Все они касались округления, поэтому исправление заняло меньше часа.';
+  const r = AIDetector.analyzeText(text);
+  assert.equal(r.stats.normalization.homoglyph, 0);
+  assert.ok(!r.issues.some((i) => i.type === 'normalization-flag'), 'plain Russian must not look like a bypass tool');
+});
+
+test('Greek-dominant prose reports no homoglyph swaps', () => {
+  const text = 'Η ομάδα έλεγξε την αναφορά και βρήκε τρία λάθη στους υπολογισμούς. '
+    + 'Όλα αφορούσαν τη στρογγυλοποίηση, οπότε η διόρθωση πήρε λιγότερο από μία ώρα.';
+  const r = AIDetector.analyzeText(text);
+  assert.equal(r.stats.normalization.homoglyph, 0);
+  assert.ok(!r.issues.some((i) => i.type === 'normalization-flag'), 'plain Greek must not look like a bypass tool');
+});
+
+test('mixed-script words are still swapped inside Cyrillic prose', () => {
+  const normalized = AIDetector.normalizeText('Мы снова обсуждали dеlve и эхо на встрече');
+  assert.equal(normalized.text, 'Мы снова обсуждали delve и эхо на встрече');
+  assert.equal(normalized.flags.homoglyph, 1);
+});
+
+test('Latin-dominant text still swaps a fully substituted word', () => {
+  const normalized = AIDetector.normalizeText('The team reviewed the report together and found an аре');
+  assert.equal(normalized.text, 'The team reviewed the report together and found an ape');
+  assert.equal(normalized.flags.homoglyph, 3);
+});
+
 test('v2: formulaic opener fires', () => {
   const text = 'In the rapidly evolving world of decentralized finance, new protocols have emerged as critical infrastructure. The market continues to expand at an unprecedented pace each quarter without fail.';
   const r = AIDetector.analyzeText(text);
