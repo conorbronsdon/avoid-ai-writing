@@ -82,7 +82,8 @@ const AIDetector = (() => {
   // matching sees clean text, but they are typesetting, not AI evidence.
   // Neighbours are read past a short adjacent zero-width run, so a doubled
   // joiner inside a word still counts. The bound keeps a long run linear.
-  const LETTER_RE = /\p{L}/u;
+  const LETTER_END_RE = /\p{L}$/u;
+  const LETTER_START_RE = /^\p{L}/u;
   const MAX_ZERO_WIDTH_SKIP = 8;
   function countsAsBypass(chars, i) {
     if (chars[i] !== '\u2060') return true;
@@ -90,7 +91,9 @@ const AIDetector = (() => {
     while (before >= 0 && i - before <= MAX_ZERO_WIDTH_SKIP && ZERO_WIDTH_RE.test(chars[before])) before -= 1;
     let after = i + 1;
     while (after < chars.length && after - i <= MAX_ZERO_WIDTH_SKIP && ZERO_WIDTH_RE.test(chars[after])) after += 1;
-    return LETTER_RE.test(chars[before] ?? '') && LETTER_RE.test(chars[after] ?? '');
+    // A two-unit slice lets the Unicode regex see a supplementary-plane letter.
+    return LETTER_END_RE.test(chars.slice(Math.max(0, before - 1), before + 1))
+      && LETTER_START_RE.test(chars.slice(after, after + 2));
   }
 
   function normalizeText(text, sourceMap) {
@@ -981,8 +984,11 @@ const AIDetector = (() => {
   // or contrast, starts nearby. Sentence indexes come from the same coarse
   // splitter the highlight regions use.
   function negativeParallelismIssues(text, reveals, contrasts) {
-    if (contrasts.length === 0 || reveals.length + contrasts.length < 2) return reveals;
-    const frames = [...reveals, ...contrasts];
+    // Apply the proximity gate to the same distinct frames the caller reports.
+    const distinctReveals = deduplicateIssues(reveals);
+    const distinctContrasts = deduplicateIssues(contrasts);
+    if (distinctContrasts.length === 0 || distinctReveals.length + distinctContrasts.length < 2) return distinctReveals;
+    const frames = [...distinctReveals, ...distinctContrasts];
     const starts = splitSentenceSpans(text).map(([start]) => start);
     const sentenceOf = (index) => {
       let lo = 0;
@@ -997,15 +1003,15 @@ const AIDetector = (() => {
     const sentences = frames.map((frame) => sentenceOf(frame.index));
     // Paired frames must also share a paragraph: no blank line between them.
     const sameParagraph = (a, b) => !NP_PARAGRAPH_BREAK.test(text.slice(Math.min(a, b), Math.max(a, b)));
-    const paired = contrasts.filter((contrast, c) => {
-      const i = reveals.length + c;
+    const paired = distinctContrasts.filter((contrast, c) => {
+      const i = distinctReveals.length + c;
       return sentences.some((other, j) =>
         j !== i
         && frames[j].index !== contrast.index
         && Math.abs(other - sentences[i]) <= NP_WINDOW_SENTENCES
         && sameParagraph(frames[j].index, contrast.index));
     });
-    return [...reveals, ...paired].sort((a, b) => a.index - b.index);
+    return [...distinctReveals, ...paired].sort((a, b) => a.index - b.index);
   }
 
   // ─── Dev-blog boilerplate ──────────────────────────────────────────

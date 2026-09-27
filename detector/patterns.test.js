@@ -2614,6 +2614,13 @@ test('negative-parallelism: contrasts flag when another frame is within three se
   assert.equal(gapOfOne.length, 2, JSON.stringify(gapOfOne.map((i) => i.text)));
 });
 
+test('negative-parallelism: repeated identical contrasts do not pass a distinct-findings gate', () => {
+  const repeated = "It isn't raining, it's snowing. It isn't raining, it's snowing.";
+  assert.deepEqual(npHits(repeated), []);
+  const distinct = "It isn't raining, it's snowing. The problem isn't the bus, it's the schedule.";
+  assert.equal(npHits(distinct).length, 2);
+});
+
 test('negative-parallelism: unrelated corrections far apart stay clean', () => {
   const text = [
     "It isn't raining, it's snowing, so the school closed early and the buses stopped at noon.",
@@ -2666,6 +2673,16 @@ test('negative-parallelism: a quoted frame belongs to the speaker', () => {
 });
 
 const SPECIMEN = "In today's ever-evolving landscape, we delve into the intricate tapestry of innovation. It's not just a tool, it's a paradigm.";
+const IGNORE_START = '<!-- avoid-ai-writing:ignore-start -->';
+const IGNORE_END = '<!-- avoid-ai-writing:ignore-end -->';
+const stripIgnoreMarkers = (source) => source.split(IGNORE_START).join('').split(IGNORE_END).join('');
+
+test('ignore markers: the unmarked control removes only directive markers', () => {
+  const otherComment = '<!-- ordinary note -->';
+  const multilineComment = '<!-- ordinary\nnote -->';
+  const source = [IGNORE_START, otherComment, multilineComment, SPECIMEN, IGNORE_END].join('\n');
+  assert.equal(stripIgnoreMarkers(source), ['', otherComment, multilineComment, SPECIMEN, ''].join('\n'));
+});
 
 test('ignore markers: a marked specimen is excluded and the rest is still scored', () => {
   const source = [
@@ -2686,12 +2703,9 @@ test('ignore markers: a marked specimen is excluded and the rest is still scored
       assert.ok(!source.slice(region.start, region.end).includes('tapestry'), `${sourceMode}: highlight reached the ignored region`);
     }
   }
-  const unmarked = AIDetector.analyzeText(source.replace(/<!--.*?-->/g, ''));
+  const unmarked = AIDetector.analyzeText(stripIgnoreMarkers(source));
   assert.ok(unmarked.issues.some((i) => i.text === 'delve'), 'precondition: the specimen scores without markers');
 });
-
-const IGNORE_START = '<!-- avoid-ai-writing:ignore-start -->';
-const IGNORE_END = '<!-- avoid-ai-writing:ignore-end -->';
 
 test('ignore markers: CRLF source masks the same region', () => {
   const source = ['Intro line with a robust claim in it for the page.', IGNORE_START, SPECIMEN, IGNORE_END, 'The closing line explains the specimen to readers.'].join('\r\n');
@@ -2715,6 +2729,23 @@ test('ignore markers: nested starts need their own ends', () => {
   const r = AIDetector.analyzeText(source);
   assert.equal(r.stats.ignoredRegions, 1);
   assert.deepEqual(r.issues.map((i) => i.text), []);
+});
+
+test('ignore markers: an unmatched inner start keeps the outer region open', () => {
+  const source = [
+    'The team met on Tuesday and agreed the next steps for the release.',
+    IGNORE_START,
+    'We must delve into the first specimen here.',
+    IGNORE_START,
+    'The second specimen is a vibrant tapestry.',
+    IGNORE_END,
+    'This robust line remains inside the unclosed outer region.',
+  ].join('\n');
+  for (const sourceMode of ['plain', 'rendered-markdown']) {
+    const result = AIDetector.analyzeText(source, { sourceMode });
+    assert.equal(result.stats.ignoredRegions, 1, sourceMode);
+    assert.deepEqual(result.issues, [], sourceMode);
+  }
 });
 
 test('ignore markers: code, inline mentions, quotations, and stray ends do not act', () => {
@@ -2861,6 +2892,14 @@ test('word joiners: U+2060 inside a word still counts as a bypass character', ()
     assert.ok(r.issues.some((i) => i.type === 'normalization-flag'), word);
     assert.ok(r.issues.some((i) => i.type === 'tier1' && i.text === 'delve'), word);
   }
+});
+
+test('word joiners: astral letters on both sides count as a bypass character', () => {
+  const word = '\u{10400}\u2060\u{10428}';
+  assert.equal(AIDetector.normalizeText(word).flags.zeroWidth, 1);
+  const result = AIDetector.analyzeText(`We read ${word} and then met the team to discuss the plan at length.`);
+  assert.equal(result.stats.normalization.zeroWidth, 1);
+  assert.ok(result.issues.some((issue) => issue.type === 'normalization-flag'));
 });
 
 test('dev-blog-boilerplate: simplicity slogans fire', () => {
