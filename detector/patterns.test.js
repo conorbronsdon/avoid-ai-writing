@@ -1484,6 +1484,32 @@ test('an ordinary Russian word in an English line is left alone', () => {
   assert.ok(!AIDetector.analyzeText(text).issues.some((i) => i.type === 'normalization-flag'));
 });
 
+test('two-letter Russian words next to Russian words are not swapped in English sentences', () => {
+  for (const word of ['со', 'ее', 'ох', 'ус']) {
+    const text = `This guide explains how to run docker compose ${word} флагом build and inspect logs safely.`;
+    const normalized = AIDetector.normalizeText(text);
+    assert.equal(normalized.text, text, word);
+    assert.equal(normalized.flags.homoglyph, 0, word);
+    assert.notEqual(AIDetector.analyzeText(text).document_classification, 'AI_ONLY', word);
+  }
+});
+
+test('an isolated fully substituted word is swapped across punctuation, hyphen, and apostrophe boundaries', () => {
+  const sentence = AIDetector.normalizeText('Your account is at risk. аст. Now secure it immediately through this form before it expires.');
+  assert.ok(sentence.text.includes(' act. Now'));
+  assert.equal(sentence.flags.homoglyph, 3);
+  for (const [input, expected] of [['Please а-ct now.', 'Please a-ct now.'], ["Please а'ct now.", "Please a'ct now."]]) {
+    const normalized = AIDetector.normalizeText(input);
+    assert.equal(normalized.text, expected);
+    assert.equal(normalized.flags.homoglyph, 1);
+  }
+});
+
+test('a fully substituted word inside a Russian sentence is a documented limit', () => {
+  const text = 'The new service launches tomorrow and the team expects a detailed report. МЕТА поможет нам после проверки.';
+  assert.equal(AIDetector.normalizeText(text).flags.homoglyph, 0);
+});
+
 test('bilingual technical sentences keep Russian words and one-letter prepositions intact', () => {
   const text = 'Запустите docker compose up с флагом build and then watch the container logs closely.';
   const normalized = AIDetector.normalizeText(text);
