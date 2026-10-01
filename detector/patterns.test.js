@@ -1359,6 +1359,18 @@ test('low-ttr reports plain TTR for a text of exactly 200 tokens', () => {
   assert.match(issue.text, /^Vocabulary diversity 30\.0% /);
 });
 
+test('low-ttr averages windows whose distinct count changes as they slide', () => {
+  // 201 tokens make two windows. The first holds "lead" and 79 cycling
+  // terms: 80 distinct, exactly 0.40, which does not fire on its own. The
+  // second drops "lead" and repeats term0: 79 distinct. Their mean, 159 /
+  // 400 = 0.3975, fires only if the window slides, drops the word that
+  // left it, and divides by the number of windows.
+  const words = ['lead', ...Array.from({ length: 199 }, (_, i) => `term${i % 79}`), 'term0'];
+  const issue = AIDetector.analyzeText(`${words.join(' ')}.`).issues.find((i) => i.type === 'low-ttr');
+  assert.ok(issue, 'expected low-ttr at a mean of 0.3975 over two windows');
+  assert.match(issue.text, /^Vocabulary diversity 39\.8% .*, 201 tokens\)$/);
+});
+
 test('low-ttr does not fire on short texts (<200 tokens)', () => {
   // Same vocab-poor pattern but only ~50 tokens — below the sample-size
   // threshold. Avoids drowning short social posts in a stylometric flag
