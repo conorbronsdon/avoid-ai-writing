@@ -3791,6 +3791,54 @@ test('#211: exact nine-word example is length-gated alone, flags within a longer
   assert.ok(types.has('false-concession'), 'the exact reported sentence must flag once the input clears the length gate');
 });
 
+// #213: a must-fire and a must-not-fire fixture for six phrase-level types.
+// Each must-not-fire sentence is ordinary prose that shares the trigger's
+// words without its frame, so it pins the pattern boundary rather than a
+// random clean sentence.
+const PHRASE_FIXTURES = [
+  {
+    type: 'sycophantic',
+    fires: "You're absolutely right, and I should have caught that earlier. The function returns null when the cache is empty, so the caller needs a guard.",
+    clean: 'Mara said the estimate was absolutely right for the first phase, and the second phase came in two weeks late because of the vendor delay.',
+  },
+  {
+    type: 'lets-construction',
+    fires: "Let's explore what changed in the scheduler between the two releases and why the queue backs up every Monday morning.",
+    clean: "Let's meet at the station at nine and walk to the venue together after we drop off the bags at the hotel.",
+  },
+  {
+    type: 'rhetorical-question',
+    fires: 'The vendor raised prices by 30 percent this quarter. But what does this mean for small teams on the starter plan who budgeted annually?',
+    clean: 'What does this mean in practice? Rent goes up by 40 dollars a month for tenants in the older buildings starting in March.',
+  },
+  {
+    type: 'novelty-inflation',
+    fires: 'Here is a problem nobody talks about: most teams never test their backups, so the first restore happens during an outage.',
+    clean: 'Nobody talks about the budget at the Monday meeting, so the problem stays on the agenda until finance joins on Thursday.',
+  },
+  {
+    type: 'vague-attribution',
+    fires: 'Experts believe the new policy will cut wait times, but the hospital has not published any numbers since the change in June.',
+    clean: 'Studies of the 2019 cohort, published by the state health department in May, found that wait times fell by 12 percent.',
+  },
+  {
+    type: 'tier1-clarity',
+    fires: 'We moved the job to the night shift in order to free up the build machines during the day for the release team.',
+    clean: 'The forms are filed in order of arrival, and the clerk stamps each one with the date before it goes to the archive room.',
+  },
+];
+
+for (const { type, fires, clean } of PHRASE_FIXTURES) {
+  test(`#213: ${type} fires on its frame and stays clean on nearby ordinary prose`, () => {
+    const hit = AIDetector.analyzeText(fires);
+    assert.ok(!hit.tooShort, 'must-fire fixture must clear the length gate');
+    assert.ok(hit.issues.some((i) => i.type === type), `${type} should fire on: ${fires}`);
+    const miss = AIDetector.analyzeText(clean);
+    assert.ok(!miss.tooShort, 'must-not-fire fixture must clear the length gate');
+    assert.ok(!miss.issues.some((i) => i.type === type), `${type} must not fire on: ${clean}`);
+  });
+}
+
 if (failed > 0) {
   console.error(`\n${failed} test(s) failed`);
   process.exit(1);

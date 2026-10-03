@@ -71,14 +71,8 @@ test('every type referenced in the tables is a real detector type', () => {
 // not proof of assertions or runtime coverage. Remove an exception when its
 // fixture lands; new types must never be added to this historical list.
 const LEGACY_UNCOVERED_TYPES = [
-  'lets-construction',
-  'novelty-inflation',
-  'rhetorical-question',
   'significance-inflation',
-  'sycophantic',
   'template-phrase',
-  'tier1-clarity',
-  'vague-attribution',
 ];
 
 test('every detector type has a named fixture or an explicit legacy gap', () => {
