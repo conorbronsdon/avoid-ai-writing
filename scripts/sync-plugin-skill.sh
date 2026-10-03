@@ -19,7 +19,6 @@ examples_src="$repo_root/examples"
 canonical_skill_root="$repo_root/skills/avoid-ai-writing"
 canonical_detector_dest="$canonical_skill_root/detector"
 canonical_scripts_dest="$canonical_skill_root/scripts"
-canonical_examples_dest="$canonical_skill_root/examples"
 detector_patterns_dest="$repo_root/skills/ai-writing-detector/scripts/patterns.js"
 verifier_patterns_dest="$repo_root/skills/preservation-verifier/scripts/patterns.js"
 verifier_validate_dest="$repo_root/skills/preservation-verifier/scripts/validate.js"
@@ -95,6 +94,12 @@ print(version)
 PY
 }
 
+package_version="$(python3 -c 'import json,sys; print(json.load(open("'$repo_root'/package.json"))["version"])' 2>/dev/null || echo '')"
+if [ -z "$package_version" ]; then
+  echo "could not parse version from package.json" >&2
+  exit 1
+fi
+
 claude_version="$(read_manifest_version "$repo_root/plugins/avoid-ai-writing/.claude-plugin/plugin.json")"
 openai_version="$(read_manifest_version "$repo_root/.codex-plugin/plugin.json")"
 
@@ -104,6 +109,10 @@ if [ "$skill_version" != "$claude_version" ]; then
 fi
 if [ "$skill_version" != "$openai_version" ]; then
   echo "version mismatch: SKILL.md=$skill_version OpenAI plugin=$openai_version" >&2
+  exit 1
+fi
+if [ "$skill_version" != "$package_version" ]; then
+  echo "version mismatch: SKILL.md=$skill_version package.json=$package_version" >&2
   exit 1
 fi
 
