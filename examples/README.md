@@ -6,7 +6,9 @@ applies **register/voice** directives and removes AI tells, on top of whatever
 (`--style ./house.json`, or a bare name matching `examples/<name>.json`): it is applied, and
 the checkable subset of its mechanics is verified deterministically (see the table below for
 which rules gate the exit code and which are advisory). The files here are *examples of that
-format*; they also serve as test fixtures (`scripts/check-style.test.js` resolves against them), so editing or removing either file breaks `npm test`; copy one and edit it.
+format*; copy one and edit it. They also serve as test fixtures: `scripts/check-style.test.js`
+resolves bare `--config` names against this directory and asserts on their contents, so editing
+or removing either file breaks `npm test`.
 
 ## Where encoded guides live
 
@@ -64,10 +66,14 @@ A config is JSON with two parts:
 |---|---|---|
 | `quotes` | `straight` \| `curly` | **hard** — flags the wrong mark form in prose |
 | `latinAbbrev` | `never` \| `parentheses` \| `any` | **hard** — `never` flags any `e.g.`/`i.e.`; `parentheses` flags them outside parentheses; `any` is unchecked |
-| `headings` | `sentence` \| `title` | advisory — proper nouns make sentence vs. title case ambiguous, so it can't be verified deterministically. `prose.json` sets `headings: "title"` to demonstrate that the guide wins the mechanic even when the catalog flags Title Case headings. |
+| `headings` | `sentence` \| `title` | advisory — proper nouns make sentence vs. title case ambiguous, so it can't be verified deterministically |
 | `emDash` | `sparing` \| `deliberate` | advisory — `sparing` flags a rate over ~1 per 1,000 words; `deliberate` is unchecked |
 | `spellNumbersUpTo` | number | advisory — flags numerals at or below the threshold in prose |
 | `serialComma` | `true` \| `false` | model-applied only; not machine-checked |
+
+`prose.json` sets `headings: "title"` although the catalog flags Title Case headings. It shows
+the rule from `SKILL.md`'s `--style` section: when a config's mechanics conflict with the
+catalog, the config wins the mechanic.
 
 Unrecognized keys or values are reported as **warnings** (a config the tool couldn't fully
 apply) rather than silently ignored; omitted keys do nothing.
