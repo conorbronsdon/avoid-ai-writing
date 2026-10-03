@@ -104,23 +104,12 @@ CommonJS).
 |---|---|---|
 | `score` | `0–100` | 0 = clean, 100 = heavy AI |
 | `label` | string | scored: `Clean` (0) / `Minimal AI signals` (1–15) / `Some AI patterns` (16–35) / `Moderate AI signals` (36–60) / `Strong AI signals` (61–80) / `Heavy AI patterns` (81–100). Unscored: `Empty` / `Too short` / `Unsupported script` / `Text too long` |
-| `issues[]` | `{type, text, severity, …}` | one entry per detected pattern; `type` keys map to [`CATEGORIES.md`](./CATEGORIES.md) |
+| `issues[]` | `{type, text, severity, …}` | one entry per detected pattern; `type` keys map to [`CATEGORIES.md`](./CATEGORIES.md); `severity` values are listed under [Severity and P-tiers](#severity-and-p-tiers) |
 | `stats` | object | `wordCount`, per-tier counts, `contextMode`, `sourceMode`, masked-span counts, `denseAIVocab`, normalization flags, etc. |
 | `document_classification` | string | `HUMAN_ONLY` / `MIXED` / `AI_ONLY` (shape mirrors GPTZero for swap-in), or `UNSCORED` on the early-exit paths |
 | `class_probabilities` | `{human, mixed, ai}` | sums to exactly 1.0 |
 | `confidence_category` | `low` / `medium` / `high` | |
 | `highlight_sentence_for_ai` | region[] | sentence spans with source offsets + per-region score, for UI highlighting |
-
-The `issues[]` entries use a four-value severity scale mapped to P-tiers:
-
-| Severity | P-label | Types that emit it |
-|---|---|---|
-| `critical` | P0 | `chatbot`, `sycophantic`, `reasoning-artifact`, `vague-attribution`, `cutoff-disclaimer`, `ai-placeholder`, `ai-citation-markup` |
-| `high` | P1 | `significance-inflation`, `uniformity`, `tier3-phrase-cluster`, `future-narrative`, `social-cta-closer`, `speculative-opener`, `formulaic-opener`, `launch-intro` |
-| `medium` | P2 | `tier2`, `transition`, `filler`, `generic-conclusion`, `lets-construction`, `hollow-intensifier`, `lingering-attention`, `novelty-inflation`, `template-phrase`, `false-concession`, `rhetorical-question`, `formatting`, `tier3-phrase`, `unnecessary-hyphenation`, `negative-parallelism`, `performed-insight`, `dev-blog-boilerplate`, `crowd-contrast`, `fake-casual-prop` |
-| `low` | P3 | `tier3`, `emotional-flatline`, `confidence-calibration`, `low-ttr` |
-
-`low` / P3 is emitted by the detector but has no counterpart in the skill's three-tier writing rules (P0 / P1 / P2). See [`CATEGORIES.md`](./CATEGORIES.md).
 
 The four unscored labels share one result shape: `score` 0,
 `document_classification` `UNSCORED`, an even `class_probabilities` split, and
@@ -203,6 +192,25 @@ still scored. Single quotes are left alone because
 apostrophes in contractions and possessives would pair up across ordinary
 prose. Zero-width characters, lookalike letters, and roleplay markers inside a
 quotation or blockquote do not raise the normalization flag.
+
+### Severity and P-tiers
+
+Each `issues[]` entry carries one of four `severity` values. `SEVERITY_LABELS`
+in `patterns.js` maps them to P-labels:
+
+| `severity` | P-label | Types that emit it |
+|---|---|---|
+| `critical` | P0 | `chatbot`, `sycophantic`, `reasoning-artifact`, `vague-attribution`, `cutoff-disclaimer`, `ai-placeholder`, `ai-citation-markup`, `ai-utm-source`, `normalization-flag` (zero-width or homoglyph characters) |
+| `high` | P1 | `tier1`, `significance-inflation`, `template-phrase`, `hedge-stack`, `future-narrative`, `social-cta-closer`, `negation-chain`, `negative-parallelism`, `formulaic-opener`, `speculative-opener`, `launch-intro`, `fake-casual-prop`, `tier3-phrase-cluster`, `bullet-np-list`, `smart-punct-signature`, `normalization-flag` (roleplay markers), `fnword-trigram-entropy` (one trigram repeated across the document) |
+| `medium` | P2 | `tier1-clarity`, `tier2`, `transition`, `filler`, `generic-conclusion`, `lets-construction`, `hollow-intensifier`, `lingering-attention`, `novelty-inflation`, `false-concession`, `rhetorical-question`, `real-actual-inflation`, `performed-insight`, `dev-blog-boilerplate`, `crowd-contrast`, `parenthetical-hedge`, `title-case-header`, `unnecessary-hyphenation`, `tier3-phrase`, `hashtag-stuff`, `em-dash`, `formatting`, `punct-distribution`, `cross-para-burstiness`, `uniformity` (sentence length), `fnword-trigram-entropy` (low entropy) |
+| `low` | P3 | `tier3`, `emotional-flatline`, `confidence-calibration`, `low-ttr`, `uniformity` (paragraph length) |
+
+The skill's writing rules define only P0 to P2, so `low` / P3 has no
+counterpart there. The engine assigns its labels independently: a type can
+carry a different tier from the skill's matching rule. For example,
+`real-actual-inflation` is P2 here while the skill lists "Real/actual"
+adjective inflation under P1. To block on P0 and P1, gate on `critical` and
+`high`.
 
 ## `validate(original, rewritten, options?)` → result
 

@@ -138,7 +138,7 @@ mistake their absence for a coverage gap:
 - Stranded auxiliary contrast *(a single instance is legitimate style; only density across a piece distinguishes voice from tic)*
 - Colon into a triple *(three-item lists are often simply true, especially in technical writing — weigh by genre, not per hit)*
 - When to rewrite from scratch vs. patch
-- Severity tiers (P0 / P1 / P2) — the detector also emits `low` (P3) for `tier3`, `emotional-flatline`, `confidence-calibration`, and `low-ttr`, but the skill's writing rules have no P3 tier; see `detector/README.md`
+- Severity tiers (P0 / P1 / P2) *(the engine has a fourth severity, `low` (P3), with no counterpart in the writing rules, and its labels can differ from the skill's tier for the same rule; see the severity table in [`README.md`](./README.md#severity-and-p-tiers))*
 - Self-reference escape hatch *(the engine applies the quoted-material half: blockquote lines and double-quoted spans are masked before scoring, see [`README.md`](./README.md). Single-quoted spans and text marked as illustrative stay judgment-only)*
 - Paragraph-reshuffle immunity (structure test) and Treadmill effect / low information density (content test) *(writer-side tests, not text patterns; out of scope for the detector)*
 - Output format
