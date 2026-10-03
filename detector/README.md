@@ -111,6 +111,17 @@ CommonJS).
 | `confidence_category` | `low` / `medium` / `high` | |
 | `highlight_sentence_for_ai` | region[] | sentence spans with source offsets + per-region score, for UI highlighting |
 
+The `issues[]` entries use a four-value severity scale mapped to P-tiers:
+
+| Severity | P-label | Types that emit it |
+|---|---|---|
+| `critical` | P0 | `chatbot`, `sycophantic`, `reasoning-artifact`, `vague-attribution`, `cutoff-disclaimer`, `ai-placeholder`, `ai-citation-markup` |
+| `high` | P1 | `significance-inflation`, `uniformity`, `tier3-phrase-cluster`, `future-narrative`, `social-cta-closer`, `speculative-opener`, `formulaic-opener`, `launch-intro` |
+| `medium` | P2 | `tier2`, `transition`, `filler`, `generic-conclusion`, `lets-construction`, `hollow-intensifier`, `lingering-attention`, `novelty-inflation`, `template-phrase`, `false-concession`, `rhetorical-question`, `formatting`, `tier3-phrase`, `unnecessary-hyphenation`, `negative-parallelism`, `performed-insight`, `dev-blog-boilerplate`, `crowd-contrast`, `fake-casual-prop` |
+| `low` | P3 | `tier3`, `emotional-flatline`, `confidence-calibration`, `low-ttr` |
+
+`low` / P3 is emitted by the detector but has no counterpart in the skill's three-tier writing rules (P0 / P1 / P2). See [`CATEGORIES.md`](./CATEGORIES.md).
+
 The four unscored labels share one result shape: `score` 0,
 `document_classification` `UNSCORED`, an even `class_probabilities` split, and
 `confidence_category` `low`. Branch on that classification rather than on the
