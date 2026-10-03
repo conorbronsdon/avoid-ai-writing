@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - url: SUPPORT.md
+    name: Support
+    description: Get help using this skill
+  - url: CONTRIBUTING.md
+    name: Choosing an issue
+    description: How to pick and claim a contribution

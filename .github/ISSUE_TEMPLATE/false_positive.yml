@@ -92,7 +92,7 @@ body:
     attributes:
       label: Version
       description: The `version:` line in SKILL.md, or the release tag you installed.
-      placeholder: "3.22.0"
+      placeholder: "the version: line in SKILL.md, or the release tag you installed"
     validations:
       required: false
 
