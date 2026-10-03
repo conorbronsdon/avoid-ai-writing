@@ -35,7 +35,8 @@ newcomer PRs. Please leave `good first issue`s for new contributors.
 | `detector/CATEGORIES.md` | The map between references/patterns.md rules and detector `type`s. Keep it current. |
 | `README.md` | The pitch and the numbered prose-pattern list. |
 | [`GLOSSARY.md`](GLOSSARY.md) | One-line definitions of the project's terms, each linked to its canonical source. |
-| `cursor-rules/`, `plugins/` | Editor and tool integrations. |
+|| `cursor-rules/`, `plugins/` | Editor and tool integrations. |
+|| `skills/` (see [`OPENAI_PLUGIN.md`](OPENAI_PLUGIN.md)) | Seven ChatGPT/Codex sub-skills and validated connection graph. |
 
 ## Adding or changing a rule
 
@@ -216,3 +217,43 @@ After changing either canonical file, run `bash scripts/sync-plugin-skill.sh && 
 
 Maintainers should follow [the release recovery procedure](docs/releasing.md)
 instead of moving a tag or reusing a published version after a failed run.
+
+## Development setup
+
+Fork the repository and clone your fork (or the original for a read-only
+checkout). See `package.json` `engines.node` (`>=18`) for the Node version; no
+other dependencies to install.
+
+Run the full suite:
+
+```bash
+npm test
+```
+
+Run a single test file:
+
+```bash
+node scripts/run-tests.js detector/patterns.test.js
+# or directly:
+node detector/patterns.test.js
+```
+
+Before committing changes to `SKILL.md` or `references/patterns.md`, run the
+sync scripts:
+
+```bash
+bash scripts/sync-plugin-skill.sh && bash scripts/sync-cursor-rules.sh
+```
+
+## Release checklist
+
+1. Confirm the pattern-category count matches `references/patterns.md` and
+   update `README.md` and `CLAUDE.md` if changed.
+2. Add an Unreleased changelog entry in `CHANGELOG.md` for user-facing changes;
+   skip for docs-only changes.
+3. Update versions in `SKILL.md` frontmatter, `package.json`, and both plugin
+   manifests (`plugins/avoid-ai-writing/.claude-plugin/plugin.json` and
+   `.codex-plugin/plugin.json`).
+4. Run `bash scripts/sync-plugin-skill.sh && bash scripts/sync-cursor-rules.sh`.
+5. Run `npm test` and `npm run self-scan:check`.
+6. Follow the release recovery procedure in `docs/releasing.md` if needed.
