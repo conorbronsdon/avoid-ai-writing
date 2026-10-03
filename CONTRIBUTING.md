@@ -243,7 +243,8 @@ the version bump only when the release is ready.
    `.codex-plugin/plugin.json`. The sync scripts do not write the manifest
    versions.
 3. Run `bash scripts/sync-plugin-skill.sh && bash scripts/sync-cursor-rules.sh`.
-   The first script fails on a manifest version that differs from `SKILL.md`.
+   The first script fails when a manifest or `package.json` version differs
+   from `SKILL.md`.
 4. Run `npm test`.
 
 If a release run fails, follow [the release recovery procedure](docs/releasing.md).

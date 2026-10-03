@@ -80,28 +80,23 @@ try:
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
 except FileNotFoundError:
-    print(f"Missing plugin manifest: {path}", file=sys.stderr)
+    print(f"Missing manifest: {path}", file=sys.stderr)
     sys.exit(1)
 except json.JSONDecodeError as e:
-    print(f"Invalid JSON in plugin manifest: {path}: {e}", file=sys.stderr)
+    print(f"Invalid JSON in manifest: {path}: {e}", file=sys.stderr)
     sys.exit(1)
 
 version = data.get("version")
 if not isinstance(version, str) or not version:
-    print(f'Invalid or missing "version" in plugin manifest: {path}', file=sys.stderr)
+    print(f'Invalid or missing "version" in manifest: {path}', file=sys.stderr)
     sys.exit(1)
 print(version)
 PY
 }
 
-package_version="$(python3 -c 'import json,sys; print(json.load(open("'$repo_root'/package.json"))["version"])' 2>/dev/null || echo '')"
-if [ -z "$package_version" ]; then
-  echo "could not parse version from package.json" >&2
-  exit 1
-fi
-
 claude_version="$(read_manifest_version "$repo_root/plugins/avoid-ai-writing/.claude-plugin/plugin.json")"
 openai_version="$(read_manifest_version "$repo_root/.codex-plugin/plugin.json")"
+package_version="$(read_manifest_version "$repo_root/package.json")"
 
 if [ "$skill_version" != "$claude_version" ]; then
   echo "version mismatch: SKILL.md=$skill_version Claude plugin=$claude_version" >&2
