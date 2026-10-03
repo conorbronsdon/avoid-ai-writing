@@ -1,8 +1,8 @@
 blank_issues_enabled: true
 contact_links:
-  - url: SUPPORT.md
-    name: Support
-    description: Get help using this skill
-  - url: CONTRIBUTING.md
-    name: Choosing an issue
-    description: How to pick and claim a contribution
+  - name: Support
+    url: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/SUPPORT.md
+    about: Where to get help, what to include in a report, and how to report a security issue.
+  - name: Choosing an issue to work on
+    url: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/CONTRIBUTING.md#choosing-an-issue
+    about: How to claim an issue, and which issues are reserved for first-time contributors.
