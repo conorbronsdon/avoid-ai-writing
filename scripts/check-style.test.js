@@ -196,9 +196,19 @@ const cli = (mdText, cfgArg) => {
     fs.rmSync(dir, { recursive: true, force: true });
   }
 };
+t('prose.json: straight quotes hard-fail under curly, curly passes', () => {
+  const proseMech = JSON.parse(fs.readFileSync(EX('prose.json'), 'utf8')).mechanics;
+  assert.strictEqual(check('He said "hello" and left.\n', proseMech).hard.length, 1);
+  assert.ok(check('He said "hello" and left.\n', proseMech).hard.some((x) => x.rule === 'double-quote-should-be-curly'));
+  assert.strictEqual(check('He said "hello" and left.\n', proseMech).hard.length, 1);
+  // Curly quote passes (no straight double quotes in prose)
+  assert.strictEqual(check('He said “hello” and left.\n', proseMech).hard.length, 0);
+});
+
 t('CLI exits 0 clean, 1 on a hard violation, 2 on a tool error', () => {
-  assert.strictEqual(cli('# ok\n\nplain text', 'technical'), 0);
-  assert.strictEqual(cli('# ok\n\nuse the “curly” quote', 'technical'), 1); // technical => quotes straight
+  assert.strictEqual(cli('# ok\n\nplain text', 'prose'), 0);
+  assert.strictEqual(cli('# ok\n\nplain text with “curly” quotes', 'prose'), 0); // prose => quotes curly
+  assert.strictEqual(cli('He said "hello".\n', 'prose'), 1); // straight quotes fail under prose
   assert.strictEqual(cli('# ok\n\ntext', 'no-such-guide'), 2);
 });
 
