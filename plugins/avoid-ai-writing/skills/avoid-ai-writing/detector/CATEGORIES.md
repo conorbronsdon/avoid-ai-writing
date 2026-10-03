@@ -128,7 +128,10 @@ mistake their absence for a coverage gap:
 - Immaculate typography in casual registers *(folded into the Formatting section — same weak-signal tier as curly quotes, not a standalone category)*
 - Subjectless fragments and agentless passives *(docs and changelog registers are carve-outs — the fragment is the correct form there)*
 - Diff-anchored writing *(changelogs, release notes, and migration guides are carve-outs)*
-- Manufactured punchlines / staccato drama (including repeated setup/reversal punchlines: P2 only when repetition replaces concrete claims; supported reversals and intentional comedy, fiction, speeches, and quotations pass)
+- List-label periods (list-label punctuation; no regex — needs label-vs-sentence reading)
+- Speculative gap-filling (judgment-only; hedged speculation disguised as background)
+- Infomercial engagement hooks (judgment-only; punchy fragment-hooks that stage suspense)
+- Manufactured punchlines and staccato drama (including repeated setup/reversal punchlines: P2 only when repetition replaces concrete claims; supported reversals and intentional comedy, fiction, speeches, and quotations pass)
 - Aphorism formulas *(a regex for "X is the Y of Z" would flag ordinary genitive copulas — "Paris is the capital of France")*
 - Stacked rhetorical questions *(interviews, FAQs, and dialogue stack questions legitimately; a regex can't read register)*
 - Same-opener sentence runs *(whether the anaphora is earned is the whole judgment; pronoun-opener runs are ordinary narration)*
@@ -137,6 +140,7 @@ mistake their absence for a coverage gap:
 - When to rewrite from scratch vs. patch
 - Severity tiers (P0 / P1 / P2)
 - Self-reference escape hatch *(the engine applies the quoted-material half: blockquote lines and double-quoted spans are masked before scoring, see [`README.md`](./README.md). Single-quoted spans and text marked as illustrative stay judgment-only)*
+- Writer-side tests — Paragraph-reshuffle immunity and Treadmill effect / low information density *(no detectable form; intentionally out of scope for this file)*
 - Output format
 
 > **Partial:** the skill's six context profiles map to the engine's broader
