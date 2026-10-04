@@ -1,6 +1,6 @@
 # Cursor Rule — avoid-ai-writing
 
-Drop-in [Cursor](https://cursor.sh) rule that ports the [`avoid-ai-writing`](../SKILL.md) skill to Cursor's `.mdc` rule format. Functionally identical to the upstream skill — same tier vocabulary, same context profiles, same detect / rewrite modes.
+Drop-in [Cursor](https://cursor.sh) rule that ports the [`avoid-ai-writing`](../SKILL.md) skill to Cursor's `.mdc` rule format, with the same rules, tier vocabulary, context profiles, and detect / rewrite modes. The port ships without the skill's scripts, so three mechanical checks become manual steps the rule reports as unverified: the preservation validator, the `--style` config checker, and the quote-mark normalizer. A `--style` config must be given as a path, since the bundled example configs are not included.
 
 ## Install
 

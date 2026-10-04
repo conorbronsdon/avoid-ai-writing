@@ -6,6 +6,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Documentation
+
+- Document paste-field limits and current file-size measurement. Recommend a directory install for Windsurf and the native plugin or an activated Knowledge upload for ChatGPT (#219).
+
 ### Fixed
 
 - Fix empty-result stats and non-string input handling (#234).
@@ -27,6 +31,7 @@ All notable changes to this project are documented here.
 - Word joiners (U+2060) next to URLs, spaces, or punctuation no longer raise the bypass-character flag. Show-notes editors insert them to control line breaks, and four of them pushed a plain paragraph of links to `AI_ONLY`. They are still stripped before matching, and a word joiner that splits a word still counts (#351).
 - A word joiner between two letters outside the Basic Multilingual Plane now counts as a bypass character (#353).
 - The negative-parallelism proximity gate now counts distinct reported frames. Repeating an identical plain contrast no longer produces one finding from a gate that counted two raw matches (#353).
+- The Cursor rule and the portable paste file now state the manual marks-pass convention once. The paragraph no longer tells the model to run normalizer flags (`--write`, `--quotes`, `--reference`) that those standalone files cannot use (#218).
 - Check how a destination renders single newlines before delivering prose; unwrap hard-wrapped paragraphs only where the breaks remain visible, while preserving intentional line breaks and fixed-width Markdown source layout (#122).
 - Performed-insight phrases now cover staged discoveries: a judgment framed as a twist the writer found ("the recording turned out to be the least interesting part", "the real story was"). The detector keeps the superlative-plus-insight-noun form and reveal-style "real story" continuations narrow, so literal uses such as "turned out to be the most expensive option" and "the real story was covered" stay clean. Nested emotional-flatline wording and sentence-initial "Turns out" count once when contained in a staged discovery. In short social copy, one staged discovery carrying the payoff is enough to fix. The fabricated-speaker-perspective guardrail now also covers drafting new copy in someone else's voice. No new category.
 - The detector now skips quoted material, as the skill's self-reference escape hatch describes. Words inside a double-quoted span (straight or curly) and single-line blockquotes, including nested `>>` lines, lists inside a quote and the compact `>text` form, no longer count against the writer, so quoting AI output to criticise it stops scoring its vocabulary. Bypass characters inside a quotation no longer raise the normalization flag. `stats.maskedQuotes` reports how many spans were skipped. Single quotes still count, because apostrophes would pair up across ordinary prose. Issue and highlight offsets still point at the original text (#238).
