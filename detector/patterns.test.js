@@ -3839,6 +3839,48 @@ for (const { type, fires, clean } of PHRASE_FIXTURES) {
   });
 }
 
+// #216: Tier 3 density is per word, not aggregate. The threshold is
+// max(3, floor(wordCount * 0.03)) uses of ONE listed form, so many different
+// Tier 3 words can pass 3% together without a flag.
+test('#216: tier3 counts each word on its own; spread vocabulary stays clean, one repeated word fires', () => {
+  const filler = 'The crew met on Tuesday to walk the site and check the drainage before the concrete pour.';
+  const forms = ['significant', 'innovative', 'effective', 'dynamic', 'scalable', 'compelling',
+    'unprecedented', 'exceptional', 'remarkable', 'sophisticated', 'instrumental', 'verbatim',
+    'innovation', 'dynamics', 'scalability', 'remarkably', 'effectively', 'significantly'];
+  const spread = forms.map((w) => `The ${w} part came up again. ${filler}`).join(' ');
+  const spreadResult = AIDetector.analyzeText(spread);
+  assert.ok(forms.length / spreadResult.stats.wordCount >= 0.03,
+    'the spread fixture must exceed 3% Tier 3 vocabulary in aggregate');
+  assert.ok(!spreadResult.issues.some((i) => i.type === 'tier3'),
+    'distinct Tier 3 words under the per-word threshold must not fire');
+
+  const repeated = Array.from({ length: 9 }, () => `The significant part came up again. ${filler}`)
+    .concat([filler, filler]).join(' ');
+  const repeatedResult = AIDetector.analyzeText(repeated);
+  const threshold = Math.max(3, Math.floor(repeatedResult.stats.wordCount * 0.03));
+  assert.ok(9 >= threshold, `nine uses must reach the per-word threshold (${threshold})`);
+  assert.ok(repeatedResult.issues.some((i) => i.type === 'tier3' && i.text.includes('"significant"')),
+    'one word repeated past the threshold must fire');
+});
+
+// #216: Pin the floor and minimum at exact threshold boundaries.
+test('#216: tier3 rounds down the percentage and requires at least three uses', () => {
+  for (const [wordCount, uses, fires] of [[133, 2, false], [133, 3, true], [241, 6, false], [241, 7, true]]) {
+    const text = Array(uses).fill('significant').concat(Array(wordCount - uses).fill('crew')).join(' ');
+    const result = AIDetector.analyzeText(text);
+    assert.strictEqual(result.stats.wordCount, wordCount);
+    assert.strictEqual(result.issues.some((i) => i.type === 'tier3' && i.text.includes('"significant"')), fires,
+      `${uses} uses in ${wordCount} words must ${fires ? 'fire' : 'stay clean'}`);
+  }
+});
+
+test('#216: separately listed Tier 3 inflections do not share a density bucket', () => {
+  const text = ['significant', 'significant', 'significantly', 'significantly', ...Array(129).fill('crew')].join(' ');
+  const result = AIDetector.analyzeText(text);
+  assert.strictEqual(result.stats.wordCount, 133);
+  assert.ok(!result.issues.some((i) => i.type === 'tier3'), 'two uses of each listed form must stay below the three-use floor');
+});
+
 if (failed > 0) {
   console.error(`\n${failed} test(s) failed`);
   process.exit(1);

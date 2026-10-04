@@ -487,3 +487,22 @@ for rel in ("references/patterns.md", "scripts/markdown-prose.js", "scripts/norm
         errors, _, _ = MODULE.validate(root)
         assert any(f"missing bundled resource: {rel}" in e for e in errors), errors
 print("split reference and transitive dependency negative controls passed")
+
+# Every Skill's frontmatter version must be present and match the manifest (#246).
+def skill_version_errors(replacement: str):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        root = Path(temp_dir)
+        make_valid_plugin_root(root)
+        skill = root / "skills" / "preservation-verifier" / "SKILL.md"
+        text = skill.read_text(encoding="utf-8")
+        manifest = json.loads((root / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8"))
+        original = f"version: {manifest['version']}\n"
+        assert original in text, text[:200]
+        skill.write_text(text.replace(original, replacement, 1), encoding="utf-8")
+        return MODULE.validate(root)[0]
+
+drifted = skill_version_errors("version: 0.0.1\n")
+assert any("preservation-verifier" in e and "does not match manifest" in e for e in drifted), drifted
+missing = skill_version_errors("")
+assert any("preservation-verifier" in e and "`version` is required" in e for e in missing), missing
+print("sub-skill version controls passed")

@@ -12,7 +12,7 @@
 #   3. the node detector/validate.js mechanical check -> a manual prose check
 #   4. the --style config path (scripts/check-style.js, examples/) -> apply, unverified
 #   5. --style resolution by bare name out of examples/ -> a path only
-#   6. the automatic marks command -> manual convention pass, unverified
+#   6. the automatic marks-pass paragraph -> the manual convention, stated once
 # Each rewrite is anchored on the exact upstream text and FAILS LOUDLY if the
 # anchor stops matching exactly once — so an upstream edit to one of those
 # spans breaks CI here instead of silently shipping a wrong Cursor rule.
@@ -99,9 +99,9 @@ body = replace_once(
 
 body = replace_once(
     body,
-    "Run `node scripts/normalize-quotes.js <rewritten-prose> --reference <original> --write` from the installed skill directory; no explicit quote target is needed.",
-    "Apply the convention manually; this standalone rule does not bundle the upstream normalization command.",
-    "span 6 (automatic marks command)",
+    """**Automatic marks pass (rewrite and edit).** Keep a copy of the original document before rewriting. As part of each editing pass, normalize quotes and apostrophes in the editable prose against that original before reviewing or delivering the result. The command processes all prose it receives; it does not recognize attribution or table semantics. Copy only the editable paragraphs you changed into a scratch file named `<rewritten-prose>`; exclude quoted material, tables, attributed text, and untouched paragraphs. Never pass the complete target document to `--write` when it contains any of those regions. Run `node scripts/normalize-quotes.js <rewritten-prose> --reference <original> --write` from the installed skill directory; no explicit quote target is needed. Double quotes and single quotes/apostrophes are inferred independently from unprotected original prose: majority wins, ties use the first observed style, and no evidence leaves that family unchanged. An explicit house-style quote setting overrides inference with `--quotes straight` or `--quotes curly` (omit `--reference`). Apply the result only to editable spans; quoted material, code, tables and attributed text retain the exemptions above. If the bundled command cannot run, apply the same convention manually and report that the marks pass was not mechanically verified. Detect mode never runs this pass.""",
+    """**Marks pass (rewrite and edit).** Keep a copy of the original document before rewriting. As part of each editing pass, normalize quotes and apostrophes in the editable prose you changed, against that original, before reviewing or delivering the result. Infer double quotes and single quotes/apostrophes independently from unprotected original prose: majority wins, ties use the first observed style, and no evidence leaves that family unchanged. An explicit house-style quote setting overrides inference. Apply the convention only to editable spans; quoted material, code, tables and attributed text retain the exemptions above. This standalone rule applies the convention by hand, so report that the marks pass was not mechanically verified. Detect mode never runs this pass.""",
+    "span 6 (marks-pass paragraph)",
 )
 
 cursor_fm = f"""---

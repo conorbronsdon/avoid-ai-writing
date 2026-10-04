@@ -23,7 +23,7 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 
 | Detector `type` | Label | references/patterns.md section |
 |---|---|---|
-| `tier1` / `tier2` / `tier3` | AI vocabulary / Word cluster / Overused word | Words and phrases to replace (`load-bearing`: immediate abstract-noun allowlist only; literal, predicative, and unlisted forms pass; `technical` context mode suppresses eight technical-legitimate terms: `robust`, `comprehensive`, `seamless`, `ecosystem`, `leverage`, `facilitate`, `underpin`, `streamline`) |
+| `tier1` / `tier2` / `tier3` | AI vocabulary / Word cluster / Overused word | Words and phrases to replace (`tier3` fires per word at `max(3, floor(wordCount × 0.03))` uses of one listed form, so spread Tier 3 vocabulary stays clean; `load-bearing`: immediate abstract-noun allowlist only; literal, predicative, and unlisted forms pass; `technical` context mode suppresses eight technical-legitimate terms: `robust`, `comprehensive`, `seamless`, `ecosystem`, `leverage`, `facilitate`, `underpin`, `streamline`) |
 | `tier1-clarity` | Wordiness | Words and phrases to replace (Tier 1B) |
 | `transition` | AI transition | Transition phrases to remove or rewrite |
 | `template-phrase` | Template phrase | Template phrases (avoid) |

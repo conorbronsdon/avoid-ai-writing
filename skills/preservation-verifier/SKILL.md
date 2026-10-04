@@ -1,5 +1,7 @@
 ---
 name: preservation-verifier
+version: 3.36.0
+license: MIT
 description: Use when the user provides an original and rewritten version, asks whether a rewrite preserved protected content, or wants a deterministic check for code, frontmatter, quotes, tables, links, paths, numbers, headings, and residual AI-pattern regressions.
 ---
 

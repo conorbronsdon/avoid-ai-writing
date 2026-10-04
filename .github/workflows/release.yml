@@ -73,6 +73,9 @@ jobs:
           git show "${BEFORE_SHA}:package.json" > "$RUNNER_TEMP/previous-package.json"
           node scripts/verify-release-versions.js --previous-package-json "$RUNNER_TEMP/previous-package.json"
 
+      - name: Validate published Skill versions and plugin
+        run: python3 scripts/validate-openai-plugin.py . --json
+
       - name: Test the release commit
         run: npm test
 

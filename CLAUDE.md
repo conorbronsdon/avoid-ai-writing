@@ -23,6 +23,7 @@ Edit `SKILL.md` and `references/patterns.md` directly. When making changes:
 - When preparing a release, update the SKILL.md frontmatter (`version: X.Y.Z`), `package.json`, and the dated changelog heading. Update the same version manually in both plugin manifests before syncing:
   - `plugins/avoid-ai-writing/.claude-plugin/plugin.json`
   - `.codex-plugin/plugin.json`
+- Update the same version in the six hand-written `skills/*/SKILL.md` frontmatters (all but the generated `skills/avoid-ai-writing/SKILL.md`). `python3 scripts/validate-openai-plugin.py . --json` fails when one differs from the OpenAI manifest.
 - Run `bash scripts/sync-plugin-skill.sh && bash scripts/sync-cursor-rules.sh`. The first script validates both manifest versions and the `package.json` version against `SKILL.md` and regenerates bundled skill copies, detector resources, scripts, and examples; the second regenerates the portable paste/Cursor artifacts. Neither script generates the manifest versions. A mismatch fails with messages such as `version mismatch: SKILL.md=X Claude plugin=Y`, `version mismatch: SKILL.md=X OpenAI plugin=Y`, or `version mismatch: SKILL.md=X package.json=Y`.
 - Run `npm test` to exercise the detector, category contract, validator, corpus helpers, and style checks.
 - Update README.md if the change affects installation, usage, feature list, or pattern count

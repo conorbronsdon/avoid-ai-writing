@@ -28,9 +28,9 @@ Words are organized into three tiers based on how reliably they signal AI-genera
 
 - **Tier 1 — Review every match.** These words are strong candidates in their listed senses. Apply the context exceptions and preserve legitimate technical or author-specific uses.
 - **Tier 2 — Flag in clusters.** Individually fine, but two or more in the same paragraph is a strong AI signal. Flag when they appear together.
-- **Tier 3 — Flag by density.** Common words that AI simply overuses. Only flag when they make up a noticeable fraction of the text (roughly 3%+ of total words).
+- **Tier 3 — Flag by density.** Common words that AI simply overuses. Flag a word only when that one word repeats heavily: at least `max(3, floor(wordCount × 0.03))` uses. Round 3% of the total word count down to a whole number, with a minimum of three uses. Count each listed form on its own (`significant` and `significantly` are separate), so several different Tier 3 words that together pass 3% do not trigger the rule. The threshold is deliberately conservative: in a 1,000-word piece, one word has to appear 30 times.
 
-**Match inflected forms.** Each entry below covers the listed word *and its morphological variants* — adverb (`-ly`), gerund/participle (`-ing`), plural, comparative/superlative, and verb conjugations — unless a variant carries a distinct, legitimate meaning. So `genuine` also flags `genuinely`, `leverage` also flags `leveraging` / `leveraged`, `delve` covers `delving`, and `meticulous` covers `meticulously`. When a variant has a separate honest sense (e.g. `real` meaning factual, not the intensifier in "a real improvement"), judge by context rather than matching blindly.
+**Match inflected forms.** Each entry below covers the listed word *and its morphological variants* — adverb (`-ly`), gerund/participle (`-ing`), plural, comparative/superlative, and verb conjugations — unless a variant carries a distinct, legitimate meaning. So `genuine` also flags `genuinely`, `leverage` also flags `leveraging` / `leveraged`, `delve` covers `delving`, and `meticulous` covers `meticulously`. When a variant has a separate honest sense (e.g. `real` meaning factual, not the intensifier in "a real improvement"), judge by context rather than matching blindly. For Tier 3 density, keep separately listed forms in separate counts as specified above; this matching guidance does not combine them.
 
 #### Tier 1 — Default replacements
 
@@ -168,7 +168,7 @@ These words are legitimate on their own. When two or more show up together, the 
 
 #### Tier 3 — Flag only at high density
 
-These are normal words. Only flag them when the text is saturated with them — a sign that AI filled space with vague praise instead of specifics.
+These are normal words. Only flag one when that word alone passes the per-word density threshold in the tier summary above — a sign that AI filled space with vague praise instead of specifics.
 
 | Word | What to do |
 |---|---|
