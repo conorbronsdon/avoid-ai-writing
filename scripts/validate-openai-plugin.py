@@ -554,6 +554,11 @@ def validate(root: Path):
             if name in names:
                 errors.append(f"duplicate skill name {name!r}: {names[name]} and {skill_dir.name}")
             names[name] = skill_dir.name
+        skill_version = meta.get("version")
+        if not skill_version:
+            errors.append(f"{skill_path}: frontmatter `version` is required and must match manifest {version!r}")
+        elif skill_version != version:
+            errors.append(f"{skill_path}: frontmatter version {skill_version!r} does not match manifest {version!r}")
         agent = skill_dir / "agents" / "openai.yaml"
         if not agent.is_file():
             errors.append(f"{skill_dir}: missing agents/openai.yaml")

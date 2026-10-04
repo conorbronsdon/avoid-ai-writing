@@ -1,5 +1,7 @@
 ---
 name: ai-writing-detector
+version: 3.36.0
+license: MIT
 description: Use when the user asks to detect, scan, audit, score, or flag AI-writing patterns without rewriting the text, including requests for a deterministic local detector result when the host can execute Node.
 ---
 
