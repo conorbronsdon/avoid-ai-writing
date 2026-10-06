@@ -9,6 +9,7 @@ ignore_paths:
   - "cursor-rules/**"
   - "SKILL.full.md"
   - ".ssot-tool/**"
+  - "evals/**"
 facts:
   - name: minimum-node-major
     type: integer
