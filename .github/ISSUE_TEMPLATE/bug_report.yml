@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         If you are reporting a **false positive** (the tool flagged human writing), please use the [False positive](https://github.com/conorbronsdon/avoid-ai-writing/issues/new?template=false_positive.yml) form.
-        
+
         If you are suggesting a **new pattern** to detect, please use the [Pattern proposal](https://github.com/conorbronsdon/avoid-ai-writing/issues/new?template=pattern_proposal.yml) form.
 
         Please do not paste anything you would mind seeing in a public repo.
@@ -41,9 +41,9 @@ body:
       label: Reproduction steps
       description: How can we reproduce this bug?
       placeholder: |
-        1. 
-        2. 
-        3. 
+        1.
+        2.
+        3.
     validations:
       required: true
 
