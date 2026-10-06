@@ -9,7 +9,7 @@ ignore_paths:
   - "cursor-rules/**"
   - "SKILL.full.md"
   - ".ssot-tool/**"
-  - "evals/**"
+  - "evals/**" # Frozen evaluation prompts and historical reports are not current compatibility claims.
 facts:
   - name: minimum-node-major
     type: integer

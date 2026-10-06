@@ -8,8 +8,8 @@ All notable changes to this project are documented here.
 
 ### Fixed
 
-- Narrow `significance-inflation` to require an abstract industry noun after \"in the evolution of\"; literal scientific and historical uses (\"in the evolution of the vertebrate eye\", \"in the evolution of systems languages\") no longer flag (#212).
-- Narrow `template-phrase` to require an abstract collective goal after \"a ... step towards/forward for\"; concrete engineering milestones (\"a first step towards the full API\") no longer flag (#212).
+- Narrow the evolution-of shape in `significance-inflation` to require a preceding inflating word, such as "chapter" or "turning point"; neutral scientific and historical uses ("a key stage in the evolution of the vertebrate eye", "an odd place in the evolution of systems languages") no longer flag (#212).
+- Narrow the step-towards/forward shape in `template-phrase` to require a preceding vague-praise adjective, such as "major" or "crucial"; neutral milestones ("a first step towards the full API", "a small step towards cutting our storage bill") no longer flag (#212).
 
 ## [3.37.0] — 2026-10-04
 

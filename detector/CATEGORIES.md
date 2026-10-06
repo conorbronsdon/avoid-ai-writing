@@ -26,7 +26,7 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 | `tier1` / `tier2` / `tier3` | AI vocabulary / Word cluster / Overused word | Words and phrases to replace (`tier3` fires per word at `max(3, floor(wordCount × 0.03))` uses of one listed form, so spread Tier 3 vocabulary stays clean; `load-bearing`: immediate abstract-noun allowlist only; literal, predicative, and unlisted forms pass; `technical` context mode suppresses eight technical-legitimate terms: `robust`, `comprehensive`, `seamless`, `ecosystem`, `leverage`, `facilitate`, `underpin`, `streamline`) |
 | `tier1-clarity` | Wordiness | Words and phrases to replace (Tier 1B) |
 | `transition` | AI transition | Transition phrases to remove or rewrite |
-| `template-phrase` | Template phrase | Template phrases (avoid) — *partial; literal-sense exclusion documented in references/patterns.md: concrete named goals ("the full API", "production") stay clean in the step-towards shape; only abstract collective goals flag* |
+| `template-phrase` | Template phrase | Template phrases (avoid) — *partial; in the step-towards/forward shape, only the listed vague-praise adjectives (such as "major", "crucial", "significant") before "step" flag; neutral adjectives ("first", "small") stay clean regardless of the following goal; see references/patterns.md* |
 | `tier3-phrase` / `tier3-phrase-cluster` | Boilerplate phrase / cluster | Template phrases (avoid) |
 | `chatbot` | Chatbot artifact | Chatbot artifacts |
 | `sycophantic` | Sycophantic tone | Sycophantic tone |
@@ -37,7 +37,7 @@ prose statement of the engine `type` total against `TYPE_LABELS`.
 | `future-narrative` | Generic future narrative | Generic future-narrative closers |
 | `lets-construction` | "Let's" opener | "Let's" constructions |
 | `reasoning-artifact` | Reasoning artifact | Reasoning chain artifacts |
-| `significance-inflation` | Significance inflation | Significance inflation — *partial; literal-sense exclusion documented in references/patterns.md: "in the evolution of" followed by a concrete named object stays clean; only abstract industry nouns flag* |
+| `significance-inflation` | Significance inflation | Significance inflation — *partial; the evolution-of shape requires an immediately preceding inflating word (such as "chapter", "milestone", "role", "turning point"); bare and neutral uses stay clean regardless of the following object; see references/patterns.md* |
 | `novelty-inflation` | Novelty inflation | Novelty inflation *(the invented-concept-labels sub-rule is LLM-judgment only — open-ended coinages aren't regex-matchable)* |
 | `real-actual-inflation` | "Real/actual" inflation | "Real/actual" adjective inflation |
 | `vague-attribution` | Vague attribution | Vague attributions |
