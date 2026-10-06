@@ -110,6 +110,8 @@ For a single-file rules field, use [`dist/avoid-ai-writing.md`](./dist/avoid-ai-
 git clone https://github.com/conorbronsdon/avoid-ai-writing ~/.claude/skills/avoid-ai-writing
 ```
 
+Then invoke it with `/avoid-ai-writing <your text>`.
+
 **Option 2: Copy a self-contained file**
 
 Download `dist/avoid-ai-writing.md` and place it in any directory that Claude Code can read. Reference it in your `CLAUDE.md`:
@@ -120,7 +122,7 @@ Download `dist/avoid-ai-writing.md` and place it in any directory that Claude Co
 
 **Option 3: Use as a slash command**
 
-Create a command file (e.g., `~/.claude/commands/clean-ai-writing.md`):
+Optional alias. Claude Code names a command after its file, so use a different name from `avoid-ai-writing`. If you've done Option 1, the skill already answers to `/avoid-ai-writing` and a command file with the same name would collide with it. Create a command file (e.g., `~/.claude/commands/clean-ai-writing.md`):
 
 ```markdown
 ---
