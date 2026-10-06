@@ -1,0 +1,73 @@
+name: Bug report
+description: Report a tool failure, crash, or integration bug
+title: "Bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If you are reporting a **false positive** (the tool flagged human writing), please use the [False positive](https://github.com/conorbronsdon/avoid-ai-writing/issues/new?template=false_positive.yml) form.
+        
+        If you are suggesting a **new pattern** to detect, please use the [Pattern proposal](https://github.com/conorbronsdon/avoid-ai-writing/issues/new?template=pattern_proposal.yml) form.
+
+        Please do not paste anything you would mind seeing in a public repo.
+        If the text or log is private, describe the shape and quote the shortest fragment that reproduces the issue.
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The `version:` line in SKILL.md, the release tag you installed, or "Unknown" if not applicable.
+      placeholder: "X.Y.Z, a release tag, or Unknown"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Host or installation surface
+      description: Where are you running or using this project?
+      options:
+        - npm / CLI
+        - Editor / Agent (Cursor, Windsurf, etc.)
+        - ChatGPT / Codex plugin
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: How can we reproduce this bug?
+      placeholder: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or terminal output
+      description: Optional logs, stack traces, or terminal output.
+      render: shell
+    validations:
+      required: false
