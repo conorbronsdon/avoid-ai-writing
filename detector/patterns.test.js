@@ -3883,18 +3883,37 @@ test('#216: separately listed Tier 3 inflections do not share a density bucket',
 
 // #212: Literal-sense carve-outs for significance-inflation and template-phrase.
 
-test('#212: significance-inflation fires on abstract-noun usage', () => {
+test('#212: significance-inflation fires on abstract-noun usage (isolated to evolution-of regex)', () => {
+  // Uses no other significance-inflation trigger (no "pivotal moment", no "watershed") so
+  // this fixture specifically exercises the narrowed evolution-of regex. (#212 review: issue 5)
   const r = AIDetector.analyzeText(
-    'This marks a pivotal moment in the evolution of enterprise software.'
+    'In the evolution of enterprise software, the shift towards microservices was gradual.'
   );
   const hits = r.issues.filter((i) => i.type === 'significance-inflation');
-  assert.ok(hits.length >= 1, `expected >=1 significance-inflation hit, got ${JSON.stringify(hits.map((i) => i.text))}`);
+  assert.ok(
+    hits.some((i) => i.text.toLowerCase().includes('evolution of')),
+    `expected a hit whose text includes "evolution of", got ${JSON.stringify(hits.map((i) => i.text))}`
+  );
+});
+
+test('#212: significance-inflation fires on qualified abstract noun (digital landscape)', () => {
+  // "in the evolution of the digital landscape" — adjective before listed noun must still fire.
+  const r = AIDetector.analyzeText(
+    'This marks a pivotal moment in the evolution of the digital landscape.'
+  );
+  const hits = r.issues.filter((i) => i.type === 'significance-inflation');
+  assert.ok(
+    hits.some((i) => i.text.toLowerCase().includes('evolution of')),
+    `expected evolution-of hit, got ${JSON.stringify(hits.map((i) => i.text))}`
+  );
 });
 
 test('#212: significance-inflation stays clean on concrete literal uses', () => {
   const cases = [
     'The lens represents a key stage in the evolution of the vertebrate eye, and the fossil record shows the transition happened more than once.',
     'Modula-2 occupies an odd place in the evolution of systems languages, sitting between Pascal and the C family in both syntax and intent.',
+    'In the evolution of software versions, backward compatibility has been the hardest constraint to maintain.',
+    'The team spent three chapters tracing the history of the Agile Manifesto, covering each revision in detail.',
   ];
   for (const text of cases) {
     const hits = AIDetector.analyzeText(text).issues.filter((i) => i.type === 'significance-inflation');
@@ -3910,12 +3929,24 @@ test('#212: template-phrase fires on abstract-goal usage', () => {
   assert.ok(hits.length >= 1, `expected >=1 template-phrase hit, got ${JSON.stringify(hits.map((i) => i.text))}`);
 });
 
-test('#212: template-phrase stays clean on concrete engineering milestones', () => {
+test('#212: template-phrase fires on documented adjective-AI-infrastructure shape', () => {
+  // Documented in references/patterns.md: "a [adjective] step towards [adjective] AI infrastructure"
   const r = AIDetector.analyzeText(
-    'Shipping the read-only endpoint was a first step towards the full API, and it let us find the auth bugs before anyone depended on writes.'
+    'A meaningful step towards advanced AI infrastructure was announced this week.'
   );
   const hits = r.issues.filter((i) => i.type === 'template-phrase');
-  assert.equal(hits.length, 0, `false positive — hits: ${JSON.stringify(hits.map((i) => i.text))}`);
+  assert.ok(hits.length >= 1, `expected >=1 template-phrase hit for AI infrastructure, got ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
+test('#212: template-phrase stays clean on concrete engineering milestones', () => {
+  const cases = [
+    'Shipping the read-only endpoint was a first step towards the full API, and it let us find the auth bugs before anyone depended on writes.',
+    'That was a first step towards the future-proof API they had been planning all quarter.',
+  ];
+  for (const text of cases) {
+    const hits = AIDetector.analyzeText(text).issues.filter((i) => i.type === 'template-phrase');
+    assert.equal(hits.length, 0, `false positive on: "${text}" — hits: ${JSON.stringify(hits.map((i) => i.text))}`);
+  }
 });
 
 
