@@ -197,7 +197,7 @@ Caveat worth keeping visible: the "appears far more often in AI text" claim behi
 |---|---|
 | delve / delve into | explore, dig into, look at |
 | landscape (metaphor) | field, space, industry, world |
-| tapestry | (describe the actual complexity) |
+| tapestry | complex structure, rich history (or describe the actual complexity) |
 | realm | area, field, domain |
 | paradigm | model, approach, framework |
 | embark | start, begin |
@@ -211,22 +211,22 @@ Caveat worth keeping visible: the "appears far more often in AI text" claim behi
 | underscores | highlights, shows |
 | meticulous / meticulously | careful, detailed, precise |
 | seamless / seamlessly | smooth, easy, without friction |
-| game-changer / game-changing | describe what specifically changed and why it matters |
-| hit differently / hits different | (say what specifically changed, or cut) |
+| game-changer / game-changing | breakthrough, turning point (or describe what specifically changed) |
+| hit differently / hits different | feels unique, stands out (or cut) |
 | watershed moment | turning point, shift (or describe what changed) |
-| marking a pivotal moment | (state what happened) |
+| marking a pivotal moment | a turning point, an important change (or state what happened) |
 | the future looks bright | (cut — say something specific or nothing) |
 | only time will tell | (cut — say something specific or nothing) |
 | nestled | is located, sits, is in |
-| vibrant | (describe what makes it active, or cut) |
+| vibrant | lively, active (or describe what makes it active) |
 | thriving | growing, active (or cite a number) |
-| despite challenges… continues to thrive | (name the challenge and the response, or cut) |
+| despite challenges… continues to thrive | remains strong, succeeds (or name the challenge and response) |
 | showcasing | showing, demonstrating (or cut the clause) |
 | deep dive / dive into | look at, examine, explore |
 | unpack / unpacking | explain, break down, walk through |
 | bustling | busy, active (or cite what makes it busy) |
 | intricate / intricacies | complex, detailed (or name the specific complexity) |
-| complexities | (name the actual complexities, or use "problems" / "details") |
+| complexities | problems, details (or name the actual complexities) |
 | ever-evolving | changing, growing (or describe how) |
 | enduring | lasting, long-running (or cite how long) |
 | daunting | hard, difficult, challenging |
@@ -237,11 +237,11 @@ Caveat worth keeping visible: the "appears far more often in AI text" claim behi
 | thought leader / thought leadership | expert, authority (or describe their actual contribution) |
 | best practices | what works, proven methods, standard approach |
 | at its core | (cut — just state the thing) |
-| synergy / synergies | (describe the actual combined effect) |
+| synergy / synergies | cooperation, combined effect (or describe the actual effect) |
 | interplay | relationship, connection, interaction |
 | keen (as intensifier) | interested, eager, enthusiastic (or cut — just state the interest) |
 | genuinely / genuine (as intensifier) | (cut — just state the fact) |
-| symphony (metaphor) | (describe the actual coordination or combination) |
+| symphony (metaphor) | coordination, balance (or describe the actual combination) |
 | embrace (metaphor) | adopt, accept, use, switch to |
 | load-bearing *(metaphor)* | essential, critical, necessary — or say what breaks if you remove it |
 
@@ -287,7 +287,7 @@ These words are legitimate on their own. When two or more show up together, the 
 | underpin | support, form the basis of |
 | nuanced | specific, subtle, detailed (or name the actual nuance) |
 | crucial | important, key, necessary |
-| multifaceted | (describe the actual facets, or cut) |
+| multifaceted | complex, varied (or describe the actual facets) |
 | ecosystem (metaphor) | system, community, network, market |
 | myriad | many, numerous (or give a number) |
 | plethora | many, a lot of (or give a number) |
@@ -300,8 +300,8 @@ These words are legitimate on their own. When two or more show up together, the 
 | illuminate | clarify, explain, show |
 | elucidate | explain, clarify, spell out |
 | juxtapose | compare, contrast, set side by side |
-| paradigm-shifting | (describe what actually shifted) |
-| transformative / transformation | (describe what changed and how) |
+| paradigm-shifting | groundbreaking, major (or describe what actually shifted) |
+| transformative / transformation | major change, overhaul (or describe what changed) |
 | cornerstone | foundation, basis, key part |
 | paramount | most important, top priority |
 | poised (to) | ready, set, about to |

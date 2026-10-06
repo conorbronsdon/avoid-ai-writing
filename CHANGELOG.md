@@ -6,6 +6,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Changed
+
+- Replaced placeholder instructions and empty suggestions in the word replacement tables with concrete, direct alternatives for 15 previously incomplete entries (#215).
+
 ### Fixed
 
 - Narrow the evolution-of shape in `significance-inflation` to require a preceding inflating word, such as "chapter" or "turning point"; neutral scientific and historical uses ("a key stage in the evolution of the vertebrate eye", "an odd place in the evolution of systems languages") no longer flag (#212).
