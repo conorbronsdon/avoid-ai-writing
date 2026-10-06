@@ -214,7 +214,7 @@ Caveat worth keeping visible: the "appears far more often in AI text" claim behi
 | game-changer / game-changing | breakthrough, turning point (or describe what specifically changed) |
 | hit differently / hits different | feels unique, stands out (or cut) |
 | watershed moment | turning point, shift (or describe what changed) |
-| marking a pivotal moment | a turning point, an important change (or state what happened) |
+| marking a pivotal moment | a milestone, an important change (or state what happened) |
 | the future looks bright | (cut — say something specific or nothing) |
 | only time will tell | (cut — say something specific or nothing) |
 | nestled | is located, sits, is in |
@@ -300,8 +300,8 @@ These words are legitimate on their own. When two or more show up together, the 
 | illuminate | clarify, explain, show |
 | elucidate | explain, clarify, spell out |
 | juxtapose | compare, contrast, set side by side |
-| paradigm-shifting | groundbreaking, major (or describe what actually shifted) |
-| transformative / transformation | major change, overhaul (or describe what changed) |
+| paradigm-shifting | groundbreaking, fundamental (or describe what actually shifted) |
+| transformative / transformation | profound (adj.), overhaul (noun) (or describe what changed) |
 | cornerstone | foundation, basis, key part |
 | paramount | most important, top priority |
 | poised (to) | ready, set, about to |
