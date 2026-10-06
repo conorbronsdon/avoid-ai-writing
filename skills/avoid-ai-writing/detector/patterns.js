@@ -616,24 +616,10 @@ const AIDetector = (() => {
   const SIGNIFICANCE_INFLATION = [
     /\bmarking\s+a\s+(?:pivotal|significant|important)\s+moment\b/gi,
     /\ba\s+watershed\s+moment\s+for\b/gi,
-    // Require an abstract/category noun after "in the evolution of" so that
-    // literal scientific or historical uses pass ("in the evolution of the
-    // vertebrate eye", "in the evolution of systems languages"). The abstract-
-    // noun list covers the shapes that actually signal significance inflation
-    // in AI-generated content.
-    //
-    // Fixes:
-    // - Allow an optional adjective before the abstract noun so that
-    //   "in the evolution of the digital landscape" still matches (#212).
-    // - Prevent "software" from matching when it is a modifier for a concrete
-    //   referent: "in the evolution of software versions" must stay clean.
-    //   A negative-lookahead after the listed nouns rejects any continuation
-    //   that narrows the referent to a concrete named thing (version, release,
-    //   package, app, tool, library, system, product, project, platform).
-    // - Named proper-noun openers such as "the Agile Manifesto" are excluded:
-    //   the allowlist is case-insensitive but the negative lookahead after
-    //   "agile" rejects a following capital or the word 'Manifesto'. See #212.
-    /\bin\s+the\s+evolution\s+of\s+(?:(?:the\s+)?(?:\w+\s+)?(?:industry|space|ecosystem|landscape|market|field|sector|paradigm|discipline|practice|profession|internet|web|media|content|narrative|culture|society|capitalism|finance|crypto|blockchain|ai|machine\s+learning|cloud|devops|agile|product\s+(?:management|development)|enterprise|startup)(?!\s+(?:manifesto|movement|conference|summit|version|release|package|app|tool|library|system|product|project|platform|specification|standard|protocol))\b|(?:the\s+)?technology(?!\s+(?:company|companies|sector|stock|platform|stack|choices?|decisions?|landscape\s+of))\b|(?:the\s+)?software(?!\s+(?:version|versions?|release|releases?|package|packages?|tool|tools?|library|libraries|product|products?|project|projects?|platform|platforms?|system|systems?|stack|stacks?|update|updates?|patch|patches|application|applications?))\b)/gi,
+    // Require an inflating word before "in the evolution of" (the bare phrase
+    // is allowed for literal uses like "a key stage in the evolution of the
+    // vertebrate eye"). See issue #212.
+    /\b(?:moment|milestone|chapter|era|turning\s+point|watershed|inflection\s+point|leap|role|new\s+phase)\s+in\s+the\s+evolution\s+of\b/gi,
     /\ba\s+(?:pivotal|defining)\s+moment\s+in\b/gi,
   ];
 
@@ -775,21 +761,9 @@ const AIDetector = (() => {
 
   // ─── Template phrases ──────────────────────────────────────────────
   const TEMPLATE_PHRASES = [
-    // Require an abstract goal after "a ... step towards/forward for" so that
-    // concrete engineering milestones pass ("a first step towards the full
-    // API", "a first step towards production"). Abstract goals such as
-    // "ecosystem", "the future", "widespread adoption", and "the vision" are
-    // the template-phrase shape. Named artifacts, release stages, and
-    // grammatically determined endpoints that resolve to a concrete referent
-    // are excluded. See issue #212.
-    //
-    // Fixes:
-    // - Abstract goal words must end at a word boundary that is not followed
-    //   by a hyphen, so "future-proof API" does not fire on "future" alone.
-    // - Add the documented "[adj] AI infrastructure" shape from
-    //   references/patterns.md so e.g. "a meaningful step towards advanced
-    //   AI infrastructure" still flags.
-    /\ba\s+\w+\s+step\s+(?:towards?|forward\s+for)\s+(?:(?:the\s+)?(?:ecosystem|whole\s+ecosystem|industry|space|world|community|movement|vision|mission|goal|adoption|scale|mainstream(?:\s+adoption)?|next\s+(?:chapter|phase|era)|broader\s+\w+|widespread\s+\w+|long[-\s]term|greater\s+\w+)(?!-)\b|(?:the\s+)?future(?!-)\b|(?:\w+\s+)?(?:ai|artificial\s+intelligence)\s+infrastructure\b)/gi,
+    // template-phrase: only vague-praise adjectives. "a first step towards the full API",
+    // "a small step towards cutting our storage bill" stay clean.
+    /\ban?\s+(?:meaningful|significant|major|crucial|important|big|huge|bold|giant|monumental|pivotal|critical|key|vital|massive|tremendous|substantial|decisive|landmark|historic|exciting|transformative)\s+step\s+(?:towards?|forward)\b/gi,
     /\bwhether\s+you'?re\s+\w+\s+or\s+\w+/gi,
     /\bi\s+recently\s+had\s+the\s+pleasure\s+of\b/gi,
   ];
