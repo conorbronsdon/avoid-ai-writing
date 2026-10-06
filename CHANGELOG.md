@@ -8,7 +8,7 @@ All notable changes to this project are documented here.
 
 ### Changed
 
-- Replaced placeholder instructions and empty suggestions in the word replacement tables with concrete, direct alternatives for 15 previously incomplete entries (#215).
+- Replaced placeholder instructions and empty suggestions in the word replacement tables with concrete, direct alternatives for previously incomplete entries (#215).
 
 ### Fixed
 
