@@ -616,7 +616,13 @@ const AIDetector = (() => {
   const SIGNIFICANCE_INFLATION = [
     /\bmarking\s+a\s+(?:pivotal|significant|important)\s+moment\b/gi,
     /\ba\s+watershed\s+moment\s+for\b/gi,
-    /\bin\s+the\s+evolution\s+of\b/gi,
+    // Require an abstract/category noun after "in the evolution of" so that
+    // literal scientific or historical uses pass ("in the evolution of the
+    // vertebrate eye", "in the evolution of systems languages"). The abstract-
+    // noun list covers the shapes that actually signal significance inflation
+    // in AI-generated content. Literal concrete objects (eye, languages,
+    // software version) are not listed and stay clean. See issue #212.
+    /\bin\s+the\s+evolution\s+of\s+(?:(?:the\s+)?(?:industry|space|ecosystem|landscape|market|technology|software|field|sector|paradigm|discipline|practice|profession|internet|web|media|content|narrative|culture|society|capitalism|finance|crypto|blockchain|ai|machine\s+learning|cloud|devops|agile|product\s+(?:management|development)|enterprise|startup)\b)/gi,
     /\ba\s+(?:pivotal|defining)\s+moment\s+in\b/gi,
   ];
 
@@ -758,7 +764,14 @@ const AIDetector = (() => {
 
   // ─── Template phrases ──────────────────────────────────────────────
   const TEMPLATE_PHRASES = [
-    /\ba\s+\w+\s+step\s+(?:towards?|forward\s+for)\b/gi,
+    // Require an abstract goal after "a ... step towards/forward for" so that
+    // concrete engineering milestones pass ("a first step towards the full
+    // API", "a first step towards production"). Abstract goals such as
+    // "ecosystem", "the future", "widespread adoption", and "the vision" are
+    // the template-phrase shape. Named artifacts, release stages, and
+    // grammatically determined endpoints that resolve to a concrete referent
+    // are excluded. See issue #212.
+    /\ba\s+\w+\s+step\s+(?:towards?|forward\s+for)\s+(?:(?:the\s+)?(?:ecosystem|future|whole\s+ecosystem|industry|space|world|community|movement|vision|mission|goal|adoption|scale|mainstream(?:\s+adoption)?|next\s+(?:chapter|phase|era)|broader\s+\w+|widespread\s+\w+|long[-\s]term|greater\s+\w+))\b/gi,
     /\bwhether\s+you'?re\s+\w+\s+or\s+\w+/gi,
     /\bi\s+recently\s+had\s+the\s+pleasure\s+of\b/gi,
   ];

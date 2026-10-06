@@ -358,7 +358,7 @@ In cryptography writing, flag generic "proof" or "proof point" only when a reade
 These slot-fill constructions signal that a sentence was generated, not written. If a phrase has a blank where a noun or adjective could go and still sound the same, it's too generic.
 
 - "a [adjective] step towards [adjective] AI infrastructure" → use a capability, benchmark, or outcome already supplied; otherwise cut the empty modifier or flag the missing detail
-- "a [adjective] step forward for [noun]" → same rule: say what changed only when the source establishes it
+- "a [adjective] step forward for [noun]" → same rule: say what changed only when the source establishes it. Literal-sense exclusion: when the goal is a concrete named artifact or release stage ("the full API", "production", "the v2 migration"), the phrase describes a real milestone and does not flag. The tell is an abstract or collective goal ("the whole ecosystem", "the future", "mainstream adoption") that could follow any project announcement unchanged.
 - "Whether you're [X] or [Y]" → false-breadth construction. Pick the audience you're actually addressing, or cut. "Whether you're a startup founder or an enterprise architect" means nothing — it's just "everyone."
 - "I recently had the pleasure of [verb]-ing" → review/social AI pattern. Just say what happened: "I talked to," "I read," "I attended."
 
@@ -380,6 +380,7 @@ These slot-fill constructions signal that a sentence was generated, not written.
 ### Significance inflation
 - Phrases like "marking a pivotal moment in the evolution of..." or "a watershed moment for the industry" inflate routine events into history-making ones. State what happened and let the reader judge significance.
 - If the sentence still works after you delete the inflation clause, delete it.
+- Literal-sense exclusion: "in the evolution of" followed by a concrete, named object ("the vertebrate eye", "systems languages", "a specific piece of software") is ordinary English and does not flag. The tell is an abstract industry noun ("enterprise software", "the ecosystem", "the landscape") that makes the phrase inflationary rather than descriptive.
 
 ### Aphorism formulas
 - Slot-fill profundity: "X is the language of Y," "X is the currency of Z," "the architecture of trust," "X becomes a trap," "X is not a tool but a mirror." The formula turns an ordinary claim into something that sounds quotable without adding precision — the shape does the persuading instead of the evidence.

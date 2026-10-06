@@ -3881,6 +3881,44 @@ test('#216: separately listed Tier 3 inflections do not share a density bucket',
   assert.ok(!result.issues.some((i) => i.type === 'tier3'), 'two uses of each listed form must stay below the three-use floor');
 });
 
+// #212: Literal-sense carve-outs for significance-inflation and template-phrase.
+
+test('#212: significance-inflation fires on abstract-noun usage', () => {
+  const r = AIDetector.analyzeText(
+    'This marks a pivotal moment in the evolution of enterprise software.'
+  );
+  const hits = r.issues.filter((i) => i.type === 'significance-inflation');
+  assert.ok(hits.length >= 1, `expected >=1 significance-inflation hit, got ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
+test('#212: significance-inflation stays clean on concrete literal uses', () => {
+  const cases = [
+    'The lens represents a key stage in the evolution of the vertebrate eye, and the fossil record shows the transition happened more than once.',
+    'Modula-2 occupies an odd place in the evolution of systems languages, sitting between Pascal and the C family in both syntax and intent.',
+  ];
+  for (const text of cases) {
+    const hits = AIDetector.analyzeText(text).issues.filter((i) => i.type === 'significance-inflation');
+    assert.equal(hits.length, 0, `false positive on: "${text}" — hits: ${JSON.stringify(hits.map((i) => i.text))}`);
+  }
+});
+
+test('#212: template-phrase fires on abstract-goal usage', () => {
+  const r = AIDetector.analyzeText(
+    'This release is a meaningful step forward for the whole ecosystem.'
+  );
+  const hits = r.issues.filter((i) => i.type === 'template-phrase');
+  assert.ok(hits.length >= 1, `expected >=1 template-phrase hit, got ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
+test('#212: template-phrase stays clean on concrete engineering milestones', () => {
+  const r = AIDetector.analyzeText(
+    'Shipping the read-only endpoint was a first step towards the full API, and it let us find the auth bugs before anyone depended on writes.'
+  );
+  const hits = r.issues.filter((i) => i.type === 'template-phrase');
+  assert.equal(hits.length, 0, `false positive — hits: ${JSON.stringify(hits.map((i) => i.text))}`);
+});
+
+
 if (failed > 0) {
   console.error(`\n${failed} test(s) failed`);
   process.exit(1);
