@@ -74,10 +74,10 @@ const AIDetector = (() => {
   const HOMOGLYPH_RE = /[Ѐ-ӿͰ-Ͽ]/u;
   const HOMOGLYPH_GLOBAL_RE = /[Ѐ-ӿͰ-Ͽ]/gu;
   const LATIN_LETTER_RE = /\p{Script=Latin}/u;
-  // Dates, versions and filenames keep their internal dots, and prose may hard-wrap.
-  // Sentence-ending punctuation before closing quotes/brackets and Markdown block
-  // starts still separate units; unrelated Russian text must not hide an English word.
-  const SENTENCE_UNIT_GLOBAL_RE = /(?:[^.!?\r\n]|[.!?](?=[^\s.!?'"»’”)\]}])|\r?\n(?![ \t]*(?:\r?\n|(?:[-*+]|#{1,6}|>|\d+[.)])\s|\||`{3}|~{3})))+/g;
+  // Dates, versions and ASCII filenames keep internal dots; prose may hard-wrap.
+  // Other sentence punctuation and Markdown block starts separate units, even
+  // without a space, so unrelated Russian text cannot hide an English word.
+  const SENTENCE_UNIT_GLOBAL_RE = /(?:[^.!?\r\n]|(?<=[A-Za-z0-9_])\.(?=[A-Za-z0-9_])|\r?\n(?![ \t]*(?:\r?\n|(?:[-*+]|#{1,6}|>|\d+[.)])\s|\||`{3}|~{3})))+/g;
   // Words are letter runs; a hyphen splits them, so "API-сервис" stays two
   // words and its Russian half is not swapped.
   const LETTER_RUN_GLOBAL_RE = /[\p{L}\p{M}]+/gu;
@@ -145,9 +145,9 @@ const AIDetector = (() => {
     //      sentence is a lookalike. Deciding per sentence, not per document,
     //      keeps Russian padding from hiding such a word in an English
     //      sentence.
-    //    A sentence ends at . ! or ? followed by a space, or at a blank line.
-    //    A dot inside a date or a version ("07.10", "v1.2") and a hard line
-    //    wrap do not end it: cutting there left pieces such as "поста в
+    //    Sentence punctuation, blank lines and Markdown block starts separate units.
+    //    Internal ASCII-token dots ("07.10", "v1.2", "report.pdf") and a prose
+    //    hard wrap do not end it: cutting there left pieces such as "поста в
     //    r/StableDiffusion от 07" that looked like Latin text.
     //    Ordinary Russian words contain non-lookalike letters (з, п, и, л),
     //    so short Russian words in Russian technical prose ("на Enum",
@@ -155,7 +155,8 @@ const AIDetector = (() => {
     //    short.
     //    Known limits, because no letter-level rule separates these from
     //    real Russian: a fully substituted word inside or next to Russian
-    //    words ("МЕТА поможет", "пароль: аст") is left alone; a one-letter
+    //    words ("МЕТА поможет", "пароль: аст"), including across prose hard wraps,
+    //    is left alone; a one-letter
     //    lookalike split off by a hyphen ("а-ct") is left alone; and a short
     //    Russian sentence spelled only in lookalike letters ("Он сам.") is
     //    swapped.

@@ -1759,6 +1759,7 @@ test('fully substituted words beside Russian words are a documented limit', () =
   assert.equal(AIDetector.normalizeText(inside).flags.homoglyph, 0);
   const beside = 'Your account is at risk. пароль: аст now to secure it immediately through this form before it expires.';
   assert.equal(AIDetector.normalizeText(beside).flags.homoglyph, 0);
+  assert.equal(AIDetector.normalizeText('Позвоните в поддержку\nаст now to secure it.').flags.homoglyph, 0);
 });
 
 test('bilingual technical sentences keep Russian words and one-letter prepositions intact', () => {
@@ -1807,6 +1808,15 @@ test('Markdown blocks do not share script evidence across an unterminated line',
       assert.equal(normalized.text, `- act now to secure it${newline}${start}Позвоните в поддержку`, start);
       assert.equal(normalized.flags.homoglyph, 3, start);
     }
+  }
+});
+
+test('unspaced sentence punctuation does not hide a fully substituted English word', () => {
+  for (const ending of ['.', '!', '?', '.(', '.«', '!“']) {
+    const text = `Позвоните сейчас${ending}аст now to secure it.`;
+    const normalized = AIDetector.normalizeText(text);
+    assert.equal(normalized.text, `Позвоните сейчас${ending}act now to secure it.`, ending);
+    assert.equal(normalized.flags.homoglyph, 3, ending);
   }
 });
 
