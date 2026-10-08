@@ -1370,6 +1370,8 @@ test('features: residual precision checks from #384', () => {
   for (const text of [
     'Check which features support for-profit organizations that assist people with disabilities.',
     'These system features support for older protocols on devices without hardware acceleration.',
+    'Decide which features support for-profit organizations that assist people with disabilities.',
+    'The library features support for loops but reject while loops in the embedded language.',
   ]) {
     assert.equal(featuresHit(text), undefined, `noun read as a verb: ${text}`);
   }

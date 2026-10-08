@@ -339,7 +339,11 @@ const AIDetector = (() => {
     // "The library features support for..." is a verb.
     // "Security features support for..." is a plural noun subject + verb.
     if (FEATURES_VERB_SUBJECTS.test(before) && /^\s+support\s+for\b/i.test(after)) {
-      if (!/\b(?:these|those|all|some|many|few|various|multiple|several)\s+[\w-]+\s+$/i.test(before)) {
+      const hasDeterminer = /\b(?:these|those|all|some|many|few|various|multiple|several)\s+[\w-]+\s+$/i.test(before);
+      const extendedAfter = text.slice(end, end + 100);
+      const hasPluralPredicate = /^\s+support\s+for(?:[^.?!;]{0,80})?\b(?:and|but|or|nor)\s+(?:are|were|have|do|reject|accept|allow|deny|provide|require|use|make|work|help|give|take|need|become|seem|look|show|include|offer|support|fail|pass|lack|prefer|choose|prevent|stop)\b/i.test(extendedAfter);
+      
+      if (!hasDeterminer && !hasPluralPredicate) {
         return false;
       }
     }
