@@ -74,9 +74,10 @@ const AIDetector = (() => {
   const HOMOGLYPH_RE = /[Ѐ-ӿͰ-Ͽ]/u;
   const HOMOGLYPH_GLOBAL_RE = /[Ѐ-ӿͰ-Ͽ]/gu;
   const LATIN_LETTER_RE = /\p{Script=Latin}/u;
-  // A sentence for the lookalike rule: it runs past a dot that is not followed by a space ("07.10",
-  // "v1.2", "report.pdf") and past a single line break, and stops at . ! ? before a space or at a blank line.
-  const SENTENCE_UNIT_GLOBAL_RE = /(?:[^.!?\r\n]|[.!?](?=[^\s.!?])|\r?\n(?![ \t]*\r?\n))+/g;
+  // Dates, versions and filenames keep their internal dots, and prose may hard-wrap.
+  // Sentence-ending punctuation before closing quotes/brackets and Markdown block
+  // starts still separate units; unrelated Russian text must not hide an English word.
+  const SENTENCE_UNIT_GLOBAL_RE = /(?:[^.!?\r\n]|[.!?](?=[^\s.!?'"»’”)\]}])|\r?\n(?![ \t]*(?:\r?\n|(?:[-*+]|#{1,6}|>|\d+[.)])\s|\||`{3}|~{3})))+/g;
   // Words are letter runs; a hyphen splits them, so "API-сервис" stays two
   // words and its Russian half is not swapped.
   const LETTER_RUN_GLOBAL_RE = /[\p{L}\p{M}]+/gu;

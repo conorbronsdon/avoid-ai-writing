@@ -1790,6 +1790,32 @@ test('a hard-wrapped English sentence still swaps a fully substituted word', () 
   assert.equal(normalized.flags.homoglyph, 3);
 });
 
+test('closing quotes and brackets keep separate sentences from sharing script evidence', () => {
+  for (const [open, close] of [['«', '»'], ['"', '"'], ['“', '”'], ['‘', '’'], ['(', ')'], ['[', ']'], ['{', '}']]) {
+    const text = `${open}Задача закрыта.${close} аст now to secure it.`;
+    const normalized = AIDetector.normalizeText(text);
+    assert.equal(normalized.text, `${open}Задача закрыта.${close} act now to secure it.`, close);
+    assert.equal(normalized.flags.homoglyph, 3, close);
+  }
+});
+
+test('Markdown blocks do not share script evidence across an unterminated line', () => {
+  for (const start of ['- ', '* ', '+ ', '1. ', '2) ', '# ', '### ', '> ', '| ', '```', '~~~']) {
+    for (const newline of ['\n', '\r\n']) {
+      const text = `- аст now to secure it${newline}${start}Позвоните в поддержку`;
+      const normalized = AIDetector.normalizeText(text);
+      assert.equal(normalized.text, `- act now to secure it${newline}${start}Позвоните в поддержку`, start);
+      assert.equal(normalized.flags.homoglyph, 3, start);
+    }
+  }
+});
+
+test('indented CRLF prose continues across a hard wrap and keeps version dots', () => {
+  const text = 'Ответы на вопросы о docker v1.2 и report.pdf\r\n    там, где обсуждают настройку памяти на Mac.';
+  assert.equal(AIDetector.normalizeText(text).text, text);
+  assert.equal(AIDetector.normalizeText(text).flags.homoglyph, 0);
+});
+
 test('equal Latin and Cyrillic counts keep the Cyrillic-dominant tie rule', () => {
   const normalized = AIDetector.normalizeText('а a');
   assert.equal(normalized.text, 'а a');
