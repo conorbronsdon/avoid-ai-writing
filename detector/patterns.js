@@ -336,21 +336,30 @@ const AIDetector = (() => {
     // which features dashboards") keep their verb finding (#384).
     if (FEATURES_QUESTION_LEAD_RE.test(before) && !FEATURES_LEAD_AS_NOUN_RE.test(before)) {
       // If there is no trailing verb (e.g. end of clause), it's the verb case ("Check what features a dashboard and export tools.").
-      // Look past a compound subject for a trailing verb before returning the verb classification.
-      if (/^\s+(?:a|an|the)\s+[\w-]+\s*(?:(?:and\b|or\b)\s+(?:a\s+|an\s+|the\s+)?(?:[\w-]+\s+){0,2}[\w-]+\s*)?(?:,|\.|$)/i.test(after)) {
+      // Look past a compound subject and optional appositive for a trailing verb before returning the verb classification.
+      const match = /^\s+(?:a|an|the)\s+[\w-]+\s*(?:(?:and\b|or\b)\s+(?:a\s+|an\s+|the\s+)?(?:[\w-]+\s+){0,2}[\w-]+\s*)?(?:([,.!?;])|$)/i.exec(after);
+      if (match) {
+        if (match[1] === ',') {
+          // If the comma leads into a phrase with a trailing predicate, it's a noun.
+          const remainder = text.slice(end + match[0].length, end + 120);
+          if (/\b(?:can|could|should|will|would|may|might|must|is|are|was|were|has|have|had|do|does|did|include|includes|disable|disables|reject|accept|allow|deny|provide|require|use|make|work|help|give|take|need|become|seem|look|show|offer|support|fail|pass|lack|prefer|choose|prevent|stop)\b/i.test(remainder)) {
+            return true;
+          }
+        }
         return false;
       }
       return true;
     }
 
-    // "The library features support for..." is a verb.
-    // "Security features support for..." is a plural noun subject + verb.
+    // "A library features support for..." is a verb.
+    // "System features support for..." is a plural noun subject + verb.
     if (FEATURES_VERB_SUBJECTS.test(before) && /^\s+support\s+for\b/i.test(after)) {
-      const hasDeterminer = /\b(?:these|those|all|some|many|few|various|multiple|several)\s+[\w-]+\s+$/i.test(before);
+      const hasPluralDeterminer = /\b(?:these|those|all|some|many|few|various|multiple|several|both)\s+[\w-]+\s+$/i.test(before);
       const extendedAfter = text.slice(end, end + 100);
       const hasPluralPredicate = /^\s+support\s+for(?:[^.?!;]{0,80})?\b(?:and|but|or|nor)\s+(?:are|were|have|do|reject|accept|allow|deny|provide|require|use|make|work|help|give|take|need|become|seem|look|show|include|offer|support|fail|pass|lack|prefer|choose|prevent|stop)\b/i.test(extendedAfter);
+      const hasSingularEvidence = /\b(?:a|an|this|that|every|each|one)\s+(?:[\w-]+\s+){0,3}$/i.test(before) || /\b(?:it|he|she|which|what|that|who)\s+$/i.test(before);
       
-      if (!hasDeterminer && !hasPluralPredicate) {
+      if (!hasPluralDeterminer && !hasPluralPredicate && hasSingularEvidence) {
         return false;
       }
     }
