@@ -1329,13 +1329,13 @@ test('features: residual precision checks from #384', () => {
     'Tell me which features a customer, with administrator access, can disable.',
     'Tell me what features a dashboard, which users can customize, includes.',
   ]) {
-    if (featuresHit(text)) console.error("FAILED question noun:", text);
+    assert.equal(featuresHit(text), undefined, `question noun read as a verb: ${text}`);
   }
   for (const text of [
     'Check what features a dashboard and export tools, before you proceed to the next step.',
     'Tell me which features a dashboard, before we close the project and go home.',
   ]) {
-    if (!featuresHit(text)) console.error("FAILED question verb:", text);
+    assert.ok(featuresHit(text), `question verb skipped: ${text}`);
   }
   // Any other lead keeps the pre-#384 behaviour: relative clauses stay verb findings...
   for (const text of [
@@ -1364,7 +1364,7 @@ test('features: residual precision checks from #384', () => {
     'The experimental features support for loops but reject while loops in the embedded language.',
     'The accessibility features support for-profit organizations that assist people with disabilities.',
   ]) {
-    if (featuresHit(text)) console.error("FAILED noun:", text);
+    assert.equal(featuresHit(text), undefined, `noun read as a verb: ${text}`);
   }
   // Deferred cases from #384: singular verb subjects for "support for".
   // The plural-noun subject cases (like "The experimental features support for loops") 
@@ -1375,7 +1375,7 @@ test('features: residual precision checks from #384', () => {
     'That JavaScript library features support for rendering interactive charts in real time.',
     'We tested a library which features support for both protocols seamlessly.',
   ]) {
-    if (!featuresHit(text)) console.error("FAILED verb:", text);
+    assert.ok(featuresHit(text), `verb skipped: ${text}`);
   }
   for (const text of [
     'Check which features support for-profit organizations that assist people with disabilities.',
@@ -1385,7 +1385,7 @@ test('features: residual precision checks from #384', () => {
     'Both system features support for older protocols on devices without hardware acceleration.',
     'The system features support for older protocols and remain enabled by default.',
   ]) {
-    if (featuresHit(text)) console.error("FAILED noun:", text);
+    assert.equal(featuresHit(text), undefined, `noun read as a verb: ${text}`);
   }
 });
 

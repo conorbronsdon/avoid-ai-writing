@@ -339,10 +339,22 @@ const AIDetector = (() => {
       // Look past a compound subject and optional appositive for a trailing verb before returning the verb classification.
       const match = /^\s+(?:a|an|the)\s+[\w-]+\s*(?:(?:and\b|or\b)\s+(?:a\s+|an\s+|the\s+)?(?:[\w-]+\s+){0,2}[\w-]+\s*)?(?:([,.!?;])|$)/i.exec(after);
       if (match) {
+        const predicateRe = /\b(?:can|could|should|will|would|may|might|must|is|are|was|were|has|have|had|do|does|did|include|includes|disable|disables|reject|accept|allow|deny|provide|require|use|make|work|help|give|take|need|become|seem|look|show|offer|support|fail|pass|lack|prefer|choose|prevent|stop)\b/i;
+        
+        // If the matched subject ends with a predicate right before the punctuation, 
+        // the predicate was consumed as part of the compound subject.
+        const subjectText = match[0].slice(0, match[1] ? -match[1].length : undefined).trim();
+        const lastWord = subjectText.split(/\s+/).pop();
+        if (predicateRe.test(lastWord)) {
+          return true;
+        }
+
         if (match[1] === ',') {
-          // If the comma leads into a phrase with a trailing predicate, it's a noun.
+          // If the comma leads into a phrase, limit noun classification to a predicate 
+          // belonging to the article-led subject (after the next comma), excluding predicates inside subordinate clauses.
           const remainder = text.slice(end + match[0].length, end + 120);
-          if (/\b(?:can|could|should|will|would|may|might|must|is|are|was|were|has|have|had|do|does|did|include|includes|disable|disables|reject|accept|allow|deny|provide|require|use|make|work|help|give|take|need|become|seem|look|show|offer|support|fail|pass|lack|prefer|choose|prevent|stop)\b/i.test(remainder)) {
+          const remainderPredicateRe = new RegExp(`^[^,]+,\\s*(?:${predicateRe.source.replace(/^\\b|\\b$/g, '')})\\b`, 'i');
+          if (remainderPredicateRe.test(remainder)) {
             return true;
           }
         }
