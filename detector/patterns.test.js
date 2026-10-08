@@ -1768,6 +1768,28 @@ test('bilingual technical sentences keep Russian words and one-letter prepositio
   assert.equal(normalized.flags.homoglyph, 0);
 });
 
+test('Russian technical prose keeps short Russian words next to English terms', () => {
+  const text = 'Задача взята: issue #9194 и PR #9195 (RecursionError в `make_json_safe()` на Enum, найдено в Discussions #9189).';
+  const normalized = AIDetector.normalizeText(text);
+  assert.equal(normalized.text, text);
+  assert.equal(normalized.flags.homoglyph, 0);
+  assert.notEqual(AIDetector.analyzeText(text).document_classification, 'AI_ONLY');
+});
+
+test('dates and hard line wraps do not cut a Russian sentence into Latin-looking pieces', () => {
+  const text = 'Ответы со ссылкой на stageload там, где обсуждают нехватку памяти на Mac. Охват\n'
+    + '   поста в r/StableDiffusion от 07.10 снимем в понедельник.';
+  const normalized = AIDetector.normalizeText(text);
+  assert.equal(normalized.text, text);
+  assert.equal(normalized.flags.homoglyph, 0);
+});
+
+test('a hard-wrapped English sentence still swaps a fully substituted word', () => {
+  const normalized = AIDetector.normalizeText('Your account is at risk. аст now\nto secure it.');
+  assert.equal(normalized.text, 'Your account is at risk. act now\nto secure it.');
+  assert.equal(normalized.flags.homoglyph, 3);
+});
+
 test('equal Latin and Cyrillic counts keep the Cyrillic-dominant tie rule', () => {
   const normalized = AIDetector.normalizeText('а a');
   assert.equal(normalized.text, 'а a');
