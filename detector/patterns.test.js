@@ -1309,6 +1309,72 @@ test('tier1-clarity flags "features" used as a verb', () => {
   }
 });
 
+test('features: residual precision checks from #384', () => {
+  // Indirect questions: "which/what features" is a noun after a question verb or at sentence start.
+  for (const text of [
+    'Decide which features matter most to our users this quarter, before choosing a plan.',
+    'Decide what features matter most to our users this quarter, before choosing a plan.',
+    'Decide which features apply to your team before you choose a plan for the year.',
+    'Check which features rely on the API before you migrate any of the older workspaces.',
+    'Find out which features family members can share on the plan before you upgrade it.',
+    'Check which features also work offline before we choose a plan for the whole team.',
+    'Check which features regularly fail when customers upload large files from home.',
+    'Decide which features the team should prioritize before the next release ships to users.',
+    'Tell me what features a customer can disable from the settings page in the app.',
+    'Identify which features two teams requested during the planning meeting last week.',
+    'Which features matter most depends on the size of the team and the plan you choose.',
+    'Pick a phone whose features fit your budget and the apps you need every single day.',
+  ]) {
+    assert.equal(featuresHit(text), undefined, `question noun read as a verb: ${text}`);
+  }
+  // Any other lead keeps the pre-#384 behaviour: relative clauses stay verb findings...
+  for (const text of [
+    'The new enterprise service, which features a dashboard, serves teams everywhere in the world.',
+    'This is what features prominently in every review over the past year.',
+    'This is the one dish which features heavily in every review we read over the past year.',
+    'We tested a library which features dashboards and reports for every department in the company.',
+    'We tested a library which features occasionally updated dashboards for every department.',
+    'We listened to a track which features guest vocals from two local artists on the chorus.',
+    'We listened to the bonus track which features guest vocals from two local artists on the chorus.',
+    'Read the review which features detailed comparisons of every plan we tested this year.',
+    'Read our detailed review which features comparisons of every plan we tested this year.',
+    'We completed a security check which features detailed diagnostics for each device in the network.',
+    "We listened to the editor's pick which features guest vocals from two local artists on the chorus.",
+    'The library (which features a dashboard and report builder) serves every department in the company.',
+  ]) {
+    assert.ok(featuresHit(text), `relative-clause verb missed: ${text}`);
+  }
+  // ...and existing noun evidence still applies.
+  for (const text of [
+    'We discussed which features we should remove from the next release of the app.',
+    'I asked the team which features they want most before we plan the next quarter.',
+    'Before we choose a plan, which features can we use offline when we travel for work?',
+    'Security features support for older protocols on devices without hardware acceleration.',
+    'The scripting features support for loops but reject while loops in the embedded language.',
+    'The experimental features support for loops but reject while loops in the embedded language.',
+    'The accessibility features support for-profit organizations that assist people with disabilities.',
+  ]) {
+    assert.equal(featuresHit(text), undefined, `noun read as a verb: ${text}`);
+  }
+  // Previously deferred cases (#387): singular verb subjects for "support for".
+  // The plural-noun subject cases (like "The experimental features support for loops") 
+  // continue to correctly read as nouns because of their determiner/adjective context.
+  for (const text of [
+    'The library features support for asynchronous requests when the device goes offline.',
+    'Our library features support for asynchronous requests across every supported device in our network.',
+    'The JavaScript library features support for rendering interactive charts in real time.',
+    'We tested a library which features support for both protocols seamlessly.',
+  ]) {
+    assert.ok(featuresHit(text), `verb read as a noun: ${text}`);
+  }
+  for (const text of [
+    'Check which features support for-profit organizations that assist people with disabilities.',
+    'These system features support for older protocols on devices without hardware acceleration.',
+  ]) {
+    assert.equal(featuresHit(text), undefined, `noun read as a verb: ${text}`);
+  }
+});
+
 test('tier1-clarity leaves "features" alone as a plural noun', () => {
   // #351: on a product site, every hit was the software noun.
   for (const text of [

@@ -1,0 +1,281 @@
+Detector fixtures
+  ✓ empty text returns Empty label
+  ✓ text under 10 words returns tooShort flag
+  ✓ text over 10k words returns tooLong flag
+  ✓ #234: unscored labels return stats with the same keys
+  ✓ #234: analyzeText throws TypeError for non-string input
+  ✓ AI-heavy paragraph scores in Strong/Heavy range
+  ✓ plain human bug-report prose stays in Minimal range
+  ✓ stats fields sum to issues length
+  ✓ #123: rendered Markdown ignores frontmatter and multiline HTML comments
+  ✓ #123: same-line and unclosed HTML comments are source-only
+  ✓ #123: comment markers inside fenced and inline code remain visible
+  ✓ #123: comment markers in top-level indented code remain visible
+  ✓ #123: an indented HTML comment under a list item stays hidden
+  ✓ #123: list syntax inside a comment cannot hide later indented code
+  ✓ #123: backticks inside an HTML comment do not protect its closing delimiter
+  ✓ #123: code delimiters in one comment cannot hide a later comment
+  ✓ #190: tilde fences and adjacent list markers in comments preserve later context
+  ✓ #123: short HTML comments close at an overlapping delimiter
+  ✓ #123: rendered Markdown preserves issue offsets after masked source
+  ✓ #123: multiline blockquote masking preserves later source offsets
+  ✓ #123: plain mode preserves legacy blockquote paragraph scoring
+  ✓ #123: rendered Markdown recognizes blank-first-line and CR-only frontmatter
+  ✓ #123: rendered Markdown does not mistake a thematic break for frontmatter
+  ✓ #123: unknown source modes fall back visibly to plain
+  ✓ #190: many HTML comments avoid quadratic rescanning
+  ✓ adversarial Markdown scans stay within a bounded time
+  ✓ version-heading dash carve-out does not swallow prose after a closed version label
+  ✓ repeated Tier 1 phrase does not inflate score linearly
+  ✓ em-dash detector skips definition-list separators (bold term / link + dash)
+  ✓ em-dash carve-out covers numbered-list separators too
+  ✓ em-dash carve-out covers a bold lead term with a parenthetical (#67)
+  ✓ em-dash carve-out covers Keep-a-Changelog version headings (#67)
+  ✓ em-dash carve-out stays narrow — prose dashes in a heading still fire (#67)
+  ✓ hedge-stack does not fire on ordinary negation or inverted questions (#69)
+  ✓ em-dash carve-out requires a list marker — line-initial bold splices still fire
+  ✓ smart-punct signature is not corroborated by separator-only em dashes
+  ✓ em-dash detector still fires on mid-sentence splices at the same density
+  ✓ #73: em-dash overuse remains a P2 edit without affecting authorship output
+  ✓ em-dash detector ignores CLI flags like --save-dev
+  ✓ chatbot artifacts score as P0 critical
+  ✓ crypto-shill social post with hashtag block + bullet-NP lists flags
+  ✓ "Interesting part of the project:" header opener flags emotional-flatline
+  ✓ "the line I keep coming back to" flags lingering-attention
+  ✓ "I cannot stop thinking about" flags lingering-attention
+  ✓ bare "I keep coming back to X because ..." does NOT flag lingering-attention
+  ✓ "real on-chain tokenomics" flags real-actual-inflation
+  ✓ hashtag-stuff does not fire on prose with 2-3 hashtags
+  ✓ "load-bearing" flags only allowlisted attributive abstractions (#56)
+  ✓ #107: deterministic unnecessary hyphenation subclasses fire with fixes
+  ✓ #107: standard compound modifiers and open forms do not fire
+  ✓ #107: protected spans are excluded from unnecessary-hyphenation detection
+  ✓ #107: proper nouns, identifiers, and version strings stay protected
+  ✓ #107: punctuation-adjacent flags and single-component paths stay protected
+  ✓ #107: frontmatter, YAML, Markdown tables, and HTML attributes stay protected
+  ✓ #107: adversarial filename masking remains within a linear-time budget
+  ✓ #107: long closed quotations are masked without a length cutoff
+  ✓ #107: copyedit-only findings do not affect score or trinary classification
+  ✓ "verbatim" is Tier 3: single use stays clean, overuse flags by density
+  ✓ "quietly" clusters with another Tier 2 word flags tier2
+  ✓ "deeply" joins a tier2 cluster only in significance collocations
+  ✓ bullet-np-list does not fire on prose containing short verb-form bullets
+  ✓ tier3-phrase fires on per-phrase repetition (>=2 hits)
+  ✓ tier3-phrase-cluster fires on 3 distinct phrases at density 1 each
+  ✓ tier3-phrase span dedup: overlapping regex matches count as one phrase
+  ✓ emotional-flatline opener fires at position 0 (no leading newline)
+  ✓ emotional-flatline stays visible without moving the authorship score
+  ✓ bullet-np-list ignores bullets inside fenced code blocks
+  ✓ bullet-np-list flushes on 2+ blank lines between bullet sections
+  ✓ hashtag-stuff matches tags after sentence punctuation
+  ✓ hashtag-stuff excludes URL fragments from the count
+  ✓ hashtag-stuff excludes issue and PR references from the count
+  ✓ hashtag-stuff excludes hex colours and preprocessor directives
+  ✓ hashtag-stuff ignores hashes inside code spans and fences
+  ✓ hashtag-stuff still counts short hex-shaped words, which are real tags
+  ✓ hashtag-stuff still fires on a tag block that also cites an issue
+  ✓ hashtag-stuff still fires on tags spread inline through a post
+  ✓ tier1-clarity flags "features" used as a verb
+  ✗ features: residual precision checks from #384
+    noun read as a verb: These system features support for older protocols on devices without hardware acceleration.
++ actual - expected
+
++ {
++   severity: 'medium',
++   suggestion: 'has, includes',
++   text: 'features',
++   type: 'tier1-clarity'
++ }
+- undefined
+
+  ✓ tier1-clarity leaves "features" alone as a plural noun
+  ✓ features: noun findings never inherit verb highlight regions
+  ✓ features: product subjects, added objects, quantifiers and curly possessives remain nouns
+  ✓ features: plural subjects followed by base-form verbs remain nouns
+  ✓ features: relative subjects, object compounds and product versions retain verb findings
+  ✓ features: bare objects and product/count modifiers remain ordinary nouns
+  ✓ low-ttr fires on a 200+ token text with narrow vocabulary
+  ✓ low-ttr does not fire on natural human prose at 200+ tokens
+  ✓ low-ttr does not fire on a long text whose every window is varied
+  ✓ low-ttr still fires on a long text with a narrow vocabulary
+  ✓ low-ttr reports plain TTR for a text of exactly 200 tokens
+  ✓ low-ttr averages windows whose distinct count changes as they slide
+  ✓ low-ttr does not fire on short texts (<200 tokens)
+  ✓ ai-placeholder fires on common slot-fill bracket patterns
+  ✓ ai-placeholder does not fire on legitimate bracketed content
+  ✓ ai-citation-markup fires on chatbot-internal tokens
+  ✓ ai-utm-source fires on AI-tool tracking parameters
+  ✓ ai-utm-source does not fire on benign utm_source values
+  ✓ severity labels are distinct across all four tiers
+  ✓ v2: zero-width chars trigger normalization-flag
+  ✓ v2: Cyrillic homoglyph swap restores Tier 1 hit
+  ✓ Cyrillic-dominant prose reports no homoglyph swaps
+  ✓ Russian padding and one plain English sentence report no homoglyph attack
+  ✓ Greek-dominant prose reports no homoglyph swaps
+  ✓ mixed-script words are still swapped inside Cyrillic prose
+  ✓ Cyrillic padding does not hide mixed-script obfuscation
+  ✓ Latin-dominant text still swaps a fully substituted word
+  ✓ fully substituted аст in English is flagged with or without Russian padding
+  ✓ fully substituted аст in a single English sentence is swapped
+  ✓ an ordinary Russian word in an English line is left alone
+  ✓ two-letter Russian words next to Russian words are not swapped in English sentences
+  ✓ an isolated fully substituted word is swapped when punctuation separates it
+  ✓ hyphenated bilingual compounds keep their Russian half
+  ✓ fully substituted words beside Russian words are a documented limit
+  ✓ bilingual technical sentences keep Russian words and one-letter prepositions intact
+  ✓ equal Latin and Cyrillic counts keep the Cyrillic-dominant tie rule
+  ✓ v2: formulaic opener fires
+  ✓ v2: speculative scenario opener fires
+  ✓ v2: speculative opener leaves instructional "imagine you have" alone
+  ✓ v2: launch-copy introduction fires
+  ✓ v2: launch-copy introduction leaves ordinary narrative alone
+  ✓ v2: dramatized crowd contrast fires on the dismissive clause
+  ✓ v2: crowd contrast leaves literal simultaneity alone
+  ✓ v2: fake-casual props fire
+  ✓ v2: fake-casual props leave math and plain qualifiers alone
+  ✓ v2: parenthetical hedge fires
+  ✓ v2: social endorsement closer fires on LinkedIn-style share post
+  ✓ v2: social endorsement closer covers every regex branch
+  ✓ v2: social endorsement closer matches curly-apostrophe forms
+  ✓ v2: social endorsement closer leaves literal-verb human prose alone
+  ✓ v2: trinary output present + FN-biased for ambiguous text
+  ✓ v2: highly AI-marked text reaches AI_ONLY with corroborators
+  ✓ v2: highlight_sentence_for_ai returns regions with start/end offsets
+  ✓ v2: context mode "technical" suppresses Title Case header flag
+  ✓ #62: Title Case flagged on a Markdown heading, not just a bare line
+  ✓ #62: the heading fix does not flag sentence-case or non-headings
+  ✓ #62: legitimate three-word Title Case headings are not flagged
+  ✓ #62: a heading inside a fenced block is illustration, not a section header
+  ✓ #62: headings opening with a function word are not the tell
+  ✓ #62: an interior function word still flags, in both forms
+  ✓ #240: an acronym or single-letter function word in the title still flags
+  ✓ #240: an all-caps banner line is not a title-case header
+  ✓ #240: unrelated single-letter capitals do not widen the rule
+  ✓ #314: first-person I can appear inside a Title Case heading
+  ✓ #291: blank lines do not manufacture a longer heading
+  ✓ #291: a single physical line still flags with horizontal whitespace
+  ✓ #62: fences that a parity count gets wrong
+  ✓ #77: only spaces and tabs may follow a closing fence
+  ✓ #62: MD_HEADING_PREFIX accepts what the pattern accepts
+  ✓ #62: an indented line is not a Markdown heading
+  ✓ #62: the reported text is value-asserted, not merely present
+  ✓ v2: markdown **bold** is preserved by normalize pre-pass
+  ✓ v2: punct-distribution fires on uniform per-paragraph density
+  ✓ v2: cross-para-burstiness fires on uniform sentence rhythm
+  ✓ v2: invalid contextMode falls back to general with stats.contextModeFallback set
+  ✓ #234: falsy invalid contextMode is preserved in fallback stats
+  ✓ v2: trinary fields present on tooShort / tooLong / empty as UNSCORED
+  ✓ v2: probability fields sum to exactly 1.000 (no float drift)
+  ✓ v2: mid-score isolated stylometric hits do not reach AI_ONLY
+  ✓ v2: humanizer bypass escalates to AI_ONLY (normalization-flag corroborator)
+  ✓ v2: canonical saturated-AI essay reaches AI_ONLY (calibration regression)
+  ✓ v2: legitimate *italic phrase* is NOT stripped by roleplay rule
+  ✓ v2: *roleplay action verb* IS stripped
+  ✓ v2: single ZWSP does not flip to AI_ONLY (hair-trigger fix)
+  ✓ v2: dense-AI-vocab trifecta reaches AI_ONLY (calibration regression)
+  ✓ v2: blockquoted AI text does not penalize the human wrapper
+  ✓ v2: probability sum is exactly 1 with no negative components
+  ✓ v2: unmappedHighlights counter surfaced in stats
+  ✓ v2: real Rust technical post does NOT classify AI_ONLY (denseAIVocab FP fix)
+  ✓ v2: canonical "As an AI language model" disclaimer fires cutoff-disclaimer + AI_ONLY
+  ✓ #238: single-line blockquote is masked like a multi-line one
+  ✓ #238: double-quoted spans do not score, the same words outside do
+  ✓ #238: inch marks, empty quotes and code quotes do not hide prose
+  ✓ #238: comparison lines, CR-only text and early-exit stats
+  ✓ #238: apostrophes are not treated as quotes
+  ✓ #238: issue offsets still address the source after quote masking
+  ✓ #238: CR-only blockquote lines are masked in both modes with source offsets
+  ✓ #238: escaped quotes stay inside the quoted span
+  ✓ #238: compact blockquotes without a space are masked, comparisons are not
+  ✓ #238: bypass characters inside quotes raise no normalization flag
+  ✓ v2: stats.denseAIVocab and stats.tier1Distinct surface for observability
+  ✓ v2: backward compat — score, label, issues, stats still present
+  ✓ #109: Object.prototype names in prose do not fire tier lookups
+  ✓ #109 complement: real tier1 vocabulary still fires after the hasOwn guard
+  ✓ performed-insight: essayist tics fire
+  ✓ performed-insight: staged discovery fires once per phrase
+  ✓ performed-insight: sentence-initial Turns out is subsumed by staged discovery
+  ✓ performed-insight: nested emotional flatline counts once
+  ✓ performed-insight: older phrases preserve their nested flatline finding
+  ✓ performed-insight: literal turned-out and story uses stay clean
+  ✓ performed-insight: ordinary uses do not fire
+  ✓ performed-insight: determiner "sit with that <noun>" and literal "only X I trust" stay clean
+  ✓ performed-insight: literal punchline and naming senses stay clean
+  ✓ performed-insight: sentence-initial Turns out keeps a clean text and index
+  ✓ negation-chain: no-chains, didn't-chains, and don't-verb-it fire
+  ✓ negation-chain: idiomatic pairs stay clean
+  ✓ negation-chain: ordinary narration with restated subjects stays clean
+  ✓ negation-chain: mid-sentence technical inventories stay clean
+  ✓ negation-chain: two-item sentence-initial factual inventories stay clean
+  ✓ negative-parallelism: the #351 repro no longer scores Clean
+  ✓ negative-parallelism: a minimizer reveal flags on its own across joiners
+  ✓ negative-parallelism: one plain correction stays clean
+  ✓ negative-parallelism: contrasts flag when another frame is within three sentences
+  ✓ negative-parallelism: repeated identical contrasts do not pass a distinct-findings gate
+  ✓ negative-parallelism: unrelated corrections far apart stay clean
+  ✓ negative-parallelism: correlatives and ordinary negations are not frames
+  ✓ negative-parallelism: a quoted frame belongs to the speaker
+  ✓ ignore markers: the unmarked control removes only directive markers
+  ✓ ignore markers: a marked specimen is excluded and the rest is still scored
+  ✓ ignore markers: CRLF source masks the same region
+  ✓ ignore markers: nested starts need their own ends
+  ✓ ignore markers: an unmatched inner start keeps the outer region open
+  ✓ ignore markers: code, inline mentions, quotations, and stray ends do not act
+  ✓ ignore markers: HTML code containers and frontmatter hold no directives
+  ✓ ignore markers: the marker scan stays linear on adversarial input
+  ✓ ignore markers: a long line mixing code spans and <code> stays linear
+  ✓ ignore markers: an unclosed start runs to the end of the text
+  ✓ word joiners: U+2060 around URLs is stripped without a bypass flag
+  ✓ word joiners: U+2060 inside a word still counts as a bypass character
+  ✓ word joiners: astral letters on both sides count as a bypass character
+  ✓ dev-blog-boilerplate: simplicity slogans fire
+  ✓ dev-blog-boilerplate: spaced and hyphenated out-of-the-box slogans fire
+  ✓ dev-blog-boilerplate: ordinary prose stays clean
+  ✓ #189: plain-mode multiline blockquote (LF) keeps issue and highlight offsets on source
+  ✓ #189: plain-mode multiline blockquote (CRLF) keeps issue and highlight offsets on source
+  ✓ #189: rendered-markdown multiline blockquotes keep offsets on source (LF and CRLF)
+  ✓ #189: zero-width characters do not shift later offsets
+  ✓ #189: zero-width chars separated by content record exact source runs
+  ✓ #189: roleplay-action markers do not shift later offsets
+  ✓ #189: interleaved preprocessing stages compose source offsets
+  ✓ #189: overlapping normalization removals map once and keep staged semantics
+  ✓ #189: malformed emphasis is not reclassified as roleplay
+  ✓ #189: a zero-width character inside a finding preserves its source start and region
+  ✓ #189: trailing removed markers stay outside the preceding highlight
+  ✓ #189: direct normalization handles every occurrence and mapped analysis stays linear
+  ✓ #189: ordinary unchanged text reports native indexes and exact slices
+  ✓ #189: highlight regions land on real source bytes and slice back to the flagged sentence
+  ✓ #235: sentence spans match the former regex scan on every boundary shape
+  ✓ #260: punctuation-prefix analysis scales without rescanning each suffix
+  ✓ #235: analysis time grows linearly on whitespace-heavy input
+  ✓ #235: table delimiter rows still mask with surrounding whitespace and CR
+  ✓ #237: technical context mode suppresses technical-legitimate vocabulary terms
+  ✓ reply openers and analytical framing are not reported as acknowledgment loops (#239)
+  ✓ #241: unsegmented-script documents are declined, not scored "Too short"
+  ✓ uniformity: five equal long sentences fire, varied rhythm stays clean
+  ✓ uniformity: sentence-length spread pins the 0.25 variation threshold
+  ✓ uniformity: equal paragraph sizes fire, varied paragraph sizes stay clean
+  ✓ formatting: four bold spans fire, three ordinary emphases stay clean
+  ✓ confidence-calibration: three raw matches fire, two stay clean
+  ✓ confidence-calibration: repeated wording satisfies the pre-dedup gate
+  ✓ fnword-trigram-entropy: low entropy fires, varied grammar stays clean
+  ✓ fnword-trigram-entropy: single trigram fires at 150 words, not 149
+  ✓ #234: non-string input reports the expected type
+  ✓ #234: empty and whitespace-only input preserve selected modes
+  ✓ false-concession requires the vague second half in the same sentence (#211)
+  ✓ #211: exact nine-word example is length-gated alone, flags within a longer input
+  ✓ #213: sycophantic fires on its frame and stays clean on nearby ordinary prose
+  ✓ #213: lets-construction fires on its frame and stays clean on nearby ordinary prose
+  ✓ #213: rhetorical-question fires on its frame and stays clean on nearby ordinary prose
+  ✓ #213: novelty-inflation fires on its frame and stays clean on nearby ordinary prose
+  ✓ #213: vague-attribution fires on its frame and stays clean on nearby ordinary prose
+  ✓ #213: tier1-clarity fires on its frame and stays clean on nearby ordinary prose
+  ✓ #216: tier3 counts each word on its own; spread vocabulary stays clean, one repeated word fires
+  ✓ #216: tier3 rounds down the percentage and requires at least three uses
+  ✓ #216: separately listed Tier 3 inflections do not share a density bucket
+  ✓ #212: significance-inflation fires when inflating word precedes evolution-of
+  ✓ #212: significance-inflation stays clean on literal evolution-of
+  ✓ #212: template-phrase fires on vague-praise adjective before step
+  ✓ #212: template-phrase stays clean on concrete adjectives before step
+
+1 test(s) failed
