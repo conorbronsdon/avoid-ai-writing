@@ -1321,11 +1321,19 @@ test('features: residual precision checks from #384', () => {
     'Check which features regularly fail when customers upload large files from home.',
     'Decide which features the team should prioritize before the next release ships to users.',
     'Tell me what features a customer can disable from the settings page in the app.',
+    'Tell me what features a customer ordered from the catalog last year.',
+    'Tell me which features a dashboard and export tools can disable for our users.',
     'Identify which features two teams requested during the planning meeting last week.',
     'Which features matter most depends on the size of the team and the plan you choose.',
     'Pick a phone whose features fit your budget and the apps you need every single day.',
   ]) {
     assert.equal(featuresHit(text), undefined, `question noun read as a verb: ${text}`);
+  }
+  for (const text of [
+    'Check what features a dashboard and export tools before you proceed.',
+    'Tell me which features a dashboard before we close the project.',
+  ]) {
+    assert.ok(featuresHit(text), `question verb read as a noun: ${text}`);
   }
   // Any other lead keeps the pre-#384 behaviour: relative clauses stay verb findings...
   for (const text of [
@@ -1356,10 +1364,25 @@ test('features: residual precision checks from #384', () => {
   ]) {
     assert.equal(featuresHit(text), undefined, `noun read as a verb: ${text}`);
   }
-  // Known limit: when "what" is itself the subject ("Check what features a dashboard and
-  // export tools"), a question lead still reads "features" as a noun; tracked as a follow-up.
-  // Deferred: "The library features support for..." as a verb is ambiguous with plural-noun
-  // subjects ("The experimental features support for loops"), so it stays out of this fix.
+  // Deferred cases from #384: singular verb subjects for "support for".
+  // The plural-noun subject cases (like "The experimental features support for loops") 
+  // continue to correctly read as nouns because of their determiner/adjective context.
+  for (const text of [
+    'The library features support for asynchronous requests when the device goes offline.',
+    'Our library features support for asynchronous requests across every supported device in our network.',
+    'The JavaScript library features support for rendering interactive charts in real time.',
+    'We tested a library which features support for both protocols seamlessly.',
+  ]) {
+    assert.ok(featuresHit(text), `verb read as a noun: ${text}`);
+  }
+  for (const text of [
+    'Check which features support for-profit organizations that assist people with disabilities.',
+    'These system features support for older protocols on devices without hardware acceleration.',
+    'Decide which features support for-profit organizations that assist people with disabilities.',
+    'The library features support for loops but reject while loops in the embedded language.',
+  ]) {
+    assert.equal(featuresHit(text), undefined, `noun read as a verb: ${text}`);
+  }
 });
 
 test('tier1-clarity leaves "features" alone as a plural noun', () => {

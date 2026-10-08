@@ -307,6 +307,10 @@ const AIDetector = (() => {
   // "the review which features..."), not a question verb.
   const FEATURES_LEAD_AS_NOUN_RE = /\b(?:a|an|the|this|that|these|those|my|our|your|their|its|his|her|each|every)\s+[\w-]+\s+(?:which|what)\s+$/i;
 
+  // Subjects that definitively make "features" a verb, avoiding ambiguity with
+  // plural-noun subjects like "The experimental features" or "Security features".
+  const FEATURES_VERB_SUBJECTS = /\b(?:library|tool|app|application|platform|system|language|service|product|update|release|version|site|website|game|device|model|framework|package|plugin|extension|which|what|that|who|it|he|she)\s+$/i;
+
   function featuresIsNoun(text, index) {
     const end = index + 'features'.length;
     const before = text.slice(Math.max(0, index - 40), index);
@@ -330,7 +334,27 @@ const AIDetector = (() => {
     // sentence ("Which features matter most..."). Every other context falls
     // through to the checks below unchanged, so relative clauses ("a library
     // which features dashboards") keep their verb finding (#384).
-    if (FEATURES_QUESTION_LEAD_RE.test(before) && !FEATURES_LEAD_AS_NOUN_RE.test(before)) return true;
+    if (FEATURES_QUESTION_LEAD_RE.test(before) && !FEATURES_LEAD_AS_NOUN_RE.test(before)) {
+      // If there is no trailing verb (e.g. end of clause), it's the verb case ("Check what features a dashboard and export tools.").
+      // Look past a compound subject for a trailing verb before returning the verb classification.
+      if (/^\s+(?:a|an|the)\s+[\w-]+\s*(?:(?:and\b|or\b)\s+(?:a\s+|an\s+|the\s+)?(?:[\w-]+\s+){0,2}[\w-]+\s*)?(?:,|\.|$)/i.test(after)) {
+        return false;
+      }
+      return true;
+    }
+
+    // "The library features support for..." is a verb.
+    // "Security features support for..." is a plural noun subject + verb.
+    if (FEATURES_VERB_SUBJECTS.test(before) && /^\s+support\s+for\b/i.test(after)) {
+      const hasDeterminer = /\b(?:these|those|all|some|many|few|various|multiple|several)\s+[\w-]+\s+$/i.test(before);
+      const extendedAfter = text.slice(end, end + 100);
+      const hasPluralPredicate = /^\s+support\s+for(?:[^.?!;]{0,80})?\b(?:and|but|or|nor)\s+(?:are|were|have|do|reject|accept|allow|deny|provide|require|use|make|work|help|give|take|need|become|seem|look|show|include|offer|support|fail|pass|lack|prefer|choose|prevent|stop)\b/i.test(extendedAfter);
+      
+      if (!hasDeterminer && !hasPluralPredicate) {
+        return false;
+      }
+    }
+
     return FEATURES_NOUN_BEFORE_RE.test(before) || FEATURES_NOUN_AFTER_RE.test(after);
   }
 
