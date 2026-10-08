@@ -339,7 +339,7 @@ const AIDetector = (() => {
       // Look past a compound subject and optional appositive for a trailing verb before returning the verb classification.
       const match = /^\s+(?:a|an|the)\s+[\w-]+\s*(?:(?:and\b|or\b)\s+(?:a\s+|an\s+|the\s+)?(?:[\w-]+\s+){0,2}[\w-]+\s*)?(?:([,.!?;])|$)/i.exec(after);
       if (match) {
-        const predicateRe = /\b(?:can|could|should|will|would|may|might|must|is|are|was|were|has|have|had|do|does|did|include|includes|disable|disables|reject|accept|allow|deny|provide|require|use|make|work|help|give|take|need|become|seem|look|show|offer|support|fail|pass|lack|prefer|choose|prevent|stop)\b/i;
+        const predicateRe = /\b(?:can|could|should|will|would|may|might|must|is|are|was|were|has|have|had|do|does|did|include|includes|disable|disables|reject|accept|allow|deny|provide|require|use|make|work|help|give|take|need|become|seem|look|show|offer|support|supports|fail|pass|lack|prefer|choose|prevent|stop)\b/i;
         
         // If the matched subject ends with a predicate right before the punctuation, 
         // the predicate was consumed as part of the compound subject.
@@ -353,7 +353,8 @@ const AIDetector = (() => {
           // If the comma leads into a phrase, limit noun classification to a predicate 
           // belonging to the article-led subject (after the next comma), excluding predicates inside subordinate clauses.
           const remainder = text.slice(end + match[0].length, end + 120);
-          const remainderPredicateRe = new RegExp(`^[^,]+,\\s*(?:${predicateRe.source.replace(/^\\b|\\b$/g, '')})\\b`, 'i');
+          // An adverb can sit between the closing comma and the predicate.
+          const remainderPredicateRe = new RegExp(`^[^,]+,\\s*(?:(?:[\\w-]+ly|also|not|never)\\s+){0,2}${predicateRe.source}`, 'i');
           if (remainderPredicateRe.test(remainder)) {
             return true;
           }
@@ -369,7 +370,9 @@ const AIDetector = (() => {
       const hasPluralDeterminer = /\b(?:these|those|all|some|many|few|various|multiple|several|both)\s+[\w-]+\s+$/i.test(before);
       const extendedAfter = text.slice(end, end + 100);
       const hasPluralPredicate = /^\s+support\s+for(?:[^.?!;]{0,80})?\b(?:and|but|or|nor)\s+(?:are|were|have|do|reject|accept|allow|deny|provide|require|use|make|work|help|give|take|need|become|seem|look|show|include|offer|support|fail|pass|lack|prefer|choose|prevent|stop)\b/i.test(extendedAfter);
-      const hasSingularEvidence = /\b(?:a|an|this|that|every|each|one)\s+(?:[\w-]+\s+){0,3}$/i.test(before) || /\b(?:it|he|she|which|what|that|who)\s+$/i.test(before);
+      // Do not borrow a determiner across a preposition or conjunction:
+      // "a suite of system features" still has plural noun "features".
+      const hasSingularEvidence = /\b(?:a|an|this|that|every|each|one)\s+(?:(?!(?:of|for|in|with|and|or)\b)[\w-]+\s+){0,3}$/i.test(before) || /\b(?:it|he|she|which|what|that|who)\s+$/i.test(before);
       
       if (!hasPluralDeterminer && !hasPluralPredicate && hasSingularEvidence) {
         return false;

@@ -1327,7 +1327,9 @@ test('features: residual precision checks from #384', () => {
     'Which features matter most depends on the size of the team and the plan you choose.',
     'Pick a phone whose features fit your budget and the apps you need every single day.',
     'Tell me which features a customer, with administrator access, can disable.',
+    'Tell me which features a customer, with administrator access, actually can disable.',
     'Tell me what features a dashboard, which users can customize, includes.',
+    'Tell me which features a dashboard, which we customized yesterday, supports.',
   ]) {
     assert.equal(featuresHit(text), undefined, `question noun read as a verb: ${text}`);
   }
@@ -1384,6 +1386,7 @@ test('features: residual precision checks from #384', () => {
     'The library features support for loops but reject while loops in the embedded language.',
     'Both system features support for older protocols on devices without hardware acceleration.',
     'The system features support for older protocols and remain enabled by default.',
+    'We compare a suite of system features support for legacy applications.',
   ]) {
     assert.equal(featuresHit(text), undefined, `noun read as a verb: ${text}`);
   }
