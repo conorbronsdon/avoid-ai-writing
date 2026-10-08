@@ -1801,7 +1801,7 @@ test('closing quotes and brackets keep separate sentences from sharing script ev
 });
 
 test('Markdown blocks do not share script evidence across an unterminated line', () => {
-  for (const start of ['- ', '* ', '+ ', '1. ', '2) ', '# ', '### ', '> ', '| ', '```', '~~~']) {
+  for (const start of ['- ', '* ', '+ ', '1. ', '2) ', '# ', '### ', '> ', '>', '>>', '| ', '```', '~~~']) {
     for (const newline of ['\n', '\r\n']) {
       const text = `- аст now to secure it${newline}${start}Позвоните в поддержку`;
       const normalized = AIDetector.normalizeText(text);
