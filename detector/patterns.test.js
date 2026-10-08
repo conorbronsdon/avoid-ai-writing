@@ -1376,6 +1376,7 @@ test('features: residual precision checks from #384', () => {
     'This library features support for asynchronous requests across every supported device in our network.',
     'That JavaScript library features support for rendering interactive charts in real time.',
     'We tested a library which features support for both protocols seamlessly.',
+    'We tested a library that features support for both protocols on older devices.',
   ]) {
     assert.ok(featuresHit(text), `verb skipped: ${text}`);
   }
@@ -1387,6 +1388,8 @@ test('features: residual precision checks from #384', () => {
     'Both system features support for older protocols on devices without hardware acceleration.',
     'The system features support for older protocols and remain enabled by default.',
     'We compare a suite of system features support for legacy applications.',
+    'We confirmed that features support for-profit organizations that assist people with disabilities.',
+    'We discussed which features support for-profit organizations that assist people with disabilities.',
   ]) {
     assert.equal(featuresHit(text), undefined, `noun read as a verb: ${text}`);
   }
