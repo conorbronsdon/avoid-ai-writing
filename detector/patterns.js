@@ -307,6 +307,10 @@ const AIDetector = (() => {
   // "the review which features..."), not a question verb.
   const FEATURES_LEAD_AS_NOUN_RE = /\b(?:a|an|the|this|that|these|those|my|our|your|their|its|his|her|each|every)\s+[\w-]+\s+(?:which|what)\s+$/i;
 
+  // Subjects that definitively make "features" a verb, avoiding ambiguity with
+  // plural-noun subjects like "The experimental features" or "Security features".
+  const FEATURES_VERB_SUBJECTS = /\b(?:library|tool|app|application|platform|system|language|service|product|update|release|version|site|website|game|device|model|framework|package|plugin|extension|which|what|that|who|it|he|she)\s+$/i;
+
   function featuresIsNoun(text, index) {
     const end = index + 'features'.length;
     const before = text.slice(Math.max(0, index - 40), index);
@@ -325,12 +329,23 @@ const AIDetector = (() => {
     if (!FEATURES_NOUN_BEFORE_RE.test(before)
         && /^[ \t]*,[^,\n]{1,80},\s*(?:a|an|the)(?![\w-])/i.test(text.slice(end, end + 110))) return false;
 
+    // "The library features support for..." is a verb.
+    // "Security features support for..." is a plural noun subject + verb.
+    if (FEATURES_VERB_SUBJECTS.test(before) && /^\s+support\s+for\b/i.test(after)) return false;
+
     // "which/what features" is a noun in an indirect question: right after a
     // question verb ("Decide which features matter") or at the start of a
     // sentence ("Which features matter most..."). Every other context falls
     // through to the checks below unchanged, so relative clauses ("a library
     // which features dashboards") keep their verb finding (#384).
-    if (FEATURES_QUESTION_LEAD_RE.test(before) && !FEATURES_LEAD_AS_NOUN_RE.test(before)) return true;
+    if (FEATURES_QUESTION_LEAD_RE.test(before) && !FEATURES_LEAD_AS_NOUN_RE.test(before)) {
+      // Known limit (#386): "what" as subject ("Check what features a dashboard...").
+      // Resolving this conflicts with the noun case "Tell me what features a customer can disable".
+      // We look ahead past the article + noun. If there is a trailing verb, it's the noun case.
+      // If there is no trailing verb (e.g. "and", "or", punctuation, or end), it's the verb case.
+      if (/^\s+(?:a|an|the)\s+[\w-]+\s*(?:and|or|,|\.|$)/i.test(after)) return false;
+      return true;
+    }
     return FEATURES_NOUN_BEFORE_RE.test(before) || FEATURES_NOUN_AFTER_RE.test(after);
   }
 

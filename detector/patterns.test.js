@@ -1356,10 +1356,17 @@ test('features: residual precision checks from #384', () => {
   ]) {
     assert.equal(featuresHit(text), undefined, `noun read as a verb: ${text}`);
   }
-  // Known limit: when "what" is itself the subject ("Check what features a dashboard and
-  // export tools"), a question lead still reads "features" as a noun; tracked as a follow-up.
-  // Deferred: "The library features support for..." as a verb is ambiguous with plural-noun
-  // subjects ("The experimental features support for loops"), so it stays out of this fix.
+  // Previously deferred cases (#387): singular verb subjects for "support for", 
+  // and subject "what" followed by article-led objects without trailing verbs.
+  for (const text of [
+    'The library features support for asynchronous requests when the device goes offline.',
+    'Our library features support for asynchronous requests across every supported device in our network.',
+    'The JavaScript library features support for rendering interactive charts in real time.',
+    'We tested a library which features support for both protocols seamlessly.',
+    'Check what features a dashboard and export tools before recommending a product to our customers.',
+  ]) {
+    assert.ok(featuresHit(text), `verb read as a noun: ${text}`);
+  }
 });
 
 test('tier1-clarity leaves "features" alone as a plural noun', () => {
