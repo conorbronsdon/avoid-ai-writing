@@ -1330,8 +1330,8 @@ test('features: residual precision checks from #384', () => {
     assert.equal(featuresHit(text), undefined, `question noun read as a verb: ${text}`);
   }
   for (const text of [
-    'Check what features a dashboard and export tools before you proceed.',
-    'Tell me which features a dashboard before we close the project.',
+    'Check what features a dashboard and export tools, before you proceed to the next step.',
+    'Tell me which features a dashboard, before we close the project and go home.',
   ]) {
     assert.ok(featuresHit(text), `question verb read as a noun: ${text}`);
   }
