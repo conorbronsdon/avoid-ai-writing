@@ -211,8 +211,8 @@ Caveat worth keeping visible: the "appears far more often in AI text" claim behi
 | hit differently / hits different | feels different, affects [me/us] differently (or cut) |
 | watershed moment | turning point, shift (or describe what changed) |
 | marking a pivotal moment | changing [X], leading to [Y] (or state what happened) |
-| the future looks bright | (cut — say something specific or nothing; generic conclusion, canonical P2) |
-| only time will tell | (cut — say something specific or nothing; generic conclusion, canonical P2) |
+| the future looks bright | (cut — say something specific or nothing) |
+| only time will tell | (cut — say something specific or nothing) |
 | nestled | is located, sits, is in |
 | vibrant | lively, active (or describe what makes it active) |
 | thriving | growing, active (or cite a number) |
@@ -456,8 +456,8 @@ These slot-fill constructions signal that a sentence was generated, not written.
   - "The reality is that" → (cut or just state the claim)
 - Note: "In order to," "Due to the fact that," and "At the end of the day" are covered in the word/phrase table and transition sections above — don't duplicate rules.
 
-### Generic conclusions
-- "The future looks bright," "Only time will tell," "One thing is certain," "As we move forward" — these are filler disguised as conclusions. Cut them. Add a closing thought only when the source supplies one; do not invent a specific conclusion to replace filler.
+### Generic conclusions (P2)
+- "The future looks bright," "Only time will tell," "One thing is certain," "As we move forward" — these are filler disguised as conclusions. Cut them. Add a closing thought only when the source supplies one; do not invent a specific conclusion to replace filler. Treat this as a P2 clarity judgment.
 
 ### Chatbot artifacts
 - "I hope this helps!", "Certainly!", "Absolutely!", "Great question!", "Feel free to reach out," "Let me know if you need anything else" — these are conversational tics from chat interfaces, not writing. Remove entirely.

@@ -1,4 +1,4 @@
-﻿# Automated editing regression report: PRs #295 and #296
+# Automated editing regression report: PRs #295 and #296
 
 This is the retained report through the third repair cycle. See the
 [follow-up report](FOLLOWUP.md) for later source repairs and executed results.
@@ -175,7 +175,10 @@ raw provider envelopes remain in the maintainer's local evidence archive.
 
 ## Recheck the literal evidence
 
-From the repository root, run:
+Historical evaluation results for this dated report are pinned against the original
+literal checker (`check-literals.cjs`, pinned to base commit `5a5cf6a45331384d4ff68f1f6ce50da24da0da4c`).
+
+From the repository root, run the historical reproduction commands:
 
 ```sh
 node evals/rewrite/reports/automated-stack-295-296-2026-09-16/check-literals.cjs . evals/rewrite/automated-scenarios.json evals/rewrite/reports/automated-stack-295-296-2026-09-16/literal-checks/isolated-cycle3-claude-responses.json
@@ -186,3 +189,18 @@ The first command exits 0; the second intentionally exits 1 for the unchanged
 protected-content rewrite. The checker excludes UTF-8 file markers and a
 presentation separator immediately before report sections from final prose.
 It does not choose a more favorable alternative rewrite.
+
+### Current detect-audit reanalysis (#323)
+
+To validate model audits against current stricter invariants (actual pattern catalog
+grounding, canonical P1/P2 severities, Tier 2 paragraph-cluster thresholds, and
+adverbial base forms), run the standalone current detect-audit checker:
+
+```sh
+node evals/rewrite/check-detect-audit.cjs . evals/rewrite/automated-scenarios.json evals/rewrite/reports/automated-stack-295-296-2026-09-16/literal-checks/isolated-cycle2-mimo-responses.json
+```
+
+Compliant model audits (such as cycle-two MiMo) exit 0 with all checks and named
+mutation controls passing. When run against historical Claude responses (cycle two,
+cycle three, or cycle five), the current checker intentionally detects historical
+audit deficiencies (such as transition phrases under P1 or ungrounded phrases) and exits 1.
