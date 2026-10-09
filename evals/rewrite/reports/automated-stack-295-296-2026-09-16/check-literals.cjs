@@ -10,11 +10,19 @@ const heading = /^(?:#{1,6}\s*)?(?:\*\*)?Final rewrite(?:\*\*)?:?\s*$/gmi;
 const boundary = /\n(?:#{1,6}\s*)?(?:\*\*)?(?:Changes|Verification|Issues found)[^\n]*\n/i;
 
 function cleanTerms(text) {
-	return text
-		.replace(/\([^)]*\)|\[[^\]]*\]|[*"“”`]/g, '')
-		.split(/,|\/|\bor\b/i)
-		.map(w => w.trim().toLowerCase())
-		.filter(w => w.length > 0 && !w.startsWith('-') && !w.startsWith('—'));
+	const stripped = text.replace(/[*"“”`]/g, '');
+	const parts = stripped.split(/,|\/|\bor\b/i);
+	const results = [];
+	for (let part of parts) {
+		part = part.trim();
+		if (!part || part.startsWith('-') || part.startsWith('—')) continue;
+		if (/\([A-Z]\s+(?:with|and)\s+[A-Z]\)|\[[A-Za-z]+\]/i.test(part)) continue;
+		let cleaned = part.replace(/\([^)]*\)|\*\(.*?\)\*|\[[^\]]*\]/g, '').trim().toLowerCase();
+		if (cleaned.length > 0) results.push(cleaned);
+		if (part.includes('(sustainable)')) results.push('sustainable reward emissions');
+		if (part.includes('poised (to)')) results.push('poised to');
+	}
+	return results;
 }
 
 function loadCatalog(repoPath) {
@@ -22,11 +30,14 @@ function loadCatalog(repoPath) {
 	const skillText = fs.readFileSync(path.join(path.resolve(repoPath), 'SKILL.md'), 'utf8');
 
 	const catalogByTier = { '1A': new Set(), '1B': new Set(), '2': new Set(), '3': new Set(), '3-phrase': new Set() };
+	const tierByPattern = new Map();
 	const allCatalogWords = new Set();
 	const replacements = new Set();
 	const transitionPhrases = new Set();
+	const templates = [];
 
 	let inWordsAndPhrases = false;
+	let inTransition = false;
 	let currentTier = null;
 	let hasWithCol = false;
 	let headerSeen = false;
@@ -44,10 +55,20 @@ function loadCatalog(repoPath) {
 
 		if (trimmed.startsWith('### Words and phrases to replace')) {
 			inWordsAndPhrases = true;
+			inTransition = false;
 			currentTier = null;
 		} else if (inWordsAndPhrases && trimmed.startsWith('### ')) {
 			inWordsAndPhrases = false;
 			currentTier = null;
+		}
+
+		if (trimmed.startsWith('### Transition phrases to remove or rewrite')) {
+			inTransition = true;
+			inWordsAndPhrases = false;
+			currentTier = null;
+			continue;
+		} else if (inTransition && trimmed.startsWith('### ')) {
+			inTransition = false;
 		}
 
 		if (inWordsAndPhrases) {
@@ -68,8 +89,28 @@ function loadCatalog(repoPath) {
 				}
 				const cols = trimmed.split('|').map(c => c.trim()).filter((_, idx, arr) => idx > 0 && idx < arr.length - 1);
 				if (cols.length >= 2 && headerSeen) {
+					if (/\([A-Z]\s+(?:with|and)\s+[A-Z]\)|\[[A-Za-z]+\]/i.test(cols[0])) {
+						const parts = cols[0].split(/,|\/|\bor\b/i);
+						for (let p of parts) {
+							p = p.trim().replace(/[*"“”`]/g, '');
+							if (/\([A-Z]\s+(?:with|and)\s+[A-Z]\)|\[[A-Za-z]+\]/i.test(p)) {
+								let tRegex = null;
+								if (/the integration of \(X with Y\)/i.test(p)) {
+									tRegex = /^the integration of\s+(.+?)\s+with\s+(.+)$/i;
+								} else if (/the intersection of \(X and Y\)/i.test(p)) {
+									tRegex = /^the intersection of\s+(.+?)\s+and\s+(.+)$/i;
+								} else if (/designed for long-term \[X\]/i.test(p)) {
+									tRegex = /^designed for long-term\s+(.+)$/i;
+								}
+								if (tRegex) {
+									templates.push({ raw: p.toLowerCase(), regex: tRegex, tier: currentTier });
+								}
+							}
+						}
+					}
 					for (const w of cleanTerms(cols[0])) {
 						catalogByTier[currentTier].add(w);
+						tierByPattern.set(w, currentTier);
 						allCatalogWords.add(w);
 					}
 					if (hasWithCol) {
@@ -81,13 +122,29 @@ function loadCatalog(repoPath) {
 			}
 		}
 
-		if (trimmed.startsWith('### Transition phrases to remove or rewrite')) {
-			currentTier = 'transition';
-		} else if (currentTier === 'transition' && trimmed.startsWith('### ')) {
-			currentTier = null;
-		} else if (currentTier === 'transition' && trimmed.startsWith('-')) {
-			for (const m of trimmed.matchAll(/["“]([^"”]+)["”]/g)) {
-				transitionPhrases.add(m[1].toLowerCase().trim());
+		if (inTransition && trimmed.startsWith('-')) {
+			const arrowIdx = trimmed.indexOf('→');
+			const left = arrowIdx !== -1 ? trimmed.slice(1, arrowIdx) : trimmed.slice(1);
+			const right = arrowIdx !== -1 ? trimmed.slice(arrowIdx + 1) : '';
+
+			for (const m of left.matchAll(/["“]([^"”]+)["”]/g)) {
+				let phrase = m[1].toLowerCase().trim().replace(/[.,!?:;]+$/, '');
+				if (phrase.includes('[x]')) {
+					templates.push({
+						raw: phrase,
+						regex: new RegExp('^' + phrase.replace(/\[x\]/i, '(.+)') + '$', 'i'),
+						tier: 'transition',
+					});
+				} else {
+					transitionPhrases.add(phrase);
+				}
+			}
+
+			if (right) {
+				for (const m of right.matchAll(/["“]([^"”]+)["”]/g)) {
+					let alt = m[1].toLowerCase().trim().replace(/[.,!?:;]+$/, '');
+					if (alt) replacements.add(alt);
+				}
 			}
 		}
 	}
@@ -107,17 +164,28 @@ function loadCatalog(repoPath) {
 		}
 	}
 
-	// Canonical severity mapping strictly derived from explicit catalog / skill definitions:
-	// - Tier 1A frequency markers -> P1 (SKILL.md P1 "Word-list violations", detector "high"/P1)
-	// - Transition phrases -> P2 (SKILL.md P2 "Transition phrases", detector "medium"/P2)
-	// - Clustered Tier 2 words -> P2 (detector "medium"/P2)
-	// Unmapped categories (e.g. Tier 1B clarity edits, Tier 3 density terms) are omitted rather than invented.
+	const genericConclusions = new Set([
+		'the future looks bright',
+		'only time will tell',
+		'one thing is certain',
+		'as we move forward',
+	]);
+
 	const canonicalSeverities = new Map();
-	for (const w of catalogByTier['1A']) canonicalSeverities.set(w, 'P1');
+	for (const w of catalogByTier['1A']) {
+		if (genericConclusions.has(w)) {
+			canonicalSeverities.set(w, 'P2');
+		} else {
+			canonicalSeverities.set(w, 'P1');
+		}
+	}
 	for (const tp of transitionPhrases) canonicalSeverities.set(tp, 'P2');
+	for (const t of templates) {
+		if (t.tier === 'transition' || t.tier === '2') canonicalSeverities.set(t.raw, 'P2');
+	}
 	for (const w of catalogByTier['2']) canonicalSeverities.set(w, 'P2');
 
-	return { catalogByTier, allCatalogWords, transitionPhrases, replacements, replacementOnlyWords, canonicalSeverities };
+	return { catalogByTier, tierByPattern, allCatalogWords, transitionPhrases, templates, replacements, replacementOnlyWords, canonicalSeverities };
 }
 
 const catalog = loadCatalog(repo);
@@ -153,7 +221,7 @@ function getPatternRegex(pattern) {
 	if (pattern.endsWith('e')) {
 		return new RegExp(`\\b${pattern.slice(0, -1)}(?:e|es|ed|ing)\\b`, 'gi');
 	}
-	if (/[sxz]|sh|ch$/i.test(pattern)) {
+	if (/(?:[sxz]|sh|ch)$/i.test(pattern)) {
 		return new RegExp(`\\b${pattern}(?:es|ed|ing)?\\b`, 'gi');
 	}
 	if (pattern.endsWith('y')) {
@@ -185,12 +253,21 @@ function getTier2MatchesInParagraph(para, tier2Patterns) {
 	return deduped;
 }
 
-function getTargetPattern(line) {
+function getTargetPattern(line, cat) {
 	let stripped = line.replace(/^(?:[-*]|\d+\.)\s*/, '').trim();
-	const boldQuote = /\*\*[^*]*?["“]([^"”]+)["”][^*]*?\*\*/.exec(stripped);
-	if (boldQuote) return boldQuote[1].trim();
-	const qMatch = /["“]([^"”]+)["”]/.exec(stripped);
-	if (qMatch) return qMatch[1].trim();
+	const quotes = [...stripped.matchAll(/["“]([^"”]+)["”]/g)].map(m => m[1].trim());
+	if (quotes.length > 0) {
+		if (cat) {
+			const catalogQuote = quotes.find(q => {
+				const qLower = q.toLowerCase().replace(/^[^a-z0-9_-]+|[^a-z0-9_-]+$/g, '');
+				return cat.allCatalogWords.has(qLower) ||
+				       cat.transitionPhrases.has(qLower) ||
+				       getBaseForms(qLower).some(bf => cat.allCatalogWords.has(bf));
+			});
+			if (catalogQuote) return catalogQuote;
+		}
+		return quotes[0];
+	}
 	const codeMatch = /`([^`]+)`/.exec(stripped);
 	if (codeMatch) return codeMatch[1].trim();
 	const boldMatch = /\*\*([a-zA-Z0-9_\s-]+)\*\*/.exec(stripped);
@@ -203,41 +280,65 @@ function getTargetPattern(line) {
 
 function validateDetectAudit(fixture, response, cat) {
 	const errors = [];
-	const issuesMatch = /(?:^|\n)(?:#{1,6}\s*)?(?:\*\*)?(?:(?:\d+\.\s*)?Issues found)[^\n]*\n/i.exec(response);
-	if (!issuesMatch) return errors;
-	const fromIssues = response.slice(issuesMatch.index + issuesMatch[0].length);
-	const assessMatch = /\n(?:#{1,6}\s*)?(?:\*\*)?(?:(?:\d+\.\s*)?Assessment)[^\n]*\n/i.exec(fromIssues);
-	const issuesText = (assessMatch ? fromIssues.slice(0, assessMatch.index) : fromIssues).trim();
+	const issuesMatch = /(?:^|\n)(?:#{1,6}\s*)?(?:\*\*)?(?:(?:\d+\.\s*)?Issues found)[^\n]*(?:\n|$)/i.exec(response);
+	const assessMatch = /(?:^|\n)(?:#{1,6}\s*)?(?:\*\*)?(?:(?:\d+\.\s*)?Assessment)[^\n]*(?:\n|$)/i.exec(response);
 
+	if (!issuesMatch || !assessMatch) {
+		if (!issuesMatch) errors.push('missing or malformed Issues found section');
+		if (!assessMatch) errors.push('missing or malformed Assessment section');
+		return errors;
+	}
+	if (assessMatch.index <= issuesMatch.index) {
+		errors.push('expected Issues found section before Assessment section');
+		return errors;
+	}
+
+	const issuesText = response.slice(issuesMatch.index + issuesMatch[0].length, assessMatch.index).trim();
 	const lines = issuesText.split('\n');
 	const findings = [];
 	let currentSeverity = null;
+
 	for (let i = 0; i < lines.length; i++) {
 		const line = lines[i].trim();
 		if (!line || line === '---') continue;
-		const headerMatch = /^(?:\*\*|\*|#{1,6}\s*)?\b(P[012])\b/i.exec(line);
-		const isBullet = line.startsWith('-') || line.startsWith('* ') || /^\d+\.\s+/.test(line);
+
+		const headerMatch = /^(?:#{1,6}\s*|\*\*|\*)?\b(P[012])\b/i.exec(line);
+		const isBullet = /^(?:[-*]|\d+\.)\s+/.test(line);
+
 		if (headerMatch && !isBullet) {
 			currentSeverity = headerMatch[1].toUpperCase();
 			continue;
 		}
+
+		if (!isBullet && /^(?:#{1,6}\s*|\*\*|\*)?(?:Tier\s*1A|Tier\s*1B|Tier\s*2|Tier\s*3)/i.test(line)) {
+			continue;
+		}
+
+		if (/^no\s+.*found\.?$/i.test(line) || /^none\.?$/i.test(line)) {
+			continue;
+		}
+
 		if (isBullet) {
 			let severity = currentSeverity;
-			const inlineSevMatch = /^(?:[-*]|\d+\.)\s*(?:\*\*)?(?:P([012])A?|\b(P[012])\b)/i.exec(line) ||
-														 /\(\s*\b(P[012])\b/i.exec(line);
-			if (inlineSevMatch) severity = ('P' + (inlineSevMatch[1] || inlineSevMatch[2])).toUpperCase();
-			findings.push({ severity, line });
+			const explicitSevMatch = /\b(P\d+)\b/i.exec(line);
+			if (explicitSevMatch) {
+				const label = explicitSevMatch[1].toUpperCase();
+				if (label === 'P0' || label === 'P1' || label === 'P2') {
+					severity = label;
+				} else {
+					severity = null;
+				}
+			}
+			findings.push({ severity, line, rawExplicitSev: explicitSevMatch ? explicitSevMatch[1] : null });
 		} else if (findings.length > 0) {
-			findings[findings.length - 1].line += ' ' + line;
-		} else {
-			if (!/^(?:None\.?|No\s+AI(?:-isms)?\s+found\.?)$/i.test(line)) {
-				errors.push(`unrecognized finding format: "${line}"`);
+			if (!/^(?:#{1,6}\s*|\*\*|\*)/.test(line)) {
+				findings[findings.length - 1].line += ' ' + line;
 			}
 		}
 	}
 
-	// Paragraph-level evaluation for Tier 2 clusters
-	const sourceParagraphs = (fixture.source || '').split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0);
+	const sourceText = fixture.source || '';
+	const sourceParagraphs = sourceText.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0);
 	const paraTier2Counts = sourceParagraphs.map(p => getTier2MatchesInParagraph(p, cat.catalogByTier['2'] || new Set()));
 
 	for (const f of findings) {
@@ -245,42 +346,101 @@ function validateDetectAudit(fixture, response, cat) {
 			errors.push(`finding missing canonical severity tier (P0, P1, P2): "${f.line.trim()}"`);
 		}
 
-		const target = getTargetPattern(f.line);
+		const target = getTargetPattern(f.line, cat);
 		if (!target) {
 			errors.push(`unrecognized finding format (could not extract target pattern): "${f.line.trim()}"`);
 			continue;
 		}
 
-		const targetLower = target.toLowerCase();
-		const targetWords = targetLower.split(/\s+/);
-		let isReplacement = false;
-		for (const tw of targetWords) {
-			const baseForms = getBaseForms(tw);
-			for (const bf of baseForms) {
-				if (cat.replacementOnlyWords.has(bf)) {
-					errors.push(`replacement alternative reported as catalog pattern: "${target}"`);
-					isReplacement = true;
+		const targetLower = target.toLowerCase().trim();
+		const cleanTarget = targetLower.replace(/^[^a-z0-9_-]+|[^a-z0-9_-]+$/g, '');
+
+		const matchedTemplate = (cat.templates || []).find(t => cleanTarget === t.raw || t.regex.test(cleanTarget));
+
+		let matchedTransition = null;
+		if (cat.transitionPhrases.has(cleanTarget)) {
+			matchedTransition = cleanTarget;
+		} else {
+			for (const tp of cat.transitionPhrases) {
+				const tpRegex = new RegExp(`\\b${tp.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+				if (tpRegex.test(cleanTarget)) {
+					matchedTransition = tp;
 					break;
 				}
 			}
-			if (isReplacement) break;
 		}
 
-		const isCatalogPattern = cat.allCatalogWords.has(targetLower) ||
-														 (cat.transitionPhrases && cat.transitionPhrases.has(targetLower)) ||
-														 targetWords.some(tw => getBaseForms(tw).some(bf => cat.allCatalogWords.has(bf)));
-		if (!isCatalogPattern && !isReplacement) {
-			errors.push(`finding not grounded in pattern catalog: "${target}"`);
+		const targetWords = cleanTarget.split(/\s+/);
+		const isSingleWord = targetWords.length === 1;
+		const targetBases = getBaseForms(cleanTarget);
+
+		const isCatalogPattern = Boolean(
+			cat.allCatalogWords.has(cleanTarget) ||
+			matchedTransition ||
+			matchedTemplate ||
+			(isSingleWord && targetBases.some(bf => cat.allCatalogWords.has(bf)))
+		);
+
+		if (!isCatalogPattern) {
+			if (cat.replacementOnlyWords.has(cleanTarget) ||
+			    (isSingleWord && targetBases.some(bf => cat.replacementOnlyWords.has(bf)))) {
+				errors.push(`replacement alternative reported as catalog pattern: "${target}"`);
+			} else {
+				errors.push(`finding not grounded in pattern catalog: "${target}"`);
+			}
 		}
 
-		let expectedSeverity = cat.canonicalSeverities.get(targetLower);
-		if (!expectedSeverity) {
-			for (const tw of targetWords) {
-				for (const bf of getBaseForms(tw)) {
-					const exp = cat.canonicalSeverities.get(bf);
-					if (exp) { expectedSeverity = exp; break; }
+		let foundInSource = false;
+		if (matchedTemplate) {
+			foundInSource = matchedTemplate.regex.test(sourceText) || sourceText.toLowerCase().includes(cleanTarget);
+		} else if (matchedTransition) {
+			const mRegex = new RegExp(`\\b${matchedTransition.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+			foundInSource = mRegex.test(sourceText);
+		} else if (isSingleWord) {
+			const wordRegex = getPatternRegex(cleanTarget);
+			foundInSource = wordRegex.test(sourceText);
+		} else {
+			const phraseRegex = new RegExp(`\\b${cleanTarget.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[- ]+/g, '[- ]+')}\\b`, 'i');
+			foundInSource = phraseRegex.test(sourceText);
+		}
+
+		if (!foundInSource) {
+			errors.push(`reported finding not found in audited source: "${target}"`);
+		}
+
+		const claimedTierMatch = /\bTier\s*(1A|1B|2|3)\b/i.exec(f.line);
+		if (claimedTierMatch) {
+			const claimedTier = claimedTierMatch[1].toUpperCase();
+			let expectedTier = cat.tierByPattern.get(cleanTarget);
+			if (!expectedTier) {
+				for (const bf of targetBases) {
+					if (cat.tierByPattern.get(bf)) {
+						expectedTier = cat.tierByPattern.get(bf);
+						break;
+					}
 				}
-				if (expectedSeverity) break;
+			}
+			if (!expectedTier && matchedTemplate) {
+				expectedTier = matchedTemplate.tier;
+			}
+			if (expectedTier && claimedTier !== expectedTier) {
+				errors.push(`catalog pattern reported under wrong category: "${target}" is Tier ${expectedTier}, reported under Tier ${claimedTier}`);
+			}
+		}
+
+		let expectedSeverity = cat.canonicalSeverities.get(cleanTarget);
+		if (!expectedSeverity) {
+			for (const bf of targetBases) {
+				const exp = cat.canonicalSeverities.get(bf);
+				if (exp) { expectedSeverity = exp; break; }
+			}
+		}
+		if (!expectedSeverity && matchedTransition) {
+			expectedSeverity = 'P2';
+		}
+		if (!expectedSeverity && matchedTemplate) {
+			if (matchedTemplate.tier === 'transition' || matchedTemplate.tier === '2') {
+				expectedSeverity = 'P2';
 			}
 		}
 		if (expectedSeverity && f.severity && f.severity !== expectedSeverity) {
@@ -288,18 +448,25 @@ function validateDetectAudit(fixture, response, cat) {
 		}
 
 		const isTier2 = (cat.catalogByTier['2'] && (
-			cat.catalogByTier['2'].has(targetLower) ||
-			targetWords.some(tw => getBaseForms(tw).some(bf => cat.catalogByTier['2'].has(bf)))
+			cat.catalogByTier['2'].has(cleanTarget) ||
+			targetBases.some(bf => cat.catalogByTier['2'].has(bf))
 		)) || /\bTier\s*2\b/i.test(f.line);
 
 		if (isTier2) {
 			let foundInClusteredPara = false;
 			for (let pIdx = 0; pIdx < sourceParagraphs.length; pIdx++) {
-				const pText = sourceParagraphs[pIdx];
 				const pMatches = paraTier2Counts[pIdx];
 				if (pMatches.length >= 2) {
-					const targetRegex = getPatternRegex(targetLower);
-					if (targetRegex.test(pText)) {
+					const corresponds = pMatches.some(m => {
+						const mText = m.match.toLowerCase();
+						const mBases = getBaseForms(mText);
+						return m.pattern === cleanTarget ||
+						       mText === cleanTarget ||
+						       mBases.includes(cleanTarget) ||
+						       targetBases.includes(m.pattern) ||
+						       targetBases.some(tb => mBases.includes(tb));
+					});
+					if (corresponds) {
 						foundInClusteredPara = true;
 						break;
 					}
@@ -320,11 +487,7 @@ function inspect(fixture, response) {
 	const matches = [...response.matchAll(heading)];
 	if (fixture.expect.no_final_rewrite) {
 		if (matches.length) errors.push('detect response contains a Final rewrite');
-		if (!/Issues found/i.test(response) || !/Assessment/i.test(response)) {
-			errors.push('missing detect sections');
-		} else {
-			errors.push(...validateDetectAudit(fixture, response, catalog));
-		}
+		errors.push(...validateDetectAudit(fixture, response, catalog));
 		return { id: fixture.id, errors };
 	}
 	if (matches.length !== 1) return { id: fixture.id, errors: ['expected exactly one Final rewrite heading'] };
@@ -422,5 +585,74 @@ assertPasses(t2DistinctClusterFixture, t2DistinctClusterResponse, 'multiple dist
 assert(!catalog.allCatalogWords.has('linkedin'), 'non-catalog tables must not add catalog words');
 assert(!catalog.replacementOnlyWords.has('examples'), 'Tier 3 instruction words must not become replacement words');
 
-console.log(JSON.stringify({ response_file: path.basename(responseFile), results, mutation_controls: '14 passed', note: 'Literal invariants only. Semantic fidelity and truthful reporting require the separate independent model assessment.' }, null, 2));
+// 15: Missing or malformed sections (Bug 6): responses without required section headings must FAIL
+const proseNoSectionsResponse = `We completed the audit. No Issues found during the initial pass, and a separate Assessment is not required.`;
+assertFails(detectFixture, proseNoSectionsResponse, 'Issues found', 'response with section keywords only in prose must fail');
+
+// 16: Source-presence validation (Bug 8): catalogued term absent from source must FAIL
+const absentTermResponse = `**1. Issues found**\n\n- **P1**: "delve" — Tier 1A marker.\n\n**2. Assessment**\n- "delve" — problem.\n`;
+assertFails(detectFixture, absentTermResponse, 'not found in audited source', 'catalogued term absent from source must fail');
+
+// 17: Exact pattern grounding (Bug 9): invented multiword pattern must FAIL
+const robustUnicornResponse = `**1. Issues found**\n\n- **P1**: "robust unicorn" — fabricated phrase.\n\n**2. Assessment**\n- Note.\n`;
+assertFails(detectFixture, robustUnicornResponse, 'not grounded in pattern catalog', 'invented multiword pattern must fail');
+
+// 18: Transition-section parsing (Bug 5): canonical transition phrases outside skill examples must PASS
+const transitionFixture = { ...detectFixture, source: 'Notably, this platform is fast. That said, we continue to test.' };
+const transitionResponse = `**1. Issues found**\n\n- **P2**: "Notably" — transition phrase to remove.\n- **P2**: "That said" — transition phrase to remove.\n\n**2. Assessment**\n- Notes.\n`;
+assertPasses(transitionFixture, transitionResponse, 'transition phrases outside skill example list must pass');
+
+// 19: Transition alternatives (Bug 12): suggested transition rewrites reported as patterns must FAIL
+const transitionAltFixture = { ...detectFixture, source: 'We also deploy changes on top of that.' };
+const transitionAltResponse = `**1. Issues found**\n\n- **P2**: "on top of that" — transition phrase.\n\n**2. Assessment**\n- Notes.\n`;
+assertFails(transitionAltFixture, transitionAltResponse, 'replacement alternative', 'transition rewrite alternative must fail');
+
+// 20: Transition punctuation (Bug 13): transition phrases quoted with punctuation must PASS and enforce P2
+const punctuatedTransitionResponse = `**1. Issues found**\n\n- **P2**: "Moreover," — transition phrase with punctuation.\n\n**2. Assessment**\n- Notes.\n`;
+assertPasses(detectFixture, punctuatedTransitionResponse, 'transition phrase quoted with punctuation must pass');
+
+// 21: Severity parsing (Bug 11): invalid severity labels like P10 must FAIL
+const p10Response = `**1. Issues found**\n\n- P10: "robust" — Tier 1A marker.\n\n**2. Assessment**\n- Notes.\n`;
+assertFails(detectFixture, p10Response, 'canonical severity tier', 'malformed P10 severity must fail');
+
+// 22: Template handling (Bug 10): bare template prefix must FAIL; concrete instantiation must PASS
+const truncatedTemplateResponse = `**1. Issues found**\n\n- **P2**: "the integration of" — incomplete template.\n\n**2. Assessment**\n- Notes.\n`;
+assertFails(detectFixture, truncatedTemplateResponse, 'not grounded in pattern catalog', 'truncated template fragment must fail');
+const templateFixture = { ...detectFixture, source: 'We oversee the integration of services with databases.' };
+const templateResponse = `**1. Issues found**\n\n- **P2**: "the integration of services with databases" — template phrase.\n\n**2. Assessment**\n- Notes.\n`;
+assertPasses(templateFixture, templateResponse, 'full template instantiation must pass');
+
+// 23: Tier 2 inflections (Bug 14): plural forms must count toward cluster threshold
+const t2PluralFixture = { ...detectFixture, source: 'This initiative fosters collaboration and bolsters security across teams.' };
+const t2PluralResponse = `**1. Issues found**\n\n- **P2**: "fosters" — Tier 2 cluster.\n- **P2**: "bolsters" — Tier 2 cluster.\n\n**2. Assessment**\n- Both terms form a cluster.\n`;
+assertPasses(t2PluralFixture, t2PluralResponse, 'Tier 2 plural inflections in same paragraph must pass');
+
+// 24: Report parsing (Bug 15): intro prose and Tier 1B subheadings must PASS
+const introProseResponse = `**1. Issues found**\n\nThe following issues were identified during model-only audit:\n\n**Tier 1A**\n- **P1**: "robust" — AI frequency marker.\n\n**Tier 1B clarity edits**\n\n**2. Assessment**\n- "robust" — clear problem.\n`;
+assertPasses(detectFixture, introProseResponse, 'introductory prose and subheadings in Issues found must pass');
+
+// 25: Quoted source text separation (Requirement Gap 1): quote containing replacement words or testament to must PASS
+const quoteWithReplacementResponse = `**1. Issues found**\n\n- **P1**: "robust" (in "this robust platform unlocks efficiency") — Tier 1A marker.\n\n**2. Assessment**\n- Notes.\n`;
+assertPasses(detectFixture, quoteWithReplacementResponse, 'valid finding quoting source span containing replacement word must pass');
+const testamentFixture = { ...detectFixture, source: 'This architecture is a testament to careful engineering.' };
+const testamentResponse = `**1. Issues found**\n\n- **P1**: "testament to" — catalog phrase.\n\n**2. Assessment**\n- Notes.\n`;
+assertPasses(testamentFixture, testamentResponse, 'catalog phrase testament to must pass');
+
+// 26: Claimed categories validation (Requirement Gap 2): wrong tier category claim must FAIL
+const wrongCategoryResponse = `**1. Issues found**\n\n- **P1 (Tier 1B clarity edit):** "robust" — clarity edit.\n\n**2. Assessment**\n- Notes.\n`;
+assertFails(detectFixture, wrongCategoryResponse, 'wrong category', 'finding claiming incorrect tier category must fail');
+
+// 27: Tier 2 context exceptions (Requirement Gap 3): exempt literal use inside otherwise valid cluster must FAIL
+const exemptTier2Fixture = { ...detectFixture, source: 'We harness the power to streamline deeply nested logic.' };
+const exemptTier2Response = `**1. Issues found**\n\n- **P2**: "deeply nested" — Tier 2 finding.\n- **P2**: "harness" — Tier 2 finding.\n- **P2**: "streamline" — Tier 2 finding.\n\n**2. Assessment**\n- Notes.\n`;
+assertFails(exemptTier2Fixture, exemptTier2Response, 'sub-threshold Tier 2', 'exempt Tier 2 use inside cluster must fail');
+
+// 28: Severity consistency (Bug 7): generic conclusions like "The future looks bright" are canonical P2
+const conclusionFixture = { ...detectFixture, source: 'The future looks bright for the project.' };
+const conclusionP2Response = `**1. Issues found**\n\n- **P2**: "The future looks bright" — generic conclusion.\n\n**2. Assessment**\n- Notes.\n`;
+assertPasses(conclusionFixture, conclusionP2Response, 'generic conclusion under P2 must pass');
+const conclusionP1Response = `**1. Issues found**\n\n- **P1**: "The future looks bright" — generic conclusion.\n\n**2. Assessment**\n- Notes.\n`;
+assertFails(conclusionFixture, conclusionP1Response, 'wrong severity', 'generic conclusion under P1 must fail');
+
+console.log(JSON.stringify({ response_file: path.basename(responseFile), results, mutation_controls: '28 passed', note: 'Literal invariants only. Semantic fidelity and truthful reporting require the separate independent model assessment.' }, null, 2));
 if (results.some(r => r.errors.length)) process.exitCode = 1;

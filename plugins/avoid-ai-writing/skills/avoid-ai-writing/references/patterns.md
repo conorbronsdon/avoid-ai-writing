@@ -70,8 +70,8 @@ Caveat worth keeping visible: the "appears far more often in AI text" claim behi
 | hit differently / hits different | feels different, affects [me/us] differently (or cut) |
 | watershed moment | turning point, shift (or describe what changed) |
 | marking a pivotal moment | changing [X], leading to [Y] (or state what happened) |
-| the future looks bright | (cut — say something specific or nothing) |
-| only time will tell | (cut — say something specific or nothing) |
+| the future looks bright | (cut — say something specific or nothing; generic conclusion, canonical P2) |
+| only time will tell | (cut — say something specific or nothing; generic conclusion, canonical P2) |
 | nestled | is located, sits, is in |
 | vibrant | lively, active (or describe what makes it active) |
 | thriving | growing, active (or cite a number) |

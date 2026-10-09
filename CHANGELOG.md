@@ -10,6 +10,7 @@ All notable changes to this project are documented here.
 
 - Replaced placeholder instructions and empty suggestions in the word replacement tables with concrete, direct alternatives for previously incomplete entries (#215).
 - Removed `breakthrough` from the `game-changer` / `game-changing` suggestions to avoid preserving unsupported importance claims. Added missing context fallbacks and adjective/noun clarifications for `transformative`, `paradigm-shifting`, and `despite challenges` (#380).
+- Ground model-only `detect` audit findings in the pattern catalog: report only catalog patterns with canonical categories and severities (e.g., transition phrases under P2), exclude suggested replacement alternatives, and omit sub-threshold Tier 2 matches from standalone issues (#323).
 
 ### Fixed
 
