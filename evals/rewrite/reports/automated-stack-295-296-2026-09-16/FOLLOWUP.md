@@ -89,11 +89,17 @@ Claude's deletion: preserving the meaning of a source-internal instruction is
 a semantic assertion assessed separately by the independent Codex reader.
 This demonstrates why literal checks alone do not establish a pass.
 
-Recheck each round with the original `check-literals.cjs`, the unchanged
-`fixtures-frozen.json`, and `isolated-cycle4/claude-responses.json` (or the
-corresponding model/round). Cycle four's literal results both fail; cycle five's
-Claude literal result passes while MiMo's fails. Three mutation controls still
-reject a changed date, a corrupted URL, and a Final rewrite in detect mode.
+Recheck each round with the original `check-literals.cjs` (pinned to base commit
+`5a5cf6a45331384d4ff68f1f6ce50da24da0da4c`), the unchanged `fixtures-frozen.json`,
+and `isolated-cycle4/claude-responses.json` (or the corresponding model/round).
+Cycle four's literal results both fail; cycle five's Claude literal result passes
+while MiMo's fails. Three mutation controls still reject a changed date, a corrupted
+URL, and a Final rewrite in detect mode.
+
+Under the current standalone detect-audit checker (`check-detect-audit.cjs`, #323),
+historical Claude audits are reanalyzed against canonical catalog grounding and
+severity rules, intentionally flagging the ungrounded and sub-threshold findings in
+those historical responses.
 
 ## Verification and limits
 

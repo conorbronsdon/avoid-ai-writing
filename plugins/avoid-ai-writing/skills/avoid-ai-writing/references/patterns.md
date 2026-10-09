@@ -26,8 +26,10 @@ Replacement examples supply wording, not new facts.
 
 Words are organized into three tiers based on how reliably they signal AI-generated text. This tiered approach — adapted from [brandonwise/humanizer](https://github.com/brandonwise/humanizer)'s vocabulary research — reduces false positives on words that are fine in isolation but suspicious in clusters.
 
+In replacement tables (`| Replace | With |`), the **Replace** column defines catalog patterns to flag; the **With** column provides suggested human alternatives to use. Words appearing only as suggested replacements are never catalog patterns.
+
 - **Tier 1 — Review every match.** These words are strong candidates in their listed senses. Apply the context exceptions and preserve legitimate technical or author-specific uses.
-- **Tier 2 — Flag in clusters.** Individually fine, but two or more in the same paragraph is a strong AI signal. Flag when they appear together.
+- **Tier 2 — Flag in clusters.** Individually fine, but two or more in the same paragraph is a strong AI signal. Flag when they appear together; an isolated single occurrence does not meet the threshold and must not be reported as a standalone finding.
 - **Tier 3 — Flag by density.** Common words that AI simply overuses. Flag a word only when that one word repeats heavily: at least `max(3, floor(wordCount × 0.03))` uses. Round 3% of the total word count down to a whole number, with a minimum of three uses. Count each listed form on its own (`significant` and `significantly` are separate), so several different Tier 3 words that together pass 3% do not trigger the rule. The threshold is deliberately conservative: in a 1,000-word piece, one word has to appear 30 times.
 
 **Match inflected forms.** Each entry below covers the listed word *and its morphological variants* — adverb (`-ly`), gerund/participle (`-ing`), plural, comparative/superlative, and verb conjugations — unless a variant carries a distinct, legitimate meaning. So `genuine` also flags `genuinely`, `leverage` also flags `leveraging` / `leveraged`, `delve` covers `delving`, and `meticulous` covers `meticulously`. When a variant has a separate honest sense (e.g. `real` meaning factual, not the intensifier in "a real improvement"), judge by context rather than matching blindly. For Tier 3 density, keep separately listed forms in separate counts as specified above; this matching guidance does not combine them.
@@ -121,7 +123,7 @@ Wordiness and formality, not authorship evidence. Same fix, weaker claim.
 
 #### Tier 2 — Flag when 2+ appear in the same paragraph
 
-These words are legitimate on their own. When two or more show up together, the paragraph likely needs a rewrite.
+These words are legitimate on their own. When two or more show up together, the paragraph likely needs a rewrite. A single occurrence in a paragraph does not meet the threshold and must not be reported as a standalone finding.
 
 | Replace | With |
 |---|---|
@@ -313,8 +315,8 @@ These slot-fill constructions signal that a sentence was generated, not written.
   - "The reality is that" → (cut or just state the claim)
 - Note: "In order to," "Due to the fact that," and "At the end of the day" are covered in the word/phrase table and transition sections above — don't duplicate rules.
 
-### Generic conclusions
-- "The future looks bright," "Only time will tell," "One thing is certain," "As we move forward" — these are filler disguised as conclusions. Cut them. Add a closing thought only when the source supplies one; do not invent a specific conclusion to replace filler.
+### Generic conclusions (P2)
+- "The future looks bright," "Only time will tell," "One thing is certain," "As we move forward" — these are filler disguised as conclusions. Cut them. Add a closing thought only when the source supplies one; do not invent a specific conclusion to replace filler. Treat this as a P2 clarity judgment.
 
 ### Chatbot artifacts
 - "I hope this helps!", "Certainly!", "Absolutely!", "Great question!", "Feel free to reach out," "Let me know if you need anything else" — these are conversational tics from chat interfaces, not writing. Remove entirely.

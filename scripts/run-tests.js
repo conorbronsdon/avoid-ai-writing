@@ -28,6 +28,7 @@ const SUITES = [
   'scripts/rewrite-eval.test.js',
   'scripts/rewrite-eval-opencode.test.js',
   'scripts/fp-measure-cli.test.js',
+  'scripts/check-detect-audit.test.js',
 ];
 
 function resolveSuite(arg) {

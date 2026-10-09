@@ -10,6 +10,7 @@ All notable changes to this project are documented here.
 
 - Replaced placeholder instructions and empty suggestions in the word replacement tables with concrete, direct alternatives for previously incomplete entries (#215).
 - Removed `breakthrough` from the `game-changer` / `game-changing` suggestions to avoid preserving unsupported importance claims. Added missing context fallbacks and adjective/noun clarifications for `transformative`, `paradigm-shifting`, and `despite challenges` (#380).
+- Ground model-only `detect` audit findings in the pattern catalog: report only catalog patterns with canonical categories and severities (e.g., transition phrases and generic conclusions under P2), support catalog-defined adverbial base forms (e.g. `robustly`, `comprehensively`), exclude suggested replacement alternatives, and omit sub-threshold Tier 2 matches from standalone issues (#323). Added standalone `evals/rewrite/check-detect-audit.cjs` and regression suite, while preserving original pinned `check-literals.cjs` for dated report reproducibility.
 
 ### Fixed
 

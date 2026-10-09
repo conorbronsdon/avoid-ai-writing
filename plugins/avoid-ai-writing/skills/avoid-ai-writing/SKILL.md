@@ -252,10 +252,10 @@ If no stage changed the text, report **0 editing passes**, including when you au
 Return your response in two sections:
 
 **1. Issues found**
-A bulleted list of every justified AI-ism identified, with the offending text quoted. Group by severity (P0, P1, P2). Keep Tier 1B clarity edits visually separate from Tier 1A markers, and say which is which — a wordiness fix is a writing suggestion, not evidence about who wrote the text.
+A bulleted list of every justified AI-ism identified, with the offending text quoted. Group by canonical severity (P0, P1, P2) as defined in ## Severity tiers (for example, transition phrases such as "Moreover" are P2, not P1). Ground every finding in the catalog: cite only catalog patterns (in replacement tables, only words in the Replace column; suggested human alternatives in the With column are never catalog patterns). Omit sub-threshold weak matches (such as a single Tier 2 word without 2+ occurrences in the same paragraph); do not report them as standalone issues under Issues found. Keep Tier 1B clarity edits visually separate from Tier 1A markers, and say which is which — a wordiness fix is a writing suggestion, not evidence about who wrote the text.
 
 **2. Assessment**
-For each flag, note whether it's a clear problem or a judgment call. Some AI-associated patterns are effective writing techniques — uniform paragraph length is a problem, but a well-placed "however" isn't. Call out which flags the writer should definitely fix vs. which ones are worth a second look but might be fine in context. If the text is clean, say so.
+For each flag, note whether it's a clear problem or a judgment call. Discuss sub-threshold weak matches (such as an isolated Tier 2 occurrence) here as context or judgment calls rather than standalone findings. Some AI-associated patterns are effective writing techniques — uniform paragraph length is a problem, but a well-placed "however" isn't. Call out which flags the writer should definitely fix vs. which ones are worth a second look but might be fine in context. If the text is clean, say so.
 
 State whether the detector actually ran or the audit was model-only. When tools are unavailable, say the detector did not run. Report zero editing passes; detect mode performs no marks normalization or rewriting.
 
