@@ -115,6 +115,9 @@
                           "expect":  {
                                          "no_final_rewrite":  true,
                                          "findings_and_assessment":  true,
+                                         "catalog_grounded":  true,
+                                         "canonical_severities":  true,
+                                         "no_subthreshold_findings":  true,
                                          "required_passes":  0,
                                          "max_passes":  0
                                      }
@@ -133,7 +136,8 @@
                         "Tool-free setup cannot exercise real file edits, available-tool claims, or injected failed-verification repair branches",
                         "No instrumented internal pass history; assess visible output and self-reported pass count only",
                         "Same-batch scenarios may influence each other",
-                        "Expectations frozen before editor execution; evaluator is root Codex, independent of both editor families"
+                        "Expectations frozen before editor execution; evaluator is root Codex, independent of both editor families",
+                        "Patterns without an explicit canonical severity tier in SKILL.md or the catalog (e.g. Tier 1B clarity edits or Tier 3 density terms where skill and detector define differing or advisory tiers) cannot be mapped to a severity unambiguously and are not assigned an invented severity"
                     ],
     "expectation_interpretation":  "Preserve constraints are semantic, not verbatim-match requirements, except exact_source, protected_exact, quantities, and identifiers. Harmless paraphrases pass; for example could may preserve the uncertainty carried by may. No first-person checks apply only to delivered rewritten prose, not the report. Reported editing-pass counts are visible claims, not instrumented internal execution."
 }
