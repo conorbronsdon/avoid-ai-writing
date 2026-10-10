@@ -368,21 +368,22 @@ const AIDetector = (() => {
       return true;
     }
 
-    // "A library features support for..." is a verb.
-    // "System features support for..." is a plural noun subject + verb.
+    // "The library features support for..." is a verb.
+    // "Security features support for..." is a plural noun subject + verb.
     if (FEATURES_VERB_SUBJECTS.test(before) && /^\s+support\s+for\b/i.test(after)) {
       const hasPluralDeterminer = /\b(?:these|those|all|some|many|few|various|multiple|several|both)\s+[\w-]+\s+$/i.test(before);
       const extendedAfter = text.slice(end, end + 100);
-      const hasPluralPredicate = /^\s+support\s+for(?:[^.?!;]{0,80})?\b(?:and|but|or|nor)\s+(?:are|were|have|do|reject|accept|allow|deny|provide|require|use|make|work|help|give|take|need|become|seem|look|show|include|offer|support|fail|pass|lack|prefer|choose|prevent|stop)\b/i.test(extendedAfter);
+      const hasPluralPredicate = /^\s+support\s+for(?:[^.?!;]{0,80})?\b(?:and|but|or|nor)\s+(?:are|were|have|do|reject|accept|allow|deny|provide|require|use|make|work|help|give|take|need|become|seem|look|show|include|offer|support|remain|fail|pass|lack|prefer|choose|prevent|stop)\b/i.test(extendedAfter);
+      const hasForObject = /^\s+support\s+for(?:-|\s+)(?:profit|loops?)\b/i.test(after);
       // Do not borrow a determiner across a preposition or conjunction:
       // "a suite of system features" still has plural noun "features".
       // "that" can introduce a clause and "which" can determine plural nouns.
       // A relative pronoun needs its own determiner-led subject evidence.
-      const hasSingularEvidence = /\b(?:a|an|this|that|every|each|one)\s+(?:(?!(?:of|for|in|with|and|or|which|what|that|who)\b)[\w-]+\s+){1,3}$/i.test(before)
+      const hasSingularEvidence = /\b(?:a|an|the|this|that|my|our|your|their|its|his|her|every|each|one)\s+(?:(?!(?:of|for|in|with|and|or|which|what|that|who)\b)[\w-]+\s+){1,3}$/i.test(before)
         || /\b(?:it|he|she)\s+$/i.test(before)
         || /\b(?:a|an|the|this|that|my|our|your|their|its|his|her|each|every)\s+[\w-]+\s+(?:which|that|who)\s+$/i.test(before);
       
-      if (!hasPluralDeterminer && !hasPluralPredicate && hasSingularEvidence) {
+      if (!hasPluralDeterminer && !hasPluralPredicate && !hasForObject && hasSingularEvidence) {
         return false;
       }
     }
