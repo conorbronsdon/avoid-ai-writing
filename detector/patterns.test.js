@@ -1846,7 +1846,7 @@ test('Markdown blocks do not share script evidence across an unterminated line',
 
 test('Markdown separators, table delimiters and HTML starts keep script evidence separate', () => {
   for (const newline of ['\n', '\r\n']) {
-    for (const separator of ['---', '***', '___', '===', '=', '- - -', '* * *', '_ _ _', '  ---  ']) {
+    for (const separator of ['---', '--', '***', '___', '===', '==', '=', '- - -', '* * *', '_ _ _', '  ---  ', '  --  ']) {
       const text = `аст now to secure it${newline}${separator}${newline}Позвоните в поддержку`;
       const normalized = AIDetector.normalizeText(text);
       assert.equal(normalized.text, text.replace('аст', 'act'), separator);
@@ -1863,6 +1863,17 @@ test('Markdown separators, table delimiters and HTML starts keep script evidence
     const prose = `Ответы со ссылкой на docker v1.2${newline}от 07.10 снимем в понедельник.`;
     assert.equal(AIDetector.normalizeText(prose).text, prose);
     assert.equal(AIDetector.normalizeText(prose).flags.homoglyph, 0);
+  }
+});
+
+test('Setext heading underlines keep script evidence separate across blocks', () => {
+  for (const newline of ['\n', '\r\n']) {
+    for (const underline of ['===', '==', '=', '---', '--', '  ===', '  --']) {
+      const text = `Позвоните в поддержку.${newline}аст now to secure it${newline}${underline}${newline}И еще русский текст.`;
+      const normalized = AIDetector.normalizeText(text);
+      assert.equal(normalized.text, text.replace('аст', 'act'), underline);
+      assert.equal(normalized.flags.homoglyph, 3, underline);
+    }
   }
 });
 
