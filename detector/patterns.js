@@ -77,7 +77,7 @@ const AIDetector = (() => {
   // Dates, versions and ASCII filenames keep internal dots; prose may hard-wrap.
   // Other sentence punctuation and Markdown/HTML block starts separate units, even
   // without a space, so unrelated Russian text cannot hide an English word.
-  const SENTENCE_UNIT_GLOBAL_RE = /(?:[^.!?\r\n]|(?<=[A-Za-z0-9_])\.(?=[A-Za-z0-9_])|\r?\n(?![ \t]*(?:\r?\n|(?:[-*+]|#{1,6}|\d+[.)])\s|[><|]|`{3}|~{3}|(?:(?:-[ \t]*){3,}|(?:\*[ \t]*){3,}|(?:_[ \t]*){3,}|=+)[ \t]*(?:\r?\n|$)|:?-+:?[ \t]*(?:\|[ \t]*:?-+:?[ \t]*)+\|?[ \t]*(?:\r?\n|$))))+/g;
+  const SENTENCE_UNIT_GLOBAL_RE = /(?:[^.!?\r\n]|(?<=[A-Za-z0-9_])\.(?=[A-Za-z0-9_])|\r?\n(?![ \t]*(?:\r?\n|(?:[-*+]|#{1,6}|\d+[.)])\s|[><|]|`{3}|~{3}|(?:-+|(?:\*[ \t]*){3,}|(?:_[ \t]*){3,}|(?:-[ \t]*){3,}|=+)[\t ]*(?:\r?\n|$)|:?-+:?[\t ]*(?:\|[\t ]*:?-+:?[\t ]*)+\|?[\t ]*(?:\r?\n|$))))+/g;
   // Words are letter runs; a hyphen splits them, so "API-сервис" stays two
   // words and its Russian half is not swapped.
   const LETTER_RUN_GLOBAL_RE = /[\p{L}\p{M}]+/gu;
