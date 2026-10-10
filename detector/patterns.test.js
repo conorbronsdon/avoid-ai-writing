@@ -1368,15 +1368,24 @@ test('features: residual precision checks from #384', () => {
   ]) {
     assert.equal(featuresHit(text), undefined, `noun read as a verb: ${text}`);
   }
-  // Deferred cases from #384: singular verb subjects for "support for".
+  // Deferred cases from #384 / #387: singular verb subjects for "support for".
   // The plural-noun subject cases (like "The experimental features support for loops") 
   // continue to correctly read as nouns because of their determiner/adjective context.
   for (const text of [
     'A library features support for asynchronous requests when the device goes offline.',
+    'The library features support for asynchronous requests when the device goes offline.',
+    'Our library features support for asynchronous requests across every supported device in our network.',
     'This library features support for asynchronous requests across every supported device in our network.',
     'That JavaScript library features support for rendering interactive charts in real time.',
+    'The JavaScript library features support for rendering interactive charts in real time.',
     'We tested a library which features support for both protocols seamlessly.',
     'We tested a library that features support for both protocols on older devices.',
+    'The platform features support for asynchronous requests across every supported region.',
+    'The tool features support for custom plugins across every supported region.',
+    'The app features support for offline caching across every supported region.',
+    'It features support for loops across the compiler pipeline without issues.',
+    'This app features support for loops across every target platform in our test suite.',
+    'This library features support for teams that connect and remain online.',
   ]) {
     assert.ok(featuresHit(text), `verb skipped: ${text}`);
   }
@@ -1385,6 +1394,10 @@ test('features: residual precision checks from #384', () => {
     'These system features support for older protocols on devices without hardware acceleration.',
     'Decide which features support for-profit organizations that assist people with disabilities.',
     'The library features support for loops but reject while loops in the embedded language.',
+    'The library features support for-profit organizations that assist people with disabilities.',
+    'The library features support for loops on devices without hardware acceleration.',
+    'The two platform features support for older protocols.',
+    'The two platform features support for older protocols on devices without hardware acceleration.',
     'Both system features support for older protocols on devices without hardware acceleration.',
     'The system features support for older protocols and remain enabled by default.',
     'We compare a suite of system features support for legacy applications.',
