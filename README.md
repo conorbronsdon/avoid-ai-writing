@@ -17,7 +17,7 @@ Audit & rewrite content to remove AI writing patterns. A practical skill for any
 ---
 
 
-A portable writing skill for [Claude Code](https://docs.anthropic.com/en/docs/claude-code),Codex,  [OpenClaw](https://github.com/openclaw/openclaw), [Hermes](https://github.com/NousResearch/hermes-agent), and any other [agentskills.io](https://agentskills.io)-compatible agent. Audits and rewrites content to remove AI writing patterns ("AI-isms").
+A portable writing skill for [Claude Code](https://docs.anthropic.com/en/docs/claude-code), Codex,  [OpenClaw](https://github.com/openclaw/openclaw), [Hermes](https://github.com/NousResearch/hermes-agent), and any other [agentskills.io](https://agentskills.io)-compatible agent. Audits and rewrites content to remove AI writing patterns ("AI-isms").
 
 The rules and bundled detector are calibrated for English. See [community language adaptations](#community--multilingual) for independently maintained versions in other languages.
 
