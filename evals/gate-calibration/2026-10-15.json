@@ -66,16 +66,42 @@
     "0": {
       "documents": 376,
       "rejected": 100,
-      "batches": 19
+      "batches": 19,
+      "arguments": [
+        "--json",
+        "--threshold",
+        "0",
+        "--context",
+        "technical",
+        "--source-mode",
+        "rendered-markdown"
+      ],
+      "maximum_batch_documents": 20,
+      "per_document_count_mismatches": 0,
+      "exit_code_mismatches": 0
     },
     "6": {
       "documents": 376,
       "rejected": 5,
-      "batches": 19
+      "batches": 19,
+      "arguments": [
+        "--json",
+        "--threshold",
+        "6",
+        "--context",
+        "technical",
+        "--source-mode",
+        "rendered-markdown"
+      ],
+      "maximum_batch_documents": 20,
+      "per_document_count_mismatches": 0,
+      "exit_code_mismatches": 0
     }
   },
   "measured_on": "2026-10-15",
   "source_hashes_verified": 38,
   "unscored_human_documents": 0,
+  "node_version": "22.23.2",
+  "manifest_hash_basis": "Git blob bytes",
   "percentile_method": "nearest rank: sorted counts[ceil(0.95 * n) - 1]"
 }
