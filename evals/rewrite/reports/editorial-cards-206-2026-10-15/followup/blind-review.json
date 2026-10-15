@@ -1,0 +1,274 @@
+[
+  {
+    "task": 1,
+    "X": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": true,
+      "reporting_failure": false,
+      "reason": "The warning, identifiers, cursor-recovery condition and instructions are preserved, and unavailable checks are disclosed. However, returning the source unchanged leaves readily removable wordiness in the warning despite the explicit request to tighten it."
+    },
+    "Y": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "The shorter warning retains the distinction between request success and export completeness, preserves every identifier and the recovery instruction, and accurately limits verification claims."
+    }
+  },
+  {
+    "task": 2,
+    "X": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "Corrects the subject\u2013verb agreement error without altering the tentative retry count, uncertainty about counting the first attempt, observed scope or timing; unavailable checks are disclosed."
+    },
+    "Y": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "Corrects the subject\u2013verb agreement error without altering the tentative retry count, uncertainty about counting the first attempt, observed scope or timing; unavailable checks are disclosed."
+    }
+  },
+  {
+    "task": 3,
+    "X": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "Clarifies only the second sentence while retaining the slow-connection circumstance and the rule to store the response under the requesting account; the other sentences and verification limits are preserved."
+    },
+    "Y": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "Clarifies only the second sentence while retaining the slow-connection circumstance and the rule to store the response under the requesting account; the other sentences and verification limits are preserved."
+    }
+  },
+  {
+    "task": 4,
+    "X": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "The original already flows naturally. Leaving it unchanged preserves the plain voice, competing recollections and explicit distinction between memory and knowledge; verification limits are disclosed."
+    },
+    "Y": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "The original already flows naturally. Leaving it unchanged preserves the plain voice, competing recollections and explicit distinction between memory and knowledge; verification limits are disclosed."
+    }
+  },
+  {
+    "task": 5,
+    "X": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "Removes the repeated explanation of steadiness while preserving the reason for staying, Sunday routine and unresolved regret; no uplifting interpretation or unsupported fact is added, and verification limits are disclosed."
+    },
+    "Y": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "Removes the repeated explanation of steadiness while preserving the reason for staying, Sunday routine and unresolved regret; no uplifting interpretation or unsupported fact is added, and verification limits are disclosed."
+    }
+  },
+  {
+    "task": 6,
+    "X": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "The punctuation is already sound. Returning it unchanged respects the punctuation-only scope and preserves the restrained sequence; unavailable checks are disclosed."
+    },
+    "Y": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "The punctuation is already sound. Returning it unchanged respects the punctuation-only scope and preserves the restrained sequence; unavailable checks are disclosed."
+    }
+  },
+  {
+    "task": 7,
+    "X": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "The comma makes the conditional easier to parse without changing the casual voice, either tentative possibility or the instruction not to wait; verification limits are disclosed."
+    },
+    "Y": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "The note is readily understandable in its casual context, and leaving its informal punctuation unchanged is defensible. Both tentative possibilities and the instruction not to wait survive, with verification limits disclosed."
+    }
+  },
+  {
+    "task": 8,
+    "X": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "The source is already brief and clear; leaving it unchanged preserves the location, lid-opening instruction and return request without adding an apology. Verification limits are disclosed."
+    },
+    "Y": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "The source is already brief and clear; leaving it unchanged preserves the location, lid-opening instruction and return request without adding an apology. Verification limits are disclosed."
+    }
+  },
+  {
+    "task": 9,
+    "X": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "The conversational source is already coherent. Leaving it unchanged preserves the disagreement, praise, possible missed context and critical conclusion; verification limits are disclosed."
+    },
+    "Y": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "The conversational source is already coherent. Leaving it unchanged preserves the disagreement, praise, possible missed context and critical conclusion; verification limits are disclosed."
+    }
+  },
+  {
+    "task": 10,
+    "X": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "The source already clearly separates the writer\u2019s limited speed impression from the product team\u2019s one-minute refresh claim. Leaving it unchanged preserves that attribution, the criticism and the nonpromotional tone; unavailable checks are disclosed."
+    },
+    "Y": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "The source already clearly separates the writer\u2019s limited speed impression from the product team\u2019s one-minute refresh claim. Leaving it unchanged preserves that attribution, the criticism and the nonpromotional tone; unavailable checks are disclosed."
+    }
+  },
+  {
+    "task": 11,
+    "X": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "Shortens the cause explanation while preserving the three connection drops, positive observations, possible phone-related cause and lack of a confirmed headphone defect; verification limits are disclosed."
+    },
+    "Y": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "Shortens the cause explanation while preserving the three connection drops, positive observations, possible phone-related cause and lack of a confirmed headphone defect; verification limits are disclosed."
+    }
+  },
+  {
+    "task": 12,
+    "X": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "No necessary wording correction is evident. The unchanged text retains the shopping-list recommendation, limited personal observations and project-planning limitation; unavailable checks are disclosed."
+    },
+    "Y": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "No necessary wording correction is evident. The unchanged text retains the shopping-list recommendation, limited personal observations and project-planning limitation; unavailable checks are disclosed."
+    }
+  },
+  {
+    "task": 13,
+    "X": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "The direct statement retains the writer\u2019s trust judgment and the queue-depth fact while removing the cumbersome contrast. The response explicitly reports the missing connection supporting the trust claim and discloses unavailable checks."
+    },
+    "Y": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "The direct statement retains the writer\u2019s trust judgment and the queue-depth fact while removing the cumbersome contrast. The response explicitly reports the missing connection supporting the trust claim and discloses unavailable checks."
+    }
+  },
+  {
+    "task": 14,
+    "X": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "Retains the supplied ranking and exact quantity rather than deleting the author\u2019s judgment. The response acknowledges the absent rationale or context and accurately discloses verification limits."
+    },
+    "Y": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "Retains the supplied ranking and exact quantity rather than deleting the author\u2019s judgment. The response acknowledges the absent rationale or context and accurately discloses verification limits."
+    }
+  },
+  {
+    "task": 15,
+    "X": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "The recast retains the positive assessment and the CSV/PDF distinction without adding evidence or changing capabilities. The supplied PDF limitation provides a concrete challenge; retaining the subjective assessment does not itself create a substantive gap that must be reported. Unavailable checks are disclosed."
+    },
+    "Y": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "The recast retains the positive assessment and CSV/PDF capabilities. The response explicitly notes the broad assessment and unspecified extent of challenges without inventing support, and discloses unavailable checks."
+    }
+  },
+  {
+    "task": 16,
+    "X": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "Joining each exception to its setup is within the broad cleanup request and preserves both ironic claims and their exceptions. The response explicitly notes that the failure mode and failed path are unnamed, and discloses unavailable checks."
+    },
+    "Y": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "reason": "Joining each exception to its setup is within the broad cleanup request and preserves both ironic claims and their exceptions. The response explicitly notes that the failure mode and failed path are unnamed, and discloses unavailable checks."
+    }
+  }
+]

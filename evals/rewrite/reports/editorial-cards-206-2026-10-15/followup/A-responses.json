@@ -1,0 +1,82 @@
+[
+  {
+    "id": "technical-01",
+    "final_text": "Call fetchPage() until nextCursor is null. A request can succeed even when the export is incomplete, so a 200 response alone does not establish that you have every record. If the job times out, resume with the last cursor you stored.",
+    "response": "**Final rewrite**\n\nCall fetchPage() until nextCursor is null. A request can succeed even when the export is incomplete, so a 200 response alone does not establish that you have every record. If the job times out, resume with the last cursor you stored.\n\n**Verification**\n\n- **Editing passes:** 0 of 2.\n- **Checks:** Audit and source-preservation assessment were model-only. The detector, marks normalizer, and preservation validator did not run. No marks normalization was applied. Rendered view was not checked; source paragraph layout was preserved.\n- **Residuals:** Already concise and clean; no justified in-scope edit found. The incomplete-export warning, cursor recovery instruction, and code identifiers remain intact.\n- **Stop reason:** No further justified in-scope edit found."
+  },
+  {
+    "id": "technical-02",
+    "final_text": "The worker probably retries this twice, but I haven't confirmed whether the initial attempt is counted. In the logs we checked, most failures were followed by a successful attempt within a minute.",
+    "response": "**Final rewrite**\n\nThe worker probably retries this twice, but I haven't confirmed whether the initial attempt is counted. In the logs we checked, most failures were followed by a successful attempt within a minute.\n\n**Changes**\n\nChanged “most failures was followed” to “most failures were followed.” Kept the tentative retry claim and its qualification.\n\n**Verification**\n\n- **Editing passes:** 1 of 2.\n- **Checks:** Audit and source-preservation assessment were model-only. The detector, marks normalizer, and preservation validator did not run. Quote and apostrophe conventions were checked manually against the source; marks were not mechanically verified. Rendered view was not checked; source paragraph layout was preserved.\n- **Residuals:** None found.\n- **Stop reason:** No further justified in-scope edit found."
+  },
+  {
+    "id": "technical-03",
+    "final_text": "The cache key includes the account ID. If a user switches accounts before an earlier request's response arrives (which can happen on a slow connection), the response should be stored under the account that started the request. The active account is not necessarily the right one.",
+    "response": "**Final rewrite**\n\nThe cache key includes the account ID. If a user switches accounts before an earlier request's response arrives (which can happen on a slow connection), the response should be stored under the account that started the request. The active account is not necessarily the right one.\n\n**Changes**\n\nSimplified the second sentence’s conditional structure and set off the slow-connection explanation. The first and last sentences are unchanged.\n\n**Verification**\n\n- **Editing passes:** 1 of 2.\n- **Checks:** Audit and source-preservation assessment were model-only. The detector, marks normalizer, and preservation validator did not run. Quote and apostrophe conventions were checked manually against the source; marks were not mechanically verified. Rendered view was not checked; source paragraph layout was preserved.\n- **Residuals:** None found.\n- **Stop reason:** No further justified in-scope edit found."
+  },
+  {
+    "id": "personal-01",
+    "final_text": "I remember my father waiting by the gate, although my sister says he met us inside. What I know is that he had brought oranges. Their smell is the part of that afternoon I can still reach without trying.",
+    "response": "**Final rewrite**\n\nI remember my father waiting by the gate, although my sister says he met us inside. What I know is that he had brought oranges. Their smell is the part of that afternoon I can still reach without trying.\n\n**Verification**\n\n- **Editing passes:** 0 of 2.\n- **Checks:** Audit and source-preservation assessment were model-only. The detector, marks normalizer, and preservation validator did not run. No marks normalization was applied. Rendered view was not checked; source paragraph layout was preserved.\n- **Residuals:** Clean; no justified in-scope edit found. The plain tone and the distinction between remembered and known details remain intact.\n- **Stop reason:** No further justified in-scope edit found."
+  },
+  {
+    "id": "personal-02",
+    "final_text": "I kept the job because it was steady and I was afraid to give that up. Every Sunday I told myself I would start looking the next week. I don't think those years were wasted, but I still wish I had left sooner.",
+    "response": "**Final rewrite**\n\nI kept the job because it was steady and I was afraid to give that up. Every Sunday I told myself I would start looking the next week. I don't think those years were wasted, but I still wish I had left sooner.\n\n**Changes**\n\nTrimmed the repeated explanation about steadiness in the first sentence. The Sunday routine and regretful ending are unchanged.\n\n**Verification**\n\n- **Editing passes:** 1 of 2.\n- **Checks:** Audit and source-preservation assessment were model-only. The detector, marks normalizer, and preservation validator did not run. Quote and apostrophe conventions were checked manually against the source; marks were not mechanically verified. Rendered view was not checked; source paragraph layout was preserved.\n- **Residuals:** None found.\n- **Stop reason:** No further justified in-scope edit found."
+  },
+  {
+    "id": "personal-03",
+    "final_text": "The apartment was smaller than I remembered, but the light was the same: a narrow stripe across the kitchen floor. I stood there for a minute. Then I gave the keys back.",
+    "response": "**Final rewrite**\n\nThe apartment was smaller than I remembered, but the light was the same: a narrow stripe across the kitchen floor. I stood there for a minute. Then I gave the keys back.\n\n**Verification**\n\n- **Editing passes:** 0 of 2.\n- **Checks:** Audit and source-preservation assessment were model-only. The detector, marks normalizer, and preservation validator did not run. No marks normalization was applied. Rendered view was not checked; source paragraph layout was preserved.\n- **Residuals:** Clean; the punctuation needs no correction.\n- **Stop reason:** No further justified in-scope edit found."
+  },
+  {
+    "id": "casual-01",
+    "final_text": "Hey, I might swing by after lunch if the repair person gets here early enough. If not maybe tomorrow? No need to wait around for me either way.",
+    "response": "**Final rewrite**\n\nHey, I might swing by after lunch if the repair person gets here early enough. If not maybe tomorrow? No need to wait around for me either way.\n\n**Verification**\n\n- **Editing passes:** 0 of 2.\n- **Checks:** Audit and source-preservation assessment were model-only. The detector, marks normalizer, and preservation validator did not run. No marks normalization was applied. Rendered view was not checked; source paragraph layout was preserved.\n- **Residuals:** Clean in the casual-note context; no justified in-scope edit found. The tentative timing and question remain intact.\n- **Stop reason:** No further justified in-scope edit found."
+  },
+  {
+    "id": "casual-02",
+    "final_text": "I put the spare key in the blue tin on the shelf. The lid sticks, so lift it from the back. Please leave the key there when you're done.",
+    "response": "**Final rewrite**\n\nI put the spare key in the blue tin on the shelf. The lid sticks, so lift it from the back. Please leave the key there when you're done.\n\n**Verification**\n\n- **Editing passes:** 0 of 2.\n- **Checks:** Audit and source-preservation assessment were model-only. The detector, marks normalizer, and preservation validator did not run. No marks normalization was applied. Rendered view was not checked; source paragraph layout was preserved.\n- **Residuals:** Clean; no awkward wording needs correction.\n- **Stop reason:** No further justified in-scope edit found."
+  },
+  {
+    "id": "casual-03",
+    "final_text": "I get why you liked the ending, and the acting was great, but for me the twist made the earlier scenes feel kind of pointless. Maybe I missed something in the middle. I still don't think it earned that last speech.",
+    "response": "**Final rewrite**\n\nI get why you liked the ending, and the acting was great, but for me the twist made the earlier scenes feel kind of pointless. Maybe I missed something in the middle. I still don't think it earned that last speech.\n\n**Verification**\n\n- **Editing passes:** 0 of 2.\n- **Checks:** Audit and source-preservation assessment were model-only. The detector, marks normalizer, and preservation validator did not run. No marks normalization was applied. Rendered view was not checked; source paragraph layout was preserved.\n- **Residuals:** Clean in the casual-message context; no justified in-scope edit found. The disagreement and possibility of having missed something remain intact.\n- **Stop reason:** No further justified in-scope edit found."
+  },
+  {
+    "id": "product-01",
+    "final_text": "The new search feels faster to me, though I only tried it on a small workspace. The product team says the index refreshes every minute. That would help, but the missing filters still make it harder to use than the old version for my work.",
+    "response": "**Final rewrite**\n\nThe new search feels faster to me, though I only tried it on a small workspace. The product team says the index refreshes every minute. That would help, but the missing filters still make it harder to use than the old version for my work.\n\n**Verification**\n\n- **Editing passes:** 0 of 2.\n- **Checks:** Audit and source-preservation assessment were model-only. The detector, marks normalizer, and preservation validator did not run. No marks normalization was applied. Rendered view was not checked; source paragraph layout was preserved.\n- **Residuals:** Clean; no justified in-scope edit found. The speed impression remains the writer’s, and the refresh claim remains attributed to the product team.\n- **Stop reason:** No further justified in-scope edit found."
+  },
+  {
+    "id": "product-02",
+    "final_text": "The headphones fit well and I liked the sound, especially for voices. But the connection dropped three times during my commute. My phone has been acting up lately, so that could be the cause; I wouldn't call it a confirmed headphone problem yet.",
+    "response": "**Final rewrite**\n\nThe headphones fit well and I liked the sound, especially for voices. But the connection dropped three times during my commute. My phone has been acting up lately, so that could be the cause; I wouldn't call it a confirmed headphone problem yet.\n\n**Changes**\n\nShortened the final sentence while retaining the possible phone-related cause and the unconfirmed criticism of the headphones.\n\n**Verification**\n\n- **Editing passes:** 1 of 2.\n- **Checks:** Audit and source-preservation assessment were model-only. The detector, marks normalizer, and preservation validator did not run. Quote and apostrophe conventions were checked manually against the source; marks were not mechanically verified. Rendered view was not checked; source paragraph layout was preserved.\n- **Residuals:** None found.\n- **Stop reason:** No further justified in-scope edit found."
+  },
+  {
+    "id": "product-03",
+    "final_text": "For a shared shopping list, this app does enough. Changes appear quickly, and neither of us has accidentally deleted the whole list. I would use something else for project planning; there is no useful way to track dependencies.",
+    "response": "**Final rewrite**\n\nFor a shared shopping list, this app does enough. Changes appear quickly, and neither of us has accidentally deleted the whole list. I would use something else for project planning; there is no useful way to track dependencies.\n\n**Verification**\n\n- **Editing passes:** 0 of 2.\n- **Checks:** Audit and source-preservation assessment were model-only. The detector, marks normalizer, and preservation validator did not run. No marks normalization was applied. Rendered view was not checked; source paragraph layout was preserved.\n- **Residuals:** Clean; no justified in-scope edit found. The recommendation remains limited to a shared shopping list.\n- **Stop reason:** No further justified in-scope edit found."
+  },
+  {
+    "id": "ec-supported-contrast-edit",
+    "final_text": "The dashboard is a foundation for trust. It shows queue depth.",
+    "response": "**Final rewrite**\n\nThe dashboard is a foundation for trust. It shows queue depth.\n\n**Changes**\n\nReplaced the “not just … it is” frame with a direct statement, retaining the dashboard and trust claims.\n\n**Verification**\n\n- **Editing passes:** 1 of 2.\n- **Checks:** Audit and source-preservation assessment were model-only. The detector, marks normalizer, and preservation validator did not run. Quote and apostrophe conventions were checked manually against the source; marks were not mechanically verified. Rendered view was not checked; source paragraph layout was preserved.\n- **Residuals:** The “foundation for trust” value claim remains the writer’s. Queue depth alone does not explain that claim; supporting detail is missing and was not invented.\n- **Stop reason:** No further justified in-scope edit can be made from the supplied source."
+  },
+  {
+    "id": "ec-grounded-reaction-edit",
+    "final_text": "The most interesting part: the export has 31 rows.",
+    "response": "**Final rewrite**\n\nThe most interesting part: the export has 31 rows.\n\n**Verification**\n\n- **Editing passes:** 0 of 2.\n- **Checks:** Audit and source-preservation assessment were model-only. The detector, marks normalizer, and preservation validator did not run. No marks normalization was applied. Rendered view was not checked; source paragraph layout was preserved.\n- **Residuals:** “The most interesting part” resembles stock reaction framing but may carry an authentic ranking. Retained because removing it could erase the writer’s stance; the source supplies no further context.\n- **Stop reason:** No further justified in-scope edit can be made from the supplied source."
+  },
+  {
+    "id": "ec-meaningful-concession-edit",
+    "final_text": "The platform is impressive and still has challenges. It exports CSV but cannot export PDF.",
+    "response": "**Final rewrite**\n\nThe platform is impressive and still has challenges. It exports CSV but cannot export PDF.\n\n**Changes**\n\nReplaced the stock concession frame while retaining the positive assessment and both export capabilities and limitations.\n\n**Verification**\n\n- **Editing passes:** 1 of 2.\n- **Checks:** Audit and source-preservation assessment were model-only. The detector, marks normalizer, and preservation validator did not run. Quote and apostrophe conventions were checked manually against the source; marks were not mechanically verified. Rendered view was not checked; source paragraph layout was preserved.\n- **Residuals:** None found.\n- **Stop reason:** No further justified in-scope edit found."
+  },
+  {
+    "id": "ec-earned-reversal-edit",
+    "final_text": "We planned for every failure mode except the one that happened. We tested every path except the path that failed.",
+    "response": "**Final rewrite**\n\nWe planned for every failure mode except the one that happened. We tested every path except the path that failed.\n\n**Changes**\n\nFolded each repeated “Except …” punchline into its setup, retaining the claimed scope of planning and testing.\n\n**Verification**\n\n- **Editing passes:** 1 of 2.\n- **Checks:** Audit and source-preservation assessment were model-only. The detector, marks normalizer, and preservation validator did not run. Quote and apostrophe conventions were checked manually against the source; marks were not mechanically verified. Rendered view was not checked; source paragraph layout was preserved.\n- **Residuals:** The failure mode and failed path remain unnamed. Those explanatory gaps cannot be filled from the source.\n- **Stop reason:** No further justified in-scope edit can be made from the supplied source."
+  }
+]

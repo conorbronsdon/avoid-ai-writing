@@ -76,6 +76,19 @@ derives the new total and compares it to two literals:
 row instead only requires bumping the separate `**NN-entry word replacement
 table**` README bullet (same script).
 
+## Editorial decision-card pilot
+
+Selected catalog entries have an `ec-` rule ID, a partial detector mapping,
+applicability conditions, and edit/keep/gap examples. Preserve those IDs and
+existing section anchors when refining a card. Keep its source exceptions and
+attribution; do not infer semantic equivalence from a detector mapping.
+
+For a card change, include a justified edit and a contrasting must-preserve
+case. Check scope, source uncertainty, authentic voice, protected content, and
+missing information. Evaluate the delivered rewrite and any retained gap;
+matching a preferred sentence or reducing a detector score is not the goal.
+The pilot does not require converting the whole catalog or adding a rule DSL.
+
 ## Precision over recall
 
 This skill is deliberately biased toward false negatives: a rule that wrongly

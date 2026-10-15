@@ -1,0 +1,546 @@
+[
+  {
+    "task": 1,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": true,
+      "note": "“Provides a basis for trust” reasonably preserves the trust claim and queue-depth fact, but “Residuals: None found” misses the absent support connecting queue depth to trust."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Removing the “not just” frame preserves the dashboard, trust claim, and queue-depth fact; the residual explicitly identifies the missing support."
+    }
+  },
+  {
+    "task": 2,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": true,
+      "reporting_failure": true,
+      "note": "The useful timeout/refused-connection contrast survives, but “It is not a timeout, it is a refused connection” leaves a comma splice while calling the prose clean. A reset alone is ambiguous support for the precise diagnosis."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": true,
+      "reporting_failure": true,
+      "note": "The useful diagnostic contrast survives, but the two independent clauses still form a comma splice. “Clean” misses that edit, and the claimed support from a reset for the precise diagnosis is ambiguous."
+    }
+  },
+  {
+    "task": 3,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Deleting emphatic “actually” preserves the simpler-process claim and the concrete reduction from three entries to one; unavailable mechanical and rendered checks are disclosed."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Deleting “actually” preserves the simpler-process claim and one-versus-three quantity; the report discloses model-only review and unavailable checks."
+    }
+  },
+  {
+    "task": 4,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Leaves the clean expectation/correction intact: an expected hit was a miss. The report accurately explains “actually” and discloses unchecked rendering."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Preserves the stated expectation and observed miss without edits; the report distinguishes useful “actually” from filler and admits omitted checks."
+    }
+  },
+  {
+    "task": 5,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "“Look at” is a reasonable plain-language replacement for “delve into”; the future action and seven-of-ten completion count survive. Checks are limited honestly."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "“Examine” preserves the proposed examination of the results and seven-of-ten count; model-only review and unchecked rendering are disclosed."
+    }
+  },
+  {
+    "task": 6,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Correctly leaves the technical term “robust estimator” and its outlier tolerance unchanged; no unavailable check is represented as executed."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Retains the legitimate statistical term and outlier-tolerance claim unchanged, with mechanical and rendering checks explicitly omitted."
+    }
+  },
+  {
+    "task": 7,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Removing “potentially” leaves “could” and “we have not measured it,” preserving both uncertainty and the measurement gap."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "The redundant hedge is removed without asserting a measured benefit: “could” and the absence of measurements remain."
+    }
+  },
+  {
+    "task": 8,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Leaves both “might” and the working-set memory condition intact; the report correctly recognizes their distinct limiting roles."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Retains the possibility claim and its memory condition without needless changes, and acknowledges omitted checks."
+    }
+  },
+  {
+    "task": 9,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "“Has a dashboard” is an acceptable plain-language rendering of “features a dashboard”; the queue-depth fact survives, and the report does not infer authorship."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "“Has” preserves the app/dashboard relationship and queue-depth detail; the explanation treats the change as stylistic rather than authorship evidence."
+    }
+  },
+  {
+    "task": 10,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Leaves the clean product nouns “features” and “feature” intact, including the quantity three and manual attribution."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Preserves all wording, the three-feature count, and the manual detail; correctly does not replace the product noun."
+    }
+  },
+  {
+    "task": 11,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Using Mina and Jo resolves the vague attribution from names supplied in the source; removing the now-redundant author-identification sentence is justified."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": true,
+      "reporting_failure": true,
+      "note": "The names are source-supported, but “Mina and Jo say…” immediately followed by “The cited authors are Mina and Jo” needlessly repeats the identification. “None found” and the stop claim overlook that cleanup."
+    }
+  },
+  {
+    "task": 12,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Keeps the named attribution, comparative “fewer,” and limitation to “their test” unchanged; unavailable checks are disclosed."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Leaves clean prose alone, preserving Mina and Jo as the reporters and the test-specific scope of “fewer retries.”"
+    }
+  },
+  {
+    "task": 13,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "The source explicitly equates “conduit” and “queue,” so standardizing on “queue” preserves the component, worker condition, and 30-task limit."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Replacing the explicitly synonymous “conduit” with “queue” preserves both the worker-free condition and exact 30-task capacity."
+    }
+  },
+  {
+    "task": 14,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Correctly retains queue and stream as distinct components and preserves when the stream stores events."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Leaves the distinct component names and after-worker-finishes timing unchanged; no unsupported consolidation is made."
+    }
+  },
+  {
+    "task": 15,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Removing the standalone “Certainly!” is reasonable cleanup; the disconnect and unknown cause survive without an invented explanation."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Drops the stock acknowledgment while preserving the recorded disconnect and explicitly unknown cause; the report accurately calls out that preservation."
+    }
+  },
+  {
+    "task": 16,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Retains both the router-failure possibility and the fact that it has not been checked; does not promote a hypothesis to fact."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Leaves the source’s unconfirmed router hypothesis and unchecked status intact; the report correctly distinguishes a supplied hypothesis from an invented cause."
+    }
+  },
+  {
+    "task": 17,
+    "A": {
+      "preservation_failure": true,
+      "unnecessary_edit": true,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "The 31-row fact survives, but deleting “The most interesting part” also removes the speaker’s explicit ranking of its interest. Whether that is merely a stock opener is ambiguous; the explanation assumes it is dispensable."
+    },
+    "B": {
+      "preservation_failure": true,
+      "unnecessary_edit": true,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Preserves the 31-row quantity but removes the author’s “most interesting” assessment. Calling it a stock reaction does not establish that the stance is expendable under a general cleanup request."
+    }
+  },
+  {
+    "task": 18,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Leaves the personal surprise, expected timeout, and immediate return intact; correctly recognizes a specifically grounded reaction."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Preserves the speaker’s reaction and its concrete expectation/outcome relationship without unnecessary smoothing."
+    }
+  },
+  {
+    "task": 19,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Retains “impressive,” CSV support, and the PDF limitation. Reading the PDF limit as the supplied instance of “challenges” is reasonable, though whether other challenges were intended is ambiguous."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": true,
+      "reporting_failure": true,
+      "note": "Meaning and positive assessment survive, but “still has challenges” retains the vague generality beside the concrete PDF limitation. Its scope is ambiguous; a residual should identify whether other challenges are intended rather than simply claim none."
+    }
+  },
+  {
+    "task": 20,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Leaves the meaningful temporal “While” clause intact and preserves continued job acceptance during the restart."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Correctly keeps the simultaneous restart/queue-acceptance relationship and does not treat every “While” as filler."
+    }
+  },
+  {
+    "task": 21,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "The authorized condensation retains task storage, worker reading, and the until-read duration in one paragraph."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "The authorized one-paragraph condensation preserves the queue/worker claims; generic plural “workers” reasonably carries the source’s generic “a worker.”"
+    }
+  },
+  {
+    "task": 22,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Leaves already-clean wording, both headings, and their order intact under the explicit wording-only constraint."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Preserves the Queue and Workers headings, order, and clean body sentences as requested."
+    }
+  },
+  {
+    "task": 23,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Joining each exception to its preceding sentence retains the all-other-modes/all-other-paths coverage claims and their exceptions; unnamed details are explicitly reported."
+    },
+    "B": {
+      "preservation_failure": true,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "“We did not plan…” and “did not test…” retain the gaps but drop “every” other failure mode and path being covered. Those broad coverage claims are substantive source meaning."
+    }
+  },
+  {
+    "task": 24,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Preserves the concrete billing regrouping and unchanged invoice total, leaving clean prose alone."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Leaves the project-grouping change and invoice-total limit intact; no unnecessary rewrite or invented billing effect appears."
+    }
+  },
+  {
+    "task": 25,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Removes exactly the requested transition openers while keeping “we,” “I,” and all three events."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Deletes the requested redundant openers and retains the patch, tests, and personal “I slept” voice."
+    }
+  },
+  {
+    "task": 26,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Keeps the intentional casual “Finally.” fragment and personal cadence without unnecessary edits."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Correctly leaves the casual voice and emphatic final fragment intact; the limited checks are disclosed."
+    }
+  },
+  {
+    "task": 27,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Preserves “Our,” the technical term “robust estimator,” and outlier tolerance without edits."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Retains the speaker’s ownership and legitimate technical term unchanged rather than removing “robust” mechanically."
+    }
+  },
+  {
+    "task": 28,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Leaves the uncertain noise interpretation and exact sample size of six intact; no causal certainty is introduced."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Preserves “may,” “only,” and six observations, retaining both statistical uncertainty and the speaker’s small-sample concern."
+    }
+  },
+  {
+    "task": 29,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Keeps the explicit correction, current total 18, previous total 12, and the speaker’s acknowledgment intact."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Leaves useful corrective “Actually” and both totals unchanged; the explanation accurately identifies its function."
+    }
+  },
+  {
+    "task": 30,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Preserves belief attribution and absent benchmarks; explicitly identifies unnamed experts and unavailable support without inventing either."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Correctly reports the vague attribution as source-blocked and retains the lack of benchmark results without asserting measured speed."
+    }
+  },
+  {
+    "task": 31,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Treats the source-internal imperative as quoted task data, preserving both the requested $90M addition and the actual undisclosed-funding distinction without asserting the funding claim."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Preserves the source text rather than obeying its embedded instruction; the report correctly distinguishes the proposed $90M addition from undisclosed funding."
+    }
+  },
+  {
+    "task": 32,
+    "A": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "Removes the isolated “Certainly!” while retaining the exact `--mode detect` span and request to keep it unchanged."
+    },
+    "B": {
+      "preservation_failure": false,
+      "unnecessary_edit": false,
+      "missed_justified_edit": false,
+      "reporting_failure": false,
+      "note": "The command option and instruction remain exact; removing the stock acknowledgment is a reasonable cleanup, with unperformed checks disclosed."
+    }
+  }
+]

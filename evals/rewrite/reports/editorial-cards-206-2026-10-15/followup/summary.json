@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "status": "development repair only; cross-family gate incomplete",
+  "inputs": 16,
+  "independently_authored_inputs": 12,
+  "known_repair_inputs": 4,
+  "complete_responses": 32,
+  "raw_model_review_counts": {
+    "A": {
+      "preservation_failure": 0,
+      "unnecessary_edit": 0,
+      "missed_justified_edit": 1,
+      "reporting_failure": 0
+    },
+    "B": {
+      "preservation_failure": 0,
+      "unnecessary_edit": 0,
+      "missed_justified_edit": 0,
+      "reporting_failure": 0
+    }
+  },
+  "primary_assessment_disagreement": {
+    "arm": "A",
+    "case": "ec-meaningful-concession-edit",
+    "concern": "Residuals: None found leaves the broad challenge scope unreported. The blind reviewer did not flag this; retain both assessments."
+  },
+  "scope_invariants": "Both arms retain the untargeted first/final sentences in technical-03 and return personal-03 exactly unchanged.",
+  "limitations": [
+    "One inherited editor family; exact model identifier/settings/usage unavailable.",
+    "One batch per arm; task responses are not independent samples.",
+    "Model-only semantic review; no independent-family adjudication.",
+    "Both arms preserve the ranking in this run, so causal improvement is not established.",
+    "Source-task tools unavailable; no live file-edit or rendered-view verification."
+  ]
+}

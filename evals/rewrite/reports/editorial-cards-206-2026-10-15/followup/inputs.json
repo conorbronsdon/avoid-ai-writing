@@ -1,0 +1,98 @@
+[
+  {
+    "id": "technical-01",
+    "request": "Tighten this paragraph for a developer guide. Keep the warning about incomplete results and do not change the code identifiers.",
+    "source": "Call fetchPage() until nextCursor is null. A request can succeed even when the export is incomplete, so a 200 response alone does not establish that you have every record. If the job times out, resume with the last cursor you stored.",
+    "provenance": "Original synthetic text created for this request; not drawn from a repository or published source."
+  },
+  {
+    "id": "technical-02",
+    "request": "Clean up the grammar only; keep the current level of confidence.",
+    "source": "The worker probably retries this twice, but I haven't confirmed whether the initial attempt is counted. In the logs we checked, most failures was followed by a successful attempt within a minute.",
+    "provenance": "Original synthetic text created for this request; not drawn from a repository or published source."
+  },
+  {
+    "id": "technical-03",
+    "request": "Make the second sentence easier to follow. Leave the rest alone.",
+    "source": "The cache key includes the account ID. When a user switches accounts before the response to the earlier request arrives, which can happen on a slow connection, that response should be stored under the account that started the request. The active account is not necessarily the right one.",
+    "provenance": "Original synthetic text created for this request; not drawn from a repository or published source."
+  },
+  {
+    "id": "personal-01",
+    "request": "Give this a light edit for flow, but preserve the plain tone and the distinction between what I remember and what I know.",
+    "source": "I remember my father waiting by the gate, although my sister says he met us inside. What I know is that he had brought oranges. Their smell is the part of that afternoon I can still reach without trying.",
+    "provenance": "Original synthetic text created for this request; the family and memories are fictional."
+  },
+  {
+    "id": "personal-02",
+    "request": "Trim the repetition without making the ending more uplifting.",
+    "source": "I kept the job because it was steady and because I was afraid of not having something steady. Every Sunday I told myself I would start looking the next week. I don't think those years were wasted, but I still wish I had left sooner.",
+    "provenance": "Original synthetic text created for this request; the narrator and experiences are fictional."
+  },
+  {
+    "id": "personal-03",
+    "request": "Fix punctuation only, if anything needs fixing.",
+    "source": "The apartment was smaller than I remembered, but the light was the same: a narrow stripe across the kitchen floor. I stood there for a minute. Then I gave the keys back.",
+    "provenance": "Original synthetic text created for this request; the narrator and scene are fictional."
+  },
+  {
+    "id": "casual-01",
+    "request": "Make this note a little clearer, keeping it casual. Don't turn the tentative plan into a commitment.",
+    "source": "Hey, I might swing by after lunch if the repair person gets here early enough. If not maybe tomorrow? No need to wait around for me either way.",
+    "provenance": "Original synthetic text created for this request; the people and plans are fictional."
+  },
+  {
+    "id": "casual-02",
+    "request": "Check this message for awkward wording; keep it brief and don't add an apology.",
+    "source": "I put the spare key in the blue tin on the shelf. The lid sticks, so lift it from the back. Please leave the key there when you're done.",
+    "provenance": "Original synthetic text created for this request; the situation is fictional."
+  },
+  {
+    "id": "casual-03",
+    "request": "Smooth this out for a message to a friend, but keep my disagreement.",
+    "source": "I get why you liked the ending, and the acting was great, but for me the twist made the earlier scenes feel kind of pointless. Maybe I missed something in the middle. I still don't think it earned that last speech.",
+    "provenance": "Original synthetic text created for this request; the film discussion is fictional and refers to no specific work."
+  },
+  {
+    "id": "product-01",
+    "request": "Edit for clarity without making this sound like marketing copy. Preserve who made the claim about speed.",
+    "source": "The new search feels faster to me, though I only tried it on a small workspace. The product team says the index refreshes every minute. That would help, but the missing filters still make it harder to use than the old version for my work.",
+    "provenance": "Original synthetic text created for this request; the product, team claim, and usage experience are fictional."
+  },
+  {
+    "id": "product-02",
+    "request": "Shorten this review slightly while keeping both the criticism and the uncertainty about its cause.",
+    "source": "The headphones fit well and I liked the sound, especially for voices. But the connection dropped three times during my commute. That could have been my phone, since it has been acting up lately, so I wouldn't call it a confirmed problem with the headphones yet.",
+    "provenance": "Original synthetic text created for this request; the product and review experience are fictional."
+  },
+  {
+    "id": "product-03",
+    "request": "Polish the wording only where needed. Keep the recommendation limited to the use described.",
+    "source": "For a shared shopping list, this app does enough. Changes appear quickly, and neither of us has accidentally deleted the whole list. I would use something else for project planning; there is no useful way to track dependencies.",
+    "provenance": "Original synthetic text created for this request; the app and usage experience are fictional."
+  },
+  {
+    "id": "ec-supported-contrast-edit",
+    "request": "Clean up this prose. --context blog",
+    "source": "It is not just a dashboard, it is a foundation for trust. It shows queue depth.",
+    "provenance": "Original synthetic MIT-licensed development fixture; not a user draft or held-out benchmark."
+  },
+  {
+    "id": "ec-grounded-reaction-edit",
+    "request": "Clean up this prose. --context blog",
+    "source": "The most interesting part: the export has 31 rows.",
+    "provenance": "Original synthetic MIT-licensed development fixture; not a user draft or held-out benchmark."
+  },
+  {
+    "id": "ec-meaningful-concession-edit",
+    "request": "Clean up this prose. --context technical-blog",
+    "source": "While the platform is impressive, challenges remain. It exports CSV but cannot export PDF.",
+    "provenance": "Original synthetic MIT-licensed development fixture; not a user draft or held-out benchmark."
+  },
+  {
+    "id": "ec-earned-reversal-edit",
+    "request": "Clean up this prose. --context blog",
+    "source": "We planned for every failure mode. Except the one that happened. We tested every path. Except the path that failed.",
+    "provenance": "Original synthetic MIT-licensed development fixture; not a user draft or held-out benchmark."
+  }
+]

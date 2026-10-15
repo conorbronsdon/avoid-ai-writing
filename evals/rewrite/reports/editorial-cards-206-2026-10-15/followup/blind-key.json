@@ -1,0 +1,82 @@
+{
+  "1": {
+    "id": "technical-01",
+    "X": "A",
+    "Y": "B"
+  },
+  "2": {
+    "id": "technical-02",
+    "X": "B",
+    "Y": "A"
+  },
+  "3": {
+    "id": "technical-03",
+    "X": "B",
+    "Y": "A"
+  },
+  "4": {
+    "id": "personal-01",
+    "X": "A",
+    "Y": "B"
+  },
+  "5": {
+    "id": "personal-02",
+    "X": "B",
+    "Y": "A"
+  },
+  "6": {
+    "id": "personal-03",
+    "X": "B",
+    "Y": "A"
+  },
+  "7": {
+    "id": "casual-01",
+    "X": "B",
+    "Y": "A"
+  },
+  "8": {
+    "id": "casual-02",
+    "X": "A",
+    "Y": "B"
+  },
+  "9": {
+    "id": "casual-03",
+    "X": "B",
+    "Y": "A"
+  },
+  "10": {
+    "id": "product-01",
+    "X": "A",
+    "Y": "B"
+  },
+  "11": {
+    "id": "product-02",
+    "X": "A",
+    "Y": "B"
+  },
+  "12": {
+    "id": "product-03",
+    "X": "A",
+    "Y": "B"
+  },
+  "13": {
+    "id": "ec-supported-contrast-edit",
+    "X": "A",
+    "Y": "B"
+  },
+  "14": {
+    "id": "ec-grounded-reaction-edit",
+    "X": "A",
+    "Y": "B"
+  },
+  "15": {
+    "id": "ec-meaningful-concession-edit",
+    "X": "A",
+    "Y": "B"
+  },
+  "16": {
+    "id": "ec-earned-reversal-edit",
+    "X": "A",
+    "Y": "B"
+  }
+}

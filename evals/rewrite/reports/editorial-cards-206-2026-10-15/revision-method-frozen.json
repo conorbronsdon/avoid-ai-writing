@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "reason": "Retain initial failed outputs and revise cards to preserve supplied value judgments and coverage breadth. Re-run the same development tasks; this is regression repair, not held-out validation.",
+  "sources": {
+    "SKILL.md": "ab255722f1826fd68cca01b703f625d318ee38361e512d21abf5d94b0c920b1f",
+    "references/patterns.md": "e1207f2d620a565c1ed8503ea353b518c8d5251ac526667926a3688eba29db38"
+  },
+  "inputs_sha256": "4f962b2d6a3b2e60138ba877eaffd57e912bcb03262badb6c70e5d5cb7f90ce1",
+  "unchanged_constraints": "Use the criteria and limitations in method-frozen.json; one inherited family, one repetition. Never replace the first-run responses.",
+  "candidate_v1_commit": "60e776c85a3b16bace49d8a9b8e6b9b479b09fb0",
+  "known_first_run_failures": [
+    "trust claim deletion in candidate",
+    "positive-assessment deletion in candidate",
+    "coverage-breadth deletion in both baseline and candidate"
+  ],
+  "source_changes": [
+    "Preserve both propositions when removing a contrast frame.",
+    "Preserve positive/negative assessments in a concession.",
+    "Preserve coverage quantifiers when removing a reversal.",
+    "Treat potentially substantive subjective reaction/ranking as a must-preserve ambiguity."
+  ]
+}

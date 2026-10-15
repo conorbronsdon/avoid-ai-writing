@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "purpose": "Development forward-test of readable editorial decision cards; not a release benchmark.",
+  "baseline_commit": "3a609fe05da9dcf2709ca7207a68860173b6449e",
+  "sources": {
+    "baseline": {
+      "SKILL.md": "ab255722f1826fd68cca01b703f625d318ee38361e512d21abf5d94b0c920b1f",
+      "references/patterns.md": "d43f2450459c45e34d308fde94120b7947ed31023c0c96f6b3f63787e42120dd"
+    },
+    "candidate": {
+      "SKILL.md": "ab255722f1826fd68cca01b703f625d318ee38361e512d21abf5d94b0c920b1f",
+      "references/patterns.md": "1167820991d5f78cd098f0fa4ecfc83a9db713d6a16c5eea1d5e4587ce493793"
+    }
+  },
+  "fixtures_sha256": "302bf404ab84a18412d8cef22865fb29251754b6bdedb1b52fbbfff60ddc44e5",
+  "inputs_sha256": "4f962b2d6a3b2e60138ba877eaffd57e912bcb03262badb6c70e5d5cb7f90ce1",
+  "conditions": [
+    "baseline",
+    "candidate"
+  ],
+  "repetitions": 1,
+  "editor_environment": "Two fresh in-session subagents using the inherited default model; no model override or second-family access. Read only the named instruction/reference/input files. No detector, marks, or preservation tool execution for the source tasks. Save complete per-task responses.",
+  "model_id": "Not exposed by the execution surface; do not infer a version or a different family.",
+  "criteria": [
+    "No new preservation failures, unnecessary edits, or missed justified edits relative to baseline.",
+    "Keep-task final text must equal the source exactly unless the task explicitly authorizes a transformation.",
+    "For edit tasks, compare semantic source fidelity and scope; detector score and preferred literal wording are not success metrics.",
+    "Review missing-information handling; no invented experts, mechanisms, causes, personal experiences, certainty, or claims of executed tools."
+  ],
+  "limitations": [
+    "Single inherited model family, one repetition, batched synthetic development cases; no generalization or causal improvement claim.",
+    "Same-family forwards do not satisfy the two-family automated editing regression gate.",
+    "No instrumented private pass history or live file-edit flow.",
+    "The six reused cases are development cases only; existing frozen reports and heldout inputs are unchanged.",
+    "Primary-agent adjudication is model-only, not human review; preserve all raw failures and do not silently repair evaluation outputs."
+  ]
+}

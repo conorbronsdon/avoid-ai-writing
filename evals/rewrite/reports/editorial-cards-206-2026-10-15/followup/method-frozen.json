@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "purpose": "Known-risk repair plus independently authored development probes; not a rollout gate or held-out benchmark.",
+  "conditions": {
+    "A": "d8a5bf7514af2065c2d28cc5411bc2ede6093618",
+    "B": "01393aec28a301a6cf99d51166b4c0b6c70f00a3"
+  },
+  "inputs_sha256": "84ccb60f097e1c5b6396b071939fdf7c37f12db5e4ffa9fad131f1aef77ec781",
+  "expectations_sha256": "b407a60c8a9d0577feff009dea8157508b6f058707d9ee369c24618d6903ece0",
+  "new_inputs": 12,
+  "known_repair_inputs": 4,
+  "repetitions": 1,
+  "execution": "Two fresh writers, one batched response per condition. Each reads only its skill sources and inputs; no source-task tools. Retain full responses and failures.",
+  "criteria": [
+    "No source-claim or protected-span loss.",
+    "No unauthorized scope expansion or invented experience, judgment or supporting evidence.",
+    "Retain subjective ranking even without supplied rationale.",
+    "Report retained material claim gaps and unavailable checks honestly.",
+    "No new preservation failure, unnecessary edit, missed justified edit or reporting failure relative to the paired pre-repair condition."
+  ],
+  "model": "Inherited session family; exact ID and per-call settings/usage unavailable. Not a second editor family.",
+  "review": "Shuffle paired raw alternatives; one fresh reviewer sees raw requests and responses only, without source-policy arms or prior conclusions. Assess model-only judgments and retain disagreements.",
+  "gate_status": "Cannot satisfy the two-family automated gate; keep #404 draft regardless of these diagnostic results."
+}

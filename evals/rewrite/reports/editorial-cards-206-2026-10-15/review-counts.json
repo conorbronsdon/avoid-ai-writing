@@ -1,0 +1,30 @@
+{
+  "initial": {
+    "baseline": {
+      "preservation_failure": 1,
+      "unnecessary_edit": 0,
+      "missed_justified_edit": 1,
+      "reporting_failure": 1
+    },
+    "candidate": {
+      "preservation_failure": 3,
+      "unnecessary_edit": 2,
+      "missed_justified_edit": 0,
+      "reporting_failure": 2
+    }
+  },
+  "revised": {
+    "baseline": {
+      "preservation_failure": 2,
+      "unnecessary_edit": 1,
+      "missed_justified_edit": 2,
+      "reporting_failure": 3
+    },
+    "revised": {
+      "preservation_failure": 1,
+      "unnecessary_edit": 1,
+      "missed_justified_edit": 2,
+      "reporting_failure": 2
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "baseline": {
+    "local_source_commit": "3a609fe05da9dcf2709ca7207a68860173b6449e",
+    "files": {
+      "SKILL.md": {
+        "snapshot": "source-snapshots/shared-entry.txt",
+        "sha256": "ab255722f1826fd68cca01b703f625d318ee38361e512d21abf5d94b0c920b1f"
+      },
+      "references/patterns.md": {
+        "snapshot": "source-snapshots/baseline-patterns.txt",
+        "sha256": "d43f2450459c45e34d308fde94120b7947ed31023c0c96f6b3f63787e42120dd"
+      }
+    }
+  },
+  "initial": {
+    "local_source_commit": "60e776c85a3b16bace49d8a9b8e6b9b479b09fb0",
+    "files": {
+      "SKILL.md": {
+        "snapshot": "source-snapshots/shared-entry.txt",
+        "sha256": "ab255722f1826fd68cca01b703f625d318ee38361e512d21abf5d94b0c920b1f"
+      },
+      "references/patterns.md": {
+        "snapshot": "source-snapshots/initial-patterns.txt",
+        "sha256": "1167820991d5f78cd098f0fa4ecfc83a9db713d6a16c5eea1d5e4587ce493793"
+      }
+    }
+  },
+  "revised": {
+    "local_source_commit": "e7f869768381bbea06b7915d755785c212e5f1e0",
+    "files": {
+      "SKILL.md": {
+        "snapshot": "source-snapshots/shared-entry.txt",
+        "sha256": "ab255722f1826fd68cca01b703f625d318ee38361e512d21abf5d94b0c920b1f"
+      },
+      "references/patterns.md": {
+        "snapshot": "source-snapshots/revised-patterns.txt",
+        "sha256": "e1207f2d620a565c1ed8503ea353b518c8d5251ac526667926a3688eba29db38"
+      }
+    }
+  }
+}

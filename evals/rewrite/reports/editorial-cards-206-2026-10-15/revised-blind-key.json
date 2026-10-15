@@ -1,0 +1,194 @@
+[
+  {
+    "task": 1,
+    "id": "ec-supported-contrast-edit",
+    "A": "baseline",
+    "B": "revised"
+  },
+  {
+    "task": 2,
+    "id": "ec-supported-contrast-keep",
+    "A": "baseline",
+    "B": "revised"
+  },
+  {
+    "task": 3,
+    "id": "ec-meaningful-actually-edit",
+    "A": "baseline",
+    "B": "revised"
+  },
+  {
+    "task": 4,
+    "id": "ec-meaningful-actually-keep",
+    "A": "revised",
+    "B": "baseline"
+  },
+  {
+    "task": 5,
+    "id": "ec-technical-vocabulary-edit",
+    "A": "baseline",
+    "B": "revised"
+  },
+  {
+    "task": 6,
+    "id": "ec-technical-vocabulary-keep",
+    "A": "revised",
+    "B": "baseline"
+  },
+  {
+    "task": 7,
+    "id": "ec-necessary-uncertainty-edit",
+    "A": "baseline",
+    "B": "revised"
+  },
+  {
+    "task": 8,
+    "id": "ec-necessary-uncertainty-keep",
+    "A": "revised",
+    "B": "baseline"
+  },
+  {
+    "task": 9,
+    "id": "ec-copula-sense-edit",
+    "A": "baseline",
+    "B": "revised"
+  },
+  {
+    "task": 10,
+    "id": "ec-copula-sense-keep",
+    "A": "revised",
+    "B": "baseline"
+  },
+  {
+    "task": 11,
+    "id": "ec-attribution-gap-edit",
+    "A": "revised",
+    "B": "baseline"
+  },
+  {
+    "task": 12,
+    "id": "ec-attribution-gap-keep",
+    "A": "baseline",
+    "B": "revised"
+  },
+  {
+    "task": 13,
+    "id": "ec-stable-terms-edit",
+    "A": "revised",
+    "B": "baseline"
+  },
+  {
+    "task": 14,
+    "id": "ec-stable-terms-keep",
+    "A": "baseline",
+    "B": "revised"
+  },
+  {
+    "task": 15,
+    "id": "ec-source-gaps-edit",
+    "A": "baseline",
+    "B": "revised"
+  },
+  {
+    "task": 16,
+    "id": "ec-source-gaps-keep",
+    "A": "baseline",
+    "B": "revised"
+  },
+  {
+    "task": 17,
+    "id": "ec-grounded-reaction-edit",
+    "A": "revised",
+    "B": "baseline"
+  },
+  {
+    "task": 18,
+    "id": "ec-grounded-reaction-keep",
+    "A": "revised",
+    "B": "baseline"
+  },
+  {
+    "task": 19,
+    "id": "ec-meaningful-concession-edit",
+    "A": "baseline",
+    "B": "revised"
+  },
+  {
+    "task": 20,
+    "id": "ec-meaningful-concession-keep",
+    "A": "revised",
+    "B": "baseline"
+  },
+  {
+    "task": 21,
+    "id": "ec-structure-scope-edit",
+    "A": "baseline",
+    "B": "revised"
+  },
+  {
+    "task": 22,
+    "id": "ec-structure-scope-keep",
+    "A": "baseline",
+    "B": "revised"
+  },
+  {
+    "task": 23,
+    "id": "ec-earned-reversal-edit",
+    "A": "revised",
+    "B": "baseline"
+  },
+  {
+    "task": 24,
+    "id": "ec-earned-reversal-keep",
+    "A": "baseline",
+    "B": "revised"
+  },
+  {
+    "task": 25,
+    "id": "ec-purposeful-rhythm-edit",
+    "A": "revised",
+    "B": "baseline"
+  },
+  {
+    "task": 26,
+    "id": "ec-purposeful-rhythm-keep",
+    "A": "revised",
+    "B": "baseline"
+  },
+  {
+    "task": 27,
+    "id": "existing-clean-04",
+    "A": "revised",
+    "B": "baseline"
+  },
+  {
+    "task": 28,
+    "id": "existing-context-03",
+    "A": "revised",
+    "B": "baseline"
+  },
+  {
+    "task": 29,
+    "id": "existing-context-07",
+    "A": "baseline",
+    "B": "revised"
+  },
+  {
+    "task": 30,
+    "id": "existing-preservation-06",
+    "A": "baseline",
+    "B": "revised"
+  },
+  {
+    "task": 31,
+    "id": "existing-preservation-07",
+    "A": "baseline",
+    "B": "revised"
+  },
+  {
+    "task": 32,
+    "id": "existing-preservation-11",
+    "A": "revised",
+    "B": "baseline"
+  }
+]

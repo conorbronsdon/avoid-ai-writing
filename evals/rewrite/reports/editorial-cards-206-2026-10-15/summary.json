@@ -1,0 +1,77 @@
+{
+  "decision": "Draft; not accepted for rollout",
+  "mechanical": {
+    "baseline": {
+      "outputs": 32,
+      "keep_inputs": 16,
+      "keep_exact": 16,
+      "complete_response_includes_final_text": true
+    },
+    "initial": {
+      "outputs": 32,
+      "keep_inputs": 16,
+      "keep_exact": 16,
+      "complete_response_includes_final_text": true
+    },
+    "revised": {
+      "outputs": 32,
+      "keep_inputs": 16,
+      "keep_exact": 16,
+      "complete_response_includes_final_text": true
+    }
+  },
+  "raw_model_review_counts": {
+    "initial": {
+      "baseline": {
+        "preservation_failure": 1,
+        "unnecessary_edit": 0,
+        "missed_justified_edit": 1,
+        "reporting_failure": 1
+      },
+      "candidate": {
+        "preservation_failure": 3,
+        "unnecessary_edit": 2,
+        "missed_justified_edit": 0,
+        "reporting_failure": 2
+      }
+    },
+    "revised": {
+      "baseline": {
+        "preservation_failure": 2,
+        "unnecessary_edit": 1,
+        "missed_justified_edit": 2,
+        "reporting_failure": 3
+      },
+      "revised": {
+        "preservation_failure": 1,
+        "unnecessary_edit": 1,
+        "missed_justified_edit": 2,
+        "reporting_failure": 2
+      }
+    }
+  },
+  "reference_word_counts": {
+    "baseline": 16907,
+    "initial": 18321,
+    "revised": 18449
+  },
+  "checks": {
+    "npm_suites_passed": 23,
+    "self_scan": "pass; no budgets raised",
+    "pattern_count": 74,
+    "word_table_count": 112,
+    "plugin_validation": "pass",
+    "connection_validation": "pass",
+    "deterministic_package_sha256": "615f48fd1c7081ed658975746d45d7702d1dad061773b91210c04efa51460d95",
+    "clean_extraction": "pass; expected missing-root-SKILL archive warning only",
+    "source_snapshot_sha256": "all match"
+  },
+  "limitations": [
+    "No independent second editor family was available; model IDs are not exposed by this surface.",
+    "Development pairs largely mirror the card examples; this checks basic behavior, not transfer or held-out generalization.",
+    "The revised candidate and baseline both lose the subjective most-interesting ranking in task 17 under one reviewer judgment.",
+    "Reviewers disagree on some shared baseline cases; preserve both reviews rather than relabeling them.",
+    "The historical #322 eight-scenario two-family result remains 14/16; it was not rerun or superseded here.",
+    "The final branch merges #403 after the writing runs; exact evaluated instruction snapshots are retained, and final-tree evaluation remains required."
+  ]
+}
