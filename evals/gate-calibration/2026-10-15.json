@@ -1,0 +1,81 @@
+{
+  "sha": "2dc826f7b9aea762f5557e56ba88a3e515bd2fed",
+  "options": {
+    "contextMode": "technical",
+    "sourceMode": "rendered-markdown"
+  },
+  "manifest_sha256": "b2835e983a4c96cb0a31abf31b1249d2c606cbbfcc39d9333983731fa0f6d0b6",
+  "summary": {
+    "documents": 376,
+    "rejected_at_0": 100,
+    "rejected_at_6": 5,
+    "rejection_percent_at_0": 26.595744680851062,
+    "rejection_percent_at_6": 1.3297872340425532
+  },
+  "by_register": {
+    "essay-literary": {
+      "documents": 24,
+      "rejected_at_0": 10,
+      "rejected_at_6": 0,
+      "rejection_percent_at_0": 41.666666666666664,
+      "rejection_percent_at_6": 0,
+      "findings_p95": 3
+    },
+    "academic": {
+      "documents": 73,
+      "rejected_at_0": 10,
+      "rejected_at_6": 2,
+      "rejection_percent_at_0": 13.698630136986301,
+      "rejection_percent_at_6": 2.73972602739726,
+      "findings_p95": 2
+    },
+    "technical-blog": {
+      "documents": 1,
+      "rejected_at_0": 1,
+      "rejected_at_6": 0,
+      "rejection_percent_at_0": 100,
+      "rejection_percent_at_6": 0,
+      "findings_p95": 5
+    },
+    "blog": {
+      "documents": 86,
+      "rejected_at_0": 33,
+      "rejected_at_6": 3,
+      "rejection_percent_at_0": 38.372093023255815,
+      "rejection_percent_at_6": 3.488372093023256,
+      "findings_p95": 4
+    },
+    "conversational": {
+      "documents": 131,
+      "rejected_at_0": 26,
+      "rejected_at_6": 0,
+      "rejection_percent_at_0": 19.84732824427481,
+      "rejection_percent_at_6": 0,
+      "findings_p95": 1
+    },
+    "docs": {
+      "documents": 61,
+      "rejected_at_0": 20,
+      "rejected_at_6": 0,
+      "rejection_percent_at_0": 32.78688524590164,
+      "rejection_percent_at_6": 0,
+      "findings_p95": 1
+    }
+  },
+  "cli": {
+    "0": {
+      "documents": 376,
+      "rejected": 100,
+      "batches": 19
+    },
+    "6": {
+      "documents": 376,
+      "rejected": 5,
+      "batches": 19
+    }
+  },
+  "measured_on": "2026-10-15",
+  "source_hashes_verified": 38,
+  "unscored_human_documents": 0,
+  "percentile_method": "nearest rank: sorted counts[ceil(0.95 * n) - 1]"
+}

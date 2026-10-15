@@ -507,12 +507,10 @@ The underlying `avoid-ai-writing-gate` CLI also accepts `--json` to emit structu
 Top-level fields report `schemaVersion`, `threshold`, `context`, `sourceMode`, `pass` (boolean), `totalFindings`, `failedFiles`, and `files` (preserving scan order). Each file item reports `path`, `findings`, `pass`, and sorted distinct detector `types`. When no files match the input or glob, `files` is empty with `pass: true`.
 
 `threshold` is the maximum number of deterministic findings allowed in **each**
-file. The shipped default is **6**, chosen from the current human-control corpus
-using the same `technical` + `rendered-markdown` settings as the Action. Across
-376 human corpus documents, threshold 0 rejected 118/376 (31.4%); threshold 6
-rejected 7/376 (1.9%). Six is also at or above the observed 95th-percentile
-finding count in every represented register (the `technical-blog` register has
-only one corpus document, so that slice remains under-sampled). Set
+file. The shipped default is **6**. The
+[dated gate calibration](evals/gate-calibration/2026-10-15.md) records the measured
+rejection counts, per-register limits and exact detector/corpus revision under
+the Action's `technical` + `rendered-markdown` settings. Set
 `threshold: "0"` explicitly when a project intentionally wants a strict
 zero-findings policy. This is a writing-quality baseline, not an authorship
 classifier calibration.

@@ -62,11 +62,11 @@ and `source-mode` inputs, and outputs `pass`, `total-findings`, and `failed-file
 The CLI, Action, and shipped pre-commit hook default to **6 findings per file**
 with `technical` context and `rendered-markdown` source mode.
 
-That default is measured rather than guessed. On the current 376-document human
-control corpus under those exact settings, threshold 0 rejects 31.4% of human
-documents, while threshold 6 rejects 1.9% (7/376). A value of 6 is at or above
-the observed 95th-percentile finding count for every represented register; the
-single `technical-blog` document is an explicitly under-sampled slice. Use
+The [dated gate calibration](../evals/gate-calibration/2026-10-15.md) binds the
+human-control measurements to the exact detector and corpus revision. It records
+rejection counts and per-register percentiles, including the under-sampled
+single-document `technical-blog` slice. Results can change as detector rules
+change; they are not a live rate for every later revision. Use
 `--threshold 0` when a repository deliberately wants a strict zero-findings
 policy. The corpus predates current model generations, so this threshold is a
 practical writing-quality default, not an AI-authorship accuracy claim.
