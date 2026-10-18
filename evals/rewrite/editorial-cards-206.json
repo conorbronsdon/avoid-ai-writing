@@ -135,7 +135,7 @@
       "id": "ec-grounded-reaction-edit",
       "rule_id": "ec-grounded-reaction",
       "request": "Clean up this prose. --context blog",
-      "source": "The most interesting part: the export has 31 rows.",
+      "source": "What surprised me most was that the export had 31 rows; I expected 40.",
       "decision": "edit",
       "provenance": "Original synthetic MIT-licensed development fixture; not a user draft or held-out benchmark."
     },
