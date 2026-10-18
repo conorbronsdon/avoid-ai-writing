@@ -1,0 +1,15 @@
+{
+  "reason": "Windows text output translated the intended LF prompt to CRLF. Initial method prompt hashes describe UTF-8 normalized-LF content. Raw byte hashes below pin the actual transport; sources, requests and expectations are unchanged. Haiku preflight rejected the normalized hash before any API request; the already-started Inkling attempt is retained, not discarded or relabeled.",
+  "prompts": {
+    "gate": {
+      "actual_sha256": "a0d1e5cc95c45cae1d8633c313b955cb6e2ee0ba0e79f87f3836e0a285b7df72",
+      "normalized_lf_sha256": "e8b784da365c6b02313fe822d3662e9ccafeb245cc5edc4da30481690bc9e57e",
+      "actual_bytes": 157073
+    },
+    "repair": {
+      "actual_sha256": "20a76b3c361c26679ceb9184eefcdaa47303908daf8a8864441b60eb6b33031e",
+      "normalized_lf_sha256": "f8d66d10aa3a6068f0099b2a5ecfb6b73f0ec80fe2b2d99a021193286f797f5c",
+      "actual_bytes": 160130
+    }
+  }
+}
