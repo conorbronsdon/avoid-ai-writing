@@ -1,0 +1,16 @@
+**Finding 1 (medium, about 80% confidence): the disagreement adjudication is labeled independent, but the record shows it was authored by the lead.**
+
+- **Location:** `summary.json`, key `supplemental_checker_disagreement`, which says the Haiku flags were "independently adjudicated as false flags." The README makes the same point: "Independent inspection rejects those flags." The source record is `validator-disagreements.json`, key `root_adjudication`.
+- **Trigger:** A reader checks `validator-disagreements.json` and finds the rejection is a `root_adjudication`. The lead performed it, and the lead is the party whose policy and checker results are under review. The README also says neither editor supplies independent sign-off, so the lead's own adjudication is the only basis for overriding a red checker result.
+- **Why it matters:** The overridden result is a raw red checker run. Calling the override independent overstates the evidence for the 48-response claim, which the README presents as "no verified failure."
+- **Smallest correction:** Change both phrases to "root-adjudicated" or "lead-adjudicated." Alternatively, attach a separate reviewer's adjudication of the two flags and cite it. Do not change the retained raw red output.
+
+**Checked and not reported (below threshold or no defect):**
+
+- **`check-repair-literals.py` heading and boundary logic:** The heading and boundary regexes, the single-artifact assertion, and the `personal-03` exact-source comparison all behave as the code states. A missing trailing newline after a boundary line causes a false red, not a false pass, and I could not confirm it affects the retained receipts.
+- **Negative controls:** All six mutations fail on the intended assertion for the retained Haiku receipts. Each mutation targets a retained-receipt string, and the `technical-02` replacement targets a single occurrence of `preservation validator`.
+- **Coverage scope:** The six mutations are applied only to `haiku-repair-responses.json`. The README's "rejects six deliberate corruptions" is accurate, but a reader could infer the controls also cover the GPT family. They do not. This is a disclosure gap, not a defect, so I am not reporting it.
+- **Weak term checks:** The loop asserting that `detector`, `marks normalizer`, and `preservation validator` appear in each response is satisfied by substring presence alone. The README does not claim this check verifies that those checks did not run, so I am not reporting it.
+- **Core-set literal checker and CI status:** These are referenced but not supplied, so I could not verify them.
+
+**Verdict:** One actionable defect (Finding 1). The literal checker itself has no defect at the 80% threshold for the retained receipts.

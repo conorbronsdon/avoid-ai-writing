@@ -1,0 +1,18 @@
+{
+  "requested_model": "swe-2-high",
+  "reported_model": "SWE-2 High",
+  "cli_version": "3000.11.92",
+  "reviewed_sha": "480d5fabc01e1726aa43cce310ee359fdd6f9f0c",
+  "actual_tool_events": 0,
+  "foreign_imports": false,
+  "subagents": false,
+  "permissions": "file/shell/web/MCP denied",
+  "trajectory_sha256": "95de9fb4dae73fa1c980b5a0dcefb92d7ce9677f3553c3749987f77cfa3d63cb",
+  "usage": {
+    "total_prompt_tokens": 14586,
+    "total_completion_tokens": 5925,
+    "total_cached_tokens": 1600,
+    "total_steps": 9
+  },
+  "price_evidence": "Live CLI catalog listed SWE-2 High Free; no separate billing claim."
+}

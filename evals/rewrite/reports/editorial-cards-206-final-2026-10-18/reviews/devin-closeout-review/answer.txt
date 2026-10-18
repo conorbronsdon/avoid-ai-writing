@@ -1,0 +1,20 @@
+## Independent review — PR 404 @ `480d5fa`
+
+**Verdict: no actionable defects at ≥80% confidence.**
+
+**Checker logic (`check-repair-literals.py`)**
+
+- Set-equality on response keys, exactly-one `Final rewrite` heading, non-empty artifact between heading and a `Changes|Verification|Issues found` boundary — correctly bounded.
+- Case-specific invariants are directionally sound: `technical-03` checks both first and last sentence, `personal-03` enforces exact equality with source, ranking/breadth cases require both retained phrases (mutation of one still fails).
+- All six mutation controls genuinely reach a failing assertion: the `technical-02` mutation deletes the only occurrence of `preservation validator`, tripping the term check; `casual-02` produces two headings; the `deepcopy` per control prevents cross-control contamination. `families` data is not mutated.
+- Print output ("32 retained repair responses checked") matches what the script actually does — 16 per family × 2 — without overclaiming (mutations are applied only to Haiku copies, and neither the script nor README claims per-family controls).
+- Brittleness (boundary keyword truncation, `\s*$` greediness, `utf-8` vs `utf-8-sig` BOM asymmetry) yields false-fails, not false-passes, and the docstring/README explicitly scope it to "these retained receipts, not future paraphrases." Within scope.
+
+**Claim consistency**
+
+- Two completed editor families (Haiku direct API, GPT via Codex CLI with undisclosed model honestly marked "exact model not exposed") satisfies the ≥2-family gate.
+- Failed attempts are preserved and disclosed: Inkling counterexample, ASCII-transport GPT rejects, NVIDIA/Gemma/Go/primary-review setup failures — none counted.
+- Haiku detect-audit flags are retained as raw red, adjudicated as extraction limitations, and explicitly "not described as green" — consistent across README, `validator-disagreements.json`, and summary.
+- `source_commit` `4b6939a` and `final_reviewed_code_commit` `c3d7078` match the stated review history; the 96+32 historical responses and #322 14/16 are disclaimed rather than claimed.
+- Limitations are correctly retained: no generalization, repeatability, human validation, or live-edit claims; "model-only judgments" labeled throughout; CI acknowledged as remaining merge gate.
+- Minor tension only: adjudication says "current pushed CI passed before the evidence-only commit" while README says "CI remains the final merge gate" — compatible readings, below threshold.

@@ -2,7 +2,8 @@
   "accepted": [
     "Haiku: contradictory reaction-edit fixture -> corrected live fixture and byte-exact historical fixture preserved in 2a843f4.",
     "SWE-2: judgment-only annotations bypassed type-ID checks; orphan/duplicate fixture gaps -> fixed in af839ba.",
-    "Haiku recheck: malformed uppercase/underscore references skipped by restricted regex -> fixed with two controls in c3d7078."
+    "Haiku recheck: malformed uppercase/underscore references skipped by restricted regex -> fixed with two controls in c3d7078.",
+    "Haiku final-report review: identify the two parser-flag rejections as lead-adjudicated, not a separate reviewer sign-off. README and summary now state that scope explicitly; raw red result unchanged."
   ],
   "rejected": [
     "Inkling: claimed missing report files; actual committed files exist and all 24 suites pass.",
@@ -13,5 +14,7 @@
   "final_code_review_sha": "c3d707836b92f04edfd83edb4d351102b7630c51",
   "final_primary": "claude-haiku-5-5: no actionable defects",
   "final_complementary": "Devin swe-2-high / reported SWE-2 High: no changes needed",
-  "carry_forward": "Prose, fixture and evaluation sources unchanged after their reviewed commits; later evidence-only commits require hash verification and report review, not relabeling earlier executions."
+  "carry_forward": "Prose, fixture and evaluation sources unchanged after their reviewed commits; later evidence-only commits require hash verification and report review, not relabeling earlier executions.",
+  "final_report_review_sha": "480d5fabc01e1726aa43cce310ee359fdd6f9f0c",
+  "final_report_review": "Haiku: one attribution clarification applied, no checker-code defect. SWE-2: no actionable defect. Later changes are attribution text and receipts only; code/policy hashes unchanged."
 }

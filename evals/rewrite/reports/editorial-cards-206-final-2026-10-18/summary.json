@@ -17,7 +17,7 @@
   "literal_checks": "Both completed core sets pass frozen literal checks and three mutation controls. All 32 repair outputs pass applicable literal invariants.",
   "semantic_checks": "No verified failure in the completed Haiku/GPT pair under the frozen expectations; model-only judgments.",
   "additional_failed_editor": "Inkling batch failed both duplicate-key transport and behavior. It remains a concrete counterexample for that editor/harness, not a pass. No all-model compatibility claim.",
-  "supplemental_checker_disagreement": "Haiku context-first detect findings produce two parser flags, independently adjudicated as false flags; raw red output retained.",
+  "supplemental_checker_disagreement": "Haiku context-first detect findings produce two parser flags, lead-adjudicated as false flags; raw red output retained. This is a GPT-family assessment of the Anthropic output, not a separate reviewer sign-off on the override.",
   "validation": [
     "24 local suites passed; affected card suite rerun after final test-only fix, nine mutation controls pass",
     "self-scan passed",
