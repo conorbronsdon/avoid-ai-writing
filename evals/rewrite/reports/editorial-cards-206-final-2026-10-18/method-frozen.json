@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "source_commit": "4b6939a3ac7f35ca83f5274fd9b858265126812f",
+  "sources": {
+    "SKILL.md": {
+      "path": "source-snapshots/SKILL.md.txt",
+      "sha256": "031c8ad21ea2a8ce93c4af97f82cf0218fabeb8450ad2d5fce41a76fac1eebd7",
+      "bytes": 33205
+    },
+    "references/patterns.md": {
+      "path": "source-snapshots/references-patterns.md.txt",
+      "sha256": "d5452a813006840b47273b0c1ddd4ca655733cbab4db9fbe19e803c03e77c499",
+      "bytes": 119875
+    }
+  },
+  "editors": [
+    "claude-haiku-5-5 via Anthropic Messages API",
+    "thinkingmachines/inkling:free via OpenRouter/Hermes"
+  ],
+  "adjudicator": "GPT lead, separate family from both editors",
+  "method": "Two batches per family: eight frozen gate scenarios and sixteen retained repair probes. Fresh tool-free session for each batch; complete full entrypoint and reference in both. No expected answers, prior outputs or grading labels supplied to editors. One attempt per batch except explicit retained setup/transport failure retries.",
+  "requirements": "All completed responses, all literal invariants and no verified semantic/reporting failures. Preserve failed outputs; no favorable retry selection. Up to three source-repair cycles; rerun affected scenarios on both families if policy changes.",
+  "limitations": [
+    "24 targeted tasks per family, not a held-out or comparative quality benchmark",
+    "Batched cases share context; no repeatability or statistical claim",
+    "Tool-free; no real file-edit operation or instrumented internal editing passes",
+    "Historical #322 14/16 exception and prior development failures remain unchanged"
+  ],
+  "inputs": {
+    "gate-scenarios.json": "0bdc9c0f450734df62ae8b499be9d5af01f856ab2956773c1398f0040ea0049c",
+    "repair-inputs.json": "26b8f3801d6db4b48fc2368e29f5330e71ca1fb0ded892e64741160f331acaa2",
+    "repair-expectations.json": "e0e1ff2949fc58456ecfeb9629b1f8005a6fc9be58a203dc4aa67b7ea6a7a504"
+  },
+  "prompts": {
+    "gate": {
+      "sha256": "e8b784da365c6b02313fe822d3662e9ccafeb245cc5edc4da30481690bc9e57e",
+      "bytes": 155835,
+      "tasks": 8
+    },
+    "repair": {
+      "sha256": "f8d66d10aa3a6068f0099b2a5ecfb6b73f0ec80fe2b2d99a021193286f797f5c",
+      "bytes": 158852,
+      "tasks": 16
+    }
+  }
+}
