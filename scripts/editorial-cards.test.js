@@ -22,7 +22,7 @@ function check(text, cases = fixtures.cases) {
     }
     const mapping = body.match(/^\*\*Detector types:\*\* (.+)$/m);
     assert(mapping, `${id}: missing detector mapping`);
-    const types = [...mapping[1].matchAll(/`([a-z0-9-]+)`/g)].map(m => m[1]);
+    const types = [...mapping[1].matchAll(/`([^`]+)`/g)].map(m => m[1]);
     for (const type of types) assert(Object.hasOwn(TYPE_LABELS, type), `${id}: unknown detector type ${type}`);
     if (!mapping[1].startsWith('none ')) {
       assert(types.length, `${id}: explicit mapping required`);
@@ -44,6 +44,8 @@ for (const mutation of [
   source.replace('- **Keep:**', '- **Dropped keep example:**'),
   source.replace('- **Flag a gap:**', '- **Dropped gap guard:**'),
   source.replace('`hollow-intensifier` does not cover this word', '`invented-detector` does not cover this word'),
+  source.replace('`hollow-intensifier` does not cover this word', '`Hollow-Intensifier` does not cover this word'),
+  source.replace('`hollow-intensifier` does not cover this word', '`invented_detector` does not cover this word'),
 ]) assert.throws(() => check(mutation), 'mutation must fail the card contract');
 assert.throws(() => check(source, [...fixtures.cases, fixtures.cases[0]]), /duplicate fixture ID/);
 assert.throws(() => check(source, [...fixtures.cases,
@@ -93,4 +95,4 @@ for (const row of review) for (const arm of ['X', 'Y']) {
     assert.equal(typeof row[arm][field], 'boolean');
   }
 }
-console.log(`${cards.length} editorial cards: IDs, mappings, paired tasks, portability and seven mutation controls passed; no model-quality claim.`);
+console.log(`${cards.length} editorial cards: IDs, mappings, paired tasks, portability and nine mutation controls passed; no model-quality claim.`);
