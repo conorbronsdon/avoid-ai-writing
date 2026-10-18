@@ -1,0 +1,5 @@
+{
+  "reason": "PowerShell 5.1 reports OutputEncoding=us-ascii. Its first two Codex input pipes cannot establish exact full-policy UTF-8 transport, although the fixture sources are ASCII. Preserve those complete outputs separately; do not count them as final-source runs.",
+  "replacement": "Feed the original frozen prompt bytes to the same Codex CLI through Python binary stdin, retaining exact input hash and raw JSONL. No source, request, expectation, model-selection or tool-isolation change.",
+  "independent_review": "Re-adjudicate the replacement GPT outputs through a fresh Haiku session. Earlier Haiku judgment is retained as applying only to the earlier transport."
+}
