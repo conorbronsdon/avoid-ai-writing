@@ -1,0 +1,7 @@
+{
+  "model": "google/gemma-4-31b-it:free",
+  "reason": "NVIDIA route has not completed within its declared budget; retain partial output and enforce a hard process-tree deadline. Use Gemma as an additional independent editor/reviewer on the same already frozen sources and expectations. Inkling failed batch remains recorded.",
+  "source_or_expectation_changes": false,
+  "hard_timeout_seconds": 150,
+  "grading": "Keep all failures; independent GPT adjudication still required."
+}
