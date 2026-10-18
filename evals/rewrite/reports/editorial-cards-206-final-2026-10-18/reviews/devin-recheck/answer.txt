@@ -1,0 +1,13 @@
+**Re-review of `scripts/editorial-cards.test.js` at af839ba — no actionable defects found at ≥80% confidence.**
+
+Verified points:
+
+- **Detector-ID validation in `none` annotations (lines 25–29):** `types` extraction moved outside the `none ` guard correctly implements finding 1. `**Detector types:** none (judgment only; `hollow-intensifier` ...)` extracts `hollow-intensifier`, which is validated via `Object.hasOwn(TYPE_LABELS, ...)` without requiring `types.length` — the `none ` prefix still exempts the explicit-mapping assert. Validation is type-existence only; it does not conflate referenced/excluded types with mapped types, since mapping semantics are unchanged.
+- **Mutation 5 (line 46):** substituting `invented-detector` into the judgment-only annotation now reaches line 26 and throws `unknown detector type` — a genuine new control that passed silently under the old ordering.
+- **Duplicate case IDs (line 34):** `new Set(cases.map(c => c.id)).size === cases.length` runs after the per-card loop; duplicating `fixtures.cases[0]` cannot trip an earlier assertion (paired edit/keep coverage is unaffected by a duplicate), so the `/duplicate fixture ID/` matcher can only be satisfied by the intended assert.
+- **Orphaned rule IDs (lines 35–36):** `rule_id !== undefined` filter correctly preserves id-less/`rule_id`-less reused development cases while still catching `rule_id: 'ec-unknown'`; `ids.includes` compares against card headers extracted from the same `text` argument, so fixture mutations and source mutations stay consistent.
+- **Mutation 1 (line 42):** no backticked `ec-*` token can appear in a `none` annotation (it would fail baseline type validation), so `source.replace` must hit the card header, producing a duplicate card ID.
+- **Count claim:** 5 source mutations + 2 fixture mutations = 7; log line updated consistently.
+- **`check` signature:** `cases = fixtures.cases` default preserves all prior call sites; `pairedCases` rename avoids shadowing.
+
+No defects to report.

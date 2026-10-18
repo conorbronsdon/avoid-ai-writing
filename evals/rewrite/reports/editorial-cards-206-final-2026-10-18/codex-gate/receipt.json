@@ -1,0 +1,23 @@
+{
+  "route": "existing authenticated Codex CLI",
+  "family": "GPT",
+  "exact_model": "not exposed in JSONL event stream",
+  "source_commit": "4b6939a3ac7f35ca83f5274fd9b858265126812f",
+  "actual_tool_events": 0,
+  "usage": {
+    "input_tokens": 45943,
+    "cached_input_tokens": 8320,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 1451,
+    "reasoning_output_tokens": 126
+  },
+  "sandbox": "read-only",
+  "user_config": "excluded",
+  "project_doc_max_bytes": 0,
+  "persistence": "ephemeral",
+  "batch": "gate",
+  "input_bytes": 157073,
+  "prompt_sha256": "a0d1e5cc95c45cae1d8633c313b955cb6e2ee0ba0e79f87f3836e0a285b7df72",
+  "transport": "Binary subprocess stdin: exact UTF-8 bytes, no PowerShell text pipe",
+  "exit_code": 0
+}

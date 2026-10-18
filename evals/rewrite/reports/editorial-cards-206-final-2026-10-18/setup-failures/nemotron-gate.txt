@@ -1,0 +1,40 @@
+Warning: Unknown toolsets: none
+
+[2;3m┌─ Reasoning ──────────────────────────────────────────────────────────────────┐[0m
+[2;3mThe user wants me to execute each independent request using the supplied complete[0m
+[2;3m writing skill and required pattern reference. They want me to return one JSON object[0m
+[2;3m mapping each scenario id to its complete normal skill response as a string. The scenarios[0m
+[2;3m are independent and I should not critique fixtures or score myself.[0m
+[2;3m[0m
+[2;3mLet me analyze each scenario:[0m
+[2;3m[0m
+[2;3m1. **id: "noop"** - Remove AI-writing patterns from this note. Source: "The migration[0m
+[2;3m starts Tuesday. Back up the database before you run it."[0m
+[2;3m   - This is very short, straightforward content. I need to check for AI patterns[0m
+[2;3m.[0m
+[2;3m   - Looking at the text: "The migration starts Tuesday. Back up the database before[0m
+[2;3m you run it."[0m
+[2;3m   - This doesn't seem to have any obvious AI-isms. It's direct, imperative, clear[0m
+[2;3m.[0m
+[2;3m   - In detect mode would find nothing. In rewrite mode would likely return unchanged[0m
+[2;3m.[0m
+[2;3m[0m
+[2;3m2. **id: "useful_edit"** - Rewrite this product update to remove AI-writing patterns[0m
+[2;3m, --iterate 1. Source: "Moreover, the API now supports batch requests. In conclusion[0m
+[2;3m, the future looks bright."[0m
+[2;3m   - This has clear AI patterns: "Moreover" (transition phrase, P2), "In conclusion[0m
+[2;3m" (generic conclusion, P2), "the future looks bright" (generic future-narrative closer[0m
+[2;3m).[0m
+[2;3m   - --iterate 1 means one editing pass.[0m
+[2;3m   - I need to rewrite this removing AI patterns.[0m
+[2;3m[0m
+[2;3m3. **id: "fidelity"** - Clean up this technical result in a blunt voice without changing[0m
+[2;3m its evidence. Source: "Moreover, the cache may reduce median latency by 12 ms if[0m
+[2;3m the working set fits in memory. It did not improve p99 latency in the 40-run test[0m
+[2;3m."[0m
+[2;3m   - --context technical-blog (implied from the scenario context)[0m
+[2;3m   - --voice blunt[0m
+[2;3m   - Must preserve the technical meaning and correction.[0m
+[2;3m   - The source has "Moreover" (transition phrase), "may reduce" (hedge), etc.[0m
+[2;3m[0m
+[2;3m4. **id: "technical_context"** - Remove AI-writing patterns --context technical-b[0m

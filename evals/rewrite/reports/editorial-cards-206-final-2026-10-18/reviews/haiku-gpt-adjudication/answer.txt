@@ -1,0 +1,16 @@
+**Verdict: none qualifies.** I found no verified failure at ≥80% confidence in the 24 responses.
+
+**Assessed ids (24):** noop, useful_edit, fidelity, technical_context, protected, explicit_transform, source_instruction, detect_only, technical-01, technical-02, technical-03, personal-01, personal-02, personal-03, casual-01, casual-02, casual-03, product-01, product-02, product-03, ec-supported-contrast-edit, ec-grounded-reaction-edit, ec-meaningful-concession-edit, ec-earned-reversal-edit
+
+**Below-threshold observations, not reported as failures:**
+- **technical-03:** "should be stored under the account" became the imperative "store that response under the account." This may soften the modal, but the change is arguably a directive-form edit and not a clear certainty change. Confidence is about 50%.
+- **technical-01:** "A request can succeed even when the export is incomplete" became "A 200 response does not mean the export contains every record." The warning is kept, and the change is labeled as shortening, so this is a wording shift rather than a verified loss.
+- **personal-02:** The second "because" was removed and "something steady" became "steady work." The causal link to fear survives grammatically, and the narrowing is minor.
+
+**Checks against the criteria:**
+- **Source fidelity and uncertainty:** Hedges such as "may," "probably," "unconfirmed," "if," "could have," and "not measured" are preserved wherever they appear in the sources.
+- **Quantities and negation:** 12 ms, 40-run, 31 rows, 200, "did not improve p99," and "cannot export PDF" are preserved.
+- **Authorized scope:** Protected quote, table, code, URL, and path are kept in protected. The explicit impersonal transformation has no remaining first-person pronouns.
+- **Change summaries:** Each "Changes" entry matches its delivered span.
+- **Pass counts and stop reasons:** These are consistent with the edits shown. The no-op cases report 0 passes and omit Changes.
+- **Unavailable checks:** Each response labels the audit as model-only and states that the detector, marks normalizer, and preservation validator did not run. No response claims a mechanical check passed.

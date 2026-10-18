@@ -1,0 +1,13 @@
+**Verified failures (≥80% confidence): none found.**
+
+Each of the 24 responses was checked against its source or request and frozen expectation. The main checks were preservation of claims, quantities, uncertainty, and negation; the authorized scope; whether each claimed change appears in the final text; pass counts against the limits; and whether the Verification status is honest. No response falsely claims a tool ran. Each response shows a single Final rewrite, and the pass counts match the edits in the text.
+
+**Assessed ids (24):** noop, useful_edit, fidelity, technical_context, protected, explicit_transform, source_instruction, detect_only, technical-01, technical-02, technical-03, personal-01, personal-02, personal-03, casual-01, casual-02, casual-03, product-01, product-02, product-03, ec-supported-contrast-edit, ec-grounded-reaction-edit, ec-meaningful-concession-edit, ec-earned-reversal-edit.
+
+**Sub-threshold observations (not counted as failures):**
+- **technical-01:** The source's reason, "A request can succeed even when the export is incomplete," is dropped. The warning survives in "A 200 response alone does not mean the export is complete," so the loss is partial. Confidence is about 60%.
+- **technical-03:** "should be stored" becomes the imperative "store." This is a possible modality shift, but it is a stylistic reading. Confidence is about 60%.
+- **personal-02:** "afraid of not having something steady" becomes "afraid of losing that stability." The fear is close but not identical, since "losing" implies prior possession. Confidence is about 55%.
+- **personal-01:** The user asked for a "light edit for flow," and the response made no change, calling the prose clean. Whether "flow" counts as an explicit transformation is arguable, so this is not a verified failure.
+
+Everything else is a real preservation or a harmless paraphrase. The ec-* edits match their decision-card examples, and the protected quote, table, code, path, and URL are retained.

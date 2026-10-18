@@ -1,0 +1,21 @@
+**Finding 1 (Medium, about 80% confidence)**
+
+**File/line:** `scripts/editorial-cards.test.js`, lines 25-26.
+
+**Defect:** The detector-ID check only sees backticked tokens that match `` /`([a-z0-9-]+)`/ ``. Any token outside that character class is silently dropped before the `TYPE_LABELS` check runs, so it is never validated.
+
+**Trigger:** Change a card's annotation to `**Detector types:** none (judgment only; \`Hollow-Intensifier\` does not cover this word).` or to `` `invented_detector` ``. The regex skips the token, `types` omits it, `TYPE_LABELS` is never consulted, and `check()` passes. This applies to judgment-only annotations, which the lead's fix was meant to cover. The mutation controls at lines 41-47 use only lowercase hyphenated invented names, so they would not catch this.
+
+**Smallest correction:** Widen the extraction so every backticked token is captured, then validate each one:
+
+```js
+const types = [...mapping[1].matchAll(/`([^`]+)`/g)].map(m => m[1]);
+for (const type of types) assert(Object.hasOwn(TYPE_LABELS, type), `${id}: unknown detector type ${type}`);
+```
+
+Keep the existing `explicit mapping required` check. The current source's `hollow-intensifier` token still passes after this change.
+
+**Checked with no actionable defect found:**
+- Duplicate fixture-ID detection (line 34) and the orphan `rule_id` check (lines 35-37) are correct. Fixtures without `rule_id` are skipped, so reused development cases are preserved.
+- The two new `assert.throws` controls (lines 48-50) fail for the intended reasons.
+- The count of seven mutation controls is accurate.

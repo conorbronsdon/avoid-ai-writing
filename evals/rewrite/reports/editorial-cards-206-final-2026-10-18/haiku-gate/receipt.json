@@ -1,0 +1,28 @@
+{
+  "model": "claude-haiku-5-5",
+  "actual_model": "claude-haiku-5-5",
+  "prompt_sha256": "a0d1e5cc95c45cae1d8633c313b955cb6e2ee0ba0e79f87f3836e0a285b7df72",
+  "request_sha256": "8058799cd8aaec80975dac3ca08d5f7d7ef8def67611249816609d64590b8967",
+  "max_tokens": 16384,
+  "effort": "medium",
+  "tools": [],
+  "source_commit": "4b6939a3ac7f35ca83f5274fd9b858265126812f",
+  "status": "completed",
+  "usage": {
+    "input_tokens": 52481,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 0
+    },
+    "output_tokens": 5802,
+    "output_tokens_details": {
+      "thinking_tokens": 3053
+    },
+    "service_tier": "standard",
+    "inference_geo": "global",
+    "speed": "standard"
+  },
+  "stop_reason": "end_turn"
+}

@@ -1,0 +1,29 @@
+{
+  "route": "existing authenticated Codex CLI",
+  "family": "GPT",
+  "exact_model": "not exposed in JSONL event stream",
+  "source_commit": "4b6939a3ac7f35ca83f5274fd9b858265126812f",
+  "actual_tool_events": 0,
+  "usage": {
+    "input_tokens": 46617,
+    "cached_input_tokens": 8320,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 2907,
+    "reasoning_output_tokens": 368
+  },
+  "tools_disabled": [
+    "shell",
+    "unified_exec",
+    "apps",
+    "plugins",
+    "browser",
+    "computer_use",
+    "image_generation",
+    "view_image"
+  ],
+  "sandbox": "read-only",
+  "user_config": "excluded",
+  "project_doc_max_bytes": 0,
+  "persistence": "ephemeral",
+  "prompt_transport": "PowerShell Get-Content text pipe; logical LF content matches frozen prompt after line-ending normalization"
+}

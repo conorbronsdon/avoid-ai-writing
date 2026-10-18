@@ -1,0 +1,14 @@
+**Result: No actionable defect meets the 80% confidence bar.**
+
+I reviewed only the diff shown. I did not verify the SHA256, the historical `method-frozen.json`, the preservation policy, or the rule `ec-grounded-reaction` against the repository.
+
+**Checked and not flagged:**
+- `evals/rewrite/editorial-cards-206.json` line 138: the one-line change is well-formed JSON. The `id`, `rule_id`, `request`, `decision`, and `provenance` fields are unchanged, and the new `source` string is a valid value.
+- The new source ("What surprised me most was that the export had 31 rows; I expected 40.") keeps the original 31-row figure and adds only a first-person reaction. I cannot confirm from the diff that it satisfies the preservation policy, so I am not asserting a conflict.
+- `fixtures-frozen.json` is a 263-line addition. The diff does not show its content, so I cannot check that it is byte-identical to the pre-commit file.
+
+**Scope notes (below the 80% threshold, not defects):**
+- The assignment says editorial source files are byte-identical. This commit modifies `editorial-cards-206.json`. If that file counts as an editorial source, the stated premise does not hold and the prior unchanged-file carry-forward would not apply to it. Whether it counts depends on the repository's definition, which I cannot see.
+- The live fixture's hash has changed. Any check that compares the live file's hash with `method-frozen.json` `fixtures_sha256` would now fail. The commit message says the frozen copy preserves the old hash, but I cannot see whether such a check exists or points at the live path.
+
+Verdict: none qualifies. Confirming the scope question and the hash-consumer question would require reading the repository, which this review does not permit.

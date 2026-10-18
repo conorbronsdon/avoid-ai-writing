@@ -1,0 +1,197 @@
+{
+  "scope": "Current accepted UTF-8 receipts only. Exact-scope, named-check and retained-value assertions; six negative controls. Semantic fidelity separately adjudicated.",
+  "results": [
+    {
+      "family": "haiku",
+      "id": "technical-01",
+      "final_text": "Call fetchPage() until nextCursor is null. A 200 response does not prove the export is complete, because a request can succeed while records are still missing. If the job times out, resume from the last cursor you stored.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "haiku",
+      "id": "technical-02",
+      "final_text": "The worker probably retries this twice, but I haven't confirmed whether the initial attempt is counted. In the logs we checked, most failures were followed by a successful attempt within a minute.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "haiku",
+      "id": "technical-03",
+      "final_text": "The cache key includes the account ID. If a user switches accounts before an earlier request's response arrives (which can happen on a slow connection), store that response under the account that started the request. The active account is not necessarily the right one.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "haiku",
+      "id": "personal-01",
+      "final_text": "I remember my father waiting by the gate, although my sister says he met us inside. What I know is that he had brought oranges. Their smell is the part of that afternoon I can still reach without trying.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "haiku",
+      "id": "personal-02",
+      "final_text": "I kept the job because it was steady and because I feared being without something steady. Every Sunday I told myself I would start looking the next week. I don't think those years were wasted, but I still wish I had left sooner.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "haiku",
+      "id": "personal-03",
+      "final_text": "The apartment was smaller than I remembered, but the light was the same: a narrow stripe across the kitchen floor. I stood there for a minute. Then I gave the keys back.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "haiku",
+      "id": "casual-01",
+      "final_text": "Hey, I might swing by after lunch if the repair person gets here early enough. If not, maybe tomorrow? No need to wait around for me either way.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "haiku",
+      "id": "casual-02",
+      "final_text": "I put the spare key in the blue tin on the shelf. The lid sticks, so lift it from the back. Please leave the key there when you're done.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "haiku",
+      "id": "casual-03",
+      "final_text": "I get why you liked the ending, and the acting was great, but for me the twist made the earlier scenes feel kind of pointless. Maybe I missed something in the middle. I still don't think it earned that last speech.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "haiku",
+      "id": "product-01",
+      "final_text": "The new search feels faster to me, though I only tried it on a small workspace. The product team says the index refreshes every minute. That would help, but the missing filters still make it harder to use than the old version for my work.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "haiku",
+      "id": "product-02",
+      "final_text": "The headphones fit well and I liked the sound, especially for voices. But the connection dropped three times during my commute. That could have been my phone, which has been acting up lately, so I wouldn't call it a confirmed headphone problem yet.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "haiku",
+      "id": "product-03",
+      "final_text": "For a shared shopping list, this app does enough. Changes appear quickly, and neither of us has accidentally deleted the whole list. I would use something else for project planning; there is no useful way to track dependencies.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "haiku",
+      "id": "ec-supported-contrast-edit",
+      "final_text": "The dashboard is a foundation for trust. It shows queue depth.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "haiku",
+      "id": "ec-grounded-reaction-edit",
+      "final_text": "The most interesting part: the export has 31 rows.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "haiku",
+      "id": "ec-meaningful-concession-edit",
+      "final_text": "The platform is impressive and still has challenges. It exports CSV but cannot export PDF.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "haiku",
+      "id": "ec-earned-reversal-edit",
+      "final_text": "We planned for every failure mode except the one that happened. We tested every path except the path that failed.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "codex",
+      "id": "technical-01",
+      "final_text": "Call fetchPage() until nextCursor is null. A 200 response does not mean the export contains every record. If the job times out, resume with your last stored cursor.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "codex",
+      "id": "technical-02",
+      "final_text": "The worker probably retries this twice, but I haven't confirmed whether the initial attempt is counted. In the logs we checked, most failures were followed by a successful attempt within a minute.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "codex",
+      "id": "technical-03",
+      "final_text": "The cache key includes the account ID. If a user switches accounts before an earlier request's response arrives, as can happen on a slow connection, store that response under the account that started the request. The active account is not necessarily the right one.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "codex",
+      "id": "personal-01",
+      "final_text": "I remember my father waiting by the gate, although my sister says he met us inside. What I know is that he had brought oranges. Their smell is the part of that afternoon I can still reach without trying.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "codex",
+      "id": "personal-02",
+      "final_text": "I kept the job because it was steady and I was afraid of being without steady work. Every Sunday I told myself I would start looking the next week. I don't think those years were wasted, but I still wish I had left sooner.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "codex",
+      "id": "personal-03",
+      "final_text": "The apartment was smaller than I remembered, but the light was the same: a narrow stripe across the kitchen floor. I stood there for a minute. Then I gave the keys back.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "codex",
+      "id": "casual-01",
+      "final_text": "Hey, I might swing by after lunch if the repair person gets here early enough. If not, maybe tomorrow? No need to wait around for me either way.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "codex",
+      "id": "casual-02",
+      "final_text": "I put the spare key in the blue tin on the shelf. The lid sticks, so lift it from the back. Please leave the key there when you're done.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "codex",
+      "id": "casual-03",
+      "final_text": "I get why you liked the ending, and the acting was great. But for me, the twist made the earlier scenes feel kind of pointless. Maybe I missed something in the middle. I still don't think it earned that last speech.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "codex",
+      "id": "product-01",
+      "final_text": "The new search feels faster to me, though I only tried it on a small workspace. The product team says the index refreshes every minute. That would help, but the missing filters still make it harder to use than the old version for my work.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "codex",
+      "id": "product-02",
+      "final_text": "The headphones fit well and I liked the sound, especially for voices. But the connection dropped three times during my commute. My phone has been acting up lately and could have caused the drops, so I wouldn't call this a confirmed headphone problem yet.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "codex",
+      "id": "product-03",
+      "final_text": "For a shared shopping list, this app does enough. Changes appear quickly, and neither of us has accidentally deleted the whole list. I would use something else for project planning; there is no useful way to track dependencies.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "codex",
+      "id": "ec-supported-contrast-edit",
+      "final_text": "The dashboard is a foundation for trust. It shows queue depth.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "codex",
+      "id": "ec-grounded-reaction-edit",
+      "final_text": "The most interesting part: the export has 31 rows.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "codex",
+      "id": "ec-meaningful-concession-edit",
+      "final_text": "The platform is impressive and still has challenges. It exports CSV but cannot export PDF.",
+      "literal_checks": "pass"
+    },
+    {
+      "family": "codex",
+      "id": "ec-earned-reversal-edit",
+      "final_text": "We planned for every failure mode except the one that happened. We tested every path except the path that failed.",
+      "literal_checks": "pass"
+    }
+  ]
+}

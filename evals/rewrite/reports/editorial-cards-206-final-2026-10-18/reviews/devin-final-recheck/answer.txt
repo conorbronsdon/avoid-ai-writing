@@ -1,0 +1,18 @@
+**Verdict: fix is correct; no ≥80%-confidence actionable defects found.**
+
+**Fix verification.** The widened detector-reference regex `` /`([^`]+)`/g `` (line 25) now captures every nonempty backticked token in the `Detector types:` line, so `Hollow-Intensifier` and `invented_detector` — previously invisible to `` /`([a-z0-9-]+)`/g `` — are validated against `TYPE_LABELS` (line 26). This directly closes the reported gap.
+
+**Control audit.**
+
+- Lines 46–48: `invented-detector` fails under both regexes; `Hollow-Intensifier` and `invented_detector` fail *only* under the widened regex. The two new controls therefore execute a distinct failure path — genuine regression coverage, not redundant.
+- Each mutation uses `source.replace` on the literal `` `hollow-intensifier` does not cover this word ``. If that string were absent, `replace` returns `source` unchanged, `check` passes, and `assert.throws` itself fails — the controls are self-guarding.
+- The `if (!mapping[1].startsWith('none '))` gate (line 27) is unaffected: validation runs on *all* captured tokens regardless of the `none` prefix, which is the intended strictness.
+- "Nine controls" in the log (line 98) = 7 source mutations + 2 fixture mutations (lines 50–52), consistent with the prior counting convention.
+
+**Below-threshold nits (not actionable, noting for completeness).**
+
+- An *odd* number of backticks on a mapping line causes `[^`]+` pairing to skip a trailing unclosed token, e.g. `` `good` `bad `` captures only `good`. Requires malformed input; low confidence it matters.
+- A bare `**Detector types:** none` (no trailing space) fails `startsWith('none ')` and then trips "explicit mapping required" — stricter than the prose suggests, but self-consistent.
+- Tokens elsewhere in the card body remain unvalidated; matches prior scope.
+
+No changes needed.

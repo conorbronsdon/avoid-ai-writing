@@ -1,0 +1,19 @@
+{
+  "route": "Devin CLI in isolated WSL home/work directory",
+  "requested_model": "swe-2-high",
+  "reported_model": "SWE-2 High",
+  "cli_version": "3000.11.92",
+  "reviewed_sha": "af839ba1f0c095b0fde54af5cfa844dc1c18118e",
+  "actual_tool_events": 0,
+  "foreign_config_imports": false,
+  "subagents_enabled": false,
+  "permissions": "file/shell/web/MCP denied at user-config level",
+  "trajectory_sha256": "4b387e2f254c4d7a67a3b6921a7c75dbbd177b50a5cd37e5658445400f586b76",
+  "usage": {
+    "total_prompt_tokens": 13995,
+    "total_completion_tokens": 6879,
+    "total_cached_tokens": 4928,
+    "total_steps": 9
+  },
+  "price_evidence": "Live CLI model catalog listed swe-2-high as Free on 2026-10-18; user explicitly authorized Devin."
+}

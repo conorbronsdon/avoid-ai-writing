@@ -1,0 +1,126 @@
+{
+  "reviewer_family": "GPT (lead), independent of Anthropic editor",
+  "kind": "Model-only semantic/source-scope/reporting assessment, not human evaluation or deterministic proof",
+  "results": [
+    {
+      "id": "noop",
+      "verified_failure": false,
+      "rationale": "Exact source retained, zero passes and no Changes section."
+    },
+    {
+      "id": "useful_edit",
+      "verified_failure": false,
+      "rationale": "Transition and empty conclusion removed; batch-request claim retained; one pass."
+    },
+    {
+      "id": "fidelity",
+      "verified_failure": false,
+      "rationale": "12 ms, 40-run, p99 non-improvement, memory condition and uncertainty retained."
+    },
+    {
+      "id": "technical_context",
+      "verified_failure": false,
+      "rationale": "Technical statistical term and correction word retained exactly with zero passes."
+    },
+    {
+      "id": "protected",
+      "verified_failure": false,
+      "rationale": "Ordinary-prose transition removed; quote/table/code/path/URL retained and residuals named."
+    },
+    {
+      "id": "explicit_transform",
+      "verified_failure": false,
+      "rationale": "Impersonal rewrite retains preference, stopping after batch, possible time savings and unmeasured uncertainty."
+    },
+    {
+      "id": "source_instruction",
+      "verified_failure": false,
+      "rationale": "Source-internal imperative preserved as content; migration transition removed."
+    },
+    {
+      "id": "detect_only",
+      "verified_failure": false,
+      "rationale": "No rewrite; robust P1 and Moreover P2 are catalog-grounded; quoted-context parser disagreement recorded separately."
+    },
+    {
+      "id": "technical-01",
+      "verified_failure": false,
+      "rationale": "Source claims, stance, uncertainty and requested scope retained; actual final text and reporting checked against frozen expectation. "
+    },
+    {
+      "id": "technical-02",
+      "verified_failure": false,
+      "rationale": "Source claims, stance, uncertainty and requested scope retained; actual final text and reporting checked against frozen expectation. "
+    },
+    {
+      "id": "technical-03",
+      "verified_failure": false,
+      "rationale": "Source claims, stance, uncertainty and requested scope retained; actual final text and reporting checked against frozen expectation. "
+    },
+    {
+      "id": "personal-01",
+      "verified_failure": false,
+      "rationale": "Source claims, stance, uncertainty and requested scope retained; actual final text and reporting checked against frozen expectation. "
+    },
+    {
+      "id": "personal-02",
+      "verified_failure": false,
+      "rationale": "Source claims, stance, uncertainty and requested scope retained; actual final text and reporting checked against frozen expectation. "
+    },
+    {
+      "id": "personal-03",
+      "verified_failure": false,
+      "rationale": "Source claims, stance, uncertainty and requested scope retained; actual final text and reporting checked against frozen expectation. "
+    },
+    {
+      "id": "casual-01",
+      "verified_failure": false,
+      "rationale": "Source claims, stance, uncertainty and requested scope retained; actual final text and reporting checked against frozen expectation. "
+    },
+    {
+      "id": "casual-02",
+      "verified_failure": false,
+      "rationale": "Source claims, stance, uncertainty and requested scope retained; actual final text and reporting checked against frozen expectation. "
+    },
+    {
+      "id": "casual-03",
+      "verified_failure": false,
+      "rationale": "Source claims, stance, uncertainty and requested scope retained; actual final text and reporting checked against frozen expectation. "
+    },
+    {
+      "id": "product-01",
+      "verified_failure": false,
+      "rationale": "Source claims, stance, uncertainty and requested scope retained; actual final text and reporting checked against frozen expectation. "
+    },
+    {
+      "id": "product-02",
+      "verified_failure": false,
+      "rationale": "Source claims, stance, uncertainty and requested scope retained; actual final text and reporting checked against frozen expectation. "
+    },
+    {
+      "id": "product-03",
+      "verified_failure": false,
+      "rationale": "Source claims, stance, uncertainty and requested scope retained; actual final text and reporting checked against frozen expectation. "
+    },
+    {
+      "id": "ec-supported-contrast-edit",
+      "verified_failure": false,
+      "rationale": "Source claims, stance, uncertainty and requested scope retained; actual final text and reporting checked against frozen expectation. Trust proposition remains and support gap is reported."
+    },
+    {
+      "id": "ec-grounded-reaction-edit",
+      "verified_failure": false,
+      "rationale": "Source claims, stance, uncertainty and requested scope retained; actual final text and reporting checked against frozen expectation. Ranking and 31-row count remain."
+    },
+    {
+      "id": "ec-meaningful-concession-edit",
+      "verified_failure": false,
+      "rationale": "Source claims, stance, uncertainty and requested scope retained; actual final text and reporting checked against frozen expectation. Positive assessment and limitations remain; missing challenge scope reported."
+    },
+    {
+      "id": "ec-earned-reversal-edit",
+      "verified_failure": false,
+      "rationale": "Source claims, stance, uncertainty and requested scope retained; actual final text and reporting checked against frozen expectation. Both all-but-one preparation/testing claims remain."
+    }
+  ]
+}

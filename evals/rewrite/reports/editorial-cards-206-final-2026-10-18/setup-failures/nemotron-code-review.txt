@@ -1,0 +1,77 @@
+Warning: Unknown toolsets: none
+
+[2;3m┌─ Reasoning ──────────────────────────────────────────────────────────────────┐[0m
+[2;3mThe user is asking for a review of Public PR 404 exact reviewed commit 357013b0ceae[0m
+[2;3mae2c111289fed266722598842d58. They want a findings-only independent contract/code[0m
+[2;3m review with no tools, edits, or commands. The report should only include actionable[0m
+[2;3m >=80% confidence defects with file/line and concrete trigger, <=500 words. They want[0m
+[2;3m me to assess source-fidelity, meaningful judgments, scope, mapping accuracy, test[0m
+[2;3m validity and generated distribution compatibility. Focus on code/instructions, not[0m
+[2;3m historical report wording. Historical evaluation failures remain explicitly retained[0m
+[2;3m. Final-source automated editing gate is being executed and is a separate required[0m
+[2;3m decision.[0m
+[2;3m[0m
+[2;3mLet me first understand what this PR contains. Looking at the diff, it seems to be[0m
+[2;3m about editorial decision cards pilot and related changes. Let me analyze the changes[0m
+[2;3m:[0m
+[2;3m[0m
+[2;3m1. CONTRIBUTING.md - Added "Editorial decision-card pilot" section[0m
+[2;3m2. evals/rewrite/editorial-cards-206.json - New file with 263 cases[0m
+[2;3m3. references/patterns.md - Added editorial decision cards and formatting rules[0m
+[2;3m4. scripts/editorial-cards.test.js - New test script[0m
+[2;3m5. scripts/run-tests.js - Added editorial-cards.test.js to SUITES[0m
+[2;3m[0m
+[2;3mThe user wants me to review this PR and find defects with >=80% confidence. Let me[0m
+[2;3m look at what kind of defects might exist.[0m
+[2;3m[0m
+[2;3mLooking at the changes, this seems to be a pilot for editorial decision cards. The[0m
+[2;3m PR adds:[0m
+[2;3m[0m
+[2;3m1. A new section in CONTRIBUTING.md about editorial decision cards[0m
+[2;3m2. A new eval file with 263 test cases[0m
+[2;3m3. Updates to patterns.md with editorial decision cards and formatting rules[0m
+[2;3m4. A new test script[0m
+[2;3m5. Updated test runner[0m
+[2;3m[0m
+[2;3mLet me think about what defects might be present with high confidence:[0m
+[2;3m[0m
+[2;3m1. The eval file has 263 cases - this is a large number. The test script checks various[0m
+[2;3m things including SHA256 hashes of inputs/outputs, which suggests there might be concerns[0m
+[2;3m about test validity or distribution compatibility.[0m
+[2;3m[0m
+[2;3m2. The patterns.md changes add new editorial decision cards with detector types. Need[0m
+[2;3m to check if the detector type mappings are accurate.[0m
+[2;3m[0m
+[2;3m3. The test script has mutation controls that should fail - this is testing the card[0m
+[2;3m contract.[0m
+[2;3m[0m
+[2;3m4. The existing cases reuse fixtures from cases.json - need to check if this is handled[0m
+[2;3m correctly.[0m
+[2;3m[0m
+[2;3m5. The SHA256 hash checking in the test script - this is checking that inputs and[0m
+[2;3m expectations haven't changed from a frozen method.[0m
+[2;3m[0m
+[2;3mLet me look more carefully at the test script to understand what it's validating:[0m
+[2;3m[0m
+[2;3m[0m
+[2;3mThe check function:[0m
+[2;3m- Finds editorial decision cards in the text[0m
+[2;3m- Asserts 12-15 cards (pilot must stay bounded)[0m
+[2;3m- Checks for duplicate IDs[0m
+[2;3m- Verifies each card has Apply, Edit, Keep, Flag a gap labels[0m
+[2;3m- Checks detector mapping is present and types are valid[0m
+[2;3m- Verifies each rule_id has both edit and keep tasks in the fixtures[0m
+[2;3m- Then checks mutations would fail the card contract[0m
+[2;3m- Verifies cards are portable (flatten root includes body)[0m
+[2;3m- Checks existing cases don't expose held-out cases[0m
+[2;3m- Checks SHA256 hashes of inputs/expectations match method-frozen.json[0m
+[2;3m- Checks source snapshots match[0m
+[2;3m- Checks row counts and IDs match[0m
+[2;3m- Checks first/last sentence integrity[0m
+[2;3m- Checks punctuation-only no-ops are exact[0m
+[2;3m- Checks blind review structure[0m
+[2;3m[0m
+[2;3mPotential defects I can identify:[0m
+[2;3m[0m
+[2;3m1. **Test validity concern**: The test script checks SHA256 hashes of input/output[0m
+[2;3m files against a "method-frozen.json". If the method-frozen.json wasn't generated[0m

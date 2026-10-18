@@ -1,0 +1,7 @@
+{
+  "checker": "evals/rewrite/check-detect-audit.cjs",
+  "haiku_raw_status": "two not-grounded parser flags; 38 mutation controls pass",
+  "gpt_raw_status": "no flags; 38 mutation controls pass",
+  "root_adjudication": "Reject the two Haiku parser flags as first-quoted-span extraction limitations. The response quotes source context first, then explicitly identifies robust as Tier 1A under P1 and Moreover as a transition under P2. Both exact catalog terms occur in the source. No invented pattern, severity error or weak standalone finding was verified. Raw red checker output is retained; it is not reported as green. Responses and frozen expectations were not edited.",
+  "scope": "Semantic adjudication of quoted context versus pattern identity; no checker implementation change."
+}

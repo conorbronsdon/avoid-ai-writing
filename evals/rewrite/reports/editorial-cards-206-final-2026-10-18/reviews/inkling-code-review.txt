@@ -1,0 +1,13 @@
+Findings only, >=80% confidence, file/line, concrete trigger.
+
+1. `scripts/editorial-cards.test.js:53-79` references `evals/rewrite/reports/editorial-cards-206-2026-10-15/followup/*` artifacts (`inputs.json`, `sources.json`, `A-responses.json`, etc.) not in PR and asserts frozen SHA-256, scope invariants (`technical-03` first/last sentence exact), and `personal-03` no-op equality. These files are not generated or committed; running `npm test` will throw `ENOENT`.
+
+2. Mapping accuracy / distribution compatibility: `references/patterns.md` cards cite detector keys (`negative-parallelism`, `tier1-clarity`, `tier1`, `tier2`, `uniformity`, `false-concession`, `hedge-stack`, `vague-attribution`, `emotional-flatline`) and `scripts/editorial-cards.test.js:25-29` requires each mapped key exist in `detector/patterns`' `TYPE_LABELS`. The PR does not add those keys; test will fail with `unknown detector type` for any missing label.
+
+3. `references/patterns.md` `ec-earned-reversal` edit example (`We planned...except the one that happened.`) silently drops the second reversal pair (`We tested...Except the path...`). The keep instruction requires preserving "claimed coverage breadth" and "supplied facts"; the partial edit removes a separate claim without noting it. Judgment/scope mismatch with the card's own preservation rule.
+
+Historical failures retained: JSON policy explicitly freezes baseline `3a609fe...`, requires zero new preservation/unnecessary-edit failures, preserves every failure, and denies same-family one-repetition as gate proof (`version 1`/`baseline_commit`).
+
+Source fidelity/protected content: cards preserve attribution (`Mina and Jo`), protected option `--mode detect`, and synthetic provenance; instructions forbid inventing mechanisms/authorship and retain source exceptions. Final automated editing gate remains separate; test only references its outputs.
+
+No edits or commands executed; no tool use performed.

@@ -1,0 +1,13 @@
+**No actionable defects at ≥80% confidence.**
+
+What I checked:
+
+- **Widened regex (line 25):** `` /`([^`]+)`/g `` captures every nonempty backticked token in the `**Detector types:**` line and validates each against `TYPE_LABELS` via `Object.hasOwn`. Uppercase, underscore, and space-containing tokens now reach the check and fail it, so the silent-skip finding is addressed for that line.
+- **New controls (lines 47–48):** `Hollow-Intensifier` and `invented_detector` are not keys in `TYPE_LABELS`, so if the target sentence sits on the mapping line, both mutations throw as intended. Each one still fails loudly if the target string is missing, because `assert.throws` would then fail on the unchanged source.
+- **Control count:** the loop now has 7 mutations, plus the duplicate-ID and orphan-ID assertions, which gives the nine controls named in the success message.
+- **Empty or stray backticks:** a `` `` `` pair cannot yield an empty token. Misaligned matches can produce a space-only token, which fails `TYPE_LABELS` and throws rather than passing silently.
+
+Limits of this review:
+
+- I could not confirm that the `hollow-intensifier … does not cover this word` sentence lives on the `**Detector types:**` line. If it sits elsewhere in the card body, the widened regex never sees it, and mutations 46–48 would not throw. That would be a real defect, but I can't verify it from the supplied code alone. The first check to make is whether `patterns.md` puts that sentence on the mapping line.
+- Line 23 captures only the first line of the mapping (`(.+)$` without the `s` flag). A wrapped mapping continuation would be skipped without error. I have no evidence the cards wrap, so I am not reporting it.

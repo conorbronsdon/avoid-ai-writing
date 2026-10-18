@@ -1,0 +1,27 @@
+{
+  "responseValidated": true,
+  "model": "claude-haiku-5-5",
+  "actualModel": "claude-haiku-5-5",
+  "reviewedSHA": "443ed58f856034a06490233c83f1aafbe1fd216d",
+  "packetSHA256": "8dc7253c0035aba6a50c58222398dac1f7f28000364f5df2938f41c5bd487b44",
+  "usage": {
+    "input_tokens": 62484,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 0
+    },
+    "output_tokens": 5718,
+    "output_tokens_details": {
+      "thinking_tokens": 5050
+    },
+    "service_tier": "standard",
+    "inference_geo": "global",
+    "speed": "standard"
+  },
+  "error": null,
+  "maxTokens": 8192,
+  "stopReason": "end_turn",
+  "responseSHA256": "f1e45b32dbf20333111cc2e3686272f3d502902eb766b7ae23c2aea38804daf1"
+}

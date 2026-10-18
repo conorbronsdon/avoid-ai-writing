@@ -1,0 +1,15 @@
+**Finding 1 (critical-ish, conflicting decision; confidence ~85%)**
+
+- **File/line:** `evals/rewrite/editorial-cards-206.json`, lines 134–141 (`ec-grounded-reaction-edit`), versus `references/patterns.md` in the `ec-grounded-reaction` card's **Keep** bullet.
+- **Defect:** The fixture labels `"The most interesting part: the export has 31 rows."` as `"decision": "edit"`. The pattern card names that exact sentence as a **Keep** example: "The ranking is a supplied judgment, not an empty introduction." The same card's Apply section says removing the frame is allowed only when a bare fact carries the whole meaning, and that a bare fact does not preserve "most interesting." The fixture therefore asks for an edit that the card says must be kept.
+- **Concrete trigger:** Any grader or model that follows the fixture's `edit` label will delete or rewrite the stated ranking. The card's Keep bullet then flags that same output as a preservation failure, so the pilot gives contradictory pass/fail criteria for one input.
+- **Smallest correction:** Change the `ec-grounded-reaction-edit` source to the card's own Edit example, `"What surprised me most was that the export had 31 rows; I expected 40."`, and keep the `"decision": "edit"` label. Leave the current sentence only in the `-keep` slot, or as the Keep example with `"decision": "keep"`. This also makes the Edit fixture match the card's Edit bullet, which the current fixture does not.
+
+**No other finding reaches the 80% threshold** on the supplied text.
+
+- The pilot count (13 cards) is within the test's 12–15 bound, and each card has the four required bullets, a parseable mapping, and both edit and keep fixtures.
+- The mutation checks would fail as intended.
+- `TYPE_LABELS`, `flatten`, `cases.json`, and the `evals/rewrite/reports/...` artifacts are not in the packet, so I cannot verify the hash, `technical-03`, `personal-03`, or `flatten(root).includes(body)` assertions. I am not reporting those as defects.
+- The changed catalog guidance for `ec-earned-reversal` (the replaced "Fix:" line) and the widened `Keep authentic reactions` bullet are policy changes rather than demonstrable contract breaks, so they fall below the threshold.
+
+The final-source automated editing gate is outside this review's scope.

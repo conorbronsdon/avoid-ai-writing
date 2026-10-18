@@ -1,0 +1,11 @@
+Findings (all in `scripts/editorial-cards.test.js`):
+
+**1. `:25` — `none ` prefix disables detector-key validation.** `if (!mapping[1].startsWith('none '))` skips the `TYPE_LABELS` check whenever a mapping merely *starts* with `none `, so `**Detector types:** none except \`invented-detector\`` passes with an invalid key — bypassing the guarantee mutation `:39` exists to protect. Trigger: any `none`-prefixed mapping containing backticked types. Correction: always extract types; require the `none` form only when `types.length === 0`, else validate each key.
+
+**2. `:30–33` — fixture↔card coverage is one-directional.** Cases are filtered *by* card ID, but no assertion checks that every `fixtures.cases[*].rule_id` resolves to a card. A typo'd `rule_id` or a case for a removed card is silently ignored, shrinking paired-task coverage undetected. Correction: after the loop, `assert(fixtures.cases.every(c => ids.includes(c.rule_id)))` plus a uniqueness check on case IDs.
+
+**3. `:15` — card boundary misses `# ` and `#### `+ headings.** The lookahead only terminates bodies on `\n### ` or `\n## `; an h1 or h4–h6 heading after a card is absorbed into its body. Label assertions still pass on the corrupted body; only the flatten-inclusion check might catch it. Correction: `(?=\n\*\*Editorial decision card:|\n#{1,6} |$)`.
+
+**4. `:75` — first-sentence extraction is brittle.** `original.split('. ')[0]` truncates at the *first* `'. '` (decimals, abbreviations) and fails to isolate sentences ending `?`/`!`, so the "untargeted first sentence" guard may verify only a fragment. Correction: `original.match(/^.+?[.!?](?= |$)/)[0]` and compare that prefix.
+
+**Minor:** `:43` calls `flatten(root)` inside the per-card loop (13× redundant work) — hoist. `:44–49` only guards `existing_case_id` linkage; a new fixture `id` colliding with a held-out `existing` ID is unchecked. `:82` assumes review tasks are positional `1..N` rather than matching input task identity.

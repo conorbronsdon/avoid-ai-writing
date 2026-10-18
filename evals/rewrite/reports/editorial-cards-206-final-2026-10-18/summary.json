@@ -1,0 +1,31 @@
+{
+  "source_commit": "4b6939a3ac7f35ca83f5274fd9b858265126812f",
+  "freeze_commit": "6466220cffcc5ee3264cb3cdda6cab691d051257",
+  "final_reviewed_code_commit": "c3d707836b92f04edfd83edb4d351102b7630c51",
+  "completed_editor_batches": {
+    "claude-haiku-5-5": {
+      "core": 8,
+      "repair": 16,
+      "independent_adjudicator": "GPT lead"
+    },
+    "GPT via authenticated Codex CLI (exact model not exposed)": {
+      "core": 8,
+      "repair": 16,
+      "independent_adjudicator": "claude-haiku-5-5"
+    }
+  },
+  "literal_checks": "Both completed core sets pass frozen literal checks and three mutation controls. All 32 repair outputs pass applicable literal invariants.",
+  "semantic_checks": "No verified failure in the completed Haiku/GPT pair under the frozen expectations; model-only judgments.",
+  "additional_failed_editor": "Inkling batch failed both duplicate-key transport and behavior. It remains a concrete counterexample for that editor/harness, not a pass. No all-model compatibility claim.",
+  "supplemental_checker_disagreement": "Haiku context-first detect findings produce two parser flags, independently adjudicated as false flags; raw red output retained.",
+  "validation": [
+    "24 local suites passed; affected card suite rerun after final test-only fix, nine mutation controls pass",
+    "self-scan passed",
+    "generated distributions have zero drift",
+    "plugin and connection validation passed",
+    "two byte-identical plugin archives; clean extraction and bundled-command smoke passed"
+  ],
+  "historical_scope": "Original 96+32 development responses unchanged; historical #322 14/16 result not replaced; no comparative quality or generalization claim.",
+  "gpt_transport": "Exact frozen UTF-8 bytes on binary subprocess stdin; raw byte hashes match the frozen transport note. Earlier ASCII pipes and their assessments are retained but excluded.",
+  "adjudication_commit": "7aad1e662a33bcdfa78fa315e78783a25bc2491b"
+}

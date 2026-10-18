@@ -1,0 +1,9 @@
+{
+  "nvidia/nemotron-3.5-lightning:free": "No completed result; process trees stopped after declared review budgets expired. Partial logs retained.",
+  "google/gemma-4-31b-it:free": "HTTP 429 after provider retries; no model review or editing response.",
+  "google/gemma-4-26b-a4b-it:free": "HTTP 429, including one explicit smaller-packet setup retry; no review.",
+  "opencode-go/mimo-v2.5": "HTTP 401; no additional-family review credit.",
+  "haiku_initial_code_review": "Output cap reached before final text; retained receipt; completed retry uses 8192-token limit.",
+  "haiku_editor_preflight": "First hash check failed before API/network action because Windows wrote CRLF; corrected raw transport hashes retained separately.",
+  "Devin_launcher": "Canonical launcher selected staging/update entries; a task-local copy selected numbered version directories. No canonical setup changes."
+}

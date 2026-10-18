@@ -1,0 +1,17 @@
+{
+  "accepted": [
+    "Haiku: contradictory reaction-edit fixture -> corrected live fixture and byte-exact historical fixture preserved in 2a843f4.",
+    "SWE-2: judgment-only annotations bypassed type-ID checks; orphan/duplicate fixture gaps -> fixed in af839ba.",
+    "Haiku recheck: malformed uppercase/underscore references skipped by restricted regex -> fixed with two controls in c3d7078."
+  ],
+  "rejected": [
+    "Inkling: claimed missing report files; actual committed files exist and all 24 suites pass.",
+    "Inkling: claimed missing TYPE_LABELS; actual keys exist and mapping assertions execute.",
+    "Inkling: claimed earned-reversal card drops second claim; its actual example contains one pair, while the two-pair repair fixture retains both.",
+    "SWE-2: H1/H4 boundary and sentence splitting concerns are speculative for these fixed historical inputs; current catalog uses the expected boundaries and technical-03 has a simple first sentence. No general sentence parser is claimed."
+  ],
+  "final_code_review_sha": "c3d707836b92f04edfd83edb4d351102b7630c51",
+  "final_primary": "claude-haiku-5-5: no actionable defects",
+  "final_complementary": "Devin swe-2-high / reported SWE-2 High: no changes needed",
+  "carry_forward": "Prose, fixture and evaluation sources unchanged after their reviewed commits; later evidence-only commits require hash verification and report review, not relabeling earlier executions."
+}
