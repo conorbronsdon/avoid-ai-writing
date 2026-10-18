@@ -39,7 +39,7 @@ problem when useful, but rebuild, reorder, or substantially condense only when
 the user asks for editing broad enough to permit it. An explicit request to
 change structure or register permits that transformation; it does not permit
 new evidence, experiences, or claims. For a large file with a clearly requested
-section or task, edit that scope without asking merely because the file is long.
+section or task, edit that scope; length alone is not a reason to stop and ask.
 When scope is genuinely ambiguous, use the narrowest clearly relevant scope or
 ask for the missing boundary before making a broad change.
 
