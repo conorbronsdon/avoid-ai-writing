@@ -1,0 +1,24 @@
+{
+  "session_id": "20261018_123946_96c20c",
+  "model": "thinkingmachines/inkling:free",
+  "actual_tool_events": 0,
+  "input_tokens": 34307,
+  "output_tokens": 2428,
+  "status": "failed_batch_transport_and_behavior",
+  "duplicate_keys": [
+    "detect_only",
+    "explicit_transform",
+    "fidelity",
+    "noop",
+    "protected",
+    "source_instruction",
+    "technical_context",
+    "useful_edit"
+  ],
+  "verified_failures": [
+    "useful_edit invents The future is open instead of removing the unsupported closer",
+    "source_instruction first duplicate response reports Moreover removed while retaining it",
+    "no-op adds Changes despite no changes; duplicated final responses omit Verification"
+  ],
+  "credit": "Not a completed eight-scenario gate; retain all duplicates; do not parse last-wins or claim pass."
+}

@@ -1,0 +1,7 @@
+{
+  "reason": "Original Inkling batch emitted duplicate JSON keys and contradictory reports. Retain it as failed; no passing result is inferred. Independently execute the same already frozen scenarios on NVIDIA Nemotron as an additional editor family, then separately assess all failures before deciding merge readiness.",
+  "additional_editor": "nvidia/nemotron-3.5-lightning:free",
+  "unchanged_sources": true,
+  "unchanged_requests_and_expectations": true,
+  "no_relabeling": "This does not make the failed Inkling run pass or establish general compatibility."
+}
