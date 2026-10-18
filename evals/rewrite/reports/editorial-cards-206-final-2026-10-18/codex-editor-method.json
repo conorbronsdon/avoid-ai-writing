@@ -1,0 +1,7 @@
+{
+  "reason": "Free editing routes produced an invalid Inkling batch, a NVIDIA timeout, and Gemma HTTP 429. Preserve all attempts. Complete the missing second editor family through the existing authenticated Codex CLI session on unchanged frozen prompts.",
+  "additional_editor": "GPT family through Codex CLI; exact exposed model and usage retained from execution events",
+  "isolation": "OS temporary cwd, read-only sandbox, ephemeral session, user config and project docs excluded, shell/unified execution/apps/plugins/browser tools disabled, no requested tool calls; reject any actual tool event. No model-output conditions or expected answers supplied.",
+  "adjudication": "Root GPT assesses Haiku outputs; a fresh Haiku session independently assesses GPT outputs. An editor does not sign off its own family output.",
+  "inputs_and_policy_unchanged": true
+}
