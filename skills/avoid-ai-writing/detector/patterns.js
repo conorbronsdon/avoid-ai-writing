@@ -2276,9 +2276,10 @@ const AIDetector = (() => {
     };
   }
 
-  // The analysis contexts analyzeText() accepts. The CLIs import this list
-  // instead of keeping their own copy.
+  // The analysis contexts and source modes analyzeText() accepts. The CLIs
+  // import these lists instead of keeping their own copies.
   const CONTEXT_MODES = Object.freeze(['general', 'technical', 'marketing', 'personal']);
+  const SOURCE_MODES = Object.freeze(['plain', 'rendered-markdown']);
 
   function analyzeText(text, options = {}) {
 
@@ -2295,7 +2296,7 @@ const AIDetector = (() => {
     // Plain remains the compatibility default. Rendered Markdown masks only
     // initial YAML frontmatter and HTML comments; source-hygiene checks for
     // hidden TODO/placeholder comments remain available through plain mode.
-    const VALID_SOURCE_MODES = new Set(['plain', 'rendered-markdown']);
+    const VALID_SOURCE_MODES = new Set(SOURCE_MODES);
     const requestedSourceMode = options.sourceMode === undefined ? 'plain' : options.sourceMode;
     const sourceMode = VALID_SOURCE_MODES.has(requestedSourceMode) ? requestedSourceMode : 'plain';
     const sourceModeFallback = requestedSourceMode !== sourceMode ? requestedSourceMode : undefined;
@@ -3585,6 +3586,7 @@ const AIDetector = (() => {
     SEVERITY_LABELS,
     TYPE_LABELS,
     CONTEXT_MODES,
+    SOURCE_MODES,
   };
 })();
 
