@@ -128,7 +128,7 @@ prose (e.g. Title Case headers and eight technical-legitimate terms: `robust`,
 `streamline`); `marketing` and `personal` are accepted and reported in
 `stats.contextMode`, but currently score the same as `general`.
 Invalid modes fall back to `general` and set `stats.contextModeFallback` to the
-value you passed.
+value you passed. The accepted modes are exported as `CONTEXT_MODES`.
 
 The skill's context profiles map to `contextMode` as follows:
 
@@ -157,7 +157,8 @@ sentence-highlight offsets still address the original source. The result
 reports `sourceMode`, `sourceModeFallback`, `maskedFrontmatter`, and
 `maskedHtmlComments` in `stats`. When an explicit invalid source mode falls
 back to `plain`, `sourceModeFallback` retains the requested value, including
-falsy values; without a fallback it is `undefined`.
+falsy values; without a fallback it is `undefined`. The accepted modes are
+exported as `SOURCE_MODES`.
 
 Comment contents are fully excluded in rendered mode. Use plain mode or a
 source-hygiene linter when TODO placeholders inside comments should still be

@@ -10,6 +10,7 @@ All notable changes to this project are documented here.
 
 - Add editorial decision cards to selected existing rules, with stable IDs, partial detector mappings, applicability conditions, and edit/keep/gap examples. Preserve subjective judgments and report unresolved claim scope. Keep the full catalog mandatory in directory and portable installations; no detector API, loading default, or category count changes (#206).
 - Reworded the large-file scope sentence in the editing contract so it no longer reads as "without asking" to static skill scanners; the meaning is unchanged. Documented known scanner false positives in `SUPPORT.md`.
+- The detector now exports `CONTEXT_MODES` and `SOURCE_MODES`, the frozen lists of modes `analyzeText()` accepts. The CLIs read them instead of keeping their own copies (#413, #414).
 
 ### Fixed
 
