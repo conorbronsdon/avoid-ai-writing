@@ -29,7 +29,7 @@ Examples:
   npx --package avoid-ai-writing-detector avoid-ai-writing --source-mode rendered-markdown -- --draft.md
 `;
 
-const CONTEXTS = ["general", "technical", "marketing", "personal"];
+const CONTEXTS = AIDetector.CONTEXT_MODES;
 const SOURCE_MODES = ["plain", "rendered-markdown"];
 
 function parseArgs(argv) {

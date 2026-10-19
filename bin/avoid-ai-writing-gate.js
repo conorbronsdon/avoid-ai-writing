@@ -25,7 +25,7 @@ Examples:
   avoid-ai-writing-gate --context technical README.md docs/guide.md
 `;
 
-const CONTEXTS = ["general", "technical", "marketing", "personal"];
+const CONTEXTS = AIDetector.CONTEXT_MODES;
 const SOURCE_MODES = ["plain", "rendered-markdown"];
 
 function parseArgs(argv) {

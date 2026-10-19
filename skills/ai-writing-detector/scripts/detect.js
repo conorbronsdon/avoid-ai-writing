@@ -27,10 +27,7 @@ Examples:
   node scripts/detect.js --file path/to/draft.md --source-mode rendered-markdown
 `;
 
-// Must stay in step with VALID_CONTEXT_MODES in patterns.js and CONTEXTS in
-// bin/avoid-ai-writing.js: the bundled script has to accept every context the
-// root CLI accepts, or equivalent invocations stop agreeing.
-const CONTEXTS = ["general", "technical", "marketing", "personal"];
+const CONTEXTS = AIDetector.CONTEXT_MODES;
 const SOURCE_MODES = ["plain", "rendered-markdown"];
 
 function parseArgs(argv) {

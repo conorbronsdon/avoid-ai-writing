@@ -40,10 +40,9 @@ fs.writeFileSync(
 // points. The root CLI takes a positional path, detect.js takes --file; that
 // difference is deliberate and stays.
 //
-// Every context the shared detector accepts is exercised here, because the
-// bundled parser is a second copy of the root CLI's validation: a context the
-// root CLI accepts but detect.js rejects is a parity break that only shows up
-// on the invocation that uses it.
+// Every context the shared detector accepts is exercised here. Both parsers
+// read the engine's CONTEXT_MODES, and this list stays literal on purpose: if
+// a context is dropped from the engine, the test still asks for it and fails.
 const CONTEXTS = ["general", "technical", "marketing", "personal"];
 
 for (const context of CONTEXTS) {

@@ -2276,13 +2276,17 @@ const AIDetector = (() => {
     };
   }
 
+  // The analysis contexts analyzeText() accepts. The CLIs import this list
+  // instead of keeping their own copy.
+  const CONTEXT_MODES = Object.freeze(['general', 'technical', 'marketing', 'personal']);
+
   function analyzeText(text, options = {}) {
 
     if (typeof text !== 'string') {
       throw new TypeError('analyzeText(text): argument must be a string');
     }
 
-    const VALID_CONTEXT_MODES = new Set(['general', 'technical', 'marketing', 'personal']);
+    const VALID_CONTEXT_MODES = new Set(CONTEXT_MODES);
     const requestedMode = options.contextMode === undefined ? 'general' : options.contextMode;
     const contextMode = VALID_CONTEXT_MODES.has(requestedMode) ? requestedMode : 'general';
     const contextModeFallback = requestedMode !== contextMode ? requestedMode : null;
@@ -3580,6 +3584,7 @@ const AIDetector = (() => {
     getColor,
     SEVERITY_LABELS,
     TYPE_LABELS,
+    CONTEXT_MODES,
   };
 })();
 
