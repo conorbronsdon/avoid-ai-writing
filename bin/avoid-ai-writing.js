@@ -30,7 +30,7 @@ Examples:
 `;
 
 const CONTEXTS = AIDetector.CONTEXT_MODES;
-const SOURCE_MODES = ["plain", "rendered-markdown"];
+const SOURCE_MODES = AIDetector.SOURCE_MODES;
 
 function parseArgs(argv) {
   const options = { help: false, context: "general", sourceMode: "plain", files: [] };

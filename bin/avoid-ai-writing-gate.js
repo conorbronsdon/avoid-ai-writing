@@ -26,7 +26,7 @@ Examples:
 `;
 
 const CONTEXTS = AIDetector.CONTEXT_MODES;
-const SOURCE_MODES = ["plain", "rendered-markdown"];
+const SOURCE_MODES = AIDetector.SOURCE_MODES;
 
 function parseArgs(argv) {
   const options = { help: false, json: false, glob: null, threshold: 6, context: "technical", sourceMode: "rendered-markdown", files: [] };
