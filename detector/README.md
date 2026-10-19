@@ -129,6 +129,7 @@ prose (e.g. Title Case headers and eight technical-legitimate terms: `robust`,
 `stats.contextMode`, but currently score the same as `general`.
 Invalid modes fall back to `general` and set `stats.contextModeFallback` to the
 value you passed.
+`AIDetector.CONTEXT_MODES` exports the supported modes as a frozen array.
 
 The skill's context profiles map to `contextMode` as follows:
 
@@ -158,6 +159,7 @@ reports `sourceMode`, `sourceModeFallback`, `maskedFrontmatter`, and
 `maskedHtmlComments` in `stats`. When an explicit invalid source mode falls
 back to `plain`, `sourceModeFallback` retains the requested value, including
 falsy values; without a fallback it is `undefined`.
+`AIDetector.SOURCE_MODES` exports the supported modes as a frozen array.
 
 Comment contents are fully excluded in rendered mode. Use plain mode or a
 source-hygiene linter when TODO placeholders inside comments should still be

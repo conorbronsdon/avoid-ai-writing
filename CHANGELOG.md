@@ -8,6 +8,7 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- Export the supported detector modes as frozen `AIDetector.CONTEXT_MODES` and `AIDetector.SOURCE_MODES` arrays. `analyzeText()`, the scoring and gate CLIs, and the bundled detector CLI all validate `--context` and `--source-mode` against them, so the lists can no longer drift; the values and their order are unchanged (#413, #414).
 - Add editorial decision cards to selected existing rules, with stable IDs, partial detector mappings, applicability conditions, and edit/keep/gap examples. Preserve subjective judgments and report unresolved claim scope. Keep the full catalog mandatory in directory and portable installations; no detector API, loading default, or category count changes (#206).
 - Reworded the large-file scope sentence in the editing contract so it no longer reads as "without asking" to static skill scanners; the meaning is unchanged. Documented known scanner false positives in `SUPPORT.md`.
 
