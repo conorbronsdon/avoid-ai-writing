@@ -146,11 +146,13 @@ only **0.92 similar** to its currently published counterpart, and five of the
 twenty-five fall below 0.90. Measuring "his pre-2023 writing" against pages
 edited in 2025 would have measured the wrong thing.
 
-**One documentation source**, [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259),
-is included as a first `docs` seed. It is a pre-LLM, human-authored
-standards-track document with a named editor and a stable IETF publication
-record. It is useful for checking that the fetch-and-hash path handles a
-technical document, but one source is nowhere near a register-level sample.
+**Two documentation sources** are included as `docs` seeds:
+[RFC 8259](https://www.rfc-editor.org/rfc/rfc8259), a standards-track document
+with a named editor, and [RFC 4180](https://www.rfc-editor.org/rfc/rfc4180), an
+Informational RFC with a single named author. Both are pre-LLM, human-authored
+documents with a stable IETF publication record. They are useful for checking
+that the fetch-and-hash path handles technical documents, but two sources are
+nowhere near a register-level sample.
 
 **One conversational source**, a 1995 message from the public
 [W3C `www-talk` archive](https://lists.w3.org/Archives/Public/www-talk/1995MayJun/0026.html),

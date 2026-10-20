@@ -967,6 +967,28 @@
       "words": 3601
     },
     {
+      "id": "rfc-4180-csv-2005",
+      "title": "Common Format and MIME Type for Comma-Separated Values (CSV) Files",
+      "author": "Yakov Shafranovich",
+      "year": 2005,
+      "register": "docs",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://www.rfc-editor.org/rfc/rfc4180.txt",
+        "license": "Copyright (C) The Internet Society (2005); subject to the rights, licenses and restrictions contained in BCP 78"
+      },
+      "slice": {
+        "after": "1.  Introduction",
+        "maxWords": 6000
+      },
+      "note": "An Informational RFC with a single named author, published before the IETF Trust Legal Provisions. The RFC header, title, Abstract, and table of contents are front matter; measurement starts at the §1 body heading (two spaces; the table-of-contents entry has one) so only the body is hashed.",
+      "added": "2026-10-19",
+      "class": "human",
+      "sha256": "a738804360c0de38b0965d69534604547d7162d01164b9faaad148e70b0f41f7",
+      "words": 1549
+    },
+    {
       "id": "w3c-www-talk-session-tracking-1995",
       "title": "Re: Session tracking",
       "author": "Nathaniel Borenstein",
