@@ -457,6 +457,8 @@ test('adversarial Markdown scans stay within a bounded time', () => {
     ['heading tab run', (n) => `## 1.1.1${'\t'.repeat(n)}— x\n${ordinary}`, 20000],
     ['long version digits', (n) => `## 1.1.${'1'.repeat(n)}]x — 2026-01-01\n${ordinary}`, 64000],
     ['indented block run', (n) => `- ${' '.repeat(n)}X\rY\n${ordinary}`, 10000],
+    ['table delimiter tab run', (n) => `${ordinary}\n-|-${'\t'.repeat(n)}x`, 4000],
+    ['thematic break tab run', (n) => `${ordinary}\n***${'\t'.repeat(n)}x`, 4000],
   ];
   for (const [name, build, base] of attacks) {
     const { small, large } = timeScaling(build, base);
