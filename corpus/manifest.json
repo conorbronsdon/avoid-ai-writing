@@ -1009,6 +1009,28 @@
       "class": "human",
       "sha256": "f1cad402e01e77b3e570dd9b6a44828e339d9808f59b20182ca12842e4b53286",
       "words": 346
+    },
+    {
+      "id": "w3c-www-talk-cgi-spec-1995",
+      "title": "Re: CGI spec revisited",
+      "author": "Brian Behlendorf",
+      "year": 1995,
+      "date": "1995-05-03",
+      "register": "conversational",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://lists.w3.org/Archives/Public/www-talk/1995MayJun/0027.html",
+        "license": "Unverified rights status; author retained; not redistributed",
+        "html": {
+          "selector": "main"
+        }
+      },
+      "note": "A pre-LLM public mailing-list reply; the archive preserves the author, date, thread context, and message body. The date is the header's local date (Wed, 3 May 1995 20:30:03 -0700 PDT); the archive indexes it under its UTC date, 1995-05-04.",
+      "added": "2026-10-19",
+      "class": "human",
+      "sha256": "b53acf9f7834d4d8c32edeec00498c39c109acf8b3b05c7e7a95e9b53f04587b",
+      "words": 781
     }
   ]
 }
