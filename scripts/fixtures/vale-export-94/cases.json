@@ -1,0 +1,15 @@
+{
+  "type": "ai-utm-source",
+  "cases": [
+    { "id": "utm-positive", "text": "See https://example.test/?utm_source=chatgpt.com for the complete notes about this release today.", "raw": true, "detector": true },
+    { "id": "utm-negative", "text": "See https://example.test/?utm_source=newsletter for the complete notes about this release today.", "raw": false, "detector": false },
+    { "id": "referrer-positive", "text": "See https://example.test/?referrer=claude.ai for the complete notes about this release today.", "raw": true, "detector": true },
+    { "id": "referrer-negative", "text": "See https://example.test/?referrer=example.ai for the complete notes about this release today.", "raw": false, "detector": false },
+    { "id": "case-and-ampersand", "text": "See https://example.test/?q=notes&UTM_SOURCE=OPENAI for the complete notes about this release today.", "raw": true, "detector": true },
+    { "id": "boundary-negative", "text": "See https://example.test/?utm_source=chatgptx for the complete notes about this release today.", "raw": false, "detector": false },
+    { "id": "prefix-residue", "text": "See https://example.test/?utm_source=chatgpt-other for the complete notes about this release today.", "raw": true, "detector": true },
+    { "id": "short-document", "text": "https://example.test/?utm_source=chatgpt.com", "raw": true, "detector": false },
+    { "id": "quoted", "text": "The archived source says \"https://example.test/?utm_source=chatgpt.com\" and the team kept that quotation in the release notes.", "raw": true, "detector": false },
+    { "id": "normalized", "text": "See https://example.test/?utm_source=chat\u200bgpt.com for the complete notes about this release today.", "raw": false, "detector": true }
+  ]
+}

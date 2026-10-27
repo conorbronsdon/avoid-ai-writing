@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "0.1.0-draft",
+  "source": {
+    "commit": "61a539f914495c4d12118b4ea8a3706535f0fb05",
+    "path": "detector/patterns.js",
+    "sha256LF": "37d6b022821f592b062e421c639789861b692e22388f65e8db0692154f7a59fd"
+  },
+  "scope": "sample-only",
+  "rules": [
+    {
+      "type": "ai-utm-source",
+      "semantics": "raw-js-regex-only",
+      "valeStatus": "unverified",
+      "patterns": [
+        {
+          "source": "[?&]utm_source=(?:chatgpt|openai|copilot|claude|grok|gemini|perplexity)(?:\\.com|\\.ai)?\\b",
+          "flags": "gi"
+        },
+        {
+          "source": "[?&]referrer=(?:chatgpt|copilot|grok|claude|gemini|perplexity)\\.(?:com|ai)\\b",
+          "flags": "gi"
+        }
+      ]
+    }
+  ]
+}
