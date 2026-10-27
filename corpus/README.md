@@ -350,6 +350,11 @@ interval and the n, and fails the register test outright.
 
 ## Adding to it
 
+For bounded source proposals, see the [corpus intake task drafts](INTAKE_TASKS.md)
+and their offline fetch/hash example. Check live claims before starting. Public
+newsletter archives may supply email evidence; private correspondence must not
+be submitted, including as hashes.
+
 Public-domain or permissively licensed source, fetchable by URL:
 
 ```jsonc

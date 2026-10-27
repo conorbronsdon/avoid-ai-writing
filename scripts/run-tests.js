@@ -14,6 +14,7 @@ const SUITES = [
   'detector/categories.test.js',
   'detector/validate.test.js',
   'scripts/corpus.test.js',
+  'scripts/corpus-intake-example.test.js',
   'scripts/check-style.test.js',
   'scripts/normalize-quotes.test.js',
   'scripts/verify-release-versions.test.js',

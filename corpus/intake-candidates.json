@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "status": "Draft candidates. Slice markers and the newsletter selector were exercised live on 2026-10-27 (see INTAKE_TASKS.md); upstream metadata, rights and provenance remain unverified. Not a measurement manifest.",
+  "documents": [
+    {
+      "id": "rfc-2119-keywords-1997",
+      "title": "Key words for use in RFCs to Indicate Requirement Levels",
+      "author": "Scott Bradner",
+      "year": 1997,
+      "register": "docs",
+      "class": "human",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://www.rfc-editor.org/rfc/rfc2119.txt",
+        "license": "Unverified offline; inspect this RFC's actual copyright and permissions notice"
+      },
+      "slice": { "after": "1. MUST", "maxWords": 6000 }
+    },
+    {
+      "id": "rfc-3986-uri-2005",
+      "title": "Uniform Resource Identifier (URI): Generic Syntax",
+      "author": "Tim Berners-Lee, Roy Fielding, Larry Masinter",
+      "year": 2005,
+      "register": "docs",
+      "class": "human",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://www.rfc-editor.org/rfc/rfc3986.txt",
+        "license": "Unverified offline; inspect this RFC's actual copyright and BCP 78 notice"
+      },
+      "slice": { "after": "URI) provides a simple and extensible", "maxWords": 6000 }
+    },
+    {
+      "id": "crypto-gram-1998-05-15",
+      "title": "CRYPTO-GRAM, May 15, 1998",
+      "author": "Bruce Schneier",
+      "year": 1998,
+      "register": "email",
+      "class": "human",
+      "authorship": "human-pre-llm",
+      "source": {
+        "type": "url",
+        "url": "https://www.schneier.com/crypto-gram/archives/1998/0515.html",
+        "license": "Unverified rights status; author retained; not redistributed",
+        "html": { "selector": "article" }
+      },
+      "slice": { "maxWords": 6000 }
+    }
+  ]
+}
