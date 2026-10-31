@@ -250,18 +250,26 @@ const AIDetectorValidate = (() => {
    * list are counted.
    */
   function extractIndentedBlocks(text) {
-    const lines = text.split('\n');
+    // Fenced content is blanked so its indented lines don't count.
+    const chars = text.split('');
+    for (const [start, end] of fenceSpans(text)) {
+      for (let i = start; i < end; i += 1) if (chars[i] !== '\n') chars[i] = ' ';
+    }
+    const lines = chars.join('').split('\n');
     const blocks = [];
     let current = null;
     let inList = false;
+    let prevBlank = true;
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       const isIndented = /^(?: {4}|\t)\S/.test(line);
       const isBlank = /^\s*$/.test(line);
       if (/^\s*(?:[-*+]|\d+[.)])\s/.test(line)) inList = true;
       else if (!isBlank && !isIndented) inList = false;
+      const wasBlank = prevBlank;
+      prevBlank = isBlank;
 
-      if (isIndented && !inList) {
+      if (isIndented && !inList && (current !== null || wasBlank)) {
         if (current === null) current = [];
         current.push(line);
       } else if (!isBlank && current !== null) {

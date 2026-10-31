@@ -431,6 +431,15 @@ test('four-space list continuation is not treated as code', () => {
   assert.equal(r.stats.indentedBlocks, 0);
 });
 
+test('indented lines in fenced code or paragraph continuations are not indented blocks', () => {
+  const fenced = 'Intro.\n\n```py\ndef f():\n\n    return 1\n```\n';
+  assert.equal(validate(fenced, fenced, { skipResidual: true }).stats.indentedBlocks, 0);
+  const lazy = 'A paragraph\n    lazily continued.\n';
+  assert.equal(validate(lazy, lazy, { skipResidual: true }).stats.indentedBlocks, 0);
+  const code = 'Run this:\n\n    npm test\n';
+  assert.equal(validate(code, code, { skipResidual: true }).stats.indentedBlocks, 1);
+});
+
 test('URL inside a code block is not double-counted as prose', () => {
   const before = '```sh\ncurl https://example.com/api\n```\n\nPlain body text.';
   const after = '```sh\ncurl https://example.com/api\n```\n\nPlain body copy.';
