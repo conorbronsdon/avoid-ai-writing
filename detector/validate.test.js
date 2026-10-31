@@ -438,6 +438,8 @@ test('indented lines in fenced code or paragraph continuations are not indented 
   assert.equal(validate(lazy, lazy, { skipResidual: true }).stats.indentedBlocks, 0);
   const code = 'Run this:\n\n    npm test\n';
   assert.equal(validate(code, code, { skipResidual: true }).stats.indentedBlocks, 1);
+  const split = 'Run:\n\n    one\n\n```\nx\n```\n\n    two\n';
+  assert.equal(validate(split, split, { skipResidual: true }).stats.indentedBlocks, 2);
 });
 
 test('URL inside a code block is not double-counted as prose', () => {
