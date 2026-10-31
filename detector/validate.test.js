@@ -431,6 +431,40 @@ test('four-space list continuation is not treated as code', () => {
   assert.equal(r.stats.indentedBlocks, 0);
 });
 
+test('indented lines in fenced code or paragraph continuations are not indented blocks', () => {
+  const fenced = 'Intro.\n\n```py\ndef f():\n\n    return 1\n```\n';
+  assert.equal(validate(fenced, fenced, { skipResidual: true }).stats.indentedBlocks, 0);
+  const lazy = 'A paragraph\n    lazily continued.\n';
+  assert.equal(validate(lazy, lazy, { skipResidual: true }).stats.indentedBlocks, 0);
+  const code = 'Run this:\n\n    npm test\n';
+  assert.equal(validate(code, code, { skipResidual: true }).stats.indentedBlocks, 1);
+  const split = 'Run:\n\n    one\n\n```\nx\n```\n\n    two\n';
+  assert.equal(validate(split, split, { skipResidual: true }).stats.indentedBlocks, 2);
+});
+
+test('a tab-indented fence marker counts as an indented block', () => {
+  const tabbed = 'Intro.\n\n\t```\n';
+  assert.equal(validate(tabbed, tabbed, { skipResidual: true }).stats.indentedBlocks, 1);
+});
+
+test('top-level fences end list context before later indented code', () => {
+  for (const marker of ['```', '~~~']) {
+    for (const [item, indent] of [['- item', ''], ['- item', ' '], ['10. item', '   '], ['- first\n10. item', '  ']]) {
+      const text = `${item}\n\n${indent}${marker}js\nx\n${indent}${marker}\n\n    npm test\n`;
+      assert.equal(validate(text, text, { skipResidual: true }).stats.indentedBlocks, 1);
+    }
+  }
+});
+
+test('fences nested in a list keep later list continuations out of code stats', () => {
+  for (const marker of ['```', '~~~']) {
+    for (const item of ['- item', '- item\n  10. nested']) {
+      const text = `${item}\n\n  ${marker}js\n  x\n  ${marker}\n\n    continuation\n`;
+      assert.equal(validate(text, text, { skipResidual: true }).stats.indentedBlocks, 0);
+    }
+  }
+});
+
 test('URL inside a code block is not double-counted as prose', () => {
   const before = '```sh\ncurl https://example.com/api\n```\n\nPlain body text.';
   const after = '```sh\ncurl https://example.com/api\n```\n\nPlain body copy.';

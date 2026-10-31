@@ -14,6 +14,7 @@ All notable changes to this project are documented here.
 
 ### Fixed
 
+- The preservation validator's `stats.indentedBlocks` no longer counts indented lines inside fenced code or four-space paragraph continuations. Only indented blocks that follow a blank line outside a list are counted, as documented. Top-level fences end preceding list context; fences nested in a list preserve it.
 - Remove polynomial backtracking from the sentence-unit regex in `normalizeText()`. A long tab or space run after a Markdown table delimiter (`-|-`) or thematic break (`***`, `___`) made `analyzeText()` take seconds on a 64 KB input, before the word limit applied. Matching is unchanged; both shapes are now in the bounded-time test (CodeQL `js/polynomial-redos`).
 - Treat the smart-punctuation co-occurrence finding as a low-priority style check in plain mode and omit it in rendered-Markdown mode. House-style typography no longer changes authorship scores, probabilities, confidence, or classifications, including the separate classifier corroborator. Keep the public type and other pattern checks (#351).
 
