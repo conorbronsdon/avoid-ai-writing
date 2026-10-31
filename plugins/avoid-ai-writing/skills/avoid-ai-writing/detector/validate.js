@@ -250,20 +250,23 @@ const AIDetectorValidate = (() => {
    * list are counted.
    */
   function extractIndentedBlocks(text) {
-    // Fenced content is masked so its indented lines don't count.
-    const chars = text.split('');
-    for (const [start, end] of fenceSpans(text)) {
-      for (let i = start; i < end; i += 1) if (chars[i] !== '\n') chars[i] = '\0';
-    }
-    const lines = chars.join('').split('\n');
+    // Fenced lines are skipped so their indented content doesn't count. A tab
+    // before the marker makes the line indented code, so that span is kept.
+    const spans = fenceSpans(text).filter(([start]) => !/^ {0,3}\t/.test(text.slice(start, start + 4)));
+    const lines = text.split('\n');
     const blocks = [];
     let current = null;
     let inList = false;
     let prevBlank = true;
+    let lineStart = 0;
+    let s = 0;
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
+      const start = lineStart;
+      lineStart += line.length + 1;
+      while (s < spans.length && spans[s][1] < start) s++;
       // A fence ends any open block and, like a blank line, may precede a new one.
-      if (line.includes('\0')) {
+      if (s < spans.length && spans[s][0] <= start) {
         if (current !== null) blocks.push(current.join('\n'));
         current = null;
         prevBlank = true;

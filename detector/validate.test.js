@@ -442,6 +442,11 @@ test('indented lines in fenced code or paragraph continuations are not indented 
   assert.equal(validate(split, split, { skipResidual: true }).stats.indentedBlocks, 2);
 });
 
+test('a tab-indented fence marker counts as an indented block', () => {
+  const tabbed = 'Intro.\n\n\t```\n';
+  assert.equal(validate(tabbed, tabbed, { skipResidual: true }).stats.indentedBlocks, 1);
+});
+
 test('URL inside a code block is not double-counted as prose', () => {
   const before = '```sh\ncurl https://example.com/api\n```\n\nPlain body text.';
   const after = '```sh\ncurl https://example.com/api\n```\n\nPlain body copy.';
