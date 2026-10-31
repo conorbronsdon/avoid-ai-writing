@@ -257,6 +257,8 @@ const AIDetectorValidate = (() => {
     const blocks = [];
     let current = null;
     let inList = false;
+    let listContentIndent = 0;
+    let listMarkerIndent = 0;
     let prevBlank = true;
     let lineStart = 0;
     let s = 0;
@@ -267,6 +269,12 @@ const AIDetectorValidate = (() => {
       while (s < spans.length && spans[s][1] < start) s++;
       // A fence ends any open block and, like a blank line, may precede a new one.
       if (s < spans.length && spans[s][0] <= start) {
+        // A fence outside the list's content indentation ends that list.
+        // Inspect only the opener: code inside a nested fence is not prose.
+        if (start === spans[s][0] && line.match(/^ */)[0].length < listContentIndent) {
+          inList = false;
+          listContentIndent = 0;
+        }
         if (current !== null) blocks.push(current.join('\n'));
         current = null;
         prevBlank = true;
@@ -274,8 +282,22 @@ const AIDetectorValidate = (() => {
       }
       const isIndented = /^(?: {4}|\t)\S/.test(line);
       const isBlank = /^\s*$/.test(line);
-      if (/^\s*(?:[-*+]|\d+[.)])\s/.test(line)) inList = true;
-      else if (!isBlank && !isIndented) inList = false;
+      const listMarker = line.match(/^([ \t]*(?:[-*+]|\d+[.)]))([ \t]+)/);
+      if (listMarker) {
+        const columns = (value) => [...value].reduce((col, char) => char === '\t' ? col + 4 - col % 4 : col + 1, 0);
+        const markerEnd = columns(listMarker[1]);
+        const padding = columns(listMarker[0]) - markerEnd;
+        const contentIndent = markerEnd + (padding > 4 ? 1 : padding);
+        const markerIndent = columns(line.match(/^[ \t]*/)[0]);
+        if (!inList || markerIndent <= listMarkerIndent) {
+          listContentIndent = contentIndent;
+          listMarkerIndent = markerIndent;
+        }
+        inList = true;
+      } else if (!isBlank && !isIndented) {
+        inList = false;
+        listContentIndent = 0;
+      }
       const wasBlank = prevBlank;
       prevBlank = isBlank;
 

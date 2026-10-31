@@ -447,6 +447,24 @@ test('a tab-indented fence marker counts as an indented block', () => {
   assert.equal(validate(tabbed, tabbed, { skipResidual: true }).stats.indentedBlocks, 1);
 });
 
+test('top-level fences end list context before later indented code', () => {
+  for (const marker of ['```', '~~~']) {
+    for (const [item, indent] of [['- item', ''], ['- item', ' '], ['10. item', '   '], ['- first\n10. item', '  ']]) {
+      const text = `${item}\n\n${indent}${marker}js\nx\n${indent}${marker}\n\n    npm test\n`;
+      assert.equal(validate(text, text, { skipResidual: true }).stats.indentedBlocks, 1);
+    }
+  }
+});
+
+test('fences nested in a list keep later list continuations out of code stats', () => {
+  for (const marker of ['```', '~~~']) {
+    for (const item of ['- item', '- item\n  10. nested']) {
+      const text = `${item}\n\n  ${marker}js\n  x\n  ${marker}\n\n    continuation\n`;
+      assert.equal(validate(text, text, { skipResidual: true }).stats.indentedBlocks, 0);
+    }
+  }
+});
+
 test('URL inside a code block is not double-counted as prose', () => {
   const before = '```sh\ncurl https://example.com/api\n```\n\nPlain body text.';
   const after = '```sh\ncurl https://example.com/api\n```\n\nPlain body copy.';
