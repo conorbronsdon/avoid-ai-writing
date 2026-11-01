@@ -35,6 +35,23 @@ t('latinAbbrev:parentheses flags outside parens, not inside (must-not-fire)', ()
   assert.strictEqual(check('Retry a few times (e.g., 3).', { latinAbbrev: 'parentheses' }).hard.length, 0);
 });
 
+// --- punctuation bans (hard): colons, semicolons, emDash:never ---
+t('colons:never flags a prose colon; times, ratios, URLs, code pass (must-not-fire)', () => {
+  assert.ok(check('I learned one thing: evidence matters.', { colons: 'never' }).hard.some((x) => x.rule === 'colon-not-allowed'));
+  const clean = 'We met at 10:30 and mixed it 3:1. See https://example.com and run `a:b` later.';
+  assert.strictEqual(check(clean, { colons: 'never' }).hard.length, 0);
+  assert.strictEqual(check('I learned one thing: evidence matters.', { colons: 'any' }).hard.length, 0);
+});
+t('semicolons:never flags a prose semicolon; HTML entities and code pass (must-not-fire)', () => {
+  assert.ok(check('The plan was cut; the gain was never measured.', { semicolons: 'never' }).hard.some((x) => x.rule === 'semicolon-not-allowed'));
+  assert.strictEqual(check('Salt &amp; pepper, then `a; b` in code.', { semicolons: 'never' }).hard.length, 0);
+});
+t('emDash:never is hard; emDash:sparing stays advisory', () => {
+  const text = 'Three tools — Scopus, PubMed, IEEE — were used.';
+  assert.ok(check(text, { emDash: 'never' }).hard.some((x) => x.rule === 'em-dash-not-allowed'));
+  assert.strictEqual(check(text, { emDash: 'sparing' }).hard.length, 0);
+});
+
 // --- heading case is ADVISORY now (proper nouns make it undecidable) ---
 t('a title-case heading is advisory under headings:sentence, never hard', () => {
   const r = check('# Configure Your Retries\n\ntext', { headings: 'sentence' });

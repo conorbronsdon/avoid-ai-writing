@@ -67,7 +67,9 @@ A config is JSON with two parts:
 | `quotes` | `straight` \| `curly` | **hard** — flags the wrong mark form in prose |
 | `latinAbbrev` | `never` \| `parentheses` \| `any` | **hard** — `never` flags any `e.g.`/`i.e.`; `parentheses` flags them outside parentheses; `any` is unchecked |
 | `headings` | `sentence` \| `title` | advisory — proper nouns make sentence vs. title case ambiguous, so it can't be verified deterministically |
-| `emDash` | `sparing` \| `deliberate` | advisory — `sparing` flags a rate over ~1 per 1,000 words; `deliberate` is unchecked |
+| `emDash` | `sparing` \| `deliberate` \| `never` | `never` is **hard** and flags any em dash in prose; `sparing` is advisory and flags a rate over ~1 per 1,000 words; `deliberate` is unchecked |
+| `colons` | `never` \| `any` | **hard** — `never` flags any colon in prose, except clock times and ratios (`10:30`, `3:1`) and URL schemes; `any` is unchecked |
+| `semicolons` | `never` \| `any` | **hard** — `never` flags any semicolon in prose, except HTML entities (`&amp;`); `any` is unchecked |
 | `spellNumbersUpTo` | number | advisory — flags numerals at or below the threshold in prose |
 | `serialComma` | `true` \| `false` | model-applied only; not machine-checked |
 
