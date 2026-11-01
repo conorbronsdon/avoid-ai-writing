@@ -9,9 +9,10 @@
  * Exit codes: 0 clean, 1 a hard violation, 2 a tool/usage error (missing or unreadable
  * config, no mechanics). Unrecognized config keys/values are surfaced as warnings.
  *
- * Hard-checkable mechanics: quotes, latinAbbrev. Heading case, em-dash rate, and number
- * spelling are ADVISORY (heading case can't be verified deterministically — proper nouns
- * make sentence and title case ambiguous). serialComma is declared but model-applied only.
+ * Hard-checkable mechanics: quotes, latinAbbrev, colons, semicolons, and emDash "never".
+ * Heading case, the em-dash "sparing" rate, and number spelling are ADVISORY (heading case
+ * can't be verified deterministically — proper nouns make sentence and title case
+ * ambiguous). serialComma is declared but model-applied only.
  * See examples/README.md. Skipped before checking: frontmatter (only when it closes), code
  * (fenced and inline), and markdown link destinations, link titles, and reference-definition
  * tails, since a link title is delimited with straight quotes as SYNTAX.
@@ -26,6 +27,7 @@
 const fs = require('fs');
 const path = require('path');
 const { markdownProse } = require('./markdown-prose.js');
+const htmlEntityNames = require('./html-entity-names.js');
 
 /**
  * Resolve a --config argument to a file path. The decision is by SHAPE, not by what
@@ -50,7 +52,9 @@ const KNOWN = {
   quotes: ['straight', 'curly'],
   headings: ['sentence', 'title'],
   latinAbbrev: ['parentheses', 'never', 'any'],
-  emDash: ['sparing', 'deliberate'],
+  emDash: ['sparing', 'deliberate', 'never'],
+  colons: ['never', 'any'],
+  semicolons: ['never', 'any'],
   spellNumbersUpTo: 'number',
   serialComma: 'boolean',
 };
@@ -121,6 +125,38 @@ function check(text, mechanics) {
   if (m.emDash === 'sparing') {
     const em = (joined.match(/—/g) || []).length;
     if (em > Math.floor(words / 1000)) advisory.push({ rule: 'em-dash-rate', detail: `${em} in ${words} words` });
+  } else if (m.emDash === 'never') {
+    // Character references render as the same mark, so they count as em dashes too.
+    prose.forEach((l, i) => { if (/—|&mdash;|&#0*8212;|&#[xX]0*2014;/.test(l)) hard.push({ line: i + 1, rule: 'em-dash-not-allowed' }); });
+  }
+
+  // Carve-outs: clock times and ratios (10:30, 1:2:3), URL schemes in bare links, table
+  // delimiter rows (|:---|---:|), and HTML entities (&amp;, &frac12;, &#8212;), whose
+  // colon or semicolon is syntax, not punctuation.
+  const tableDelimiter = /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/;
+  if (m.colons === 'never') {
+    prose.forEach((l, i) => {
+      // Blockquote prefixes are containers, not cell text. Match the same prefixes
+      // recognized by markdownProse, including nested quotes and list indentation.
+      const row = l.replace(/^(?: {0,3}>[ \t]?)+/, '');
+      if (row.includes('|') && tableDelimiter.test(row)) return;
+      // Decode colon references before the time/ratio and URL-scheme exceptions.
+      const colons = l.replace(/&(?:colon|#0*58|#[xX]0*3[aA]);/g, ':');
+      if (/:/.test(colons.replace(/\d+(:\d+)+/g, '')
+        .replace(/\b(?:[a-z][\w+.-]*:\/\/|(?:mailto|tel|sms):(?=\S))/gi, ''))) hard.push({ line: i + 1, rule: 'colon-not-allowed' });
+    });
+  }
+  if (m.semicolons === 'never') {
+    prose.forEach((l, i) => {
+      // A name-shaped token is not necessarily an entity: &D; in R&D; is prose.
+      // HTML names are case-sensitive; numeric references accept x or X.
+      const withoutEntities = l.replace(/&(#\d+|#[xX][\da-fA-F]+|[a-zA-Z][a-zA-Z\d]*);/g,
+        (ref, name) => {
+          if (name === 'semi' || /^#(?:0*59|[xX]0*3[bB])$/.test(name)) return ';';
+          return name.startsWith('#') || htmlEntityNames.has(name) ? '' : ref;
+        });
+      if (withoutEntities.includes(';')) hard.push({ line: i + 1, rule: 'semicolon-not-allowed' });
+    });
   }
 
   if (typeof m.spellNumbersUpTo === 'number') {

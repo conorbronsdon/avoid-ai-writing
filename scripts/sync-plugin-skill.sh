@@ -14,6 +14,7 @@ validate_src="$repo_root/detector/validate.js"
 categories_src="$repo_root/detector/CATEGORIES.md"
 check_style_src="$repo_root/scripts/check-style.js"
 markdown_prose_src="$repo_root/scripts/markdown-prose.js"
+html_entity_names_src="$repo_root/scripts/html-entity-names.js"
 normalize_quotes_src="$repo_root/scripts/normalize-quotes.js"
 examples_src="$repo_root/examples"
 canonical_skill_root="$repo_root/skills/avoid-ai-writing"
@@ -23,7 +24,7 @@ detector_patterns_dest="$repo_root/skills/ai-writing-detector/scripts/patterns.j
 verifier_patterns_dest="$repo_root/skills/preservation-verifier/scripts/patterns.js"
 verifier_validate_dest="$repo_root/skills/preservation-verifier/scripts/validate.js"
 
-for required in "$src" "$patterns_src" "$validate_src" "$categories_src" "$check_style_src" "$markdown_prose_src" "$normalize_quotes_src"; do
+for required in "$src" "$patterns_src" "$validate_src" "$categories_src" "$check_style_src" "$markdown_prose_src" "$html_entity_names_src" "$normalize_quotes_src"; do
   if [ ! -f "$required" ]; then
     echo "missing canonical source: $required" >&2
     exit 1
@@ -48,7 +49,7 @@ for skill_root in "$(dirname "$claude_dest")" "$canonical_skill_root"; do
   mkdir -p "$skill_root/references" "$skill_root/detector" "$skill_root/scripts"
   cp "$repo_root/references/patterns.md" "$skill_root/references/patterns.md"
   cp "$patterns_src" "$validate_src" "$categories_src" "$skill_root/detector/"
-  cp "$check_style_src" "$markdown_prose_src" "$normalize_quotes_src" "$skill_root/scripts/"
+  cp "$check_style_src" "$markdown_prose_src" "$html_entity_names_src" "$normalize_quotes_src" "$skill_root/scripts/"
   # Fixed destination is inside the selected bundled skill directory.
   rm -rf "$skill_root/examples"
   cp -R "$examples_src" "$skill_root/examples"
