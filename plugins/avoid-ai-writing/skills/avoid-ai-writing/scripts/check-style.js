@@ -125,19 +125,23 @@ function check(text, mechanics) {
     const em = (joined.match(/—/g) || []).length;
     if (em > Math.floor(words / 1000)) advisory.push({ rule: 'em-dash-rate', detail: `${em} in ${words} words` });
   } else if (m.emDash === 'never') {
-    prose.forEach((l, i) => { if (/—/.test(l)) hard.push({ line: i + 1, rule: 'em-dash-not-allowed' }); });
+    // Character references render as the same mark, so they count as em dashes too.
+    prose.forEach((l, i) => { if (/—|&mdash;|&#0*8212;|&#x0*2014;/i.test(l)) hard.push({ line: i + 1, rule: 'em-dash-not-allowed' }); });
   }
 
-  // Carve-outs: clock times and ratios (10:30, 3:1), URL schemes in bare links, and
-  // HTML entities (&amp;, &#8212;), whose colon or semicolon is syntax, not punctuation.
+  // Carve-outs: clock times and ratios (10:30, 1:2:3), URL schemes in bare links, table
+  // delimiter rows (|:---|---:|), and HTML entities (&amp;, &frac12;, &#8212;), whose
+  // colon or semicolon is syntax, not punctuation.
+  const tableDelimiter = /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/;
   if (m.colons === 'never') {
     prose.forEach((l, i) => {
-      if (/:/.test(l.replace(/\d:\d/g, '').replace(/\b[a-z][\w+.-]*:\/\//gi, ''))) hard.push({ line: i + 1, rule: 'colon-not-allowed' });
+      if (l.includes('|') && tableDelimiter.test(l)) return;
+      if (/:/.test(l.replace(/\d+(:\d+)+/g, '').replace(/\b[a-z][\w+.-]*:\/\//gi, ''))) hard.push({ line: i + 1, rule: 'colon-not-allowed' });
     });
   }
   if (m.semicolons === 'never') {
     prose.forEach((l, i) => {
-      if (/;/.test(l.replace(/&(#\d+|#x[\da-f]+|[a-z]+);/gi, ''))) hard.push({ line: i + 1, rule: 'semicolon-not-allowed' });
+      if (/;/.test(l.replace(/&(#\d+|#x[\da-f]+|[a-z][a-z\d]*);/gi, ''))) hard.push({ line: i + 1, rule: 'semicolon-not-allowed' });
     });
   }
 
