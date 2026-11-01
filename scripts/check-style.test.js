@@ -35,6 +35,32 @@ t('latinAbbrev:parentheses flags outside parens, not inside (must-not-fire)', ()
   assert.strictEqual(check('Retry a few times (e.g., 3).', { latinAbbrev: 'parentheses' }).hard.length, 0);
 });
 
+// --- punctuation bans (hard): colons, semicolons, emDash:never ---
+t('colons:never flags a prose colon; times, ratios, URLs, code pass (must-not-fire)', () => {
+  assert.ok(check('I learned one thing: evidence matters.', { colons: 'never' }).hard.some((x) => x.rule === 'colon-not-allowed'));
+  const clean = 'We met at 10:30 and mixed it 3:1 or 1:2:3. See https://example.com and run `a:b` later.';
+  assert.strictEqual(check(clean, { colons: 'never' }).hard.length, 0);
+  assert.strictEqual(check('I learned one thing: evidence matters.', { colons: 'any' }).hard.length, 0);
+});
+t('colons:never skips table delimiter rows but checks cell text', () => {
+  const table = '| a | b |\n|:---|---:|\n| x | y |\n';
+  assert.strictEqual(check(table, { colons: 'never' }).hard.length, 0);
+  const cell = check('| a | b |\n|---|---|\n| note: x | y |\n', { colons: 'never' }).hard;
+  assert.deepStrictEqual(cell.map((x) => [x.line, x.rule]), [[3, 'colon-not-allowed']]);
+});
+t('semicolons:never flags a prose semicolon; HTML entities and code pass (must-not-fire)', () => {
+  assert.ok(check('The plan was cut; the gain was never measured.', { semicolons: 'never' }).hard.some((x) => x.rule === 'semicolon-not-allowed'));
+  assert.strictEqual(check('Salt &amp; pepper, &frac12; cup, then `a; b` in code.', { semicolons: 'never' }).hard.length, 0);
+});
+t('emDash:never is hard; emDash:sparing stays advisory', () => {
+  const text = 'Three tools — Scopus, PubMed, IEEE — were used.';
+  assert.ok(check(text, { emDash: 'never' }).hard.some((x) => x.rule === 'em-dash-not-allowed'));
+  assert.strictEqual(check(text, { emDash: 'sparing' }).hard.length, 0);
+  for (const ref of ['&mdash;', '&#8212;', '&#x2014;']) {
+    assert.ok(check(`It was cut ${ref} oddly.`, { emDash: 'never' }).hard.some((x) => x.rule === 'em-dash-not-allowed'), ref);
+  }
+});
+
 // --- heading case is ADVISORY now (proper nouns make it undecidable) ---
 t('a title-case heading is advisory under headings:sentence, never hard', () => {
   const r = check('# Configure Your Retries\n\ntext', { headings: 'sentence' });
