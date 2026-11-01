@@ -48,9 +48,33 @@ t('colons:never skips table delimiter rows but checks cell text', () => {
   const cell = check('| a | b |\n|---|---|\n| note: x | y |\n', { colons: 'never' }).hard;
   assert.deepStrictEqual(cell.map((x) => [x.line, x.rule]), [[3, 'colon-not-allowed']]);
 });
+t('colons:never recognizes table alignment inside blockquotes and list items', () => {
+  for (const prefix of ['> ', '>> ', '> > ', '  > ', '>   ', '  > > ']) {
+    const table = ['| a | b |', '|:---|---:|', '| x | y |'].map((line) => prefix + line).join('\n');
+    assert.deepStrictEqual(check(table, { colons: 'never' }).hard, [], prefix);
+    const cell = table.replace('| x | y |', '| note: x | y |');
+    assert.deepStrictEqual(check(cell, { colons: 'never' }).hard,
+      [{ line: 3, rule: 'colon-not-allowed' }], prefix);
+  }
+  const list = '- Summary\n\n  > | a | b |\n  > |:---|---:|\n  > | x | y |\n';
+  assert.deepStrictEqual(check(list, { colons: 'never' }).hard, []);
+  assert.deepStrictEqual(check('> Reminder: inspect the result.', { colons: 'never' }).hard,
+    [{ line: 1, rule: 'colon-not-allowed' }]);
+});
 t('semicolons:never flags a prose semicolon; HTML entities and code pass (must-not-fire)', () => {
   assert.ok(check('The plan was cut; the gain was never measured.', { semicolons: 'never' }).hard.some((x) => x.rule === 'semicolon-not-allowed'));
   assert.strictEqual(check('Salt &amp; pepper, &frac12; cup, then `a; b` in code.', { semicolons: 'never' }).hard.length, 0);
+});
+t('semicolons:never exempts only valid, case-sensitive HTML entities', () => {
+  for (const text of ['We fund R&D; the benefits arrive later.', 'We chose AT&T; it starts tomorrow.',
+    'An &unknownEntity; is literal text.', 'An &Amp; is not a valid entity.']) {
+    assert.deepStrictEqual(check(text, { semicolons: 'never' }).hard,
+      [{ line: 1, rule: 'semicolon-not-allowed' }], text);
+  }
+  const entities = 'A&amp;B &AMP; &frac12; &CounterClockwiseContourIntegral; &NotEqualTilde; &#38; &#x26; &#X0026;';
+  assert.deepStrictEqual(check(entities, { semicolons: 'never' }).hard, []);
+  assert.deepStrictEqual(check(entities + ' R&D; follows.', { semicolons: 'never' }).hard,
+    [{ line: 1, rule: 'semicolon-not-allowed' }]);
 });
 t('emDash:never is hard; emDash:sparing stays advisory', () => {
   const text = 'Three tools — Scopus, PubMed, IEEE — were used.';

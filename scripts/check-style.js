@@ -27,6 +27,7 @@
 const fs = require('fs');
 const path = require('path');
 const { markdownProse } = require('./markdown-prose.js');
+const htmlEntityNames = require('./html-entity-names.js');
 
 /**
  * Resolve a --config argument to a file path. The decision is by SHAPE, not by what
@@ -135,13 +136,20 @@ function check(text, mechanics) {
   const tableDelimiter = /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/;
   if (m.colons === 'never') {
     prose.forEach((l, i) => {
-      if (l.includes('|') && tableDelimiter.test(l)) return;
+      // Blockquote prefixes are containers, not cell text. Match the same prefixes
+      // recognized by markdownProse, including nested quotes and list indentation.
+      const row = l.replace(/^(?: {0,3}>[ \t]?)+/, '');
+      if (row.includes('|') && tableDelimiter.test(row)) return;
       if (/:/.test(l.replace(/\d+(:\d+)+/g, '').replace(/\b[a-z][\w+.-]*:\/\//gi, ''))) hard.push({ line: i + 1, rule: 'colon-not-allowed' });
     });
   }
   if (m.semicolons === 'never') {
     prose.forEach((l, i) => {
-      if (/;/.test(l.replace(/&(#\d+|#x[\da-f]+|[a-z][a-z\d]*);/gi, ''))) hard.push({ line: i + 1, rule: 'semicolon-not-allowed' });
+      // A name-shaped token is not necessarily an entity: &D; in R&D; is prose.
+      // HTML names are case-sensitive; numeric references accept x or X.
+      const withoutEntities = l.replace(/&(#\d+|#[xX][\da-fA-F]+|[a-zA-Z][a-zA-Z\d]*);/g,
+        (ref, name) => name.startsWith('#') || htmlEntityNames.has(name) ? '' : ref);
+      if (withoutEntities.includes(';')) hard.push({ line: i + 1, rule: 'semicolon-not-allowed' });
     });
   }
 
