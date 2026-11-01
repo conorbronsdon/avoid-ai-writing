@@ -42,6 +42,22 @@ t('colons:never flags a prose colon; times, ratios, URLs, code pass (must-not-fi
   assert.strictEqual(check(clean, { colons: 'never' }).hard.length, 0);
   assert.strictEqual(check('I learned one thing: evidence matters.', { colons: 'any' }).hard.length, 0);
 });
+t('colons:never exempts mail, telephone, and SMS schemes but preserves prose colons', () => {
+  const links = 'Email mailto:help@example.com or MAILTO:team@example.com, call tel:+12025550123, or sms:+12025550123.';
+  assert.deepStrictEqual(check(links, { colons: 'never' }).hard, []);
+  for (const text of ['Note: evidence matters.', 'note:this is prose.', links + ' Note: follow up.']) {
+    assert.deepStrictEqual(check(text, { colons: 'never' }).hard,
+      [{ line: 1, rule: 'colon-not-allowed' }], text);
+  }
+});
+t('colons:never flags character references that render as prose colons', () => {
+  for (const ref of ['&colon;', '&#58;', '&#00058;', '&#x3a;', '&#X003A;']) {
+    assert.deepStrictEqual(check('Note' + ref + ' evidence matters.', { colons: 'never' }).hard,
+      [{ line: 1, rule: 'colon-not-allowed' }], ref);
+  }
+  assert.deepStrictEqual(check('Meet at 10&#58;30 and mix 3&colon;1. `Note&colon;`', { colons: 'never' }).hard, []);
+  assert.deepStrictEqual(check('See [docs](https://example.com/a&colon;b) and use &amp;.', { colons: 'never' }).hard, []);
+});
 t('colons:never skips table delimiter rows but checks cell text', () => {
   const table = '| a | b |\n|:---|---:|\n| x | y |\n';
   assert.strictEqual(check(table, { colons: 'never' }).hard.length, 0);
@@ -76,12 +92,28 @@ t('semicolons:never exempts only valid, case-sensitive HTML entities', () => {
   assert.deepStrictEqual(check(entities + ' R&D; follows.', { semicolons: 'never' }).hard,
     [{ line: 1, rule: 'semicolon-not-allowed' }]);
 });
+t('semicolons:never flags character references that render as semicolons', () => {
+  for (const ref of ['&semi;', '&#59;', '&#00059;', '&#x3b;', '&#X003B;']) {
+    assert.deepStrictEqual(check('The plan changed' + ref + ' the aim stayed.', { semicolons: 'never' }).hard,
+      [{ line: 1, rule: 'semicolon-not-allowed' }], ref);
+  }
+  assert.deepStrictEqual(check('Use `&semi;` or [docs](https://example.com/a&semi;b).', { semicolons: 'never' }).hard, []);
+  assert.deepStrictEqual(check('Literal &amp&semi; still has a semicolon.', { semicolons: 'never' }).hard,
+    [{ line: 1, rule: 'semicolon-not-allowed' }]);
+});
 t('emDash:never is hard; emDash:sparing stays advisory', () => {
   const text = 'Three tools — Scopus, PubMed, IEEE — were used.';
   assert.ok(check(text, { emDash: 'never' }).hard.some((x) => x.rule === 'em-dash-not-allowed'));
   assert.strictEqual(check(text, { emDash: 'sparing' }).hard.length, 0);
   for (const ref of ['&mdash;', '&#8212;', '&#x2014;']) {
     assert.ok(check(`It was cut ${ref} oddly.`, { emDash: 'never' }).hard.some((x) => x.rule === 'em-dash-not-allowed'), ref);
+  }
+});
+t('emDash:never treats named references as case-sensitive and numeric references as numeric', () => {
+  assert.deepStrictEqual(check('Invalid &MDASH; and &Mdash; stay literal.', { emDash: 'never' }).hard, []);
+  for (const ref of ['&mdash;', '&#0008212;', '&#X002014;']) {
+    assert.deepStrictEqual(check('Cut ' + ref + ' oddly.', { emDash: 'never' }).hard,
+      [{ line: 1, rule: 'em-dash-not-allowed' }], ref);
   }
 });
 

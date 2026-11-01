@@ -68,8 +68,8 @@ A config is JSON with two parts:
 | `latinAbbrev` | `never` \| `parentheses` \| `any` | **hard** — `never` flags any `e.g.`/`i.e.`; `parentheses` flags them outside parentheses; `any` is unchecked |
 | `headings` | `sentence` \| `title` | advisory — proper nouns make sentence vs. title case ambiguous, so it can't be verified deterministically |
 | `emDash` | `sparing` \| `deliberate` \| `never` | `never` is **hard** and flags any em dash in prose, including `&mdash;` and numeric references; `sparing` is advisory and flags a rate over ~1 per 1,000 words; `deliberate` is unchecked |
-| `colons` | `never` \| `any` | **hard** — `never` flags any colon in prose, except clock times and ratios (`10:30`, `1:2:3`), URL schemes, and table delimiter rows (`\|:---\|`); `any` is unchecked |
-| `semicolons` | `never` \| `any` | **hard** — `never` flags any semicolon in prose, except HTML entities (`&amp;`, `&frac12;`); `any` is unchecked |
+| `colons` | `never` \| `any` | **hard** — `never` flags colons in prose, including character references (`&colon;`, `&#58;`), except clock times and ratios (`10:30`, `1:2:3`), URL schemes (`https://`, `mailto:`, `tel:`, `sms:`), and table delimiter rows (`\|:---\|`, including blockquotes); `any` is unchecked |
+| `semicolons` | `never` \| `any` | **hard** — `never` flags semicolons in prose, including references that render as semicolons (`&semi;`, `&#59;`); delimiters of valid, case-sensitive HTML entities (`&amp;`, `&frac12;`) are exempt; `any` is unchecked |
 | `spellNumbersUpTo` | number | advisory — flags numerals at or below the threshold in prose |
 | `serialComma` | `true` \| `false` | model-applied only; not machine-checked |
 

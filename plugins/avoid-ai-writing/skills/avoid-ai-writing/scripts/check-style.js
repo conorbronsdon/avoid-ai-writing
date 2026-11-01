@@ -127,7 +127,7 @@ function check(text, mechanics) {
     if (em > Math.floor(words / 1000)) advisory.push({ rule: 'em-dash-rate', detail: `${em} in ${words} words` });
   } else if (m.emDash === 'never') {
     // Character references render as the same mark, so they count as em dashes too.
-    prose.forEach((l, i) => { if (/—|&mdash;|&#0*8212;|&#x0*2014;/i.test(l)) hard.push({ line: i + 1, rule: 'em-dash-not-allowed' }); });
+    prose.forEach((l, i) => { if (/—|&mdash;|&#0*8212;|&#[xX]0*2014;/.test(l)) hard.push({ line: i + 1, rule: 'em-dash-not-allowed' }); });
   }
 
   // Carve-outs: clock times and ratios (10:30, 1:2:3), URL schemes in bare links, table
@@ -140,7 +140,10 @@ function check(text, mechanics) {
       // recognized by markdownProse, including nested quotes and list indentation.
       const row = l.replace(/^(?: {0,3}>[ \t]?)+/, '');
       if (row.includes('|') && tableDelimiter.test(row)) return;
-      if (/:/.test(l.replace(/\d+(:\d+)+/g, '').replace(/\b[a-z][\w+.-]*:\/\//gi, ''))) hard.push({ line: i + 1, rule: 'colon-not-allowed' });
+      // Decode colon references before the time/ratio and URL-scheme exceptions.
+      const colons = l.replace(/&(?:colon|#0*58|#[xX]0*3[aA]);/g, ':');
+      if (/:/.test(colons.replace(/\d+(:\d+)+/g, '')
+        .replace(/\b(?:[a-z][\w+.-]*:\/\/|(?:mailto|tel|sms):(?=\S))/gi, ''))) hard.push({ line: i + 1, rule: 'colon-not-allowed' });
     });
   }
   if (m.semicolons === 'never') {
@@ -148,7 +151,10 @@ function check(text, mechanics) {
       // A name-shaped token is not necessarily an entity: &D; in R&D; is prose.
       // HTML names are case-sensitive; numeric references accept x or X.
       const withoutEntities = l.replace(/&(#\d+|#[xX][\da-fA-F]+|[a-zA-Z][a-zA-Z\d]*);/g,
-        (ref, name) => name.startsWith('#') || htmlEntityNames.has(name) ? '' : ref);
+        (ref, name) => {
+          if (name === 'semi' || /^#(?:0*59|[xX]0*3[bB])$/.test(name)) return ';';
+          return name.startsWith('#') || htmlEntityNames.has(name) ? '' : ref;
+        });
       if (withoutEntities.includes(';')) hard.push({ line: i + 1, rule: 'semicolon-not-allowed' });
     });
   }

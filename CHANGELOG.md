@@ -8,7 +8,7 @@ All notable changes to this project are documented here.
 
 ### Added
 
-- `--style` configs accept `colons: "never"`, `semicolons: "never"`, and `emDash: "never"`. `scripts/check-style.js` reports each as a hard violation in prose, so a house style that bans these marks gates the exit code. Clock times, ratios, URL schemes, table delimiter rows, HTML entities, and code are not flagged. `emDash: "never"` also catches `&mdash;` and its numeric references.
+- `--style` configs accept `colons: "never"`, `semicolons: "never"`, and `emDash: "never"`. `scripts/check-style.js` reports each as a hard violation in prose, so a house style that bans these marks gates the exit code. Clock times, ratios, URL schemes, table delimiter rows (including blockquotes), HTML entity syntax, and code are not flagged. Character references that render as banned punctuation still fail.
 
 ### Changed
 
