@@ -205,7 +205,8 @@ function markdownProse(text, { preservePunctuationEscapes = false } = {}) {
     if (s[i] === '\\' && /[!"#$%&'()*+,\-./:;<=>?@[\]^_`{|}~\\\u201c\u201d\u2018\u2019]/.test(s[i + 1] || '')) {
       // Style punctuation bans inspect the rendered colon or semicolon, while
       // other consumers retain the original escape protection.
-      protect(i, preservePunctuationEscapes && /[:;]/.test(s[i + 1]) ? i + 1 : i + 2); i += 1; continue;
+      if (!(preservePunctuationEscapes && /[:;]/.test(s[i + 1]))) protect(i, i + 2);
+      i += 1; continue;
     }
     if (s[i] === '`') {
       tickRun.lastIndex = i;

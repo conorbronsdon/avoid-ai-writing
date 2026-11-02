@@ -40,6 +40,11 @@ t('colons:never exempts footnote definition syntax but checks its prose', () => 
   assert.deepStrictEqual(check('[^1]: Smith 2020, p. 4.', { colons: 'never' }).hard, []);
   assert.deepStrictEqual(check('[^1]: Note: inspect the evidence.', { colons: 'never' }).hard,
     [{ line: 1, rule: 'colon-not-allowed' }]);
+  for (const prefix of ['> ', '> > ']) {
+    assert.deepStrictEqual(check(prefix + '[^1]: Smith 2020, p. 4.', { colons: 'never' }).hard, []);
+    assert.deepStrictEqual(check(prefix + '[^1]: Note: inspect it.', { colons: 'never' }).hard,
+      [{ line: 1, rule: 'colon-not-allowed' }]);
+  }
 });
 t('punctuation bans check escaped prose marks while protecting code', () => {
   for (const [mark, key, rule] of [[':', 'colons', 'colon-not-allowed'], [';', 'semicolons', 'semicolon-not-allowed']]) {
@@ -50,6 +55,14 @@ t('punctuation bans check escaped prose marks while protecting code', () => {
   }
   assert.deepStrictEqual(check('[label]\\: https://example.com', { colons: 'never' }).hard,
     [{ line: 1, rule: 'colon-not-allowed' }]);
+  assert.deepStrictEqual(check('Meet at 10\\:30 and mix 3\\:1.', { colons: 'never' }).hard, []);
+  assert.deepStrictEqual(check('[^1]\\: Smith 2020, p. 4.', { colons: 'never' }).hard,
+    [{ line: 1, rule: 'colon-not-allowed' }]);
+  for (const ref of ['&colon\\;', '&#58\\;', '&#x3a\\;', '&amp\\;', '&semi\\;']) {
+    assert.deepStrictEqual(check('Write ' + ref + ' literally.', { colons: 'never' }).hard, []);
+    assert.deepStrictEqual(check('Write ' + ref + ' literally.', { semicolons: 'never' }).hard,
+      [{ line: 1, rule: 'semicolon-not-allowed' }]);
+  }
 });
 t('colons:never flags a prose colon; times, ratios, URLs, code pass (must-not-fire)', () => {
   assert.ok(check('I learned one thing: evidence matters.', { colons: 'never' }).hard.some((x) => x.rule === 'colon-not-allowed'));
