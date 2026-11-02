@@ -77,7 +77,7 @@ function check(text, mechanics) {
     else if (typeof v !== spec) warnings.push({ rule: 'unknown-value', detail: `${k}: ${JSON.stringify(v)} (expected ${spec})` });
   }
 
-  const { prose, paraBreak } = markdownProse(text);
+  const { prose, paraBreak } = markdownProse(text, { preservePunctuationEscapes: true });
   const joined = prose.join('\n');
   const words = (joined.match(/\b\w+\b/g) || []).length;
   const hard = [];
@@ -141,7 +141,8 @@ function check(text, mechanics) {
       const row = l.replace(/^(?: {0,3}>[ \t]?)+/, '');
       if (row.includes('|') && tableDelimiter.test(row)) return;
       // Decode colon references before the time/ratio and URL-scheme exceptions.
-      const colons = l.replace(/&(?:colon|#0*58|#[xX]0*3[aA]);/g, ':');
+      const colons = l.replace(/^ {0,3}\[\^[^\]\n]+\]:/, '')
+        .replace(/&(?:colon|#0*58|#[xX]0*3[aA]);/g, ':');
       if (/:/.test(colons.replace(/\d+(:\d+)+/g, '')
         .replace(/\b(?:[a-z][\w+.-]*:\/\/|(?:mailto|tel|sms):(?=\S))/gi, ''))) hard.push({ line: i + 1, rule: 'colon-not-allowed' });
     });
