@@ -56,6 +56,9 @@ t('punctuation bans check escaped prose marks while protecting code', () => {
   assert.deepStrictEqual(check('[label]\\: https://example.com', { colons: 'never' }).hard,
     [{ line: 1, rule: 'colon-not-allowed' }]);
   assert.deepStrictEqual(check('Meet at 10\\:30 and mix 3\\:1.', { colons: 'never' }).hard, []);
+  for (const mechanics of [{ spellNumbersUpTo: 10 }, { spellNumbersUpTo: 10, colons: 'never', semicolons: 'never' }]) {
+    assert.deepStrictEqual(check('Meet at 10\\:30 and mix 3\\:1.', mechanics).advisory, []);
+  }
   assert.deepStrictEqual(check('[^1]\\: Smith 2020, p. 4.', { colons: 'never' }).hard,
     [{ line: 1, rule: 'colon-not-allowed' }]);
   for (const ref of ['&colon\\;', '&#58\\;', '&#x3a\\;', '&amp\\;', '&semi\\;']) {

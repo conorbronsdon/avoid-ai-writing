@@ -77,7 +77,9 @@ function check(text, mechanics) {
     else if (typeof v !== spec) warnings.push({ rule: 'unknown-value', detail: `${k}: ${JSON.stringify(v)} (expected ${spec})` });
   }
 
-  const { prose, paraBreak } = markdownProse(text, { preservePunctuationEscapes: true });
+  const { prose, paraBreak } = markdownProse(text);
+  const punctuationProse = m.colons === 'never' || m.semicolons === 'never'
+    ? markdownProse(text, { preservePunctuationEscapes: true }).prose : prose;
   const joined = prose.join('\n');
   const words = (joined.match(/\b\w+\b/g) || []).length;
   const hard = [];
@@ -135,7 +137,7 @@ function check(text, mechanics) {
   // colon or semicolon is syntax, not punctuation.
   const tableDelimiter = /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/;
   if (m.colons === 'never') {
-    prose.forEach((l, i) => {
+    punctuationProse.forEach((l, i) => {
       // Blockquote prefixes are containers, not cell text. Match the same prefixes
       // recognized by markdownProse, including nested quotes and list indentation.
       const row = l.replace(/^(?: {0,3}>[ \t]?)+/, '');
@@ -148,7 +150,7 @@ function check(text, mechanics) {
     });
   }
   if (m.semicolons === 'never') {
-    prose.forEach((l, i) => {
+    punctuationProse.forEach((l, i) => {
       // A name-shaped token is not necessarily an entity: &D; in R&D; is prose.
       // HTML names are case-sensitive; numeric references accept x or X.
       const withoutEntities = l.replace(/&(#\d+|#[xX][\da-fA-F]+|[a-zA-Z][a-zA-Z\d]*);/g,
