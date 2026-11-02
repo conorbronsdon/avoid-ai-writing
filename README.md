@@ -630,8 +630,9 @@ This skill removes AI-writing tells. Enforcing a published style guide is the
 different job: it doesn't do that, and it ships no style guides of its own. The
 optional `--style` input takes a house-style config you supply: a `register` list
 the model applies, and a `mechanics` object whose checkable rules
-`scripts/check-style.js` verifies deterministically (quote form and Latin
-abbreviations gate the exit code; heading case, em-dash rate, and number spelling
+`scripts/check-style.js` verifies deterministically (quote form, Latin
+abbreviations, and the `colons`, `semicolons`, and `emDash: "never"` bans gate the
+exit code; heading case, the `emDash: "sparing"` rate, and number spelling
 are advisory). This script requires a cloned checkout. [`examples/`](./examples/) has the schema. You can skip the input
 entirely and put your guide in your agent's context alongside a
 [voice profile](./references/patterns.md#voice-profiles), as instructions rather than as a checked

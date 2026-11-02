@@ -67,7 +67,7 @@ function inlineLinkEnds(s) {
  * masked characters for checks or use word-shaped filler for quote adjacency, then
  * restore from the source. No Markdown is serialized or whitespace reconstructed.
  */
-function markdownProse(text) {
+function markdownProse(text, { preservePunctuationEscapes = false } = {}) {
   const chars = text.split('');
   const transparent = new Set();
   const protect = (a, b, tag = false) => {
@@ -203,7 +203,10 @@ function markdownProse(text) {
       labels.add(definition.label); protect(i, definition.end); i = definition.end - 1; continue;
     }
     if (s[i] === '\\' && /[!"#$%&'()*+,\-./:;<=>?@[\]^_`{|}~\\\u201c\u201d\u2018\u2019]/.test(s[i + 1] || '')) {
-      protect(i, i + 2); i += 1; continue;
+      // Style punctuation bans inspect the rendered colon or semicolon, while
+      // other consumers retain the original escape protection.
+      if (!(preservePunctuationEscapes && /[:;]/.test(s[i + 1]))) protect(i, i + 2);
+      i += 1; continue;
     }
     if (s[i] === '`') {
       tickRun.lastIndex = i;
