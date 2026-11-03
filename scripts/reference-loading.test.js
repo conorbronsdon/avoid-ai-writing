@@ -4,8 +4,8 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
-const crypto = require('node:crypto');
 const { flatten } = require('./flatten-skill');
+const { retainedSha256 } = require('./retained-bytes');
 const { snapshot, partition, prepare, verify, assemble } = require('./reference-loading');
 
 const root = path.resolve(__dirname, '..');
@@ -135,7 +135,7 @@ try {
     assert(c.focus.every(id => arm.trace.assembled_module_ids.includes(id)));
   }
   const report = path.join(root, 'evals/rewrite/reports/reference-loading-preparation-205-2026-10-15');
-  const retainedGenerator = crypto.createHash('sha256').update(fs.readFileSync(path.join(report, 'generator-source.js.txt'))).digest('hex');
+  const retainedGenerator = retainedSha256(path.join(report, 'generator-source.js.txt'));
   for (const arm of ['full', 'focused', 'fallback']) {
     const trace = JSON.parse(fs.readFileSync(path.join(report, `${arm}-trace.json`), 'utf8'));
     assert.equal(trace.generator_sha256, retainedGenerator, 'historical trace must name its retained generator');

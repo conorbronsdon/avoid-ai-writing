@@ -1,10 +1,10 @@
 'use strict';
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const crypto = require('node:crypto');
 const path = require('node:path');
 const { TYPE_LABELS } = require('../detector/patterns');
 const { flatten } = require('./flatten-skill');
+const { assertRetainedSha256 } = require('./retained-bytes');
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'references/patterns.md'), 'utf8');
 const fixtures = JSON.parse(fs.readFileSync(path.join(root, 'evals/rewrite/editorial-cards-206.json'), 'utf8'));
@@ -62,17 +62,16 @@ for (const c of fixtures.cases.filter(c => c.existing_case_id)) {
 // invariants without turning these wordings into preferred future rewrites.
 const report = path.join(root, 'evals/rewrite/reports/editorial-cards-206-2026-10-15/followup');
 const readJson = file => JSON.parse(fs.readFileSync(path.join(report, file), 'utf8'));
-const sha = text => crypto.createHash('sha256').update(text).digest('hex');
 const method = readJson('method-frozen.json');
 for (const file of ['inputs', 'expectations']) {
-  assert.equal(sha(fs.readFileSync(path.join(report, `${file}.json`))), method[`${file}_sha256`]);
+  assertRetainedSha256(path.join(report, `${file}.json`), method[`${file}_sha256`]);
 }
 const inputs = readJson('inputs.json');
 const snapshots = readJson('sources.json');
 for (const arm of ['A', 'B']) {
   assert.equal(snapshots[arm].local_source_commit, method.conditions[arm]);
   for (const source of Object.values(snapshots[arm].sources)) {
-    assert.equal(sha(fs.readFileSync(path.join(report, source.path))), source.sha256);
+    assertRetainedSha256(path.join(report, source.path), source.sha256);
   }
   const rows = readJson(`${arm}-responses.json`);
   assert.equal(rows.length, inputs.length);

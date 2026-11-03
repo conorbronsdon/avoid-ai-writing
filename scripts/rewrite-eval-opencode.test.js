@@ -64,7 +64,8 @@ if (args[0] === '--version') {
 } else if (args[0] === 'run') {
   if (args.includes('--pure')) throw new Error('run must load the audit plugin');
   if (process.cwd().includes('timeout-run')) {
-    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 2000);
+    // Hang far past the timeout budget so only the runner's kill can end it.
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 60_000);
   }
   const text = fs.readFileSync(0, 'utf8');
   const request = JSON.parse(fs.readFileSync(process.env.REWRITE_EVAL_REQUEST_FILE, 'utf8'));
@@ -304,13 +305,18 @@ const subsetComparison = JSON.parse(fs.readFileSync(configPath));
 subsetComparison.purpose = 'comparison';
 assert.throws(() => runner.checkConfig(subsetComparison, plan), /must have purpose diagnostic/);
 
+// timeout_ms also bounds the --version, debug config and debug agent probes
+// that run before the model call. 200 ms was shorter than a cold node.exe
+// start on Windows, so a probe timed out first (#427). Five seconds leaves the
+// probes room on every platform while the run call above still hangs well
+// past the budget and must be killed.
 const timeoutConfigPath = path.join(root, 'timeout-config.json');
 fs.writeFileSync(timeoutConfigPath, JSON.stringify({
   schema_version: 1,
   purpose: 'diagnostic',
   opencode_path: executable,
   opencode_version: '1.18.30',
-  timeout_ms: 200,
+  timeout_ms: 5_000,
   task_ids: [task.id],
 }));
 const timeoutRun = path.join(root, 'timeout-run');
@@ -321,6 +327,9 @@ for (const file of ['request.json', 'events.jsonl', 'stderr.log', 'call-audit.js
   assert.equal(fs.existsSync(path.join(timeoutTask, file)), true, `timeout must retain ${file}`);
 }
 assert.equal(fs.existsSync(path.join(timeoutRun, 'status.json')), true, 'timeout batch must retain status.json');
+const timeoutAudit = JSON.parse(fs.readFileSync(path.join(timeoutTask, 'call-audit.json')));
+assert.equal(timeoutAudit.spawn_error?.code, 'ETIMEDOUT', 'the model call itself must fail by timeout, not by another error');
+assert(timeoutAudit.duration_ms >= 4_500 && timeoutAudit.duration_ms < 60_000, `timeout must end the call at its budget, took ${timeoutAudit.duration_ms} ms`);
 
 const badConfigRun = path.join(root, 'bad-config-run');
 assert.throws(() => runner.run(planPath, configPath, badConfigRun), /unexpected plugin/);
