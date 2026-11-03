@@ -1,0 +1,101 @@
+{
+  "datasetRevision": "b514ff64988d9e322fd81c5d70d69a38e78491f5",
+  "primaryDataset": "https://huggingface.co/datasets/browndw/human-ai-parallel-corpus",
+  "methodCommit": "1784e0999555d5ec90dda20952e08e9bc9a1dc8d",
+  "methodFile": "docs/research/hape-2026-11/claims249.js",
+  "methodSha256": "957b1d8c5ba3297cedf13704cdfa424da6dd037d430e2e1541d211ad06bdd88d",
+  "resultsSha256": "11cc51b4ef66d081c50a5f11ff1cd2dbe2d2d41b06799644f7732f86d44d38f3",
+  "files": [
+    {
+      "file": "hape-text_gpt-4o-2024-08-06.parquet",
+      "bytes": 17609251,
+      "sha256": "b837daf6b0c976cfc7e118128265f838fd3c47e6081d1620b90f10be8aa5dc7b",
+      "jsonlSha256": "f049dc7120868a62c122f4fac8c45c5bb46f18c988b5f40cd0f88775c67a141b",
+      "documents": 8290,
+      "registers": {
+        "acad": 1227,
+        "blog": 1526,
+        "fic": 1395,
+        "news": 1322,
+        "spok": 1721,
+        "tvm": 1099
+      },
+      "normalizedDocIdSetSha256": "c7d44df63a6f84b5595e65a838bcbc841cf8937eb31c0def98d9f26508f060ec"
+    },
+    {
+      "file": "hape-text_gpt-4o-mini-2024-07-18.parquet",
+      "bytes": 18901377,
+      "sha256": "c14dfda8d2a382a2f1278e105093a65bc56de5e64a7e2df5aa0fabe898677420",
+      "jsonlSha256": "3f55d4fb7dc37da740bb4ec3728ce48b7c4c4ea1682018ecdd234eb95f1fc3d0",
+      "documents": 8290,
+      "registers": {
+        "acad": 1227,
+        "blog": 1526,
+        "fic": 1395,
+        "news": 1322,
+        "spok": 1721,
+        "tvm": 1099
+      },
+      "normalizedDocIdSetSha256": "c7d44df63a6f84b5595e65a838bcbc841cf8937eb31c0def98d9f26508f060ec"
+    },
+    {
+      "file": "hape-text_human-chunk-2.parquet",
+      "bytes": 14131368,
+      "sha256": "b7ed790d63636f75ff002eb4ed21c6ffa142847f372530960946b09ebd751ad7",
+      "jsonlSha256": "0b226e140549d1bd9da1a1beb1a5c02d94cf2d5e8567e64b4c0e283089ba767a",
+      "documents": 8290,
+      "registers": {
+        "acad": 1227,
+        "blog": 1526,
+        "fic": 1395,
+        "news": 1322,
+        "spok": 1721,
+        "tvm": 1099
+      },
+      "normalizedDocIdSetSha256": "c7d44df63a6f84b5595e65a838bcbc841cf8937eb31c0def98d9f26508f060ec"
+    },
+    {
+      "file": "hape-text_llama-3-70B-Instruct.parquet",
+      "bytes": 12572158,
+      "sha256": "7f7b379c54c1e43f90b3e1321cb4cec9fa183b5f0260b9d6c6bb42d4b9275604",
+      "jsonlSha256": "ef6ad2e0da284d6173cc24fbd85817b84f4948f5d588dcbd3afcb0e5fefc0165",
+      "documents": 8290,
+      "registers": {
+        "acad": 1227,
+        "blog": 1526,
+        "fic": 1395,
+        "news": 1322,
+        "spok": 1721,
+        "tvm": 1099
+      },
+      "normalizedDocIdSetSha256": "c7d44df63a6f84b5595e65a838bcbc841cf8937eb31c0def98d9f26508f060ec"
+    },
+    {
+      "file": "hape-text_llama-3-8B-Instruct.parquet",
+      "bytes": 10966514,
+      "sha256": "83f87cfa4da8adf98b9703539f416c81f96c5be66000365e0012646b69d4939d",
+      "jsonlSha256": "d89f038ff54ef7364727d1da133bb9a76257a7fa779687223a8610ff8e2c1588",
+      "documents": 8290,
+      "registers": {
+        "acad": 1227,
+        "blog": 1526,
+        "fic": 1395,
+        "news": 1322,
+        "spok": 1721,
+        "tvm": 1099
+      },
+      "normalizedDocIdSetSha256": "c7d44df63a6f84b5595e65a838bcbc841cf8937eb31c0def98d9f26508f060ec"
+    }
+  ],
+  "matchingDocIds": true,
+  "countingSeconds": 18.424756499938667,
+  "nodeHeapLimitMiB": 512,
+  "rawTextCommitted": false,
+  "dependency": {
+    "path": "scripts/fp-measure.js",
+    "baseCommit": "2870771eadca0736701db1d71ce3cd2bd98e2868",
+    "gitBlob": "a39e6309ad8506f367ee1f80549a1e21c06b93fe",
+    "note": "rocAuc only; published catalog counts/CV/TTR do not depend on AUC."
+  },
+  "verification": "2026-11-03 independent pinned download; publisher byte sizes and LFS SHA256 verified; 8290 normalized document IDs/class matched exactly; source method unmodified; final rerun from this checkout matched all aggregate output."
+}
