@@ -1,0 +1,361 @@
+{
+ "human": {
+  "words": 3974889,
+  "perMillionWords": {
+   "colonTriple": 12.3,
+   "strandedAux": 9.1,
+   "copulaSwap": 36.2,
+   "hyphenStack": 53.1,
+   "calibration": 23.4,
+   "sameOpenerRun3": 499.4,
+   "sameOpenerRun3NonFunction": 151.5
+  },
+  "sentenceLengthCV": {
+   "p25": 0.54,
+   "p50": 0.651,
+   "p75": 0.773,
+   "n": 8281
+  },
+  "ttr200": {
+   "p5": 0.52,
+   "p25": 0.585,
+   "p50": 0.63,
+   "p75": 0.665,
+   "shareInside050_065": 0.644,
+   "shareBelow040": 0.0006,
+   "n": 8283
+  }
+ },
+ "gpt-4o": {
+  "words": 4373556,
+  "perMillionWords": {
+   "colonTriple": 25.8,
+   "strandedAux": 0.7,
+   "copulaSwap": 276.9,
+   "hyphenStack": 42.5,
+   "calibration": 53.5,
+   "sameOpenerRun3": 113.6,
+   "sameOpenerRun3NonFunction": 21.3
+  },
+  "sentenceLengthCV": {
+   "p25": 0.319,
+   "p50": 0.396,
+   "p75": 0.489,
+   "n": 8288
+  },
+  "ttr200": {
+   "p5": 0.64,
+   "p25": 0.675,
+   "p50": 0.7,
+   "p75": 0.72,
+   "shareInside050_065": 0.096,
+   "shareBelow040": 0,
+   "n": 8290
+  },
+  "aucClaimDirection": {
+   "cvLowerInMachine": 0.888,
+   "ttrLowerInMachine": 0.133
+  },
+  "cvMedianByRegister": {
+   "acad": [
+    0.621,
+    0.328
+   ],
+   "blog": [
+    0.583,
+    0.37
+   ],
+   "fic": [
+    0.645,
+    0.413
+   ],
+   "news": [
+    0.531,
+    0.333
+   ],
+   "spok": [
+    0.791,
+    0.433
+   ],
+   "tvm": [
+    0.694,
+    0.518
+   ]
+  },
+  "ttrMedianByRegister": {
+   "acad": [
+    0.625,
+    0.705
+   ],
+   "blog": [
+    0.625,
+    0.695
+   ],
+   "fic": [
+    0.64,
+    0.695
+   ],
+   "news": [
+    0.66,
+    0.705
+   ],
+   "spok": [
+    0.565,
+    0.685
+   ],
+   "tvm": [
+    0.66,
+    0.705
+   ]
+  }
+ },
+ "gpt-4o-mini": {
+  "words": 4791862,
+  "perMillionWords": {
+   "colonTriple": 27.1,
+   "strandedAux": 0.6,
+   "copulaSwap": 306.6,
+   "hyphenStack": 31.9,
+   "calibration": 62,
+   "sameOpenerRun3": 132.5,
+   "sameOpenerRun3NonFunction": 17.3
+  },
+  "sentenceLengthCV": {
+   "p25": 0.346,
+   "p50": 0.442,
+   "p75": 0.538,
+   "n": 8290
+  },
+  "ttr200": {
+   "p5": 0.635,
+   "p25": 0.67,
+   "p50": 0.695,
+   "p75": 0.715,
+   "shareInside050_065": 0.103,
+   "shareBelow040": 0,
+   "n": 8290
+  },
+  "aucClaimDirection": {
+   "cvLowerInMachine": 0.843,
+   "ttrLowerInMachine": 0.145
+  },
+  "cvMedianByRegister": {
+   "acad": [
+    0.621,
+    0.34
+   ],
+   "blog": [
+    0.583,
+    0.43
+   ],
+   "fic": [
+    0.645,
+    0.485
+   ],
+   "news": [
+    0.531,
+    0.347
+   ],
+   "spok": [
+    0.791,
+    0.452
+   ],
+   "tvm": [
+    0.694,
+    0.571
+   ]
+  },
+  "ttrMedianByRegister": {
+   "acad": [
+    0.625,
+    0.7
+   ],
+   "blog": [
+    0.625,
+    0.69
+   ],
+   "fic": [
+    0.64,
+    0.69
+   ],
+   "news": [
+    0.66,
+    0.705
+   ],
+   "spok": [
+    0.565,
+    0.685
+   ],
+   "tvm": [
+    0.66,
+    0.7
+   ]
+  }
+ },
+ "llama-70B-I": {
+  "words": 3809397,
+  "perMillionWords": {
+   "colonTriple": 25.5,
+   "strandedAux": 1.1,
+   "copulaSwap": 65.4,
+   "hyphenStack": 42.8,
+   "calibration": 4.7,
+   "sameOpenerRun3": 831.1,
+   "sameOpenerRun3NonFunction": 187.4
+  },
+  "sentenceLengthCV": {
+   "p25": 0.332,
+   "p50": 0.434,
+   "p75": 0.536,
+   "n": 8282
+  },
+  "ttr200": {
+   "p5": 0.495,
+   "p25": 0.565,
+   "p50": 0.605,
+   "p75": 0.64,
+   "shareInside050_065": 0.793,
+   "shareBelow040": 0.0022,
+   "n": 8285
+  },
+  "aucClaimDirection": {
+   "cvLowerInMachine": 0.841,
+   "ttrLowerInMachine": 0.624
+  },
+  "cvMedianByRegister": {
+   "acad": [
+    0.621,
+    0.377
+   ],
+   "blog": [
+    0.583,
+    0.395
+   ],
+   "fic": [
+    0.645,
+    0.43
+   ],
+   "news": [
+    0.531,
+    0.347
+   ],
+   "spok": [
+    0.791,
+    0.478
+   ],
+   "tvm": [
+    0.694,
+    0.542
+   ]
+  },
+  "ttrMedianByRegister": {
+   "acad": [
+    0.625,
+    0.565
+   ],
+   "blog": [
+    0.625,
+    0.61
+   ],
+   "fic": [
+    0.64,
+    0.625
+   ],
+   "news": [
+    0.66,
+    0.63
+   ],
+   "spok": [
+    0.565,
+    0.57
+   ],
+   "tvm": [
+    0.66,
+    0.62
+   ]
+  }
+ },
+ "llama-8B-I": {
+  "words": 3532560,
+  "perMillionWords": {
+   "colonTriple": 19.2,
+   "strandedAux": 0.3,
+   "copulaSwap": 51.2,
+   "hyphenStack": 43,
+   "calibration": 0.6,
+   "sameOpenerRun3": 1073.4,
+   "sameOpenerRun3NonFunction": 250.2
+  },
+  "sentenceLengthCV": {
+   "p25": 0.303,
+   "p50": 0.406,
+   "p75": 0.513,
+   "n": 8268
+  },
+  "ttr200": {
+   "p5": 0.47,
+   "p25": 0.545,
+   "p50": 0.585,
+   "p75": 0.62,
+   "shareInside050_065": 0.828,
+   "shareBelow040": 0.0097,
+   "n": 8224
+  },
+  "aucClaimDirection": {
+   "cvLowerInMachine": 0.865,
+   "ttrLowerInMachine": 0.714
+  },
+  "cvMedianByRegister": {
+   "acad": [
+    0.621,
+    0.317
+   ],
+   "blog": [
+    0.583,
+    0.37
+   ],
+   "fic": [
+    0.645,
+    0.435
+   ],
+   "news": [
+    0.531,
+    0.318
+   ],
+   "spok": [
+    0.791,
+    0.458
+   ],
+   "tvm": [
+    0.694,
+    0.504
+   ]
+  },
+  "ttrMedianByRegister": {
+   "acad": [
+    0.625,
+    0.56
+   ],
+   "blog": [
+    0.625,
+    0.585
+   ],
+   "fic": [
+    0.64,
+    0.605
+   ],
+   "news": [
+    0.66,
+    0.605
+   ],
+   "spok": [
+    0.565,
+    0.55
+   ],
+   "tvm": [
+    0.66,
+    0.6
+   ]
+  }
+ }
+}
