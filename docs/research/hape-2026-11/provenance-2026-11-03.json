@@ -97,5 +97,5 @@
     "gitBlob": "a39e6309ad8506f367ee1f80549a1e21c06b93fe",
     "note": "rocAuc only; published catalog counts/CV/TTR do not depend on AUC."
   },
-  "verification": "2026-11-03 independent pinned download; publisher byte sizes and LFS SHA256 verified;8290 normalized document IDs/class matched exactly; source method unmodified; final rerun from this checkout matched all aggregate output."
+  "verification": "2026-11-03 independent pinned download; publisher byte sizes and LFS SHA256 verified; 8290 normalized document IDs/class matched exactly; source method unmodified; final rerun from this checkout matched all aggregate output."
 }
