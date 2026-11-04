@@ -1,0 +1,17 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['chatbot']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Chatbot artifact: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: error
+ignorecase: true
+nonword: true
+tokens:
+  - '\bi\s+hope\s+this\s+helps\b'
+  - '\bcertainly!\b'
+  - '\babsolutely!\b'
+  - '\bgreat\s+question!\b'
+  - '\bexcellent\s+point!\b'
+  - '\bfeel\s+free\s+to\s+reach\s+out\b'
+  - '\blet\s+me\s+know\s+if\s+you\s+need\s+anything\b'
+  - '\bin\s+this\s+article,?\s+we\s+will\s+explore\b'
+  - '\blet''?s\s+dive\s+in!?\b'

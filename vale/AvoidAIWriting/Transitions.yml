@@ -1,0 +1,21 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['transition']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'AI transition: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: true
+nonword: true
+tokens:
+  - '\bmoreover\b'
+  - '\bfurthermore\b'
+  - '\badditionally\b'
+  - '\bin\s+today''?s\b'
+  - '\bin\s+an\s+era\s+where\b'
+  - '\bit''?s\s+worth\s+noting\s+that\b'
+  - '\bnotably\b'
+  - '\bin\s+conclusion\b'
+  - '\bin\s+summary\b'
+  - '\bto\s+summarize\b'
+  - '\bwhen\s+it\s+comes\s+to\b'
+  - '\bat\s+the\s+end\s+of\s+the\s+day\b'
+  - '\bthat\s+(?:being\s+)?said\b'

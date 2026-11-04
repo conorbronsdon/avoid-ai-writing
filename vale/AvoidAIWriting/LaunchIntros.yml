@@ -1,0 +1,10 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['launch-intro']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Launch-copy introduction: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: warning
+ignorecase: false
+nonword: true
+tokens:
+  - '(?<=^|[.!?]\s|\n)Meet\s+[A-Z][\w''-]{1,29}\s*,\s*(?:your\s+new\s+(?:favorite|go-to)\b|the\s+new\s+(?:home\s+of\b|way\s+to\b|standard\s+(?:in|for)\b|(?:standard|way|home)(?=\s*(?:[.!?,;:\x{2013}\x{2014}]|$))))'
+  - '(?<=^|[.!?]\s|\n)[Tt]hink\s+[A-Z][\w''-]{1,29}\s+meets\s+[A-Z][\w''-]{1,29}\b'

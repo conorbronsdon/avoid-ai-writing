@@ -1,0 +1,12 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['filler']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Filler phrase: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: true
+nonword: true
+tokens:
+  - '\bit\s+is\s+important\s+to\s+note\s+that\b'
+  - '\bin\s+terms\s+of\b'
+  - '\bthe\s+reality\s+is\s+that\b'
+  - '\bit''?s\s+important\s+to\s+note\s+that\b'

@@ -1,0 +1,477 @@
+{
+  "schemaVersion": "0.1.0",
+  "source": {
+    "path": "detector/patterns.js",
+    "export": "PATTERN_TABLES",
+    "sha256": "f9a7a964c0879bb17e8cf2833050e43e9f54f8e397168b62c2be6e07b870fa26"
+  },
+  "counts": {
+    "verified": 33,
+    "approximation": 8,
+    "unsupported": 13,
+    "unassessed": 0
+  },
+  "types": [
+    {
+      "type": "tier1",
+      "label": "AI vocabulary",
+      "status": "approximation",
+      "rules": [
+        "AvoidAIWriting.Tier1Vocabulary",
+        "AvoidAIWriting.Tier1Phrases"
+      ],
+      "reason": "Vale matches a listed word inside hyphenated and possessive forms (\"non-robust\"). The detector splits tokens on [\\w'-]+ and does not."
+    },
+    {
+      "type": "tier1-clarity",
+      "label": "Wordiness",
+      "status": "approximation",
+      "rules": [
+        "AvoidAIWriting.Tier1Clarity"
+      ],
+      "reason": "`features` is left out: it needs the noun/verb check in `featuresIsNoun`."
+    },
+    {
+      "type": "tier2",
+      "label": "Word cluster",
+      "status": "approximation",
+      "rules": [
+        "AvoidAIWriting.Tier2Vocabulary"
+      ],
+      "reason": "Vale has no per-paragraph distinct-word count. Shipped as `Tier2Vocabulary` at suggestion level, which fires on one word where the detector needs two in a paragraph."
+    },
+    {
+      "type": "tier3",
+      "label": "Overused word",
+      "status": "approximation",
+      "rules": [
+        "AvoidAIWriting.overuse.*"
+      ],
+      "reason": "The detector threshold is max(3, 3% of words). Shipped as `overuse/*` occurrence rules with a fixed max of 2 per document."
+    },
+    {
+      "type": "transition",
+      "label": "AI transition",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.Transitions"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "chatbot",
+      "label": "Chatbot artifact",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.ChatbotArtifacts"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "sycophantic",
+      "label": "Sycophantic tone",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.Sycophancy"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "filler",
+      "label": "Filler phrase",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.Fillers"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "generic-conclusion",
+      "label": "Generic conclusion",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.GenericConclusions"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "lets-construction",
+      "label": "\"Let's\" opener",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.LetsOpeners"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "reasoning-artifact",
+      "label": "Reasoning artifact",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.ReasoningArtifacts"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "significance-inflation",
+      "label": "Significance inflation",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.SignificanceInflation"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "vague-attribution",
+      "label": "Vague attribution",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.VagueAttribution"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "hollow-intensifier",
+      "label": "Hollow intensifier",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.HollowIntensifiers"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "emotional-flatline",
+      "label": "Stock reaction framing",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.StockReactions"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "lingering-attention",
+      "label": "Lingering-attention claim",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.LingeringAttention"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "novelty-inflation",
+      "label": "Novelty inflation",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.NoveltyInflation"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "cutoff-disclaimer",
+      "label": "Cutoff disclaimer",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.CutoffDisclaimers"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "template-phrase",
+      "label": "Template phrase",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.TemplatePhrases"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "false-concession",
+      "label": "False concession",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.FalseConcession"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "rhetorical-question",
+      "label": "Rhetorical question",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.RhetoricalQuestions"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "confidence-calibration",
+      "label": "Confidence stacking",
+      "status": "approximation",
+      "rules": [
+        "AvoidAIWriting.ConfidenceStacking"
+      ],
+      "reason": "The detector reports each phrase once three or more stack in one text. Shipped as `ConfidenceStacking`, an occurrence rule with the same threshold that gives one alert per file."
+    },
+    {
+      "type": "em-dash",
+      "label": "Em dash overuse",
+      "status": "unsupported",
+      "rules": [],
+      "reason": "Per-document density with separator-position exclusions."
+    },
+    {
+      "type": "uniformity",
+      "label": "Rhythm uniformity",
+      "status": "unsupported",
+      "rules": [],
+      "reason": "Sentence and paragraph length variance."
+    },
+    {
+      "type": "formatting",
+      "label": "Formatting",
+      "status": "unsupported",
+      "rules": [],
+      "reason": "Composite structural check."
+    },
+    {
+      "type": "tier3-phrase",
+      "label": "Boilerplate phrase",
+      "status": "approximation",
+      "rules": [
+        "AvoidAIWriting.boilerplate.*"
+      ],
+      "reason": "Density-gated at two uses. Shipped as `boilerplate/*` occurrence rules with max 1 per document."
+    },
+    {
+      "type": "tier3-phrase-cluster",
+      "label": "Boilerplate cluster",
+      "status": "unsupported",
+      "rules": [],
+      "reason": "Cluster count over distinct boilerplate phrases."
+    },
+    {
+      "type": "hashtag-stuff",
+      "label": "Hashtag stuffing",
+      "status": "unsupported",
+      "rules": [],
+      "reason": "Count-based."
+    },
+    {
+      "type": "bullet-np-list",
+      "label": "Bullet-NP list",
+      "status": "unsupported",
+      "rules": [],
+      "reason": "Structural check over list items."
+    },
+    {
+      "type": "hedge-stack",
+      "label": "Hedge-stacked prediction",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.HedgeStack"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "future-narrative",
+      "label": "Generic future narrative",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.FutureNarrative"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "real-actual-inflation",
+      "label": "\"Real/actual\" inflation",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.RealActualInflation"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "social-cta-closer",
+      "label": "Engagement-bait closer",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.EngagementBait"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "formulaic-opener",
+      "label": "Formulaic opener",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.FormulaicOpeners"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "speculative-opener",
+      "label": "Speculative scenario opener",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.SpeculativeOpeners"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "launch-intro",
+      "label": "Launch-copy introduction",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.LaunchIntros"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "crowd-contrast",
+      "label": "Dramatized crowd contrast",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.CrowdContrast"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "fake-casual-prop",
+      "label": "Fake-casual prop",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.FakeCasualProps"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "title-case-header",
+      "label": "Title Case header",
+      "status": "unsupported",
+      "rules": [],
+      "reason": "Context-mode dependent."
+    },
+    {
+      "type": "parenthetical-hedge",
+      "label": "Parenthetical hedge",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.ParentheticalHedges"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "smart-punct-signature",
+      "label": "Smart-punct signature",
+      "status": "unsupported",
+      "rules": [],
+      "reason": "Multi-signal composite, style-only."
+    },
+    {
+      "type": "punct-distribution",
+      "label": "Punctuation distribution",
+      "status": "unsupported",
+      "rules": [],
+      "reason": "Stylometric."
+    },
+    {
+      "type": "fnword-trigram-entropy",
+      "label": "Grammar repetition",
+      "status": "unsupported",
+      "rules": [],
+      "reason": "Stylometric."
+    },
+    {
+      "type": "cross-para-burstiness",
+      "label": "Cross-paragraph rhythm",
+      "status": "unsupported",
+      "rules": [],
+      "reason": "Stylometric."
+    },
+    {
+      "type": "normalization-flag",
+      "label": "Bypass-trick chars",
+      "status": "unsupported",
+      "rules": [],
+      "reason": "Pre-pass over invisible and homoglyph characters, not a prose pattern."
+    },
+    {
+      "type": "low-ttr",
+      "label": "Low vocabulary diversity",
+      "status": "unsupported",
+      "rules": [],
+      "reason": "Stylometric."
+    },
+    {
+      "type": "ai-placeholder",
+      "label": "Unfilled placeholder",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.Placeholders"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "ai-citation-markup",
+      "label": "Chatbot citation markup leak",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.CitationMarkup"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "ai-utm-source",
+      "label": "AI-tool URL parameter",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.UTMSource"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "unnecessary-hyphenation",
+      "label": "Unnecessary hyphenation",
+      "status": "approximation",
+      "rules": [
+        "AvoidAIWriting.UnnecessaryHyphenation"
+      ],
+      "reason": "The detector masks file paths, package names and code identifiers before matching; Vale does not. Computed fixes are not carried."
+    },
+    {
+      "type": "performed-insight",
+      "label": "Performed-insight phrase",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.PerformedInsight"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "negation-chain",
+      "label": "Negation chain",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.NegationChain"
+      ],
+      "reason": ""
+    },
+    {
+      "type": "negative-parallelism",
+      "label": "Negative parallelism",
+      "status": "approximation",
+      "rules": [
+        "AvoidAIWriting.NegativeParallelism"
+      ],
+      "reason": "Reveal frames only. A contrast frame counts only when another frame starts within two sentences in the same paragraph, which Vale cannot check."
+    },
+    {
+      "type": "dev-blog-boilerplate",
+      "label": "Dev-blog boilerplate",
+      "status": "verified",
+      "rules": [
+        "AvoidAIWriting.DevBlogBoilerplate"
+      ],
+      "reason": ""
+    }
+  ]
+}

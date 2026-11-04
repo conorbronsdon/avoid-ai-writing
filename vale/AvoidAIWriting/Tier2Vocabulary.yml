@@ -1,0 +1,56 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types.tier2). Do not edit; run scripts/build-vale.js.
+# Approximation: the detector flags these only when two or more distinct
+# Tier 2 words share a paragraph. Vale has no such check, so this fires per word
+# at the lowest level. Raise or disable it in .vale.ini to taste.
+extends: existence
+message: 'Word cluster vocabulary: ''%s''. The detector flags this only alongside another Tier 2 word in the same paragraph.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: true
+nonword: true
+tokens:
+  - '\bharness\b'
+  - '\bnavigate\b'
+  - '\bnavigating\b'
+  - '\bfoster\b'
+  - '\belevate\b'
+  - '\bunleash\b'
+  - '\bstreamline\b'
+  - '\bempower\b'
+  - '\bbolster\b'
+  - '\bspearhead\b'
+  - '\bresonate\b'
+  - '\bresonates\b'
+  - '\brevolutionize\b'
+  - '\bfacilitate\b'
+  - '\bfacilitates\b'
+  - '\bunderpin\b'
+  - '\bnuanced\b'
+  - '\bcrucial\b'
+  - '\bmultifaceted\b'
+  - '\becosystem\b'
+  - '\bmyriad\b'
+  - '\bplethora\b'
+  - '\bencompass\b'
+  - '\bcatalyze\b'
+  - '\breimagine\b'
+  - '\bgalvanize\b'
+  - '\baugment\b'
+  - '\bcultivate\b'
+  - '\billuminate\b'
+  - '\belucidate\b'
+  - '\bjuxtapose\b'
+  - '\btransformative\b'
+  - '\btransformation\b'
+  - '\bcornerstone\b'
+  - '\bparamount\b'
+  - '\bpoised\b'
+  - '\bburgeoning\b'
+  - '\bnascent\b'
+  - '\bquintessential\b'
+  - '\boverarching\b'
+  - '\bquietly\b'
+  - '\bunderpinning\b'
+  - '\bunderpinnings\b'
+  - '\bparadigm-shifting\b'
+  - '\bdeeply\s+(?:integrated|committed|rooted|personal|human|flawed|resonant|transformative|interconnected|ingrained|embedded|meaningful)\b'

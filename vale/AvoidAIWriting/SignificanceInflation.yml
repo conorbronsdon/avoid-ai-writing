@@ -1,0 +1,12 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['significance-inflation']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Significance inflation: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: warning
+ignorecase: true
+nonword: true
+tokens:
+  - '\bmarking\s+a\s+(?:pivotal|significant|important)\s+moment\b'
+  - '\ba\s+watershed\s+moment\s+for\b'
+  - '\b(?:moment|milestone|chapter|era|turning\s+point|watershed|inflection\s+point|leap|role|new\s+phase)\s+in\s+the\s+evolution\s+of\b'
+  - '\ba\s+(?:pivotal|defining)\s+moment\s+in\b'

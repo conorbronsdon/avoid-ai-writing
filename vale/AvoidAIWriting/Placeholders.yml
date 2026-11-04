@@ -1,0 +1,14 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['ai-placeholder']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Unfilled placeholder: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: error
+ignorecase: false
+nonword: true
+tokens:
+  - '(?i:\[(?:Your|Insert|Add|Enter|Describe|Specify|Choose|Pick)[^\]\n]{1,80}\])'
+  - '(?i:\[(?:Recipient|Sender|Topic|Subject|Salutation|Closing|Position|Department|Project Name|Company Name|Date)(?:\s+[^\]\n]{0,60})?\])'
+  - '\[(?:INSERT|FILL\s+IN|ADD|TODO|TBD|PLACEHOLDER)[^\]\n]{0,80}\]'
+  - '\b(?:19|20)\d{2}-XX-XX\b'
+  - '\bXX/XX/(?:19|20)\d{2}\b'
+  - '(?i:<!--\s*(?:add|fill\s+in|insert|todo|placeholder)[^>]{0,120}-->)'

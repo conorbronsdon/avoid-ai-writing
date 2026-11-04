@@ -1,0 +1,12 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['sycophantic']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Sycophantic tone: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: error
+ignorecase: true
+nonword: true
+tokens:
+  - '\byou''?re\s+absolutely\s+right\b'
+  - '\bthat''?s\s+a\s+really\s+insightful\b'
+  - '\bthat''?s\s+a\s+great\s+question\b'
+  - '\bexcellent\s+question\b'

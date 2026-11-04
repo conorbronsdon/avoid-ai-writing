@@ -1,0 +1,13 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['hollow-intensifier']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Hollow intensifier: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: true
+nonword: true
+tokens:
+  - '\bgenuine(?:ly)?\b'
+  - '\btruly\b'
+  - '\bquite\s+frankly\b'
+  - '\bto\s+be\s+honest\b'
+  - '\blet''?s\s+be\s+clear\b'

@@ -1,0 +1,11 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['template-phrase']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Template phrase: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: warning
+ignorecase: true
+nonword: true
+tokens:
+  - '\ban?\s+(?:meaningful|significant|major|crucial|important|big|huge|bold|giant|monumental|pivotal|critical|key|vital|massive|tremendous|substantial|decisive|landmark|historic|exciting|transformative)\s+step\s+(?:towards?|forward)\b'
+  - '\bwhether\s+you''?re\s+\w+\s+or\s+\w+'
+  - '\bi\s+recently\s+had\s+the\s+pleasure\s+of\b'

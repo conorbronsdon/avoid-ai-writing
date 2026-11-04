@@ -9,7 +9,6 @@ const root = path.resolve(__dirname, '..');
 const SUITES = [
   'scripts/flatten-skill.test.js',
   'scripts/editorial-cards.test.js',
-  'scripts/vale-export-sample.test.js',
   'scripts/reference-loading.test.js',
   'detector/patterns.test.js',
   'detector/categories.test.js',
@@ -17,6 +16,8 @@ const SUITES = [
   'scripts/corpus.test.js',
   'scripts/corpus-intake-example.test.js',
   'scripts/check-style.test.js',
+  'scripts/build-vale.test.js',
+  'scripts/vale-cases.test.js',
   'scripts/normalize-quotes.test.js',
   'scripts/verify-release-versions.test.js',
   'scripts/fp-measure.test.js',

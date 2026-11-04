@@ -1,0 +1,22 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['unnecessary-hyphenation']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Unnecessary hyphenation: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: false
+nonword: true
+tokens:
+  - '\bresearch-impact\s+aggregat(?:or|ion)s?\b'
+  - '\bdata-source\s+strateg(?:y|ies)\b'
+  - '\bPython-package\s+usage\b'
+  - '\bRust-crate\s+usage\b'
+  - '\bsingle-Project\s+Manifest\b'
+  - '\btotal-downloads\s+figures?\b'
+  - '\blife-sciences-native\s+citation\s+count\b'
+  - '\bcode-base\b'
+  - '\bdata-set\b'
+  - '\btime-frame\b'
+  - '\broad-map\b'
+  - '(?i:\bin\s+real-time(?=\s*(?:[,.!?;:]|$)|\s+(?:(?:across|as|automatically|because|but|continuously|during|dynamically|every|for|from|immediately|instantly|on|simultaneously|through|throughout|until|via|when|while|with|without)\b)))'
+  - '(?i:\b(?:for|over)\s+the\s+long-term(?=\s*(?:[,.!?;:]|$)|\s+(?:across|because|but|by|during|for|from|on|through|throughout|until|via|when|while|with|without)\b))'
+  - '(?i:\b(?:functions?|functioned|functioning|operates?|operated|operating|runs?|ran|running|works?|worked|working)\s+out-of-the-box\b)'

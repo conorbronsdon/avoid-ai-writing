@@ -1,0 +1,12 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['parenthetical-hedge']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Parenthetical hedge: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: true
+nonword: true
+tokens:
+  - '\(\s*(?:and\s+)?(?:increasingly|notably|importantly|crucially|interestingly|perhaps)[,]?\s+[^)]{3,60}\)'
+  - '\(\s*or\s+more\s+(?:precisely|accurately|specifically)[,]?\s+[^)]{3,60}\)'
+  - '\(\s*though\s+to\s+be\s+fair[,]?\s+[^)]{3,60}\)'
+  - '\(\s*at\s+least\s+(?:in\s+)?(?:theory|principle|part)[,]?\s+[^)]{0,60}\)'

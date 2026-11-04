@@ -1,0 +1,10 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['fake-casual-prop']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Fake-casual prop: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: warning
+ignorecase: true
+nonword: true
+tokens:
+  - '\*\s?(?:checks\s+notes|chef[''\x{2019}]s\s+kiss|mic\s+drop|takes\s+a\s+deep\s+breath|sips\s+(?:coffee|tea)|nervous\s+laughter)\s?\*'
+  - '\(\s?(?:yes|no)\s?,\s?(?:really|seriously)\s?\)'

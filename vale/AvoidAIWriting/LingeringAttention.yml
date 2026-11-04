@@ -1,0 +1,13 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['lingering-attention']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Lingering-attention claim: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: true
+nonword: true
+tokens:
+  - '\b(?:the|that|this)\s+(?:one\s+)?(?:line|quote|bit|part|idea|point|framing|comment|thing)\s+(?:that\s+)?i\s+keep\s+(?:coming\s+back\s+to|thinking\s+about)\b'
+  - '\bi\s+can''?t\s+stop\s+thinking\s+about\b'
+  - '\bstill\s+thinking\s+about\s+(?:this|that)\s+one\b'
+  - '\b(?:been|be)\s+rattling\s+around\s+(?:in\s+)?my\s+(?:head|brain)\b'
+  - '\bi''?ve\s+been\s+chewing\s+on\s+(?:this|that)\b'

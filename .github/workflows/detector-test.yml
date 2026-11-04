@@ -5,6 +5,7 @@ on:
     paths:
       - "detector/**"
       - "scripts/**"
+      - "vale/**"
       - "examples/**"
       - "evals/**"
       - "package.json"
@@ -52,6 +53,18 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node-version }}
+      # Pinned Vale for scripts/vale-cases.test.js, which fails under CI without
+      # it. Bump VALE_VERSION together with vale/fixtures/cases.json, and take
+      # the SHA-256 of the Linux tarball from the release.
+      - name: Install Vale
+        env:
+          VALE_VERSION: 3.26.0
+          VALE_SHA256: 22aa69a556558e4a9dfc63c17030777383d8d3c48dcdfad655fa98e839d666ed
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/vale.tar.gz" "https://github.com/vale-cli/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_Linux_64-bit.tar.gz"
+          echo "${VALE_SHA256}  $RUNNER_TEMP/vale.tar.gz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/vale.tar.gz" -C "$RUNNER_TEMP" vale
+          echo "VALE_BIN=$RUNNER_TEMP/vale" >> "$GITHUB_ENV"
       - run: npm test
       # Release runs trigger only on package.json changes, so a release PR that
       # bumps CHANGELOG.md without package.json would otherwise merge green and

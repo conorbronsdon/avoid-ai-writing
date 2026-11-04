@@ -1,0 +1,10 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['future-narrative']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Generic future narrative: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: warning
+ignorecase: true
+nonword: true
+tokens:
+  - '\b(?:may|could|will|is\s+(?:poised|set)\s+to)\s+become\s+(?:one\s+of\s+)?(?:the\s+)?(?:most\s+)?\w+\s+(?:narratives?|stories|developments?|trends?|movements?|chapters?|themes?|forces?)\b'
+  - '\bone\s+of\s+the\s+most\s+important\s+(?:narratives?|stories|trends?|themes?)\s+of\s+the\s+(?:next|coming)\s+\w+\b'

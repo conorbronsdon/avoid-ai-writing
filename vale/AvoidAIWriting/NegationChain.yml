@@ -1,0 +1,11 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['negation-chain']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Negation chain: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: warning
+ignorecase: false
+nonword: true
+tokens:
+  - '(?<=^|[.!?]\s|\n|[:\x{2013}\x{2014}]\s)No\s+(?!matter\b|one\b|doubt\b|longer\b|way\b|less\b|more\b|such\b|other\b|means\b)[a-z''’-]+(?:\s+(?!(?:in|on|at|of|to|for|with|from|by|is|are|was|were|be|been|being|will|would|can|could|should|shall|may|might|must|have|has|had|do|does|did)\b)[a-z''’-]+)?(?:\s*,\s*(?:and\s+|or\s+|just\s+)?no\s+(?!matter\b|one\b|doubt\b|longer\b|way\b|less\b|more\b|such\b|other\b|means\b)[a-z''’-]+(?:\s+(?!(?:in|on|at|of|to|for|with|from|by|is|are|was|were|be|been|being|will|would|can|could|should|shall|may|might|must|have|has|had|do|does|did)\b)[a-z''’-]+)?){2,}'
+  - '(?i:\b(?:did\s+not|didn[''\x{2019}]t)\s+[a-z]+[^,.;!?\n]{0,20},\s*(?:did\s+not|didn[''\x{2019}]t)\s+[a-z]+)'
+  - '(?i:\b(?:do\s+not|don[''\x{2019}]t)\s+(?:just\s+)?(\w+)\s+it\b[^.!?\n]{0,60}[.!?;:,][\s''"\x{201d}\x{2019}]*(?:just\s+)?\1\s+it\b)'

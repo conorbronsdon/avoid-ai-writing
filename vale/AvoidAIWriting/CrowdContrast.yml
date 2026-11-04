@@ -1,0 +1,11 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['crowd-contrast']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Dramatized crowd contrast: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: true
+nonword: true
+tokens:
+  - '\bwhile\s+(?:everyone\s+else|the\s+(?:industry|market|competition)|others)\s+(?:was|were|is|are)\s+still\s+(?:busy\s+)?(?:(?:debat|deliberat|hesitat|theoriz|philosophiz|pontificat|speculat|argu)ing|(?:dither|bicker)ing)\b'
+  - '\bwhile\s+(?:everyone\s+else|the\s+(?:industry|market|competition)|others)\s+(?:was\s+|were\s+)?(?:busy\s+)?(?:writing|wrote)\s+think-?\s?pieces\b'
+  - '\bwhile\s+(?:everyone\s+else|the\s+(?:industry|market|competition)|others)\s+(?:was\s+|were\s+|is\s+|are\s+)?(?:still\s+)?play(?:ed|ing|s)?\s+catch[-\s]?up\b'

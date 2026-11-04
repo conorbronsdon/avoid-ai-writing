@@ -1,0 +1,10 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['false-concession']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'False concession: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: true
+nonword: true
+tokens:
+  - '\bwhile\s+[^,;:.!?\n]{1,60}?\s+is\s+impressive\b[^,;:.!?\n]{0,80}?[,;:]\s*[^,;:.!?\n]{0,80}?(?:remains?\s+a\s+challenge|(?:is|are)\s+still\s+an?\s+open\s+questions?|there\s+(?:is|are)\s+still\s+work\s+to\s+do|remains?\s+unanswered)\b'
+  - '\balthough\s+[^,;:.!?\n]{1,60}?\s+has\s+made\s+strides\b[^,;:.!?\n]{0,80}?[,;:]\s*[^,;:.!?\n]{0,80}?(?:remains?\s+a\s+challenge|(?:is|are)\s+still\s+an?\s+open\s+questions?|there\s+(?:is|are)\s+still\s+work\s+to\s+do|remains?\s+unanswered)\b'

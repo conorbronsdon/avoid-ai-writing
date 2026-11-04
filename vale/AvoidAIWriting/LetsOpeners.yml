@@ -1,0 +1,13 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['lets-construction']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: '"Let''s" opener: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: true
+nonword: true
+tokens:
+  - '\blet''?s\s+explore\b'
+  - '\blet''?s\s+take\s+a\s+look\b'
+  - '\blet''?s\s+break\s+this\s+down\b'
+  - '\blet''?s\s+examine\b'
+  - '\blet''?s\s+(?:consider|discuss|delve|unpack|walk\s+through)\b'

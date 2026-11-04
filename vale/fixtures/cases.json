@@ -1,0 +1,700 @@
+{
+  "valeVersion": "3.26.0",
+  "note": "Run by scripts/vale-cases.test.js. Each case is linted as a Markdown file (or plain text with \"ext\": \"txt\"). `vale` is whether the rule alerts; `detector` is whether analyzeText reports the rule's type. A case where the two differ records a known difference, and `why` says what it is.",
+  "rules": {
+    "Transitions": [
+      {
+        "id": "fire",
+        "text": "Moreover, the team shipped the release a full week before the deadline.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "We needed more time over the weekend to finish the release notes.",
+        "vale": false,
+        "detector": false
+      },
+      {
+        "id": "double-quoted",
+        "text": "The style guide bans the word \"Moreover, the plan\" in every release note we ship.",
+        "vale": true,
+        "detector": false,
+        "why": "The detector masks double-quoted spans; Vale lints quoted prose."
+      },
+      {
+        "id": "blockquote",
+        "text": "The reviewer pasted a line from the draft.\n\n> Moreover, the team shipped the release a full week early.\n\nWe rewrote it before publishing the notes.",
+        "vale": true,
+        "detector": false,
+        "why": "The detector strips blockquotes; Vale lints them."
+      },
+      {
+        "id": "inline-code",
+        "text": "The linter flags the token `moreover` when it appears in any of our release notes.",
+        "vale": false,
+        "detector": true,
+        "why": "Vale skips code in Markdown; the detector reads it."
+      },
+      {
+        "id": "fenced-code",
+        "text": "The fixture below holds the flagged word inside a code block.\n\n```\nMoreover, this line is code.\n```\n\nNothing outside the block should alert at all.",
+        "vale": false,
+        "detector": true,
+        "why": "Vale skips code in Markdown; the detector reads it."
+      },
+      {
+        "id": "zero-width",
+        "text": "More​over, the team shipped the release a full week before the deadline.",
+        "vale": false,
+        "detector": true,
+        "why": "The detector removes zero-width characters before matching; Vale does not."
+      }
+    ],
+    "ChatbotArtifacts": [
+      {
+        "id": "fire",
+        "text": "Here is the summary of the meeting notes you asked for. I hope this helps!",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "I hope the weather helps the farmers this season after such a dry spring.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "Sycophancy": [
+      {
+        "id": "fire",
+        "text": "You're absolutely right, and the second option is the cheaper one for this team.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "You are right about the cost, and the second option is cheaper for this team.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "Fillers": [
+      {
+        "id": "fire",
+        "text": "It is important to note that the service restarts every night at two o'clock.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "It is important that the service restarts every night at two o'clock sharp.",
+        "vale": false,
+        "detector": false
+      },
+      {
+        "id": "nbsp",
+        "text": "The plan is cheaper in terms of hosting and staff time for the whole year.",
+        "vale": false,
+        "detector": true,
+        "why": "JS \\s matches a no-break space; in Vale the same pattern does not match it."
+      }
+    ],
+    "GenericConclusions": [
+      {
+        "id": "fire",
+        "text": "We closed the last open ticket on Friday, and only time will tell if it holds.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "We closed the last open ticket on Friday, and the logs will tell us if it holds.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "LetsOpeners": [
+      {
+        "id": "fire",
+        "text": "Let's explore how the cache behaves when two requests arrive at the same time.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "Lets explorers camp near the river when the main trail is closed for the season.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "ReasoningArtifacts": [
+      {
+        "id": "fire",
+        "text": "Let me think step by step about why the nightly backup job failed again.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "Let me know step by step how you fixed the nightly backup job last week.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "SignificanceInflation": [
+      {
+        "id": "fire",
+        "text": "The new release shipped on Tuesday, marking a pivotal moment for the support team.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "The new release shipped on Tuesday, a busy moment for the whole support team.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "VagueAttribution": [
+      {
+        "id": "fire",
+        "text": "Experts believe that the new database layout will cut query time in half.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "Our two database experts measured the new layout and query time fell by half.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "HollowIntensifiers": [
+      {
+        "id": "fire",
+        "text": "The new onboarding guide is truly helpful for people joining the support team.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "The new onboarding guide is helpful for people joining the support team this month.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "StockReactions": [
+      {
+        "id": "fire",
+        "text": "What surprised me most was how little the change affected the nightly build time.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "The change surprised the team because it barely affected the nightly build time.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "LingeringAttention": [
+      {
+        "id": "fire",
+        "text": "The line I keep coming back to is the one about paying down the old debt first.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "The line we keep for returns is shorter than the one at the main checkout desk.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "NoveltyInflation": [
+      {
+        "id": "fire",
+        "text": "This is a problem nobody talks about in planning meetings for the support team.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "This is a problem the support team talks about in every single planning meeting.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "CutoffDisclaimers": [
+      {
+        "id": "fire",
+        "text": "As of my last update, the library supported only the first two file formats.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "As of the last update, the library supported only the first two file formats.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "Placeholders": [
+      {
+        "id": "fire",
+        "text": "Thanks again for the call on Monday, and please send the signed form to [Your Name] soon.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "Thanks again for the call on Monday, and please send the signed form to Dana soon.",
+        "vale": false,
+        "detector": false
+      },
+      {
+        "id": "html-comment",
+        "text": "Revenue grew four percent last year across all regions and costs held flat for us. <!-- TODO: add the source -->",
+        "vale": false,
+        "detector": true,
+        "why": "Vale skips HTML comments in Markdown; the detector reads them."
+      }
+    ],
+    "CitationMarkup": [
+      {
+        "id": "fire",
+        "text": "The report says revenue grew by four percent last year. citeturn0search1 The rest is unchanged.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "The report says revenue grew by four percent last year, citing two public filings.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "UTMSource": [
+      {
+        "id": "fire",
+        "text": "The draft linked to https://example.test/guide?utm_source=chatgpt.com for the full setup guide.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "The draft linked to https://example.test/guide?utm_source=newsletter for the full setup guide.",
+        "vale": false,
+        "detector": false
+      },
+      {
+        "id": "markdown-link",
+        "text": "The draft linked to [the setup guide](https://example.test/guide?utm_source=chatgpt.com) for the whole team today.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "code-block",
+        "text": "The setup notes include one command for the whole team.\n\n```\ncurl https://example.test/?utm_source=chatgpt.com\n```\n\nRun it once on each new laptop.",
+        "vale": true,
+        "detector": true
+      }
+    ],
+    "TemplatePhrases": [
+      {
+        "id": "fire",
+        "text": "Moving the build to the new runners is a major step forward for the whole team.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "Moving the build to the new runners took a major step of planning for the team.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "FalseConcession": [
+      {
+        "id": "fire",
+        "text": "While the new parser is impressive in many ways, error recovery remains a challenge for us.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "The new parser is fast in many ways, and its error recovery got better this month too.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "RhetoricalQuestions": [
+      {
+        "id": "fire",
+        "text": "The vendor raised prices again this quarter. So why should you care about any of it?",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "The vendor raised prices again this quarter, so we moved two services to another host.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "HedgeStack": [
+      {
+        "id": "fire",
+        "text": "The new index could potentially reduce the time each nightly report takes to build.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "The new index could reduce the time each nightly report takes to build by a third.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "FutureNarrative": [
+      {
+        "id": "fire",
+        "text": "Local inference on laptops could become one of the most important trends for small teams.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "Local inference on laptops became cheap enough for small teams to try this spring.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "RealActualInflation": [
+      {
+        "id": "fire",
+        "text": "The token finally has real utility now that the payment partners accept it at checkout.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "The token is finally useful now that the payment partners accept it at checkout.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "EngagementBait": [
+      {
+        "id": "fire",
+        "text": "The talk covers how the team cut cloud costs in half. This one is worth your time.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "The talk covers how the team cut cloud costs in half over one long quarter of work.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "PerformedInsight": [
+      {
+        "id": "fire",
+        "text": "Half the alerts last month came from one flaky test. Sit with that for a moment.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "Half the alerts last month came from one flaky test, so we sat with the owner to fix it.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "NegationChain": [
+      {
+        "id": "fire",
+        "text": "The new plan is simple. No meetings, no slides, no status reports for the rest of the month.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "The new plan is simple. No meetings this week, and short status reports for the rest of the month.",
+        "vale": false,
+        "detector": false
+      },
+      {
+        "id": "backreference",
+        "text": "Don't just read it once on your phone; just read it again at your desk tomorrow.",
+        "vale": true,
+        "detector": true
+      }
+    ],
+    "NegativeParallelism": [
+      {
+        "id": "fire",
+        "text": "The outage wasn't just a config error, it was a gap in how we review every change.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "The outage was a config error, and we added a review step for every change after it.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "DevBlogBoilerplate": [
+      {
+        "id": "fire",
+        "text": "Install the package, add one line to your config file, and it just works on every platform.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "Install the package, add one line to your config file, and it runs on every platform we test.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "FormulaicOpeners": [
+      {
+        "id": "fire",
+        "text": "In the rapidly evolving world of web hosting, small teams need simple deploy tools.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "In the world of web hosting, small teams need simple deploy tools that do not break.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "SpeculativeOpeners": [
+      {
+        "id": "fire",
+        "text": "Imagine a world where every deploy finishes in under a minute for the whole team.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "Imagine the deploy finishing in under a minute for the whole team on a busy Friday.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "LaunchIntros": [
+      {
+        "id": "fire",
+        "text": "Our new tool is out today. Think Figma meets Postgres, built for small product teams.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "Our new tool is out today. I think the Figma plugin works with Postgres for small teams.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "CrowdContrast": [
+      {
+        "id": "fire",
+        "text": "While everyone else was still debating the spec, our team shipped a working version.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "While the other team reviewed the spec, our team shipped a working version on Friday.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "FakeCasualProps": [
+      {
+        "id": "fire",
+        "text": "The new build is three times faster (yes, really) on the old laptops we still use.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "The new build is three times faster (we measured it) on the old laptops we still use.",
+        "vale": false,
+        "detector": false
+      },
+      {
+        "id": "asterisk-markdown",
+        "text": "The new build is three times faster *checks notes* on the old laptops we still use.",
+        "vale": false,
+        "detector": true,
+        "why": "In Markdown the asterisks are emphasis markup, so Vale never sees them; the detector reads the raw text."
+      },
+      {
+        "id": "asterisk-plain-text",
+        "ext": "txt",
+        "text": "The new build is three times faster *checks notes* on the old laptops we still use.",
+        "vale": true,
+        "detector": true
+      }
+    ],
+    "ParentheticalHedges": [
+      {
+        "id": "fire",
+        "text": "The new cache helps most on cold starts (and increasingly on warm ones as well).",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "The new cache helps most on cold starts (about forty percent) and a little on warm ones.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "UnnecessaryHyphenation": [
+      {
+        "id": "fire",
+        "text": "We moved the whole code-base to the new build system over two quiet weeks in June.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "We moved the whole codebase to the new build system over two quiet weeks in June.",
+        "vale": false,
+        "detector": false
+      },
+      {
+        "id": "protected-path",
+        "text": "The script reads src/code-base/index.js and writes the bundle into the dist folder.",
+        "vale": true,
+        "detector": false,
+        "why": "The detector masks file paths and identifiers before matching; Vale does not."
+      }
+    ],
+    "Tier1Vocabulary": [
+      {
+        "id": "fire",
+        "text": "The new layout gives the team a robust way to review changes before each release.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "The new layout gives the team a reliable way to review changes before each release.",
+        "vale": false,
+        "detector": false
+      },
+      {
+        "id": "hyphenated",
+        "text": "The old layout gave the team a non-robust way to review changes before each release.",
+        "vale": true,
+        "detector": false,
+        "why": "The detector matches whole tokens split on [\\w'-]+, so 'non-robust' is one token; Vale matches 'robust' inside it."
+      }
+    ],
+    "Tier1Phrases": [
+      {
+        "id": "fire",
+        "text": "In this post we delve into how the team cut the nightly build time in half.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "In this post we look at how the team cut the nightly build time in half this year.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "Tier1Clarity": [
+      {
+        "id": "fire",
+        "text": "We split the job into two steps in order to keep each nightly run under an hour.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "near-miss",
+        "text": "We split the job into two steps to keep each nightly run under an hour on the old server.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "Tier2Vocabulary": [
+      {
+        "id": "fire",
+        "text": "The new tools help us streamline reviews and empower each team to ship changes faster.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "single-word",
+        "text": "The new tools help us streamline reviews so each team can ship its changes faster.",
+        "vale": true,
+        "detector": false,
+        "why": "The detector needs two distinct Tier 2 words in one paragraph; Vale alerts on each word."
+      },
+      {
+        "id": "near-miss",
+        "text": "The new tools help us speed up reviews so each team can ship its changes faster.",
+        "vale": false,
+        "detector": false
+      }
+    ],
+    "ConfidenceStacking": [
+      {
+        "id": "fire",
+        "text": "Interestingly, the plan held. Surprisingly, so did the budget. It was certainly a relief for everyone.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "two-phrases",
+        "text": "Interestingly, the plan held. Surprisingly, so did the budget for the rest of the long year.",
+        "vale": false,
+        "detector": false
+      }
+    ]
+  },
+  "occurrence": {
+    "note": "One case pair per occurrence rule, generated by the test: `fire` uses the term at the rule's threshold, `near-miss` one time fewer. Terms for the phrase rules are listed here because a phrase cannot be read back from its regex.",
+    "boilerplate": {
+      "Phrase01": "emerging sector",
+      "Phrase02": "the integration of",
+      "Phrase03": "the intersection of",
+      "Phrase04": "community-driven",
+      "Phrase05": "long-term sustainability",
+      "Phrase06": "user engagement",
+      "Phrase07": "decentralized compute",
+      "Phrase08": "reward emissions",
+      "Phrase09": "tokenized incentive structures",
+      "Phrase10": "designed for long-term"
+    }
+  },
+  "boundaryFrom": {
+    "file": "scripts/fixtures/vale-export-94/cases.json",
+    "rule": "UTMSource",
+    "note": "Cases written for the draft export contract. Their `detector` field is checked as written; `vale` is recorded here.",
+    "vale": {
+      "utm-positive": true,
+      "utm-negative": false,
+      "referrer-positive": true,
+      "referrer-negative": false,
+      "case-and-ampersand": true,
+      "boundary-negative": false,
+      "prefix-residue": true,
+      "short-document": true,
+      "quoted": true,
+      "normalized": false
+    }
+  }
+}
