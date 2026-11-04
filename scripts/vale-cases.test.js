@@ -10,7 +10,8 @@
  * the rule's Vale level was mapped from.
  *
  * Vale comes from VALE_BIN or PATH and must be the version pinned in the cases
- * file. Without it the suite skips locally and fails under CI.
+ * file. Without it the suite skips, unless VALE_REQUIRED is set: the detector
+ * workflow sets it, so CI cannot pass there without running the cases.
  */
 'use strict';
 const assert = require('assert');
@@ -30,7 +31,7 @@ let passed = 0;
 const t = (name, fn) => { fn(); passed += 1; process.stdout.write(`  ✓ ${name}\n`); };
 
 function skipOrFail(reason) {
-  if (process.env.CI) { console.error(`vale-cases: ${reason}`); process.exit(1); }
+  if (process.env.VALE_REQUIRED) { console.error(`vale-cases: ${reason}`); process.exit(1); }
   console.log(`  - skipped: ${reason}. Install Vale ${CASES.valeVersion} or set VALE_BIN to run the Vale cases.`);
   process.exit(0);
 }

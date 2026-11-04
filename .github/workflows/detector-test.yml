@@ -53,9 +53,10 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node-version }}
-      # Pinned Vale for scripts/vale-cases.test.js, which fails under CI without
-      # it. Bump VALE_VERSION together with vale/fixtures/cases.json, and take
-      # the SHA-256 of the Linux tarball from the release.
+      # Pinned Vale for scripts/vale-cases.test.js. VALE_REQUIRED on the test
+      # step makes the cases fail rather than skip if Vale is missing. Bump
+      # VALE_VERSION together with vale/fixtures/cases.json, and take the
+      # SHA-256 of the Linux tarball from the release.
       - name: Install Vale
         env:
           VALE_VERSION: 3.26.0
@@ -66,6 +67,8 @@ jobs:
           tar -xzf "$RUNNER_TEMP/vale.tar.gz" -C "$RUNNER_TEMP" vale
           echo "VALE_BIN=$RUNNER_TEMP/vale" >> "$GITHUB_ENV"
       - run: npm test
+        env:
+          VALE_REQUIRED: "1"
       # Release runs trigger only on package.json changes, so a release PR that
       # bumps CHANGELOG.md without package.json would otherwise merge green and
       # never release. Enforce the agreement on every PR instead.
