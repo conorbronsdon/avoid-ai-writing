@@ -1,0 +1,10 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['hedge-stack']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Hedge-stacked prediction: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: warning
+ignorecase: true
+nonword: true
+tokens:
+  - '\b(?:could|may|might)\s+(?:(?!not\b|never\b|hardly\b|scarcely\b|barely\b)\w+\s+)?(?:potentially|eventually|ultimately|possibly|conceivably)\b'
+  - '\b(?:potentially|eventually|ultimately)\s+(?:could|may|might)\b'

@@ -1,0 +1,12 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['novelty-inflation']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Novelty inflation: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: true
+nonword: true
+tokens:
+  - '\bthe\s+failure\s+mode\s+nobody''?s?\s+naming\b'
+  - '\ba\s+problem\s+nobody\s+talks\s+about\b'
+  - '\bthe\s+insight\s+everyone''?s?\s+missing\b'
+  - '\bwhat\s+nobody\s+tells\s+you\b'

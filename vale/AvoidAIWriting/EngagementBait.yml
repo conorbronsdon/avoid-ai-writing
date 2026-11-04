@@ -1,0 +1,18 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['social-cta-closer']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Engagement-bait closer: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: warning
+ignorecase: true
+nonword: true
+tokens:
+  - '\bthis\s+one[''’]?s?\s+(?:is\s+)?(?:well\s+|totally\s+|absolutely\s+|definitely\s+|really\s+|truly\s+|easily\s+|more\s+than\s+)?worth\s+(?:your\s+time|the\s+read|a\s+read|every\s+(?:minute|second)|reading|watching|a\s+listen|a\s+watch|a\s+look|it)\b'
+  - '\bthis\s+one[''’]?s?\s+(?:is\s+)?a\s+must[-\s]?(?:read|watch|listen|see)\b'
+  - '\b(?:highly|strongly|can[''’]?t|cannot)\s+recommend\w*\s+(?:giving\s+)?(?:this|it)\s+(?:one\s+)?a\s+(?:read|listen|watch|look|go)\b'
+  - '\bdo\s+yourself\s+a\s+favou?r\s+and\s+(?:read|watch|check\s+out)\s+(?:this|it)\b'
+  - '\byou\s+(?:really\s+)?(?:won[''’]?t|do\s*n[''’]?t|will\s+not|do\s+not)\s+want\s+to\s+miss\s+this(?:\s+one)?(?=\s*(?:[:.!\n]|$))'
+  - '(?<=^|[,.!?:\n]\s{0,4})(?:you\s+can\s+)?thank\s+me\s+later\b'
+  - '(?<=^|[.!?:\n]\s{0,4})save\s+this\s+(?:one\s+)?for\s+later\b'
+  - '\bbookmark\s+this(?:\s+(?:one|post|thread))?(?=\s*(?:[:.!\n]|$))'
+  - '\bdo\s*n[''’]?t\s+sleep\s+on\s+this\b'
+  - '\btrust\s+me,?\s+(?:on\s+this|you[''’]?ll)\b'

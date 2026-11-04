@@ -1,0 +1,12 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['generic-conclusion']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Generic conclusion: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: true
+nonword: true
+tokens:
+  - '\bthe\s+future\s+looks\s+bright\b'
+  - '\bonly\s+time\s+will\s+tell\b'
+  - '\bone\s+thing\s+is\s+certain\b'
+  - '\bas\s+we\s+move\s+forward\b'

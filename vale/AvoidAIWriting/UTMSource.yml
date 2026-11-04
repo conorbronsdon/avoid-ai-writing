@@ -1,0 +1,11 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['ai-utm-source']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'AI-tool URL parameter: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: error
+ignorecase: true
+nonword: true
+scope: raw
+tokens:
+  - '[?&]utm_source=(?:chatgpt|openai|copilot|claude|grok|gemini|perplexity)(?:\.com|\.ai)?\b'
+  - '[?&]referrer=(?:chatgpt|copilot|grok|claude|gemini|perplexity)\.(?:com|ai)\b'

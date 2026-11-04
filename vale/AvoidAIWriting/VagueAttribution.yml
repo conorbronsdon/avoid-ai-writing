@@ -1,0 +1,12 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['vague-attribution']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Vague attribution: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: error
+ignorecase: true
+nonword: true
+tokens:
+  - '\bexperts\s+(?:believe|say|suggest|agree)\b'
+  - '\bstudies\s+(?:show|suggest|indicate)\b'
+  - '\bresearch\s+(?:shows|suggests|indicates)\b'
+  - '\bindustry\s+leaders\s+(?:agree|believe|say)\b'

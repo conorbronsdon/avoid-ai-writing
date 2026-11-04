@@ -1,0 +1,11 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['rhetorical-question']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Rhetorical question: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: true
+nonword: true
+tokens:
+  - '\bbut\s+what\s+does\s+this\s+mean\s+for\b'
+  - '\bso\s+why\s+should\s+you\s+care\b'
+  - '\bwhat''?s\s+next\?\s*'

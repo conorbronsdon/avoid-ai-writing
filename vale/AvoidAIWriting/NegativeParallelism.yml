@@ -1,0 +1,9 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['negative-parallelism']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Negative parallelism: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: warning
+ignorecase: true
+nonword: true
+tokens:
+  - '(?:\b(?:is|are|was|were)(?:n[''\x{2019}]t|\s+not)|\b(?:it|this|that|they|he|she|we|you)[''\x{2019}](?:s|re)\s+not)\s+(?:just|merely|simply)\s+[^,;:.!?\n\x{2014}\x{2013}]{1,80}?(?:\s*[,;:]|\s*[\x{2014}\x{2013}]|\s+--)\s*(?:it|this|that|they)(?:[''\x{2019}](?:s|re)|\s+(?:is|are|was|were))\b'

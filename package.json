@@ -37,6 +37,9 @@
     "corpus:fetch": "node scripts/corpus.js fetch",
     "corpus:verify": "node scripts/corpus.js verify",
     "fp": "node scripts/fp-measure.js",
-    "eval:rewrite:validate": "node scripts/rewrite-eval.js validate"
+    "eval:rewrite:validate": "node scripts/rewrite-eval.js validate",
+    "vale:build": "node scripts/build-vale.js",
+    "vale:check": "node scripts/build-vale.js --check",
+    "vale:measure": "node scripts/vale-measure.js"
   }
 }

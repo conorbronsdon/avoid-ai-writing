@@ -228,6 +228,16 @@ carry a different tier from the skill's matching rule. For example,
 adjective inflation under P1. To block on P0 and P1, gate on `critical` and
 `high`.
 
+## `PATTERN_TABLES`
+
+The pattern tables as plain data, for tools that re-emit them in another format;
+`scripts/build-vale.js` builds the Vale style in `vale/` from it. It is keyed by issue
+`type` and recursively frozen. Each regex is a `{ source, flags }` pair: rebuild it
+with `new RegExp(source, flags)`. A `gate` field names logic `analyzeText` applies on
+top of a table, such as the Tier 2 paragraph cluster, so matching a gated table alone
+does not reproduce the finding. `schemaVersion` changes when the shape does, not when
+the patterns do. `analyzeText` does not read it.
+
 ## `validate(original, rewritten, options?)` → result
 
 `validate.js` checks that a rewrite kept its hands off the things `references/patterns.md`

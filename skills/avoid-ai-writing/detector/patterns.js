@@ -3578,6 +3578,112 @@ const AIDetector = (() => {
     'dev-blog-boilerplate': 'Dev-blog boilerplate',
   };
 
+  // The pattern tables as plain data, keyed by issue type, for tooling that
+  // re-emits them in another format (scripts/build-vale.js generates the Vale
+  // style in `vale/` from this). Regexes are `{ source, flags }` strings, not
+  // the live objects, so no `lastIndex` state is shared. A `gate` names logic
+  // analyzeText applies on top of the table, so the table alone does not
+  // reproduce a gated finding. Function fields (the `features` noun check,
+  // computed hyphenation fixes) cannot be data: they become a `gate` note or
+  // are left out. Not used by analyzeText. Bump `schemaVersion` on a change
+  // to this shape, not on a change to the patterns.
+  const PATTERN_TABLES = (() => {
+    const re = (r) => ({ source: r.source, flags: r.flags });
+    const list = (patterns) => patterns.map(re);
+    const freeze = (value) => {
+      if (value && typeof value === 'object') {
+        for (const v of Object.values(value)) freeze(v);
+        Object.freeze(value);
+      }
+      return value;
+    };
+    const NP_GATE = 'Reported only when another negative-parallelism frame starts within two sentences in the same paragraph.';
+    return freeze({
+      schemaVersion: '0.1.0',
+      types: {
+        'tier1': {
+          words: Object.entries(TIER1).map(([word, replace]) => ({ word, replace })),
+          patterns: TIER1_PHRASES.filter((p) => !p.clarity).map((p) => ({ ...re(p.pattern), replace: p.replace })),
+          gate: "`words` match whole lowercase tokens split on [\\w'-]+, so hyphenated and possessive forms do not count. The `technical` context skips TECHNICAL_EXEMPT terms.",
+        },
+        'tier1-clarity': {
+          patterns: TIER1_PHRASES.filter((p) => p.clarity).map((p) => ({
+            ...re(p.pattern),
+            replace: p.replace,
+            ...(p.skip ? { gate: 'Skipped where "features" reads as a noun (featuresIsNoun).' } : {}),
+          })),
+        },
+        'tier2': {
+          words: Object.entries(TIER2).map(([word, replace]) => ({ word, replace })),
+          patterns: TIER2_CONDITIONAL.map((c) => ({ ...re(c.pattern), word: c.word, replace: c.suggestion })),
+          gate: 'Reported only when two or more distinct listed words share a paragraph. The `technical` context skips TECHNICAL_EXEMPT terms.',
+        },
+        'tier3': {
+          words: [...TIER3],
+          gate: 'Reported only at max(3, floor(words * 0.03)) uses of one word; hyphenated words also match their dashless form.',
+        },
+        'tier3-phrase': {
+          patterns: list(TIER3_PHRASES),
+          gate: 'Reported only at the second non-overlapping use of one phrase.',
+        },
+        'tier3-phrase-cluster': {
+          patterns: list(TIER3_PHRASES),
+          gate: 'Reported only when three or more distinct phrases appear.',
+        },
+        'transition': { patterns: list(TRANSITIONS) },
+        'chatbot': { patterns: list(CHATBOT_ARTIFACTS) },
+        'sycophantic': { patterns: list(SYCOPHANTIC) },
+        'filler': { patterns: list(FILLERS) },
+        'generic-conclusion': { patterns: list(GENERIC_CONCLUSIONS) },
+        'lets-construction': { patterns: list(LETS_PATTERNS) },
+        'reasoning-artifact': { patterns: list(REASONING_ARTIFACTS) },
+        'significance-inflation': { patterns: list(SIGNIFICANCE_INFLATION) },
+        'vague-attribution': { patterns: list(VAGUE_ATTRIBUTIONS) },
+        'hollow-intensifier': { patterns: list(HOLLOW_INTENSIFIERS) },
+        'emotional-flatline': { patterns: list(EMOTIONAL_FLATLINE) },
+        'lingering-attention': { patterns: list(LINGERING_ATTENTION) },
+        'novelty-inflation': { patterns: list(NOVELTY_INFLATION) },
+        'cutoff-disclaimer': { patterns: list(CUTOFF_DISCLAIMERS) },
+        'ai-placeholder': { patterns: list(AI_PLACEHOLDERS) },
+        'ai-citation-markup': { patterns: list(AI_CITATION_MARKUP) },
+        'ai-utm-source': { patterns: list(AI_UTM_SOURCE) },
+        'template-phrase': { patterns: list(TEMPLATE_PHRASES) },
+        'false-concession': { patterns: list(FALSE_CONCESSION) },
+        'rhetorical-question': { patterns: list(RHETORICAL_QUESTIONS) },
+        'hedge-stack': { patterns: list(HEDGE_STACK) },
+        'future-narrative': { patterns: list(FUTURE_NARRATIVE) },
+        'real-actual-inflation': { patterns: list(REAL_ACTUAL_INFLATION) },
+        'social-cta-closer': { patterns: list(SOCIAL_CTA_CLOSER) },
+        'performed-insight': { patterns: list([...PERFORMED_INSIGHT, ...STAGED_DISCOVERY]) },
+        'negation-chain': { patterns: list(NEGATION_CHAIN) },
+        'negative-parallelism': {
+          patterns: [
+            ...list(NEGATIVE_PARALLELISM_REVEAL),
+            ...NEGATIVE_PARALLELISM_CONTRAST.map((r) => ({ ...re(r), gate: NP_GATE })),
+          ],
+        },
+        'dev-blog-boilerplate': { patterns: list(DEV_BLOG_BOILERPLATE) },
+        'unnecessary-hyphenation': {
+          patterns: UNNECESSARY_HYPHENATION.map((e) => ({
+            ...re(e.pattern),
+            ...(typeof e.suggestion === 'string' ? { replace: e.suggestion } : {}),
+          })),
+          gate: 'Runs on text with file paths, package names and code identifiers masked (maskHyphenationProtected).',
+        },
+        'formulaic-opener': { patterns: list(FORMULAIC_OPENERS) },
+        'speculative-opener': { patterns: list(SPECULATIVE_OPENERS) },
+        'launch-intro': { patterns: list(LAUNCH_INTROS) },
+        'crowd-contrast': { patterns: list(CROWD_CONTRAST) },
+        'fake-casual-prop': { patterns: list(FAKE_CASUAL_PROPS) },
+        'parenthetical-hedge': { patterns: list(PARENTHETICAL_HEDGE) },
+        'confidence-calibration': {
+          patterns: list(CONFIDENCE_CALIBRATION),
+          gate: 'Reported only when three or more matches occur in one text.',
+        },
+      },
+    });
+  })();
+
   return {
     analyzeText,
     normalizeText,
@@ -3587,6 +3693,7 @@ const AIDetector = (() => {
     TYPE_LABELS,
     CONTEXT_MODES,
     SOURCE_MODES,
+    PATTERN_TABLES,
   };
 })();
 

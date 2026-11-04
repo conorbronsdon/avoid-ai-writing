@@ -1,0 +1,14 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['reasoning-artifact']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Reasoning artifact: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: error
+ignorecase: true
+nonword: true
+tokens:
+  - '\blet\s+me\s+think\s+step\s+by\s+step\b'
+  - '\bbreaking\s+this\s+down\b'
+  - '\bto\s+approach\s+this\s+systematically\b'
+  - '\bhere''?s\s+my\s+thought\s+process\b'
+  - '\bfirst,?\s+let''?s\s+consider\b'
+  - '\bworking\s+through\s+this\s+logically\b'

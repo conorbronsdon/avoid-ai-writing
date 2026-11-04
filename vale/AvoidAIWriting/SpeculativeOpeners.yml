@@ -1,0 +1,9 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['speculative-opener']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Speculative scenario opener: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: warning
+ignorecase: true
+nonword: true
+tokens:
+  - '\b(?:imagine|picture|envision)(?:\s*,[^,\n]{1,30},)?\s+a\s+(?:world|future|reality)\s+(?:where|in\s+which)\b'

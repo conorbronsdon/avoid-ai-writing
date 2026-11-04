@@ -1,0 +1,16 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['tier1-clarity'].patterns). Do not edit; run scripts/build-vale.js.
+extends: substitution
+message: 'Wordiness: try %s instead of ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: true
+nonword: true
+swap:
+  '\bin\s+order\s+to\b': 'to'
+  '\bdue\s+to\s+the\s+fact\s+that\b': 'because'
+  '\bserves\s+as\b': 'is'
+  '\bboasts\b': 'has'
+  '\butiliz(?:e|es|ing|ed)\b': 'use'
+  '\bcommenc(?:e|es|ing|ed)\b': 'start|begin'
+  '\bascertain(?:s|ing|ed)?\b': 'find out|determine'
+  '\bendeavou?r(?:s|ing|ed)?\b': 'effort|attempt|try'

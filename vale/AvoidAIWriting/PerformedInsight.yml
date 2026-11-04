@@ -1,0 +1,20 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['performed-insight']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Performed-insight phrase: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: false
+nonword: true
+tokens:
+  - '(?i:\bsit(?:s|ting)?\s+with\s+(?:that|this)(?=\s*(?:[.!?,;:)\x{2013}\x{2014}\x{2019}"'']|for\s+a\s+(?:moment|minute|second|beat)\b|$))(?:\s+for\s+a\s+(?:moment|minute|second|beat))?)'
+  - '(?i:\bsit(?:s|ting)?\s+with\s+(?:the|your)\s+(?:discomfort|tension|uncertainty|ambiguity|grief|unease)\b)'
+  - '(?i:\b(?:that|this|it|which)(?:[''\x{2019}]s|\s+(?:is|was))\s+not\s+nothing\b)'
+  - '(?i:\byou\s+already\s+know\s+the\s+answer\b)'
+  - '(?i:\b(?:do\s+not|don[''\x{2019}]t)\s+(?:have\s+to\s+)?take\s+my\s+word\s+for\s+it\b)'
+  - '(?<=^|[.!?]\s|\n)Turns\s+out\b'
+  - '(?i:(?:[''\x{2019}]s|\b(?:is|was|are|were))\s+the\s+(?:whole|entire)\s+(?:point|game|ballgame|trick|pitch|idea|play|business\s+model|value\s+proposition)\b)'
+  - '(?i:\b(?:that|this)(?:[''\x{2019}]s|\s+(?:is|was))\s+the\s+part\s+(?:that|I|you|we|nobody|no\s+one|most\s+people)\b)'
+  - '(?i:\bthe\s+only\s+[\w''\x{2019}-]+\s+that\s+(?:matters|counts)\b)'
+  - '(?i:\b(?:that|this)(?:[''\x{2019}]s|\s+(?:is|was))\s+why\s+[^.!?\n]{0,60}\s+mattered\b)'
+  - '(?i:\b(?:turned|turns|turning)\s+out\s+to\s+be\s+the\s+(?:least|most)\s+(?:interesting|important|surprising|revealing|valuable|useful)\s+(?:part|thing|piece|bit)\b)'
+  - '(?i:\bthe\s+real\s+story\s+(?:here\s+)?(?:is|was)\b(?=\s+(?:the|that|how|why|what)\b))'

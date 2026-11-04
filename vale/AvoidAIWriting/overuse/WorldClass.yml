@@ -1,0 +1,10 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types.tier3.words). Do not edit; run scripts/build-vale.js.
+# Approximation: the detector flags a Tier 3 word at max(3, 3% of words) uses. This fires at the third use across the file (headings and code excluded).
+extends: occurrence
+message: 'Overused word: this Tier 3 term appears %d times in the file. The detector flags it at three or more uses in a short text.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: true
+scope: summary
+max: 2
+token: '(?<![\w''-])(?:world-class|worldclass)(?![\w''-])'

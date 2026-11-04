@@ -1,0 +1,29 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['tier1'].patterns). Do not edit; run scripts/build-vale.js.
+extends: substitution
+message: 'AI vocabulary: try %s instead of ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: warning
+ignorecase: true
+nonword: true
+swap:
+  '\bdelve\s+into\b': 'explore|dig into'
+  '\blandscape\b': 'field|space|industry'
+  '\brealm\b': 'area|field|domain'
+  '\btestament\s+to\b': 'shows|proves'
+  '\bleverag(?:e|es|ing|ed)\b': 'use'
+  '\bwatershed\s+moment\b': 'turning point|shift'
+  '\bmarking\s+a\s+pivotal\s+moment\b': 'changing [X], leading to [Y]'
+  '\bthe\s+future\s+looks\s+bright\b': 'cut or say something specific'
+  '\bonly\s+time\s+will\s+tell\b': 'cut or say something specific'
+  '\bdespite\s+challenges[^.]*continues?\s+to\s+thrive\b': 'keeps growing despite [named difficulty], continues to succeed despite [named difficulty]'
+  '\bdeep\s+dive\b': 'look at|examine'
+  '\bdive\s+into\b': 'look at|examine'
+  '\bunpack(?:ing)?\b': 'explain|break down'
+  '\bcomplexities\b': 'problems|details'
+  '\bthought\s+leader(?:ship)?\b': 'expert|authority'
+  '\bbest\s+practices\b': 'what works|proven methods'
+  '\bat\s+its\s+core\b': 'cut, just state it'
+  '\bshowcas(?:e|es|ing|ed)\b': 'show|demonstrate'
+  '\bembark(?:s|ing|ed)?\b': 'start|begin'
+  '\bunderscor(?:es|ing|ed)\b': 'highlights|shows'
+  '\bload-bearing\b(?=[ \t]+(?:assumptions?|claims?|invariants?|premises?|constraints?|dependenc(?:y|ies)|arguments?|abstractions?)\b)': 'essential, critical, or say what breaks if you remove it'

@@ -1,0 +1,13 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['formulaic-opener']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Formulaic opener: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: warning
+ignorecase: true
+nonword: true
+tokens:
+  - '\bin\s+the\s+(?:rapidly\s+|ever-?\s*)?(?:evolving|changing|expanding|growing|shifting)\s+(?:world|landscape|realm|space|field|domain|era)\s+of\b'
+  - '\bin\s+(?:an?|the)\s+(?:digital\s+)?age\s+(?:where|of)\b'
+  - '\bas\s+(?:we|the\s+world|society|industries?)\s+(?:continue|move|navigate|enter)\s+(?:to\s+)?(?:evolve|forward|into|through)\b'
+  - '\bhas\s+emerged\s+as\s+(?:a|the|one\s+of)\s+(?:leading|key|major|critical|essential|fundamental|pivotal|prominent|dominant|important)\s+\w+'
+  - '\bhas\s+become\s+increasingly\s+(?:important|critical|popular|relevant|prominent|essential)\b'

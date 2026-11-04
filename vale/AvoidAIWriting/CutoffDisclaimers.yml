@@ -1,0 +1,16 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['cutoff-disclaimer']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Cutoff disclaimer: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: error
+ignorecase: true
+nonword: true
+tokens:
+  - '\bas\s+of\s+my\s+last\s+update\b'
+  - '\bas\s+of\s+my\s+(?:knowledge\s+)?(?:cut-?off|last\s+training)\b'
+  - '\bi\s+don''?t\s+have\s+access\s+to\s+real-?time\s+(?:data|information)\b'
+  - '\bbased\s+on\s+available\s+information\b'
+  - '\bas\s+an?\s+(?:ai|artificial\s+intelligence|large\s+language|ai\s+language)\s+(?:language\s+)?model\b'
+  - '\bi\s+(?:am|''m)\s+an?\s+(?:ai|artificial\s+intelligence|large\s+language)\s+(?:assistant|model)?\b'
+  - '\bi\s+cannot\s+(?:provide|give|offer)\s+(?:legal|medical|financial|professional)\s+advice\b'
+  - '\bmy\s+training\s+data\s+(?:only\s+)?(?:goes\s+up\s+to|extends\s+to|ends\s+(?:in|at))\b'

@@ -1,0 +1,14 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['emotional-flatline']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Stock reaction framing: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: true
+nonword: true
+tokens:
+  - '\bwhat\s+surprised\s+me\s+most\b'
+  - '\bi\s+was\s+fascinated\s+to\b'
+  - '\bwhat\s+struck\s+me\s+was\b'
+  - '\bi\s+was\s+excited\s+to\s+learn\b'
+  - '\bthe\s+most\s+interesting\s+(?:part|thing|aspect|piece)\b'
+  - '^[ \t]*interesting\s+(?:part|thing|aspect|piece)(?:\s+of\s+(?:the\s+)?\w+)?\s*:'

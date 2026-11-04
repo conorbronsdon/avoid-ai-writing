@@ -1,0 +1,13 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['ai-citation-markup']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Chatbot citation markup leak: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: error
+ignorecase: true
+nonword: true
+tokens:
+  - '\bcite(?:turn|news|search|navigation)\d+(?:search|turn|news|navigation)\d+'
+  - 'contentReference\s*\[oaicite:[^\]]+\]\s*\{[^}]*\}'
+  - '\boai_citation\b'
+  - '\[attached_file:\d+\]'
+  - '\bgrok_card\b'

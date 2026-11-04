@@ -1,0 +1,10 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['tier3-phrase']). Do not edit; run scripts/build-vale.js.
+# Approximation: the detector flags a boilerplate phrase at its second use. This does the same across the file (headings and code excluded).
+extends: occurrence
+message: 'Boilerplate phrase repeated %d times in the file.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: true
+scope: summary
+max: 1
+token: '\bcommunity-?driven\b'

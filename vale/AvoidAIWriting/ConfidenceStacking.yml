@@ -1,0 +1,10 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['confidence-calibration']). Do not edit; run scripts/build-vale.js.
+# Approximation: the detector reports each phrase once three or more stack in one text. This fires once at the third.
+extends: occurrence
+message: 'Confidence stacking: %d calibration phrases in the file. The detector flags three or more.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: true
+scope: summary
+max: 2
+token: '(?:\binterestingly\b)|(?:\bsurprisingly\b)|(?:\bimportantly\b)|(?:\bsignificantly\b)|(?:\bcertainly\b)|(?:\bundoubtedly\b)|(?:\bwithout\s+a\s+doubt\b)'

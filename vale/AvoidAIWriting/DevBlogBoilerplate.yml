@@ -1,0 +1,12 @@
+# Generated from detector/patterns.js (PATTERN_TABLES.types['dev-blog-boilerplate']). Do not edit; run scripts/build-vale.js.
+extends: existence
+message: 'Dev-blog boilerplate: ''%s''.'
+link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
+level: suggestion
+ignorecase: true
+nonword: true
+tokens:
+  - '\bit\s+just\s+works\b(?!\s+out\b(?![-\s]+of[-\s]+the[-\s]+box\b))'
+  - '\bzero[-\s]config(?:uration)?\b'
+  - '\bsane\s+defaults\b'
+  - '\b(?:hold|fit|fits|holds)\s+in\s+your\s+head\b'
