@@ -7,4 +7,4 @@ level: suggestion
 ignorecase: true
 scope: summary
 max: 2
-token: 'innovative'
+token: '\binnovative\b'

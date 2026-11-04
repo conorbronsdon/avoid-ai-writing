@@ -27,9 +27,11 @@ detector. They do not transfer to this style until measured on it. See
 
 ## Use
 
+Copy the repository's `vale/AvoidAIWriting/` directory into your Vale styles
+directory (for example, `styles/AvoidAIWriting/`), then configure Vale:
+
 ```ini
 StylesPath = styles
-Packages = https://github.com/conorbronsdon/avoid-ai-writing/releases/latest/download/AvoidAIWriting.zip
 MinAlertLevel = suggestion
 
 [*.md]

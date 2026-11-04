@@ -66,10 +66,12 @@ for (const [rule, list] of Object.entries(CASES.rules)) {
 }
 const pad = 'The team wrote this short note for the weekly summary and shared it with the group.';
 for (const f of ruleFiles.filter((x) => x.startsWith('overuse/'))) {
-  const word = files[f].match(/^token: '(?:\(\?:)?([^|')]+)/m)[1];
+  const word = AIDetector.PATTERN_TABLES.types.tier3.words.find((w) => w.replace(/[^A-Za-z0-9]+/g, ' ').trim().split(' ').map((x) => x[0].toUpperCase() + x.slice(1)).join('') === ruleName(f));
+  assert.ok(word, `missing source word for ${f}`);
   const uses = (n) => Array.from({ length: n }, (_, i) => `Report ${i + 1} was ${word} for us.`).join(' ');
   cases.push({ rule: ruleName(f), id: 'fire', text: `${uses(3)} ${pad}`, vale: true, detector: true });
   cases.push({ rule: ruleName(f), id: 'near-miss', text: `${uses(2)} ${pad}`, vale: false, detector: false });
+  cases.push({ rule: ruleName(f), id: 'substring', text: `${Array(3).fill(`un${word}`).join(' ')} ${pad}`, vale: false, detector: false });
 }
 for (const [rule, phrase] of Object.entries(CASES.occurrence.boilerplate)) {
   const uses = (n) => Array.from({ length: n }, (_, i) => `Note ${i + 1} mentioned ${phrase} again.`).join(' ');

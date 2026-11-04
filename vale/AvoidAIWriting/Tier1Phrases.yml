@@ -5,8 +5,6 @@ link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/pat
 level: warning
 ignorecase: true
 nonword: true
-action:
-  name: replace
 swap:
   '\bdelve\s+into\b': 'explore|dig into'
   '\blandscape\b': 'field|space|industry'

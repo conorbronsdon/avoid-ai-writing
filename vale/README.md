@@ -54,8 +54,9 @@ add it to the zip.
 
 **Where it lives.** Here, generated, not in a separate repository. A separate
 repository would have to copy the regexes, and the copy would drift. The release
-cost is one more asset on the existing GitHub release, and the
-`releases/latest/download/AvoidAIWriting.zip` URL becomes the package URL:
+cost is one more asset on an existing GitHub release. Until that asset is published,
+copy `vale/AvoidAIWriting/` into your project's Vale styles directory. The proposed
+release commands are:
 
 ```bash
 python3 scripts/package-vale.py . "$RUNNER_TEMP/AvoidAIWriting.zip"
@@ -63,9 +64,9 @@ gh release upload "v$VERSION" "$RUNNER_TEMP/AvoidAIWriting.zip"
 ```
 
 The zip holds `AvoidAIWriting/` at its root, with fixed timestamps and sorted entries,
-so two builds of one commit are byte-identical. `vale sync` installs it from a
-`Packages =` line. The release step and the library entry at `vale-cli/packages` are
-not in this change; the release workflow is the maintainer's.
+so two builds of one commit are byte-identical. After a release asset is published,
+`vale sync` can install it from a `Packages =` line. The release step and the library
+entry at `vale-cli/packages` are not in this change.
 
 **False-positive measurement.** `npm run vale:measure` runs Vale over the same
 `corpus/cache` the JS detector is measured on and reports two things. Parity: for each

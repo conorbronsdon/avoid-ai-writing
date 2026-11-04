@@ -175,8 +175,6 @@ function tier1Rules() {
     `link: ${CATALOG}`,
     `level: ${LEVEL.high}`,
     `ignorecase: true`,
-    `action:`,
-    `  name: replace`,
     `swap:`,
     ...words.map(([w, r]) => `  ${yq(w)}: ${yq(toSwap(r))}`),
   ];
@@ -196,8 +194,6 @@ function tier1Rules() {
     `level: ${level}`,
     `ignorecase: true`,
     `nonword: true`,
-    `action:`,
-    `  name: replace`,
     `swap:`,
     ...rows.map(([k, v]) => `  ${yq(k)}: ${yq(v)}`),
   ].join('\n') + '\n';
@@ -278,7 +274,7 @@ function build() {
   files['Tier2Vocabulary.yml'] = tier2Rule();
   coverage.push({ type: 'tier2', rule: `${STYLE}.Tier2Vocabulary`, check: 'existence', level: 'suggestion', tokens: T.tier2.words.length + T.tier2.patterns.length, note: '' });
 
-  const t3 = T.tier3.words.map((w) => ({ name: pascal(w), source: 'PATTERN_TABLES.types.tier3.words', token: w.includes('-') ? `(?:${w}|${w.replace(/-/g, '')})` : w }));
+  const t3 = T.tier3.words.map((w) => ({ name: pascal(w), source: 'PATTERN_TABLES.types.tier3.words', token: w.includes('-') ? `\\b(?:${w}|${w.replace(/-/g, '')})\\b` : `\\b${w}\\b` }));
   Object.assign(files, occurrenceRules('overuse', t3, 2,
     `# Approximation: the detector flags a Tier 3 word at max(3, 3% of words) uses. This fires at the third use across the file (headings and code excluded).`,
     "Overused word: this Tier 3 term appears %d times in the file. The detector flags it at three or more uses in a short text."));
@@ -370,9 +366,11 @@ function build() {
     ``,
     `## Use`,
     ``,
+    `Copy the repository's \`vale/${STYLE}/\` directory into your Vale styles`,
+    `directory (for example, \`styles/${STYLE}/\`), then configure Vale:`,
+    ``,
     '```ini',
     `StylesPath = styles`,
-    `Packages = https://github.com/conorbronsdon/avoid-ai-writing/releases/latest/download/${STYLE}.zip`,
     `MinAlertLevel = suggestion`,
     ``,
     `[*.md]`,

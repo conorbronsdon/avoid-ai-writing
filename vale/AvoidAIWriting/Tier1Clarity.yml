@@ -5,8 +5,6 @@ link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/pat
 level: suggestion
 ignorecase: true
 nonword: true
-action:
-  name: replace
 swap:
   '\bin\s+order\s+to\b': 'to'
   '\bdue\s+to\s+the\s+fact\s+that\b': 'because'

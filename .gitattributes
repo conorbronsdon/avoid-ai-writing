@@ -1,5 +1,8 @@
 *.sh text eol=lf
 *.md text eol=lf
+# Generated Vale files and their source license are byte-compared and packaged.
+/vale/** text eol=lf
+/LICENSE text eol=lf
 # Byte-exact fixtures: the Vale export sample is compared byte-for-byte, so keep LF on every checkout.
 scripts/fixtures/vale-export-94/*.json text eol=lf
 # Retained evaluation evidence is verified by SHA-256, so its bytes must never

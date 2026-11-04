@@ -4,8 +4,6 @@ message: 'AI vocabulary: try %s instead of ''%s''.'
 link: https://github.com/conorbronsdon/avoid-ai-writing/blob/main/references/patterns.md
 level: warning
 ignorecase: true
-action:
-  name: replace
 swap:
   'delve': 'explore|dig into|look at'
   'tapestry': 'complex structure|rich history'
