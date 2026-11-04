@@ -7,4 +7,4 @@ level: suggestion
 ignorecase: true
 scope: summary
 max: 2
-token: '\b(?:best-in-class|bestinclass)\b'
+token: '(?<![\w''-])(?:best-in-class|bestinclass)(?![\w''-])'

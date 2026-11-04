@@ -30,6 +30,12 @@ t('committed style matches the generator output (run `npm run vale:build`)', () 
   assert.deepStrictEqual(extra, [], 'files in vale/AvoidAIWriting not produced by the generator');
 });
 
+t('substitution rules do not expose advice as an automatic replacement', () => {
+  for (const [name, content] of Object.entries(build())) {
+    if (content.includes('extends: substitution')) assert.doesNotMatch(content, /^action:/m, name);
+  }
+});
+
 t('PATTERN_TABLES is recursively frozen plain data keyed by detector type', () => {
   const P = AIDetector.PATTERN_TABLES;
   assert.match(P.schemaVersion, /^\d+\.\d+\.\d+$/);

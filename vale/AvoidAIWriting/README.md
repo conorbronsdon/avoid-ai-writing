@@ -27,8 +27,9 @@ detector. They do not transfer to this style until measured on it. See
 
 ## Use
 
-Copy the repository's `vale/AvoidAIWriting/` directory into your Vale styles
-directory (for example, `styles/AvoidAIWriting/`), then configure Vale:
+Place the AvoidAIWriting directory at `styles/AvoidAIWriting/` in your project.
+Get it from the [repository](https://github.com/conorbronsdon/avoid-ai-writing/tree/main/vale/AvoidAIWriting).
+This style requires Vale 3.24.0 or newer. Then configure Vale:
 
 ```ini
 StylesPath = styles

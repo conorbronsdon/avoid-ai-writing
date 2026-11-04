@@ -71,7 +71,9 @@ for (const f of ruleFiles.filter((x) => x.startsWith('overuse/'))) {
   const uses = (n) => Array.from({ length: n }, (_, i) => `Report ${i + 1} was ${word} for us.`).join(' ');
   cases.push({ rule: ruleName(f), id: 'fire', text: `${uses(3)} ${pad}`, vale: true, detector: true });
   cases.push({ rule: ruleName(f), id: 'near-miss', text: `${uses(2)} ${pad}`, vale: false, detector: false });
-  cases.push({ rule: ruleName(f), id: 'substring', text: `${Array(3).fill(`un${word}`).join(' ')} ${pad}`, vale: false, detector: false });
+  for (const [id, near] of [['prefix', `un${word}`], ['suffix', `${word}x`], ['hyphen-prefix', `non-${word}`], ['possessive', `${word}'s`]]) {
+    cases.push({ rule: ruleName(f), id, text: `${Array(3).fill(near).join(' ')} ${pad}`, vale: false, detector: false });
+  }
 }
 for (const [rule, phrase] of Object.entries(CASES.occurrence.boilerplate)) {
   const uses = (n) => Array.from({ length: n }, (_, i) => `Note ${i + 1} mentioned ${phrase} again.`).join(' ');

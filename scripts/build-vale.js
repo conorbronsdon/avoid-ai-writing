@@ -274,7 +274,7 @@ function build() {
   files['Tier2Vocabulary.yml'] = tier2Rule();
   coverage.push({ type: 'tier2', rule: `${STYLE}.Tier2Vocabulary`, check: 'existence', level: 'suggestion', tokens: T.tier2.words.length + T.tier2.patterns.length, note: '' });
 
-  const t3 = T.tier3.words.map((w) => ({ name: pascal(w), source: 'PATTERN_TABLES.types.tier3.words', token: w.includes('-') ? `\\b(?:${w}|${w.replace(/-/g, '')})\\b` : `\\b${w}\\b` }));
+  const t3 = T.tier3.words.map((w) => ({ name: pascal(w), source: 'PATTERN_TABLES.types.tier3.words', token: `(?<![\\w'-])(?:${w}${w.includes('-') ? `|${w.replace(/-/g, '')}` : ''})(?![\\w'-])` }));
   Object.assign(files, occurrenceRules('overuse', t3, 2,
     `# Approximation: the detector flags a Tier 3 word at max(3, 3% of words) uses. This fires at the third use across the file (headings and code excluded).`,
     "Overused word: this Tier 3 term appears %d times in the file. The detector flags it at three or more uses in a short text."));
@@ -366,8 +366,9 @@ function build() {
     ``,
     `## Use`,
     ``,
-    `Copy the repository's \`vale/${STYLE}/\` directory into your Vale styles`,
-    `directory (for example, \`styles/${STYLE}/\`), then configure Vale:`,
+    `Place the ${STYLE} directory at \`styles/${STYLE}/\` in your project.`,
+    `Get it from the [repository](https://github.com/conorbronsdon/avoid-ai-writing/tree/main/vale/${STYLE}).`,
+    `This style requires Vale 3.24.0 or newer. Then configure Vale:` ,
     ``,
     '```ini',
     `StylesPath = styles`,
