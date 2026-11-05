@@ -11,7 +11,42 @@
       "source": "./plugins/avoid-ai-writing",
       "description": "Audit & rewrite content to remove AI writing patterns (\"AI-isms\"). Supports detect-only and edit-in-place modes, voice profiles, and iterate-to-convergence.",
       "category": "productivity",
-      "keywords": ["writing", "editing", "ai-detection", "humanize"]
+      "keywords": [
+        "writing",
+        "editing",
+        "ai-detection",
+        "humanize"
+      ]
+    },
+    {
+      "name": "fact-check",
+      "source": {
+        "source": "github",
+        "repo": "conorbronsdon/fact-check"
+      },
+      "description": "Verify every checkable claim in a draft before it ships: extract claims, try to refute each against primary sources, return a verdict per claim. Flags, never edits.",
+      "category": "productivity",
+      "keywords": [
+        "writing",
+        "fact-checking",
+        "verification",
+        "publishing"
+      ]
+    },
+    {
+      "name": "write-like-me",
+      "source": {
+        "source": "github",
+        "repo": "conorbronsdon/write-like-me"
+      },
+      "description": "Build an evidence-backed voice profile from your own writing samples, then draft, edit, or check text against it so the agent writes like you.",
+      "category": "productivity",
+      "keywords": [
+        "writing",
+        "voice",
+        "style",
+        "personalization"
+      ]
     }
   ]
 }
