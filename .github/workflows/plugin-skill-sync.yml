@@ -8,9 +8,11 @@ on:
       - "references/**"
       - "dist/**"
       - "README.md"
-      # CLAUDE.md carries a checked copy of the pattern count; without this
-      # path the count guard never runs on a CLAUDE.md-only edit (PR #106
-      # had zero check runs - review finding on #111).
+      # AGENTS.md carries a checked copy of the pattern count; without this
+      # path the count guard never runs on an AGENTS.md-only edit (PR #106
+      # had zero check runs - review finding on #111). CLAUDE.md stays listed
+      # because it imports AGENTS.md and is where the copy used to live.
+      - "AGENTS.md"
       - "CLAUDE.md"
       - "detector/**"
       - "plugins/**"
@@ -38,9 +40,11 @@ on:
       - "references/**"
       - "dist/**"
       - "README.md"
-      # CLAUDE.md carries a checked copy of the pattern count; without this
-      # path the count guard never runs on a CLAUDE.md-only edit (PR #106
-      # had zero check runs - review finding on #111).
+      # AGENTS.md carries a checked copy of the pattern count; without this
+      # path the count guard never runs on an AGENTS.md-only edit (PR #106
+      # had zero check runs - review finding on #111). CLAUDE.md stays listed
+      # because it imports AGENTS.md and is where the copy used to live.
+      - "AGENTS.md"
       - "CLAUDE.md"
       - "detector/**"
       - "plugins/**"
