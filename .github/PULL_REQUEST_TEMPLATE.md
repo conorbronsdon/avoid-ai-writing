@@ -15,4 +15,4 @@
 - [ ] The prose I added passes the skill's own audit (no AI-writing tells, terse bullets, no hollow intensifiers)
 - [ ] I added an Unreleased `CHANGELOG.md` entry for a user-facing change, or this PR is exempt under the [changelog policy](https://github.com/conorbronsdon/avoid-ai-writing/blob/main/CONTRIBUTING.md#changelog-and-versioning)
 - [ ] If this PR prepares a release: the dated changelog heading and skill/package/plugin versions agree
-- [ ] If I added or removed a detection `###` in `references/patterns.md`: the `**NN pattern categories**` bullet in `README.md` and the quoted count in `CLAUDE.md` match `scripts/check-pattern-count.sh`
+- [ ] If I added or removed a detection `###` in `references/patterns.md`: the `**NN pattern categories**` bullet in `README.md` and the quoted count in `AGENTS.md` match `scripts/check-pattern-count.sh`

@@ -44,36 +44,36 @@ fi
 
 echo "pattern count in sync: $detection_count"
 
-# The count has one same-repo copy: CLAUDE.md's "don't restate it" sentence
+# The count has one same-repo copy: AGENTS.md's "don't restate it" sentence
 # quotes the README bullet. .ssot.yaml tracks that copy, but the manifest only
 # runs on release / weekly cron (promo-drift), so a same-repo edit could sit
 # stale for up to a week. Asserting it in CI closes the window. Extraction is
 # grep -o + head, which takes the FIRST match in file order — the same match
 # a standard first-match regex engine reading .ssot.yaml's pattern would take
 # (a greedy sed s/.*…/ would silently take the LAST match on a line instead).
-claudemd="$repo_root/CLAUDE.md"
+agentsmd="$repo_root/AGENTS.md"
 
-if [ ! -f "$claudemd" ]; then
-  echo "CLAUDE.md not found — it carries a tracked copy of the pattern count (.ssot.yaml)." >&2
+if [ ! -f "$agentsmd" ]; then
+  echo "AGENTS.md not found — it carries a tracked copy of the pattern count (.ssot.yaml)." >&2
   echo "If it was deliberately removed, drop the copy from .ssot.yaml and this check together." >&2
   exit 1
 fi
 
-claude_count="$(grep -o 'README "[0-9][0-9]* pattern categories" bullet' "$claudemd" | head -n1 | tr -cd '0-9' || true)"
+agents_count="$(grep -o 'README "[0-9][0-9]* pattern categories" bullet' "$agentsmd" | head -n1 | tr -cd '0-9' || true)"
 
-if [ -z "$claude_count" ]; then
-  echo "could not find the 'README \"NN pattern categories\" bullet' sentence in CLAUDE.md" >&2
-  echo "If the sentence was reworded, update this check AND the CLAUDE.md copy in .ssot.yaml together." >&2
+if [ -z "$agents_count" ]; then
+  echo "could not find the 'README \"NN pattern categories\" bullet' sentence in AGENTS.md" >&2
+  echo "If the sentence was reworded, update this check AND the AGENTS.md copy in .ssot.yaml together." >&2
   exit 1
 fi
 
-if [ "$claude_count" != "$detection_count" ]; then
-  echo "pattern-count drift: CLAUDE.md quotes $claude_count, references/patterns.md derives $detection_count" >&2
-  echo "Update the count in CLAUDE.md's pattern-count sentence to $detection_count." >&2
+if [ "$agents_count" != "$detection_count" ]; then
+  echo "pattern-count drift: AGENTS.md quotes $agents_count, references/patterns.md derives $detection_count" >&2
+  echo "Update the count in AGENTS.md's pattern-count sentence to $detection_count." >&2
   exit 1
 fi
 
-echo "CLAUDE.md copy in sync: $claude_count"
+echo "AGENTS.md copy in sync: $agents_count"
 
 # Word-table entries = data rows across the Tier 1/2/3 word tables. The Tier 3
 # *phrases* table is counted separately in the README bullet, so it is excluded.
