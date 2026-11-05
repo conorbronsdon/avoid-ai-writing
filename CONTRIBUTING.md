@@ -69,7 +69,7 @@ derives the new total and compares it to two literals:
 
 1. **`README.md`** — update the `**NN pattern categories**` feature bullet to
    match the derived count.
-2. **`CLAUDE.md`** — update the quoted `README "NN pattern categories" bullet`
+2. **`AGENTS.md`** — update the quoted `README "NN pattern categories" bullet`
    phrase in the pattern-count guidance so it matches the same number.
 
 `scripts/check-pattern-count.sh` enforces both on every PR. Adding a word-table
