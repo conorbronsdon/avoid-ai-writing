@@ -628,23 +628,16 @@ CI fails when a document drifts past its budget.
 
 ## Pre-publish pipeline
 
-This skill answers one question: does the draft sound like a model? Two companion skills answer the other two worth asking before you publish:
+This skill answers one question: does the draft sound like a model? Run [fact-check](https://github.com/conorbronsdon/fact-check?utm_source=github&utm_medium=referral&utm_campaign=repo-readme&utm_content=avoid-ai-writing) first to answer the other one: are the claims true? It extracts every checkable claim, tries to refute each against a primary source, and returns a verdict per claim. It flags and never edits.
 
-| Step | Skill | Question |
-|---|---|---|
-| 1 | [fact-check](https://github.com/conorbronsdon/fact-check?utm_source=github&utm_medium=referral&utm_campaign=repo-readme&utm_content=avoid-ai-writing) | Are the claims true? Extracts every checkable claim, tries to refute each against a primary source, and returns a verdict per claim. Flags, never edits. |
-| 2 | [write-like-me](https://github.com/conorbronsdon/write-like-me?utm_source=github&utm_medium=referral&utm_campaign=repo-readme&utm_content=avoid-ai-writing) | Does it sound like you? Builds an evidence-backed voice profile from your own samples, then drafts, edits, and checks against it. |
-| 3 | avoid-ai-writing | Does it sound like a model? |
+Run it before this skill: rewriting can't make a false claim true, but a fact-check after rewriting has to start over.
 
-Run them in that order: rewriting for voice or style after a fact-check can't make a false claim true, but a fact-check after rewriting has to start over.
-
-Install all three as Claude Code plugins from this repo's marketplace:
+Install both as Claude Code plugins from this repo's marketplace:
 
 ```text
 /plugin marketplace add conorbronsdon/avoid-ai-writing
 /plugin install avoid-ai-writing@conorbronsdon-skills
 /plugin install fact-check@conorbronsdon-skills
-/plugin install write-like-me@conorbronsdon-skills
 ```
 
 For other agents, clone each repo into your skills directory, as in [Installation & Usage](#installation--usage).
