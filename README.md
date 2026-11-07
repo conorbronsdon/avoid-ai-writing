@@ -63,6 +63,7 @@ The [glossary](GLOSSARY.md) defines the terms these docs use: word tiers, severi
     * [Score a file or piped text from the command line](#score-a-file-or-piped-text-from-the-command-line)
     * [Gate prose in GitHub Actions or pre-commit](#gate-prose-in-github-actions-or-pre-commit)
     * [Use the detector over MCP](#use-the-detector-over-mcp)
+- [Pre-publish pipeline](#pre-publish-pipeline)
 - [House style is a different job](#house-style-is-a-different-job)
 - [More from me](#more-from-me)
 - [Credits](#credits)
@@ -624,6 +625,22 @@ for result fields, availability states, and the unchanged default gate.
 documentation with this repo's detector and publishes the result, including two
 defects the scan found in our own work. `npm run self-scan` reproduces it, and
 CI fails when a document drifts past its budget.
+
+## Pre-publish pipeline
+
+This skill answers one question: does the draft sound like a model? Run [fact-check](https://github.com/conorbronsdon/fact-check?utm_source=github&utm_medium=referral&utm_campaign=repo-readme&utm_content=avoid-ai-writing) first to answer the other one: are the claims true? It extracts every checkable claim, tries to refute each against a primary source, and returns a verdict per claim. It flags and never edits.
+
+Run it before this skill: rewriting can't make a false claim true, but a fact-check after rewriting has to start over.
+
+Install both as Claude Code plugins from this repo's marketplace:
+
+```text
+/plugin marketplace add conorbronsdon/avoid-ai-writing
+/plugin install avoid-ai-writing@conorbronsdon-skills
+/plugin install fact-check@conorbronsdon-skills
+```
+
+For other agents, clone each repo into your skills directory, as in [Installation & Usage](#installation--usage).
 
 ## House style is a different job
 
