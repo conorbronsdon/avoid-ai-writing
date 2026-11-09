@@ -24,7 +24,7 @@
         "source": "github",
         "repo": "conorbronsdon/fact-check"
       },
-      "description": "Verify every checkable claim in a draft before it ships: extract claims, try to refute each against primary sources, return a verdict per claim. Flags, never edits.",
+      "description": "Check the specific claims in a draft before it ships: extract numbers, dates, names, quotes and firsts, try to refute each against primary sources, return a verdict per claim. Flags, never edits.",
       "category": "productivity",
       "keywords": [
         "writing",
