@@ -97,6 +97,7 @@ PY
 
 claude_version="$(read_manifest_version "$repo_root/plugins/avoid-ai-writing/.claude-plugin/plugin.json")"
 openai_version="$(read_manifest_version "$repo_root/.codex-plugin/plugin.json")"
+antigravity_version="$(read_manifest_version "$repo_root/plugins/avoid-ai-writing/.antigravity-plugin/plugin.json")"
 package_version="$(read_manifest_version "$repo_root/package.json")"
 
 if [ "$skill_version" != "$claude_version" ]; then
@@ -105,6 +106,10 @@ if [ "$skill_version" != "$claude_version" ]; then
 fi
 if [ "$skill_version" != "$openai_version" ]; then
   echo "version mismatch: SKILL.md=$skill_version OpenAI plugin=$openai_version" >&2
+  exit 1
+fi
+if [ "$skill_version" != "$antigravity_version" ]; then
+  echo "version mismatch: SKILL.md=$skill_version Antigravity plugin=$antigravity_version" >&2
   exit 1
 fi
 if [ "$skill_version" != "$package_version" ]; then

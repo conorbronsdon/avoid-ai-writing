@@ -89,6 +89,7 @@ jobs:
         run: |
           python3 -m json.tool .claude-plugin/marketplace.json > /dev/null
           python3 -m json.tool plugins/avoid-ai-writing/.claude-plugin/plugin.json > /dev/null
+          python3 -m json.tool plugins/avoid-ai-writing/.antigravity-plugin/plugin.json > /dev/null
           python3 -m json.tool .agents/plugins/marketplace.json > /dev/null
           python3 -m json.tool .codex-plugin/plugin.json > /dev/null
           python3 -m json.tool skills/avoid-ai-writing-router/references/skill-graph.json > /dev/null
