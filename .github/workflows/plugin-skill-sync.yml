@@ -98,6 +98,11 @@ jobs:
           python3 -m json.tool submission/discovery-evals.json > /dev/null
           python3 -m json.tool submission/submission-pack.json > /dev/null
 
+      - name: Validate manifest schemas
+        run: |
+          pipx run check-jsonschema --schemafile https://antigravity.google/schemas/v1/plugin.json plugins/avoid-ai-writing/.antigravity-plugin/plugin.json
+          pipx run check-jsonschema --schemafile https://json.schemastore.org/claude-code-marketplace.json .claude-plugin/marketplace.json
+
       - name: Check README pattern count matches references/patterns.md
         run: bash scripts/check-pattern-count.sh
 

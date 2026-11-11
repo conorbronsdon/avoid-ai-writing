@@ -1,4 +1,5 @@
 {
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
   "name": "avoid-ai-writing",
   "displayName": "Avoid AI Writing",
   "version": "3.38.0",
@@ -8,10 +9,7 @@
     "url": "https://github.com/conorbronsdon/avoid-ai-writing"
   },
   "homepage": "https://github.com/conorbronsdon/avoid-ai-writing",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/conorbronsdon/avoid-ai-writing.git"
-  },
+  "repository": "https://github.com/conorbronsdon/avoid-ai-writing",
   "suggestedPrompts": [
     "Scan this text for AI writing patterns and flag only, without rewriting it.",
     "Rewrite this draft to remove AI-isms while preserving my voice, facts, and structure.",
