@@ -16,7 +16,8 @@ const read = file => fs.readFileSync(file, 'utf8');
 const json = value => `${JSON.stringify(value, null, 2)}\n`;
 const slug = text => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const LOADING = /<!-- reference-loading:start -->\n[\s\S]*?<!-- reference-loading:end -->\n\n/g;
-const generatorHash = () => hash(read(__filename));
+// LF-normalized so a CRLF checkout (core.autocrlf on Windows) verifies the same pack.
+const generatorHash = () => hash(normalize(read(__filename)));
 
 function snapshot(commit, root = ROOT) {
   assert.match(commit, /^[0-9a-f]{40}$/, 'source must be a full commit SHA');
