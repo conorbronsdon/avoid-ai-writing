@@ -39,6 +39,7 @@ The [glossary](GLOSSARY.md) defines the terms these docs use: word tiers, severi
     * [Install the complete skill directory](#install-the-complete-skill-directory)
     * [Claude Code](#claude-code)
     * [Claude Cowork — install as a plugin](#claude-cowork--install-as-a-plugin)
+    * [Google Antigravity](#google-antigravity)
     * [OpenClaw](#openclaw)
     * [Cursor](#cursor)
     * [Hermes](#hermes)
@@ -93,7 +94,7 @@ A one-shot "make this sound human" prompt catches the obvious stuff. This skill 
 - **112-entry word replacement table across 3 tiers + 10 Tier 3 phrases** — not vibes-based. Every flagged word has a specific, plainer alternative. "Leverage" → "use." "Commence" → "start." Tier 1 matches flag unless a listed exception applies, Tier 2 words flag when they cluster, Tier 3 words flag only at high density. Tier 1 itself splits into **1A frequency markers** (`delve`, `tapestry`) and **1B clarity edits** (`in order to`, `utilize`) — same fix, but only 1A is evidence about how a passage was produced, and 1B is weighted lower so a wordiness fix cannot push a document toward an AI classification. Tier 3 *phrases* (multi-word boilerplate like "the integration of," "decentralized compute") flag on per-phrase repetition or when 3+ distinct phrases stack in one piece — the LLM-self-varies-boilerplate shape.
 - **74 pattern categories** — representative examples below, each with before/after. Includes structural detection (hashtag stuffing, bare-NP bullet lists, hedge-stacked predictions), AI-tool fingerprints (placeholders, citation markup, UTM params), rhythm/uniformity checks, conversational-register tells, and writer-side tests. The full catalog lives in [`references/patterns.md`](./references/patterns.md); this count is enforced against it in CI.
 - **Detect mode** — flag patterns without rewriting. See which flags are real problems vs. judgment calls. Useful when patterns might be intentional or you're auditing content you don't want altered.
-- **Works across platforms** — a directory-based skill runs in Claude Code, Cowork (as a plugin), OpenClaw, Cursor (as a ported rule), and other directory-aware agents. See the install paths below.
+- **Works across platforms** — a directory-based skill runs in Claude Code, Cowork (as a plugin), Google Antigravity (as a plugin), OpenClaw, Cursor (as a ported rule), and other directory-aware agents. See the install paths below.
 
 ## Installation & Usage
 
@@ -152,6 +153,26 @@ In the Cowork desktop app, do the same from **Customize → Plugins → Add mark
 The same plugin install works in Claude Code if you'd rather have a versioned, updatable plugin than the file clone above.
 
 > Prefer not to install a plugin? Copy `dist/avoid-ai-writing.md` into a folder connected to your Cowork session and tell the agent to follow `./avoid-ai-writing.md` — works as a one-off, no auto-trigger.
+
+### Google Antigravity
+
+With the [Antigravity CLI](https://antigravity.google/docs/plugins?tab=cli)
+installed, clone this repository and install its bundled plugin directory:
+
+```bash
+git clone https://github.com/conorbronsdon/avoid-ai-writing
+cd avoid-ai-writing
+agy plugin validate plugins/avoid-ai-writing
+agy plugin install ./plugins/avoid-ai-writing
+agy plugin list
+```
+
+The Antigravity manifest lives in
+`plugins/avoid-ai-writing/.antigravity-plugin/plugin.json`; install
+`plugins/avoid-ai-writing` rather than the repository root. Check that
+`avoid-ai-writing` is enabled in `agy plugin list`; if disabled, run
+`agy plugin enable avoid-ai-writing`. Then ask the agent to audit or rewrite
+a draft using the avoid-ai-writing skill.
 
 ### OpenClaw
 
