@@ -438,6 +438,15 @@ function main() {
       const p = path.join(OUT, name);
       if (!fs.existsSync(p) || fs.readFileSync(p, 'utf8') !== content) { console.error(`stale: vale/${STYLE}/${name}`); diff++; }
     }
+    // A rule the generator no longer emits would still load in Vale, so leftovers fail too.
+    (function walk(dir, rel) {
+      if (!fs.existsSync(dir)) return;
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        const r = rel ? `${rel}/${e.name}` : e.name;
+        if (e.isDirectory()) walk(path.join(dir, e.name), r);
+        else if (!(r in files)) { console.error(`extra: vale/${STYLE}/${r}`); diff++; }
+      }
+    })(OUT, '');
     if (diff) { console.error(`\n${diff} file(s) out of date. Run: node scripts/build-vale.js`); process.exit(1); }
     console.log('vale style is up to date');
     return;
