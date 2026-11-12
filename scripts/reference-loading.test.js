@@ -6,7 +6,7 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { flatten } = require('./flatten-skill');
 const { retainedSha256 } = require('./retained-bytes');
-const { snapshot, partition, prepare, verify, assemble } = require('./reference-loading');
+const { snapshot, partition, prepare, verify, assemble, sourceHash } = require('./reference-loading');
 
 const root = path.resolve(__dirname, '..');
 const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
@@ -30,6 +30,11 @@ try {
   assert.throws(() => prepare(commit, pack), /EEXIST/);
   assert.throws(() => prepare('main', path.join(directory, 'bad')), /full commit SHA/);
   assert.equal(verify(pack).manifest.source_commit, commit);
+  // The generator hash ignores line endings, so an LF-prepared pack verifies on a CRLF checkout.
+  const generatorText = fs.readFileSync(path.join(root, 'scripts/reference-loading.js'), 'utf8');
+  const lfText = generatorText.replace(/\r\n/g, '\n');
+  assert.equal(sourceHash(lfText.replace(/\n/g, '\r\n')), sourceHash(lfText));
+  assert.equal(manifest.generator_sha256, sourceHash(lfText), 'manifest must record the LF-normalized generator hash');
 
   // Heading-shaped examples are part of their enclosing rule, not modules.
   // Include a fake profile boundary, tilde fences, indentation, and a shorter

@@ -176,6 +176,13 @@ for (const target of ['leverage(s', 'robust)', '[delve', 'use+d', 'a.b', 'ma*y',
 }
 assert.equal(getPatternRegex('a.b').test('a.b'), true, 'a target must match itself');
 assert.equal(getPatternRegex('a.b').test('axb'), false, '"." in a target must not match any character');
-assert.doesNotThrow(() => validateDetectAudit(detectFixture, '## Findings\n- **P1**: "leverage(s)"\n', cat));
+{
+	// A complete response, so validateDetectAudit gets past the section check and
+	// builds a regex from the malformed single-word target "leverage(s".
+	const response = '## Issues found\n- **P1**: "leverage(s)"\n\n## Assessment\nOne finding.\n';
+	let errs;
+	assert.doesNotThrow(() => { errs = validateDetectAudit(detectFixture, response, cat); });
+	assert.ok(!errs.some(e => /missing or malformed/.test(e)), `section check must pass: ${JSON.stringify(errs)}`);
+}
 
 console.log('ok  scripts/check-detect-audit.test.js (38 named mutation controls, historical regressions, and positive controls passed)');

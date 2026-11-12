@@ -104,4 +104,20 @@ t('the README reports the counts the generator computed', () => {
   assert.ok(readme.includes(`${counts.verified} verified, ${counts.approximation} approximation, ${counts.unsupported} unsupported, ${counts.unassessed} unassessed`), 'status counts in README are stale');
 });
 
+t('`--check` exits nonzero on a rule file the generator no longer emits', () => {
+  const { spawnSync } = require('child_process');
+  const script = path.join(__dirname, 'build-vale.js');
+  const clean = spawnSync(process.execPath, [script, '--check'], { encoding: 'utf8' });
+  assert.strictEqual(clean.status, 0, `clean tree must pass --check: ${clean.stderr}`);
+  const planted = path.join(OUT, `ZzLeftoverTest${process.pid}.yml`);
+  fs.writeFileSync(planted, 'extends: existence\n');
+  try {
+    const res = spawnSync(process.execPath, [script, '--check'], { encoding: 'utf8' });
+    assert.strictEqual(res.status, 1, 'a leftover rule must fail --check');
+    assert.match(res.stderr, new RegExp(`extra: vale/AvoidAIWriting/ZzLeftoverTest${process.pid}\\.yml`));
+  } finally {
+    fs.rmSync(planted, { force: true });
+  }
+});
+
 process.stdout.write(`\n${passed} passed\n`);
