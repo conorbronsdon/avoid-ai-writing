@@ -6,7 +6,7 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { flatten } = require('./flatten-skill');
 const { retainedSha256 } = require('./retained-bytes');
-const { snapshot, partition, prepare, verify, assemble, sourceHash } = require('./reference-loading');
+const { snapshot, partition, prepare, verify, assemble } = require('./reference-loading');
 
 const root = path.resolve(__dirname, '..');
 const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
@@ -30,11 +30,22 @@ try {
   assert.throws(() => prepare(commit, pack), /EEXIST/);
   assert.throws(() => prepare('main', path.join(directory, 'bad')), /full commit SHA/);
   assert.equal(verify(pack).manifest.source_commit, commit);
-  // The generator hash ignores line endings, so an LF-prepared pack verifies on a CRLF checkout.
-  const generatorText = fs.readFileSync(path.join(root, 'scripts/reference-loading.js'), 'utf8');
-  const lfText = generatorText.replace(/\r\n/g, '\n');
-  assert.equal(sourceHash(lfText.replace(/\n/g, '\r\n')), sourceHash(lfText));
-  assert.equal(manifest.generator_sha256, sourceHash(lfText), 'manifest must record the LF-normalized generator hash');
+  // The generator hash ignores line endings: the same pack verifies whether the
+  // generator is read with LF or CRLF line endings (core.autocrlf on Windows).
+  {
+    const generatorPath = require.resolve('./reference-loading');
+    const realRead = fs.readFileSync;
+    const lf = realRead(generatorPath, 'utf8').replace(/\r\n/g, '\n');
+    for (const [form, text] of [['LF', lf], ['CRLF', lf.replace(/\n/g, '\r\n')]]) {
+      fs.readFileSync = (file, ...rest) =>
+        path.resolve(String(file)) === generatorPath ? text : realRead(file, ...rest);
+      try {
+        assert.equal(verify(pack).manifest.source_commit, commit, `pack must verify with a ${form} generator`);
+      } finally {
+        fs.readFileSync = realRead;
+      }
+    }
+  }
 
   // Heading-shaped examples are part of their enclosing rule, not modules.
   // Include a fake profile boundary, tilde fences, indentation, and a shorter

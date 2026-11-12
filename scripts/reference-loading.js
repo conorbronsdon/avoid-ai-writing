@@ -17,8 +17,7 @@ const json = value => `${JSON.stringify(value, null, 2)}\n`;
 const slug = text => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const LOADING = /<!-- reference-loading:start -->\n[\s\S]*?<!-- reference-loading:end -->\n\n/g;
 // LF-normalized so a CRLF checkout (core.autocrlf on Windows) verifies the same pack.
-const sourceHash = text => hash(normalize(text));
-const generatorHash = () => sourceHash(read(__filename));
+const generatorHash = () => hash(normalize(read(__filename)));
 
 function snapshot(commit, root = ROOT) {
   assert.match(commit, /^[0-9a-f]{40}$/, 'source must be a full commit SHA');
@@ -181,4 +180,4 @@ function main(argv) {
 if (require.main === module) {
   try { main(process.argv.slice(2)); } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
-module.exports = { snapshot, partition, prepare, verify, assemble, sourceHash };
+module.exports = { snapshot, partition, prepare, verify, assemble };

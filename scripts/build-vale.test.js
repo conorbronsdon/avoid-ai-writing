@@ -105,18 +105,25 @@ t('the README reports the counts the generator computed', () => {
 });
 
 t('`--check` exits nonzero on a rule file the generator no longer emits', () => {
+  // Run the CLI in a private copy of the files it reads, so the shared style
+  // directory is never touched.
   const { spawnSync } = require('child_process');
-  const script = path.join(__dirname, 'build-vale.js');
-  const clean = spawnSync(process.execPath, [script, '--check'], { encoding: 'utf8' });
-  assert.strictEqual(clean.status, 0, `clean tree must pass --check: ${clean.stderr}`);
-  const planted = path.join(OUT, `ZzLeftoverTest${process.pid}.yml`);
-  fs.writeFileSync(planted, 'extends: existence\n');
+  const os = require('os');
+  const root = path.join(__dirname, '..');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'build-vale-check-'));
   try {
+    for (const rel of ['scripts/build-vale.js', 'detector', 'LICENSE', 'vale/AvoidAIWriting']) {
+      fs.cpSync(path.join(root, rel), path.join(tmp, rel), { recursive: true });
+    }
+    const script = path.join(tmp, 'scripts', 'build-vale.js');
+    const clean = spawnSync(process.execPath, [script, '--check'], { encoding: 'utf8' });
+    assert.strictEqual(clean.status, 0, `clean copy must pass --check: ${clean.stderr}`);
+    fs.writeFileSync(path.join(tmp, 'vale', 'AvoidAIWriting', 'Leftover.yml'), 'extends: existence\n');
     const res = spawnSync(process.execPath, [script, '--check'], { encoding: 'utf8' });
     assert.strictEqual(res.status, 1, 'a leftover rule must fail --check');
-    assert.match(res.stderr, new RegExp(`extra: vale/AvoidAIWriting/ZzLeftoverTest${process.pid}\\.yml`));
+    assert.match(res.stderr, /extra: vale\/AvoidAIWriting\/Leftover\.yml/);
   } finally {
-    fs.rmSync(planted, { force: true });
+    fs.rmSync(tmp, { recursive: true, force: true });
   }
 });
 
