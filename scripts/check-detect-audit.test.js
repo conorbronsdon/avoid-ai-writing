@@ -170,4 +170,19 @@ if (fs.existsSync(m2Path)) {
 	assert.equal(res.errors.length, 0, 'compliant cycle 2 MiMo must pass with 0 errors');
 }
 
+// 6. Regex metacharacters in a model-written target are literal in every branch
+for (const target of ['leverage(s', 'robust)', '[delve', 'use+d', 'a.b', 'ma*y', 'pus?h']) {
+	assert.doesNotThrow(() => getPatternRegex(target), target);
+}
+assert.equal(getPatternRegex('a.b').test('a.b'), true, 'a target must match itself');
+assert.equal(getPatternRegex('a.b').test('axb'), false, '"." in a target must not match any character');
+{
+	// A complete response, so validateDetectAudit gets past the section check and
+	// builds a regex from the malformed single-word target "leverage(s".
+	const response = '## Issues found\n- **P1**: "leverage(s)"\n\n## Assessment\nOne finding.\n';
+	let errs;
+	assert.doesNotThrow(() => { errs = validateDetectAudit(detectFixture, response, cat); });
+	assert.ok(!errs.some(e => /missing or malformed/.test(e)), `section check must pass: ${JSON.stringify(errs)}`);
+}
+
 console.log('ok  scripts/check-detect-audit.test.js (38 named mutation controls, historical regressions, and positive controls passed)');
