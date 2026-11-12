@@ -174,6 +174,14 @@ The Antigravity manifest lives in
 `agy plugin enable avoid-ai-writing`. Then ask the agent to audit or rewrite
 a draft using the avoid-ai-writing skill.
 
+**Without the CLI (Antigravity app or IDE):** copy the
+`plugins/avoid-ai-writing` folder from a clone into `.agents/plugins/` at
+the root of a workspace (that project only) or into
+`~/.gemini/config/plugins/` (every workspace). See
+[manual plugin installation](https://antigravity.google/docs/plugins). In
+the IDE, the Customizations dropdown in the agent side panel shows whether
+the plugin's skill loaded.
+
 ### OpenClaw
 
 **Option 1: [Install from ClawHub](https://clawhub.ai/conorbronsdon/avoid-ai-writing)**
