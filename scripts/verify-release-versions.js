@@ -25,6 +25,11 @@ const VERSIONED_FILES = [
     label: 'OpenAI plugin manifest',
     kind: 'json',
   },
+  {
+    path: path.join('plugins', 'avoid-ai-writing', '.antigravity-plugin', 'plugin.json'),
+    label: 'Antigravity plugin manifest',
+    kind: 'json',
+  },
 ];
 
 function readChangelogVersion(changelogText) {
@@ -194,6 +199,7 @@ function verifyReleaseVersions(root) {
     skillVersion: versions['SKILL.md'],
     claudePluginVersion: versions['Claude plugin manifest'],
     openaiPluginVersion: versions['OpenAI plugin manifest'],
+    antigravityPluginVersion: versions['Antigravity plugin manifest'],
   };
 }
 

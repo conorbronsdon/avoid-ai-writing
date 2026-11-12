@@ -89,6 +89,7 @@ jobs:
         run: |
           python3 -m json.tool .claude-plugin/marketplace.json > /dev/null
           python3 -m json.tool plugins/avoid-ai-writing/.claude-plugin/plugin.json > /dev/null
+          python3 -m json.tool plugins/avoid-ai-writing/.antigravity-plugin/plugin.json > /dev/null
           python3 -m json.tool .agents/plugins/marketplace.json > /dev/null
           python3 -m json.tool .codex-plugin/plugin.json > /dev/null
           python3 -m json.tool skills/avoid-ai-writing-router/references/skill-graph.json > /dev/null
@@ -96,6 +97,13 @@ jobs:
           python3 -m json.tool submission/reviewer-tests.json > /dev/null
           python3 -m json.tool submission/discovery-evals.json > /dev/null
           python3 -m json.tool submission/submission-pack.json > /dev/null
+
+      - name: Validate Antigravity manifest schema
+        # Validate against a vendored copy of https://antigravity.google/schemas/v1/plugin.json
+        # so CI does not depend on live network fetches or unreviewed upstream edits, while
+        # plugin.json keeps the canonical $schema URL for editor autocomplete.
+        run: |
+          pipx run --spec 'check-jsonschema==0.39.0' check-jsonschema --schemafile scripts/schemas/antigravity-plugin.schema.json plugins/avoid-ai-writing/.antigravity-plugin/plugin.json
 
       - name: Check README pattern count matches references/patterns.md
         run: bash scripts/check-pattern-count.sh

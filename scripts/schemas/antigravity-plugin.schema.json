@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antigravity.google/schemas/v1/plugin.json",
+  "title": "Antigravity plugin manifest",
+  "description": "Manifest for an Antigravity plugin (plugin.json at the plugin root, or in .antigravity-plugin/). Keys are case-sensitive. Antigravity ignores keys it doesn't recognize, and `agy plugin validate` reports them. A recognized key with the wrong type stops the plugin from loading. Documentation: https://antigravity.google/docs/plugins",
+  "type": "object",
+  "required": [
+    "name"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "URL of this schema, for editor autocomplete and validation.",
+      "examples": [
+        "https://antigravity.google/schemas/v1/plugin.json"
+      ]
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "description": "Machine name of the plugin: letters, digits, hyphens, and underscores. `agy plugin install` requires it. A plugin loaded from a folder without a name is named after the folder."
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Name shown in the plugin list instead of name."
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Alias of displayName. displayName wins when both are set."
+    },
+    "description": {
+      "type": "string",
+      "description": "Short description shown in the plugin list."
+    },
+    "version": {
+      "type": "string",
+      "description": "Version shown with the plugin. Any string is accepted."
+    },
+    "disabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the plugin starts disabled. Enabling or disabling the plugin yourself takes precedence."
+    },
+    "logo": {
+      "type": "string",
+      "description": "Plugin icon: a relative path to a .png, .svg, .jpg, .jpeg, or .webp file inside the plugin, or an https URL on google.com, gstatic.com, or googleusercontent.com. Other values are ignored.",
+      "anyOf": [
+        {
+          "pattern": "^(?![A-Za-z][A-Za-z0-9+.-]*:)(?!/)\\S.*\\.([Pp][Nn][Gg]|[Ss][Vv][Gg]|[Jj][Pp][Ee]?[Gg]|[Ww][Ee][Bb][Pp])$"
+        },
+        {
+          "pattern": "^https://([A-Za-z0-9-]+\\.)*(google\\.com|gstatic\\.com|googleusercontent\\.com)(:[0-9]+)?([/?#].*)?$"
+        }
+      ]
+    },
+    "suggestedPrompts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      },
+      "maxItems": 3,
+      "description": "Up to three example prompts for the plugin."
+    },
+    "suggested_prompts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      },
+      "maxItems": 3,
+      "description": "Alias of suggestedPrompts, used only when suggestedPrompts is empty."
+    },
+    "skills": {
+      "description": "Extra skill folders, relative to the plugin root, loaded in addition to skills/. Takes one path or a list of paths.",
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "\\S"
+          }
+        }
+      ]
+    },
+    "author": {
+      "description": "Plugin author.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "homepage": {
+      "type": "string",
+      "description": "Homepage or documentation URL."
+    },
+    "repository": {
+      "type": "string",
+      "description": "Source repository URL."
+    },
+    "license": {
+      "type": "string",
+      "description": "License, for example Apache-2.0."
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Search keywords."
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Client-specific settings, keyed by namespace.",
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "source": {
+      "type": "string",
+      "deprecated": true,
+      "description": "Set by older plugin imports. Don't set it yourself."
+    },
+    "sourcePath": {
+      "type": "string",
+      "deprecated": true,
+      "description": "Set by older plugin imports. Don't set it yourself."
+    },
+    "source_path": {
+      "type": "string",
+      "deprecated": true,
+      "description": "Alias of sourcePath."
+    }
+  }
+}
