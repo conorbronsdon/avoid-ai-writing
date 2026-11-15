@@ -1,0 +1,18 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "avoid-ai-writing",
+  "displayName": "Avoid AI Writing",
+  "version": "3.38.0",
+  "description": "Audit & rewrite content to remove AI writing patterns (\"AI-isms\"). Supports detect-only and edit-in-place modes, voice profiles, and iterate-to-convergence.",
+  "author": {
+    "name": "Conor Bronsdon",
+    "url": "https://github.com/conorbronsdon/avoid-ai-writing"
+  },
+  "homepage": "https://github.com/conorbronsdon/avoid-ai-writing",
+  "repository": "https://github.com/conorbronsdon/avoid-ai-writing",
+  "suggestedPrompts": [
+    "Scan this text for AI writing patterns and flag only, without rewriting it.",
+    "Rewrite this draft to remove AI-isms while preserving my voice, facts, and structure.",
+    "Clean this file in place, then verify that protected content was preserved."
+  ]
+}

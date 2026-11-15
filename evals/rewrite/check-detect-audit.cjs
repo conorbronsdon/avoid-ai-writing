@@ -225,26 +225,28 @@ function getPatternRegex(pattern) {
 	if (pattern === 'deeply') {
 		return /\bdeeply\s+(?:integrated|committed|rooted|personal|human|flawed|resonant|transformative|interconnected|ingrained|embedded|meaningful)\b/gi;
 	}
-	const escaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	// Model findings reach here, so every branch escapes: "leverage(s)" must not throw.
+	const esc = text => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	const escaped = esc(pattern);
 	if (pattern.includes(' ') || pattern.includes('-')) {
 		return new RegExp(`\\b${escaped.replace(/[- ]+/g, '[- ]+')}\\b`, 'gi');
 	}
 	if (pattern.endsWith('ing') || pattern.endsWith('ed')) {
-		const base = pattern.slice(0, pattern.endsWith('ing') ? -3 : -2);
-		return new RegExp(`\\b(?:${base}(?:e|es|ed|ing)?|${pattern})\\b`, 'gi');
+		const base = esc(pattern.slice(0, pattern.endsWith('ing') ? -3 : -2));
+		return new RegExp(`\\b(?:${base}(?:e|es|ed|ing)?|${escaped})\\b`, 'gi');
 	}
 	if (pattern.endsWith('e')) {
-		return new RegExp(`\\b${pattern.slice(0, -1)}(?:e|es|ed|ing)\\b`, 'gi');
+		return new RegExp(`\\b${esc(pattern.slice(0, -1))}(?:e|es|ed|ing)\\b`, 'gi');
 	}
 	if (/(?:[sxz]|sh|ch)$/i.test(pattern)) {
-		return new RegExp(`\\b${pattern}(?:es|ed|ing)?\\b`, 'gi');
+		return new RegExp(`\\b${escaped}(?:es|ed|ing)?\\b`, 'gi');
 	}
 	if (pattern.endsWith('y')) {
-		const base = pattern.slice(0, -1);
-		return new RegExp(`\\b(?:${pattern}s?|${base}ies|${base}ied)\\b`, 'gi');
+		const base = esc(pattern.slice(0, -1));
+		return new RegExp(`\\b(?:${escaped}s?|${base}ies|${base}ied)\\b`, 'gi');
 	}
-	const lastChar = pattern.slice(-1);
-	return new RegExp(`\\b${pattern}(?:s|ed|ing|${lastChar}ed|${lastChar}ing)?\\b`, 'gi');
+	const lastChar = esc(pattern.slice(-1));
+	return new RegExp(`\\b${escaped}(?:s|ed|ing|${lastChar}ed|${lastChar}ing)?\\b`, 'gi');
 }
 
 function getTier2MatchesInParagraph(para, tier2Patterns) {

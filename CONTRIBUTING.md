@@ -234,7 +234,7 @@ supported.
 
 When preparing a release, move its Unreleased entries under a dated, versioned
 heading (`## [X.Y.Z] — YYYY-MM-DD`) and update the matching versions in
-`SKILL.md`, `package.json`, both plugin manifests, and the six hand-written
+`SKILL.md`, `package.json`, the three plugin manifests, and the six hand-written
 Skill frontmatters under `skills/` (every `skills/*/SKILL.md` except the
 generated `skills/avoid-ai-writing/SKILL.md`). A release that adds a writing
 rule needs a minor version bump. Exempt changes need no version bump; leave published
@@ -255,6 +255,7 @@ the version bump only when the release is ready.
    minor version bump.
 2. Set the same version in the `SKILL.md` frontmatter, `package.json`,
    `plugins/avoid-ai-writing/.claude-plugin/plugin.json`,
+   `plugins/avoid-ai-writing/.antigravity-plugin/plugin.json`,
    `.codex-plugin/plugin.json`, and the `version:` line of the six
    hand-written `skills/*/SKILL.md` files. The sync scripts do not write these
    versions; `scripts/validate-openai-plugin.py` fails when a Skill's version

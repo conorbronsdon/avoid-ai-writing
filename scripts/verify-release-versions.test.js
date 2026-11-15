@@ -36,6 +36,8 @@ function writeFixture(root, {
   claudePluginJson,
   openaiPluginVersion,
   openaiPluginJson,
+  antigravityPluginVersion,
+  antigravityPluginJson,
 }) {
   const defaultVersion = packageVersion ?? packageJson?.version ?? '1.0.0';
   fs.writeFileSync(
@@ -50,8 +52,10 @@ function writeFixture(root, {
   );
   const claudeManifest = path.join(root, 'plugins', 'avoid-ai-writing', '.claude-plugin', 'plugin.json');
   const openaiManifest = path.join(root, '.codex-plugin', 'plugin.json');
+  const antigravityManifest = path.join(root, 'plugins', 'avoid-ai-writing', '.antigravity-plugin', 'plugin.json');
   fs.mkdirSync(path.dirname(claudeManifest), { recursive: true });
   fs.mkdirSync(path.dirname(openaiManifest), { recursive: true });
+  fs.mkdirSync(path.dirname(antigravityManifest), { recursive: true });
   fs.writeFileSync(
     claudeManifest,
     claudePluginJson === undefined
@@ -64,6 +68,13 @@ function writeFixture(root, {
     openaiPluginJson === undefined
       ? JSON.stringify({ name: 'fixture', version: openaiPluginVersion ?? defaultVersion }, null, 2) + '\n'
       : openaiPluginJson,
+    'utf8',
+  );
+  fs.writeFileSync(
+    antigravityManifest,
+    antigravityPluginJson === undefined
+      ? JSON.stringify({ name: 'fixture', version: antigravityPluginVersion ?? defaultVersion }, null, 2) + '\n'
+      : antigravityPluginJson,
     'utf8',
   );
   fs.writeFileSync(
@@ -119,6 +130,7 @@ t('verifyReleaseVersions accepts matching package.json and changelog versions', 
   assert.strictEqual(result.skillVersion, '1.2.3');
   assert.strictEqual(result.claudePluginVersion, '1.2.3');
   assert.strictEqual(result.openaiPluginVersion, '1.2.3');
+  assert.strictEqual(result.antigravityPluginVersion, '1.2.3');
 });
 
 t('verifyVersionChanged accepts a new version and rejects unchanged recovery pushes', () => {
@@ -167,6 +179,7 @@ t('verifyReleaseVersions accepts an Unreleased-only documentation edit above the
     skillVersion: '3.34.0',
     claudePluginVersion: '3.34.0',
     openaiPluginVersion: '3.34.0',
+    antigravityPluginVersion: '3.34.0',
   });
 });
 
@@ -175,6 +188,7 @@ t('verifyReleaseVersions rejects each stale skill or plugin version', () => {
     [{ skillVersion: '1.2.2' }, /SKILL\.md \(1\.2\.2\)/],
     [{ claudePluginVersion: '1.2.2' }, /Claude plugin manifest \(1\.2\.2\)/],
     [{ openaiPluginVersion: '1.2.2' }, /OpenAI plugin manifest \(1\.2\.2\)/],
+    [{ antigravityPluginVersion: '1.2.2' }, /Antigravity plugin manifest \(1\.2\.2\)/],
   ];
   for (const [override, expected] of cases) {
     const root = fixtureRoot();
@@ -194,6 +208,7 @@ t('verifyReleaseVersions rejects missing versioned skill and plugin files', () =
     ['SKILL.md', /Could not read SKILL\.md/],
     [path.join('plugins', 'avoid-ai-writing', '.claude-plugin', 'plugin.json'), /Could not read Claude plugin manifest/],
     [path.join('.codex-plugin', 'plugin.json'), /Could not read OpenAI plugin manifest/],
+    [path.join('plugins', 'avoid-ai-writing', '.antigravity-plugin', 'plugin.json'), /Could not read Antigravity plugin manifest/],
   ];
   for (const [missing, expected] of paths) {
     const root = fixtureRoot();
@@ -215,6 +230,8 @@ t('verifyReleaseVersions rejects malformed skill and plugin version sources', ()
     [{ claudePluginJson: '{"name":"fixture"}' }, /Claude plugin manifest is missing a string "version" field/],
     [{ openaiPluginJson: '{bad json' }, /OpenAI plugin manifest is not valid JSON/],
     [{ openaiPluginJson: '{"version":"v1.2.3"}' }, /OpenAI plugin manifest version \(v1\.2\.3\).*numeric X\.Y\.Z/],
+    [{ antigravityPluginJson: '{bad json' }, /Antigravity plugin manifest is not valid JSON/],
+    [{ antigravityPluginJson: '{"version":"v1.2.3"}' }, /Antigravity plugin manifest version \(v1\.2\.3\).*numeric X\.Y\.Z/],
   ];
   for (const [override, expected] of cases) {
     const root = fixtureRoot();

@@ -104,4 +104,27 @@ t('the README reports the counts the generator computed', () => {
   assert.ok(readme.includes(`${counts.verified} verified, ${counts.approximation} approximation, ${counts.unsupported} unsupported, ${counts.unassessed} unassessed`), 'status counts in README are stale');
 });
 
+t('`--check` exits nonzero on a rule file the generator no longer emits', () => {
+  // Run the CLI in a private copy of the files it reads, so the shared style
+  // directory is never touched.
+  const { spawnSync } = require('child_process');
+  const os = require('os');
+  const root = path.join(__dirname, '..');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'build-vale-check-'));
+  try {
+    for (const rel of ['scripts/build-vale.js', 'detector', 'LICENSE', 'vale/AvoidAIWriting']) {
+      fs.cpSync(path.join(root, rel), path.join(tmp, rel), { recursive: true });
+    }
+    const script = path.join(tmp, 'scripts', 'build-vale.js');
+    const clean = spawnSync(process.execPath, [script, '--check'], { encoding: 'utf8' });
+    assert.strictEqual(clean.status, 0, `clean copy must pass --check: ${clean.stderr}`);
+    fs.writeFileSync(path.join(tmp, 'vale', 'AvoidAIWriting', 'Leftover.yml'), 'extends: existence\n');
+    const res = spawnSync(process.execPath, [script, '--check'], { encoding: 'utf8' });
+    assert.strictEqual(res.status, 1, 'a leftover rule must fail --check');
+    assert.match(res.stderr, /extra: vale\/AvoidAIWriting\/Leftover\.yml/);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 process.stdout.write(`\n${passed} passed\n`);
