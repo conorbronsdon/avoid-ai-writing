@@ -6,9 +6,13 @@ the workflow opens an issue:
 
     0  every surface that could be read is in sync
     1  at least one surface carries a stale number
+    2  this script could not read the checker's output, or failed itself;
+       the workflow fails the job instead of claiming drift
 
-A surface that could not be read at all (repo renamed, moved, or a clone that
-failed) is reported as NOT CHECKED and does *not* fail the job. That case is a
+A surface that could not be read at all (a named repo not checked out:
+repo_missing; or unreadable: unverified) is reported as NOT CHECKED and does
+*not* fail the job. So is any status this script does not recognise, so a
+new checker status can never count as in sync. That case is a
 coverage gap, not drift, and conflating the two makes a red check meaningless.
 It is always printed, never silently dropped.
 """
@@ -56,16 +60,20 @@ def main():
                     f"**{cval}**"
                     + (f" ({copy['note']})" if copy.get("note") else "")
                 )
-            elif status in UNREADABLE:
+            elif status == "in_sync":
+                checked += 1
+            else:
+                # UNREADABLE, or a status this script does not know: never
+                # count it as verified. Name an unknown status in the note.
                 # ssot-check reports the *source* it tried, so a missing file
                 # comes back as the bare word "local". Say what that means.
                 note = copy.get("note") or ""
                 if note in ("", "local"):
                     note = ("file not present on the runner — the surface repo "
                             "was renamed, moved, or failed to clone")
+                if status not in UNREADABLE:
+                    note = f"unrecognised checker status {status!r}; {note}"
                 unreadable.append(f"- **{name}** — `{copy.get('file')}` ({note})")
-            else:
-                checked += 1
 
     lines = []
     if drifted:
@@ -97,4 +105,13 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    # Exit 1 means drift and opens an issue, and Python's own exit code for an
+    # uncaught exception is also 1. So any crash here (an unexpected JSON
+    # shape after a checker change) exits 2: a broken run, not drift.
+    try:
+        code = main()
+    except Exception:  # noqa: BLE001 - the exit code is the contract
+        import traceback
+        traceback.print_exc()
+        code = 2
+    sys.exit(code)
