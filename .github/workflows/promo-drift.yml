@@ -66,11 +66,18 @@ jobs:
           # `check` exits 1 on any problem; the report script decides what is
           # actually actionable, so do not let the raw exit code kill the step.
           python3 ../ssot-check/ssot_check.py check --json > result.json || true
-          if ! python3 scripts/promo-drift-report.py < result.json > report.md; then
-            echo "drift=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "drift=false" >> "$GITHUB_OUTPUT"
-          fi
+          # The report exits 0 (no drift), 1 (drift) or 2 (it could not read
+          # the checker's output). Only 1 opens the drift issue; anything else
+          # is a broken run and fails the job instead of claiming drift.
+          rc=0
+          python3 scripts/promo-drift-report.py < result.json > report.md || rc=$?
+          case "$rc" in
+            0) echo "drift=false" >> "$GITHUB_OUTPUT" ;;
+            1) echo "drift=true" >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::promo-drift-report.py exit $rc: the checker output was unreadable, not drift"
+               cat report.md
+               exit 1 ;;
+          esac
           cat report.md >> "$GITHUB_STEP_SUMMARY"
           cat report.md
 

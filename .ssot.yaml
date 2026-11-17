@@ -14,7 +14,9 @@
 # Checked with https://github.com/conorbronsdon/ssot-check:
 #   python3 ssot_check.py check          # from this repo root, siblings cloned at ../
 #
-# Adding a surface is two lines under `copies`. Do not add a surface that floors
+# Adding a surface: name its repo under `repos:`, add it to the clone loop in
+# .github/workflows/promo-drift.yml, and add a `repo`/`file`/`pattern` copy.
+# Do not add a surface that floors
 # the number ("60+ pattern categories") — a floored number is a different,
 # looser fact, and tracking it as a copy fires false drift on every release.
 #
