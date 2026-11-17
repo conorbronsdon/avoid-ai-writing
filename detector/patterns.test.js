@@ -3568,7 +3568,9 @@ test('#140: em dash, figure dash, the works-out idiom, and quoted mentions stay 
     'The budget looked tight, but it just works out\u2015of the box office take, half goes to the crew this year.',
     // U+2012 is a figure dash for digit groups, not a word hyphen.
     'The budget looked tight, but it just works out\u2012of\u2012the\u2012box according to the spreadsheet this year.',
-    // The idiom itself, with no out-of-the-box after it.
+    // The idiom itself, with no out-of-the-box after it. A guard that was
+    // already clean on the base pattern; the three dash cases above are the
+    // ones that fail if the separator class is widened to admit them.
     'The numbers looked tight, but it just works out to two queries after the optimizer merges identical branches.',
     // A quoted mention of the slogan is a citation, not the tic.
     'The style guide bans the phrase "it just works out\u2011of\u2011the\u2011box" from every release note we publish.',
