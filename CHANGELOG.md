@@ -6,6 +6,11 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- The em dash rate no longer counts the separator dash in an HTML list item that opens with a `<strong>`, `<b>`, or `<a>` lead term (`<li><strong>Term</strong> — gloss</li>`). This matches the existing Markdown `- **Term** — gloss` exemption. Dashes after plain text, later in the item, or outside `<li>` still count (#351).
+- Sentence-length `uniformity` no longer measures bold-lead definition lines (`**Term:** gloss`, `- **Term** — gloss`), so a short glossary does not read as flat prose rhythm. Prose around the glossary is still measured, and the sample gate and threshold are unchanged (#351).
+
 ## [3.39.0] — 2026-11-16
 
 ### Added

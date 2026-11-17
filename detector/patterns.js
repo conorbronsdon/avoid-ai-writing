@@ -2225,6 +2225,15 @@ const AIDetector = (() => {
     return text.split(/\n\s*\n/).filter(p => p.trim().length > 0);
   }
 
+  // A Markdown definition line: optional list marker, then a bold lead term
+  // closed by a colon ("**Term:**" or "**Term**:") or followed by an em
+  // dash. Used only to keep glossary entries out of the sentence-length
+  // uniformity sample. The non-global copy is for test() so no lastIndex
+  // state leaks between calls.
+  const DEFINITION_LINE_SOURCE = '^[ \\t]*(?:(?:[-*+]|\\d+[.)])[ \\t]+)?(?:\\*\\*[^*\\n]+:\\*\\*|\\*\\*[^*\\n]+\\*\\*[ \\t]*[:\u2014])[^\\n]*$';
+  const DEFINITION_LINE_RE = new RegExp(DEFINITION_LINE_SOURCE, 'gm');
+  const DEFINITION_LINE_TEST_RE = new RegExp(DEFINITION_LINE_SOURCE, 'm');
+
   function getSentences(text) {
     return text.split(/[.!?]+/).filter(s => s.trim().length > 5);
   }
@@ -2648,6 +2657,17 @@ const AIDetector = (() => {
     // (`lingering-attention`) — the share-post frame…" is the same definition
     // typography as the bare form. Found by the self-scan (see PROOF.md, #67).
     const SEPARATOR_DASH_RE = /^\s*(?:[-*+]|\d+[.)])\s+(?:\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^)\n]*\))(?:[ \t]*(?:\([^)\n]*\)|`[^`\n]+`))?[ \t]*—/gm;
+    // The same typography in HTML source: an <li> that opens with a
+    // <strong>/<b> lead term or an <a> link, then the dash (#351). Only the
+    // first child of the item counts, so a prose dash later in a list item,
+    // or any dash outside <li>, still counts. `&mdash;` entities are never
+    // counted as em dashes, so they need no carve-out.
+    const SEPARATOR_DASH_HTML_RE = /^[ \t]*<li\b[^>\n]*>[ \t]*(?:<(strong|b)\b[^>\n]*>[^<\n]+<\/\1>|<a\b[^>\n]*>[^<\n]+<\/a>)(?:[ \t]*(?:\([^)\n]*\)|<code\b[^>\n]*>[^<\n]+<\/code>))?[ \t]*—/gim;
+    function countSeparatorDashes(value) {
+      return (value.match(SEPARATOR_DASH_RE) || []).length
+        + (value.match(SEPARATOR_DASH_HTML_RE) || []).length
+        + countVersionHeadingDashes(value);
+    }
 
     // Keep-a-Changelog version headings (`## [3.21.0] — 2026-07-30`) join a
     // label to a value exactly as a list separator does. Deliberately narrow:
@@ -2693,8 +2713,7 @@ const AIDetector = (() => {
     if (sourceMode === 'plain') {
       const hasCurly = /[“”‘’]/.test(text);
       const totalEmDashes = (text.match(/—/g) || []).length;
-      const separatorEmDashes = (text.match(SEPARATOR_DASH_RE) || []).length
-        + countVersionHeadingDashes(text);
+      const separatorEmDashes = countSeparatorDashes(text);
       const hasEmDash = totalEmDashes > separatorEmDashes;
       const oxfordHit = text.match(/\b\w+,\s+\w+,\s+and\s+\w+/g);
       const hasOxford = (oxfordHit?.length || 0) >= 1;
@@ -3019,8 +3038,7 @@ const AIDetector = (() => {
     // and still counts, as does a mid-sentence "**bold** — like this"
     // splice. Em dash only — the `--` substitute is never carved out.
     const rawEmDashCount = (text.match(/—|(?<=\s)--(?=\s|$)|(?<=^|\s)--(?=\s)/gm) || []).length;
-    const separatorDashCount = (text.match(SEPARATOR_DASH_RE) || []).length
-      + countVersionHeadingDashes(text);
+    const separatorDashCount = countSeparatorDashes(text);
     const emDashCount = rawEmDashCount - separatorDashCount;
     const emDashRate = emDashCount / (wordCount / 1000);
     if (emDashRate > 1) {
@@ -3033,8 +3051,16 @@ const AIDetector = (() => {
     }
 
     // ── 23. Sentence length uniformity ───────────────────────────
-    if (sentences.length >= 5) {
-      const lengths = sentences.map(s => countWords(s));
+    // Bold-lead definition lines ("**Term:** gloss", "- **Term** — gloss")
+    // are glossary typography: their lengths are parallel by convention, so
+    // they say nothing about prose rhythm. They leave the sample here and
+    // nowhere else; the five-sentence gate and the 0.25 threshold stay as
+    // they are, so prose around a glossary is still measured (#351).
+    const rhythmSentences = DEFINITION_LINE_TEST_RE.test(text)
+      ? getSentences(text.replace(DEFINITION_LINE_RE, '.'))
+      : sentences;
+    if (rhythmSentences.length >= 5) {
+      const lengths = rhythmSentences.map(s => countWords(s));
       const avg = lengths.reduce((a, b) => a + b, 0) / lengths.length;
       const variance = lengths.reduce((sum, l) => sum + Math.pow(l - avg, 2), 0) / lengths.length;
       const stdDev = Math.sqrt(variance);

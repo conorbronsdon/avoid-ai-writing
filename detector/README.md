@@ -194,6 +194,22 @@ apostrophes in contractions and possessives would pair up across ordinary
 prose. Zero-width characters, lookalike letters, and roleplay markers inside a
 quotation or blockquote do not raise the normalization flag.
 
+### HTML and extracted text
+
+The detector reads source text. HTML source is scored as text with its tags in
+place; there is no HTML-to-text pipeline, and `rendered-markdown` is a
+Markdown source mode, not one. HTML comments, ignore markers, and `<pre>`,
+`<code>`, `<script>`, and `<style>` elements are handled as described above.
+The em dash rate skips a list separator in either form: `- **Term** — gloss`
+in Markdown, or an `<li>` whose first child is a `<strong>`, `<b>`, or `<a>`
+lead term followed by the dash in HTML. Text copied out of a rendered page has
+lost that structure, so `Term — gloss` lines count as prose dashes; score the
+Markdown or HTML source instead.
+
+Sentence-length `uniformity` leaves out Markdown bold-lead definition lines
+(`**Term:** gloss`, `- **Term** — gloss`), since glossary entries are parallel
+by convention. The five-sentence gate and threshold are unchanged.
+
 ### Typography findings
 
 `smart-punct-signature` is a low-priority style check in `plain` mode: at
