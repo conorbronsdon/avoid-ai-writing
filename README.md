@@ -103,7 +103,7 @@ A one-shot "make this sound human" prompt catches the obvious stuff. This skill 
 
 Use the plugin install below or clone the repository into your agent's skills directory. Keep `SKILL.md` with `references/patterns.md`: the entry file loads the catalog before auditing. The bundled `scripts/`, `detector/`, and `examples/` provide optional mechanical verification.
 
-For a single-file rules field, use [`dist/avoid-ai-writing.md`](./dist/avoid-ai-writing.md) (over 150 KB). It includes every rule and profile, with manual fallbacks for commands unavailable outside the bundle. Some rules and instructions fields hold far less than that, so check the size limits under [Other agents](#other-agents) before pasting. Do not copy the slim entry file alone. Older installers that fetch only root `SKILL.md` omit its required reference; use a directory install instead.
+For a single-file rules field, use [`dist/avoid-ai-writing.md`](./dist/avoid-ai-writing.md) (roughly 150 KB; measure it with `wc -c`). It includes every rule and profile, with manual fallbacks for commands unavailable outside the bundle. Some rules and instructions fields hold far less than that, so check the size limits under [Other agents](#other-agents) before pasting. Do not copy the slim entry file alone. Older installers that fetch only root `SKILL.md` omit its required reference; use a directory install instead.
 
 ### Claude Code
 
@@ -630,8 +630,8 @@ map that keeps `SKILL.md` and the engine in sync.
 
 [`avoid-ai-writing-mcp`](https://github.com/conorbronsdon/avoid-ai-writing-mcp)
 wraps the published detector as a local stdio MCP server. It pins one exact
-detector version (`avoid-ai-writing-detector@3.22.1` in the current MCP
-release), so its scores can differ from the current CLI. For the current
+detector version (see `dependencies` in the MCP repo's `package.json`), so its
+scores can differ from the current CLI. For the current
 rules, use the CLI or the GitHub Action; the MCP server picks up detector
 changes only when it publishes a new release. It exposes two
 read-only tools: `score_text` for a compact result and `audit_text` for the full
@@ -657,9 +657,11 @@ content damage. Editorial workflows use the advisory policy:
 node detector/validate.js --residual-policy warn before.md after.md
 ```
 
-After `npm install avoid-ai-writing-detector`, use
-`node_modules/avoid-ai-writing-detector/detector/validate.js` in place of
-`detector/validate.js`.
+After `npm install avoid-ai-writing-detector`, the same command is:
+
+```bash
+node node_modules/avoid-ai-writing-detector/detector/validate.js --residual-policy warn before.md after.md
+```
 
 Mechanical errors still fail. Warnings and residual findings remain visible
 for review. A pass does not verify meaning; check facts and claims separately.
