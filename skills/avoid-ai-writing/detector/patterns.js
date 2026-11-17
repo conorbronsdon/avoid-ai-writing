@@ -2679,7 +2679,12 @@ const AIDetector = (() => {
     // lead term and the dash — "- **Lingering-attention claims**
     // (`lingering-attention`) — the share-post frame…" is the same definition
     // typography as the bare form. Found by the self-scan (see PROOF.md, #67).
-    const SEPARATOR_DASH_RE = /^\s*(?:[-*+]|\d+[.)])\s+(?:\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^)\n]*\))(?:[ \t]*(?:\([^)\n]*\)|`[^`\n]+`))?[ \t]*—/gm;
+    // The leading indent is \s minus line terminators: a bare ^\s* under the
+    // m flag rescanned every following blank line from each line start, so a
+    // long run of U+2028/U+2029 (line terminators that \s also matches) took
+    // quadratic time. Every match still ends at the same dash, so the count is
+    // unchanged.
+    const SEPARATOR_DASH_RE = /^[^\S\n\r\u2028\u2029]*(?:[-*+]|\d+[.)])\s+(?:\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^)\n]*\))(?:[ \t]*(?:\([^)\n]*\)|`[^`\n]+`))?[ \t]*—/gm;
     // The same typography in HTML source: an <li> that opens with a
     // <strong>/<b> lead term or an <a> link of at most five words, then the
     // dash (#351). A longer bold span is a clause, not a term. Only the
