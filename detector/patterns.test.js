@@ -498,6 +498,53 @@ test('em-dash detector skips definition-list separators (bold term / link + dash
   assert.equal(emDashIssues.length, 0, 'separator-position dashes should not count toward the rate');
 });
 
+test('#351: em-dash carve-out covers HTML <li> separators with a strong, b or link lead', () => {
+  const items = [
+    ['Postgres', 'primary store for orders and invoices'],
+    ['Redis', 'cache for session tokens'],
+    ['Kafka', 'event bus between services'],
+    ['S3', 'long-term storage for exports'],
+  ];
+  const intro = '<p>The cutover took one evening and two people, and the stack did not change.</p>';
+  const strong = [intro, '<ul>', ...items.map(([t, d]) => `<li><strong>${t}</strong> — ${d}</li>`), '</ul>'].join('\n');
+  const bold = [intro, '<ol>', ...items.map(([t, d]) => `  <li class="x"><b>${t}</b> (<code>${t.toLowerCase()}</code>) — ${d}</li>`), '</ol>'].join('\n');
+  const link = [intro, '<ul>', ...items.map(([t, d]) => `<li><a href="/docs/${t}">${t}</a> — ${d}</li>`), '</ul>'].join('\n');
+  for (const [name, text] of [['strong', strong], ['b + code', bold], ['link', link]]) {
+    for (const sourceMode of ['plain', 'rendered-markdown']) {
+      const hits = AIDetector.analyzeText(text, { sourceMode }).issues.filter((i) => i.type === 'em-dash');
+      assert.equal(hits.length, 0, `${name} (${sourceMode}): HTML separator dashes should not count`);
+    }
+  }
+});
+
+test('#351: HTML em dashes outside the lead-term separator position still count', () => {
+  const intro = '<p>The cutover took one evening and two people, and the stack did not change.</p>';
+  // Dash after plain text in an <li>, a prose dash later in a separator item,
+  // and dashes in a <p> all remain prose punctuation.
+  const plainLead = [intro, '<ul>',
+    '<li>Postgres — primary store</li>', '<li>Redis — cache</li>',
+    '<li>Kafka — event bus</li>', '<li>S3 — exports</li>', '</ul>'].join('\n');
+  const laterDash = [intro, '<ul>',
+    '<li><strong>Postgres</strong> — the store — and the oldest box</li>',
+    '<li><strong>Redis</strong> — the cache — and the newest box</li>', '</ul>'].join('\n');
+  const para = '<p>We moved — slowly — to the new host. Then the disks failed — twice — in one week.</p>';
+  for (const [name, text, expected] of [['plain-text lead', plainLead, 4], ['later dash', laterDash, 2], ['paragraph', para, 4]]) {
+    const hits = AIDetector.analyzeText(text).issues.filter((i) => i.type === 'em-dash');
+    assert.equal(hits.length, 1, `${name}: prose dashes must still fire`);
+    assert.match(hits[0].text, new RegExp(`^${expected} em dashes`), name);
+  }
+});
+
+test('#351: a bold clause in an HTML <li> is not a lead term; its dash still counts', () => {
+  const intro = '<p>The cutover took one evening and two people, and the stack did not change.</p>';
+  const text = [intro, '<ul>',
+    ...Array(4).fill('<li><strong>The committee reviewed the proposal and rejected it</strong> — the chair recorded the dissent.</li>'),
+    '</ul>'].join('\n');
+  const hits = AIDetector.analyzeText(text).issues.filter((i) => i.type === 'em-dash');
+  assert.equal(hits.length, 1);
+  assert.match(hits[0].text, /^4 em dashes/);
+});
+
 test('em-dash carve-out covers numbered-list separators too', () => {
   const text = [
     '1. **Install** — run the setup script from the repo root.',
@@ -4011,6 +4058,76 @@ test('uniformity: sentence-length spread pins the 0.25 variation threshold', () 
   ].join(' ');
   assert.equal(AIDetector.analyzeText(justOver).issues.filter(i => i.type === 'uniformity').length, 0,
     'CV 0.286 must sit above the threshold');
+});
+
+test('#351: glossary definition lines leave the sentence-length uniformity sample', () => {
+  const defs = [
+    '**Embedding:** A list of numbers that stands for a piece of text in a search index.',
+    '**Token:** The unit a model reads, usually a word piece of three or four letters.',
+    '**Context window:** The number of tokens the model can see at one time during a call.',
+    '**Temperature:** A setting that controls how much randomness goes into the next token.',
+    '**Latency:** The time between sending a request and getting the first byte of the reply.',
+    '**Throughput:** The number of requests the server can finish in one second under load.',
+  ];
+  const variants = {
+    'colon inside bold': defs.join('\n'),
+    'bulleted, colon after bold': defs.map((d) => '- ' + d.replace(':**', '**:')).join('\n'),
+    'numbered, em dash': defs.map((d, i) => `${i + 1}. ` + d.replace(':**', '** —')).join('\n'),
+  };
+  for (const [name, text] of Object.entries(variants)) {
+    for (const sourceMode of ['plain', 'rendered-markdown']) {
+      const hits = AIDetector.analyzeText('## Glossary\n\n' + text, { sourceMode }).issues
+        .filter((i) => i.type === 'uniformity');
+      assert.equal(hits.length, 0, `${name} (${sourceMode}): glossary entries are not prose rhythm`);
+    }
+  }
+});
+
+test('#351: uniform prose still fires beside a glossary and without bold leads', () => {
+  const sentence = 'The worker reads every queued message before it writes the result to disk.';
+  const prose = Array(5).fill(sentence).join(' ');
+  const glossary = '**Token:** The unit a model reads, usually a word piece.\n**Latency:** The time before the first byte of the reply arrives.\n**Throughput:** Requests finished per second.';
+  const withGlossary = AIDetector.analyzeText(prose + '\n\n' + glossary).issues.filter((i) => i.type === 'uniformity');
+  assert.deepEqual(withGlossary.map((i) => i.text), ['Sentence lengths cluster around 13 words (low variation)']);
+  // The same glossary text without bold lead terms is ordinary prose and is measured.
+  const unbolded = [
+    'Embedding means a list of numbers that stands for a piece of text in a search index.',
+    'Token means the unit a model reads, usually a word piece of three or four letters.',
+    'Context window means the number of tokens the model can see at one time during a call.',
+    'Temperature means a setting that controls how much randomness goes into the next token.',
+    'Latency means the time between sending a request and getting the first byte of the reply.',
+  ].join('\n');
+  assert.equal(AIDetector.analyzeText(unbolded).issues.filter((i) => i.type === 'uniformity').length, 1,
+    'unbolded uniform lines are prose and still fire');
+  // A bold phrase mid-line is emphasis, not a definition lead.
+  const midBold = Array(5).fill('The worker reads every **queued** message before it writes the result to disk.').join('\n');
+  assert.equal(AIDetector.analyzeText(midBold).issues.filter((i) => i.type === 'uniformity').length, 1,
+    'mid-line bold is not a definition lead');
+});
+
+test('#351: a repeated bold label is not a glossary, and needs three distinct terms', () => {
+  const sentence = 'The worker reads every queued message before it writes the result to disk.';
+  const notes = Array(5).fill('**Note:** ' + sentence).join('\n');
+  assert.equal(AIDetector.analyzeText(notes).issues.filter((i) => i.type === 'uniformity').length, 1,
+    'five **Note:** lines are prose with a label and stay in the sample');
+  const twoTerms = ['**Token:** ' + sentence, '**Latency:** ' + sentence, sentence, sentence, sentence].join('\n');
+  assert.equal(AIDetector.analyzeText(twoTerms).issues.filter((i) => i.type === 'uniformity').length, 1,
+    'two bold leads are below the glossary minimum');
+});
+
+test('#351: a wrapped glossary entry leaves the sample whole', () => {
+  // Removing only the first physical line of a wrapped entry used to leave the
+  // continuation behind as an extra sentence beside uniform prose.
+  const p = 'Mara checked the logs and found nothing unusual in them today.';
+  const text = [
+    p, p, p, p,
+    '**Retry budget:** The number of attempts a worker makes before it gives up on a job and',
+    'moves it to the dead-letter queue for a person to inspect later.',
+    '**Lease:** How long a worker holds a job before another worker may take it.',
+    '**Backoff:** The wait between attempts, doubled after each failure.',
+  ].join('\n');
+  assert.equal(AIDetector.analyzeText(text).issues.filter((i) => i.type === 'uniformity').length, 0,
+    'four prose sentences remain, below the five-sentence gate');
 });
 
 test('uniformity: equal paragraph sizes fire, varied paragraph sizes stay clean', () => {
