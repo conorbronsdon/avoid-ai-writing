@@ -16,21 +16,24 @@ changes no carve-out.
 
 1. **Candidates.** Loose finders scan every tracked `.md`, `.json`, and `.js`
    file, excluding generated copies (`SKILL.full.md`, `dist/`, `plugins/`,
-   `skills/`, `cursor-rules/`, `vale/`). JSON is read as string values,
+   `skills/`, `cursor-rules/`, and the generated `vale/AvoidAIWriting/`
+   rules; `vale/fixtures/cases.json` is scanned). JSON is read as string values,
    `detector/patterns.test.js` as string literals, and other files as
    paragraphs. Identical lines are counted once, so prompt copies of
-   `references/patterns.md` do not inflate the counts. The scan finds 70
+   `references/patterns.md` do not inflate the counts. The scan finds 73
    distinct candidates.
 2. **Labels** (`labels.json`, by hand). `tic` is an authored use of the
    targeted form; `literal` is an ordinary use; `mention` is the phrase
    quoted, named, or asserted as an example; `ambiguous` needs reading.
    Fixture literals follow the test's stated intent (must-fire → `tic`,
    must-not-fire → `literal`).
-3. **Strata.** `fixture` (26, all unquoted): synthetic test strings.
-   `machine-output` (6): recorded model responses under `evals/rewrite/reports`.
+3. **Strata.** `fixture` (28, all unquoted): synthetic strings from the
+   detector tests and the Vale parity fixtures. `machine-output` (7): recorded
+   model responses under `evals/rewrite/reports`.
    `repo-prose` (38, 32 of them quoted): docs, changelog, prompts, and comments.
    Quoted candidates (double or curly quotes, inline code, blockquote lines)
-   are measured only under quote masking. The rest are measured per boundary.
+   are measured only under quote masking, and only where an active baseline
+   rule would hit them unmasked. The rest are measured per boundary.
 4. **Variants.** Each variant is derived from the detector's exported
    `PATTERN_TABLES` by changing one boundary. Omitted forms get a plain
    phrase regex. "Added by loosening" counts candidates the variant hits and
@@ -42,18 +45,22 @@ changes no carve-out.
 
 | Carve-out | Unquoted candidates | Baseline hits | Added by loosening | Tic (TP suppressed) | Literal (FP prevented) | Mention (FP prevented) | Ambiguous | Engine disagrees (unscored) |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| `no-chain-three-items` | 18 | 4 | 2 | 0 | 2 | 0 | 0 | 0 (2) |
-| `no-chain-lowercase-after-colon-dash` | 18 | 4 | 1 | 0 | 0 | 0 | 1 | 0 (2) |
-| `no-chain-sentence-initial` | 18 | 4 | 7 | 0 | 5 | 0 | 2 | 0 (2) |
-| `no-chain-idiom-stop-list` | 18 | 4 | 1 | 0 | 1 | 0 | 0 | 0 (2) |
-| `did-not-restated-subject` | 3 | 1 | 1 | 0 | 1 | 0 | 0 | 0 (0) |
+| `no-chain-three-items` | 19 | 5 | 2 | 0 | 2 | 0 | 0 | 0 (2) |
+| `no-chain-lowercase-after-colon-dash` | 19 | 5 | 1 | 0 | 0 | 0 | 1 | 0 (2) |
+| `no-chain-sentence-initial` | 19 | 5 | 7 | 0 | 5 | 0 | 2 | 0 (2) |
+| `no-chain-idiom-stop-list` | 19 | 5 | 1 | 0 | 1 | 0 | 0 | 0 (2) |
+| `did-not-restated-subject` | 4 | 1 | 1 | 0 | 1 | 0 | 0 | 0 (0) |
 | `the-punchline-omitted` | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 (0) |
 | `worth-naming-omitted` | 2 | 0 | 2 | 0 | 2 | 0 | 0 | 0 (0) |
 | `batteries-included-omitted` | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 (0) |
-| `just-works-out-idiom` | 5 | 4 | 1 | 0 | 1 | 0 | 0 | 0 (3) |
-| `just-works-unicode-hyphen` | 5 | 4 | 0 | 0 | 0 | 0 | 0 | 0 (3) |
+| `just-works-out-idiom` | 6 | 5 | 1 | 0 | 1 | 0 | 0 | 0 (3) |
+| `just-works-unicode-hyphen` | 6 | 5 | 0 | 0 | 0 | 0 | 0 | 0 (3) |
 | `turns-out-sentence-initial` | 8 | 4 | 4 | 0 | 0 | 4 | 0 | 0 (1) |
-| `quote-masking` | 32 quoted | — | 28 | 0 | 0 | 28 | 0 | — |
+| `quote-masking` | 32 quoted | — | 4 | 0 | 0 | 4 | 0 | — |
+
+A further 24 quoted candidates match only a loosened variant: an omitted
+form such as "the punchline", or a shape the baseline skips. Quote masking is
+not what keeps them clean today, so they are not credited to it.
 
 Where the added hits came from:
 
@@ -66,8 +73,9 @@ Where the added hits came from:
   will be issued" fixture.
 - `turns-out-sentence-initial`: test names, assertion strings, and a code
   comment. None is prose.
-- `quote-masking`: every hit is a quoted example in the catalog, changelog,
-  category map, or eval prompts.
+- `quote-masking`: the 4 hits are quoted examples of active rules (a "No …"
+  chain and sentence-initial "Turns out") in comments, the catalog, and the
+  eval prompts.
 
 ## Recommendations
 
@@ -84,22 +92,25 @@ Where the added hits came from:
 | `it just works out` exclusion | Keep | 1 FP prevented ("works out to two queries"). |
 | Unicode hyphens in `out‑of‑the‑box` | Candidate for a narrow deterministic branch in its own PR | 0 occurrences of either kind. Confirmed gap: `analyzeText()` reports the slogan with ASCII hyphens but not with U+2010, U+2011, or U+2013. The change only touches separators inside a phrase that already matches, so the FP risk is small. It still needs a must-fire and a must-not-fire fixture. |
 | `Turns out` sentence-initial only | Keep | 4 hits, all mentions, no tic. |
-| Quote masking | Keep | 28 quoted mentions kept clean, 0 tics suppressed. |
+| Quote masking | Keep | 4 quoted mentions of active rules kept clean, 0 tics suppressed. It also keeps quoted mentions of the omitted forms clean if those forms are ever added. |
 | Span includes a following verb (`No trains, no buses, no ferries run`) | No decision; not measurable here | No baseline hit in the corpus ends in a one-word item followed by a verb. This is span accuracy, not recall. |
 
 ## Limitations
 
-- **No positive evidence for the omitted forms.** Across 70 candidates, the
-  only `tic` labels (9) are must-fire fixtures for forms the detector already
+- **Genre scope not met.** #140 asks for technical prose, essays, and
+  marketing copy with provenance. This corpus has none of the last two, so
+  its conclusions apply to technical and repository text only. Meeting that
+  requirement needs new sourced samples, not more of this repository.
+- **No positive evidence for the omitted forms.** Across 73 candidates, the
+  only `tic` labels (11) are must-fire fixtures for forms the detector already
   catches. No machine-output or repo-prose candidate is a tic. "0 TPs
   suppressed" therefore means no measured recall cost on this corpus. It does
   not show that the cost is zero.
 - **Circular fixtures.** The fixtures were written while setting these
   boundaries, so the must-not-fire strings are the evidence the carve-outs
   came from. They confirm the FP side; they cannot estimate recall.
-- **Small, single-register corpus.** The machine output is six eval responses
-  in one register (rewrite audit reports). There are no essays or marketing
-  copy, which #140 asks for.
+- **Small, single-register corpus.** The machine output is seven eval
+  responses in one register (rewrite audit reports).
 - **Single labeler, no adjudication.** The labels are one reviewer's. The
   three `ambiguous` rows need a second read.
 - **Approximate quote detection.** The script mirrors the detector's

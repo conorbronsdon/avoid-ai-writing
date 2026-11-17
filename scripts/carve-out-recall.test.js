@@ -33,6 +33,7 @@ const SUPPRESSED = {
   'no-chain-sentence-initial': 'It ships with no fluff, no filler, no jargon.',
   'no-chain-idiom-stop-list': 'No more, no less, no matter what.',
   'did-not-restated-subject': 'It did not ask. It did not wait.',
+  // (a noun subject is covered by the separate test below)
   'the-punchline-omitted': 'The punchline is simple.',
   'worth-naming-omitted': 'It is worth naming the cost.',
   'batteries-included-omitted': 'The framework is batteries included.',
@@ -52,6 +53,26 @@ for (const [id, text] of Object.entries(SUPPRESSED)) {
     assert.equal(fires(co.loose, text), true, 'variant must fire');
   });
 }
+
+test('did-not-restated-subject: the variant covers a short noun subject, and the finder collects it', () => {
+  const { FINDERS } = require('./carve-out-recall.js');
+  const text = 'It did not ask. The server did not wait.';
+  const co = byId['did-not-restated-subject'];
+  assert.equal(fires(co.base, text), false);
+  assert.equal(fires(co.loose, text), true);
+  FINDERS['did-not-chain'].lastIndex = 0;
+  assert.ok(FINDERS['did-not-chain'].test(text));
+});
+
+test('quote masking credits only rules the baseline has', () => {
+  const { measure } = require('./carve-out-recall.js');
+  const r = measure();
+  const quotedOmitted = r.candidates.filter((c) => c.quoted && ['the-punchline', 'worth-naming', 'batteries-included'].includes(c.form));
+  assert.ok(quotedOmitted.length > 0, 'the tree has quoted mentions of omitted forms');
+  assert.ok(r.quote.added <= r.candidates.filter((c) => c.quoted && !['the-punchline', 'worth-naming', 'batteries-included'].includes(c.form)).length,
+    'quoted omitted-form mentions must not count as masking credit');
+  assert.ok(r.quote.hypotheticalOnly >= quotedOmitted.length);
+});
 
 test('variants keep every baseline hit (loosening never removes a match)', () => {
   const kept = {

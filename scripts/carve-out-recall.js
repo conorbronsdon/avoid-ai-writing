@@ -27,14 +27,15 @@ const AIDetector = require(path.join(ROOT, 'detector/patterns.js'));
 const LABELS_PATH = path.join(ROOT, 'evals/carve-out-recall/labels.json');
 
 // Generated copies, vendored bundles, and binary-ish assets are excluded so a
-// sentence is not counted once per bundle.
-const EXCLUDE = /^(?:SKILL\.full\.md|dist\/|plugins\/|skills\/|cursor-rules\/|vale\/|submission\/|assets\/|\.github\/|evals\/carve-out-recall\/|scripts\/carve-out-recall)|(?:^|\/)package(?:-lock)?\.json$/;
+// sentence is not counted once per bundle. The generated Vale rules are
+// excluded; the hand-written Vale fixtures are scanned.
+const EXCLUDE = /^(?:SKILL\.full\.md|dist\/|plugins\/|skills\/|cursor-rules\/|vale\/AvoidAIWriting\/|submission\/|assets\/|\.github\/|evals\/carve-out-recall\/|scripts\/carve-out-recall)|(?:^|\/)package(?:-lock)?\.json$/;
 
 // Loose finders: a superset of every form a carve-out suppresses. Finding a
 // candidate is not a judgment; the label is.
 const FINDERS = {
   'no-chain': /\bno\s+[a-z'’-]+(?:\s+[a-z'’-]+)?(?:\s*,\s*(?:and\s+|or\s+|just\s+)?no\s+[a-z'’-]+(?:\s+[a-z'’-]+)?)+/gi,
-  'did-not-chain': /\b(?:did\s+not|didn['’]t)\s+[a-z]+[^.!?\n]{0,40}[,.;]\s+(?:\w+\s+)?(?:did\s+not|didn['’]t)\s+[a-z]+/gi,
+  'did-not-chain': /\b(?:did\s+not|didn['’]t)\s+[a-z]+[^.!?\n]{0,40}[,.;]\s+(?:\w+\s+){0,2}(?:did\s+not|didn['’]t)\s+[a-z]+/gi,
   'the-punchline': /\bthe\s+punchline\b/gi,
   'worth-naming': /\bworth\s+naming\b/gi,
   'batteries-included': /\bbatteries[-\s‐-―]+included\b/gi,
@@ -180,9 +181,9 @@ const CARVE_OUTS = [
   },
   {
     id: 'did-not-restated-subject', form: 'did-not-chain', type: 'negation-chain',
-    boundary: '"did not" chain must be comma-joined with the subject elided; allow restated subject or sentence break',
+    boundary: '"did not" chain must be comma-joined with the subject elided; allow a sentence break and a restated pronoun or short noun subject',
     base: new RegExp(DID_NOT, 'gi'),
-    loose: new RegExp(derive(DID_NOT, ',\\s*(?:did', '[,.;]\\s*(?:(?:I|we|he|she|they|it|you)\\s+)?(?:did', 'restated subject'), 'gi'),
+    loose: new RegExp(derive(DID_NOT, ',\\s*(?:did', '[,.;]\\s*(?:(?:I|we|he|she|they|it|you|(?:the|this|that|our|my|your|their|his|her|its)\\s+[a-z][a-z-]*)\\s+)?(?:did', 'restated subject'), 'gi'),
   },
   {
     id: 'the-punchline-omitted', form: 'the-punchline', type: 'performed-insight',
@@ -256,6 +257,7 @@ function measure() {
 
   const rows = [];
   const quoteRows = [];
+  const hypotheticalQuoted = new Set();
   for (const co of CARVE_OUTS) {
     const row = { id: co.id, boundary: co.boundary, candidates: 0, baseline: 0, added: 0, tic: 0, literal: 0, mention: 0, ambiguous: 0, engineMismatch: 0, engineUnscored: 0, addedKeys: [] };
     for (const c of candidates.filter((x) => x.form === co.form && x.label)) {
@@ -263,7 +265,10 @@ function measure() {
       const loose = hitsAt(co.loose, c.unit, c.index, c.match.length);
       if (c.quoted) {
         // Quote masking blanks these before any rule runs; tallied separately.
-        if (loose) quoteRows.push({ carveOut: co.id, key: c.key, label: c.label, stratum: c.stratum });
+        // Only an active baseline rule can be suppressed by masking. Loose
+        // variants of omitted forms are hypothetical and tallied apart.
+        if (base) quoteRows.push({ carveOut: co.id, key: c.key, label: c.label, stratum: c.stratum });
+        else if (loose) hypotheticalQuoted.add(c.key);
         continue;
       }
       row.candidates += 1;
@@ -290,6 +295,9 @@ function measure() {
     quote[q.label] += 1;
   }
   quote.candidates = candidates.filter((c) => c.quoted && c.label).length;
+  // Quoted hits of a loosened variant only (an omitted form, or a shape the
+  // baseline rule skips). Masking is not what keeps these clean today.
+  quote.hypotheticalOnly = [...hypotheticalQuoted].filter((k) => !seenQuoted.has(k)).length;
 
   let head = 'unknown';
   try { head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim(); } catch { /* not a checkout */ }
@@ -317,6 +325,7 @@ function main() {
     }
     const q = result.quote;
     console.log(`| \`${q.id}\` | ${q.candidates} quoted | — | ${q.added} | ${q.tic} | ${q.literal} | ${q.mention} | ${q.ambiguous} | — |`);
+    console.log(`\nQuoted candidates hit only by a loosened variant (not counted under quote masking): ${q.hypotheticalOnly}`);
   }
   if (result.unlabeled.length) {
     console.error(`\n${result.unlabeled.length} unlabeled candidate(s):`);

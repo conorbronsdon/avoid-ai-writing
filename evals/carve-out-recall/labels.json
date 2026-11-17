@@ -8,7 +8,7 @@
     "ambiguous": "Needs reading to decide; counted separately."
   },
   "strata": {
-    "fixture": "String literals in detector/patterns.test.js; synthetic, labeled by the fixture's stated intent.",
+    "fixture": "String literals in detector/patterns.test.js and texts in vale/fixtures/cases.json; synthetic, labeled by the fixture's stated intent.",
     "machine-output": "Recorded model responses under evals/rewrite/reports.",
     "repo-prose": "Docs, changelog, prompts, and code comments in this repository."
   },
@@ -643,6 +643,33 @@
       "stratum": "repo-prose",
       "label": "literal",
       "note": "Bulleted constraint inventory in an eval README."
+    },
+    {
+      "key": "did-not-chain:b79d8d04dcd1",
+      "form": "did-not-chain",
+      "match": "did not treat it as a live instruction to me, and I did not print",
+      "where": "evals/rewrite/reports/automated-stack-295-296-2026-09-16/isolated-cycle5/claude-responses.json#/source_instruction",
+      "stratum": "machine-output",
+      "label": "literal",
+      "note": "Model report stating two actions it did not take, joined with \"and I\"; not a stacked rhythm."
+    },
+    {
+      "key": "no-chain:74c6a8e4f9e5",
+      "form": "no-chain",
+      "match": "No meetings, no slides, no status reports",
+      "where": "vale/fixtures/cases.json#/rules/NegationChain/0/text",
+      "stratum": "fixture",
+      "label": "tic",
+      "note": "Vale/detector parity fixture with id \"fire\": sentence-initial three-item chain."
+    },
+    {
+      "key": "it-just-works:09e4bd77ea68",
+      "form": "it-just-works",
+      "match": "it just works",
+      "where": "vale/fixtures/cases.json#/rules/DevBlogBoilerplate/0/text",
+      "stratum": "fixture",
+      "label": "tic",
+      "note": "Vale/detector parity fixture with id \"fire\": the slogan."
     }
   ]
 }
