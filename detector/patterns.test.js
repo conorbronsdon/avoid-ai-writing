@@ -3623,6 +3623,30 @@ test('#140: em dash, figure dash, the works-out idiom, and quoted mentions stay 
   }
 });
 
+test('#140: Unicode hyphens give the same result as the ASCII hyphen in every out-of-the-box shape', () => {
+  // Shapes where the hyphen joins "works" and "out" are not part of the
+  // idiom exclusion for any separator; this pins that the Unicode forms
+  // behave exactly as the ASCII form does, whatever that is.
+  const shapes = [
+    (s) => `The framework claims it just works${s}out${s}of${s}the${s}box for every developer who follows the documented steps.`,
+    (s) => `The numbers looked tight, but it just works${s}out to two queries after the optimizer merges identical branches.`,
+    (s) => `The framework claims it just works out${s}of${s}the${s}box for every developer who follows the documented steps.`,
+  ];
+  const hits = (text) => AIDetector.analyzeText(text).issues
+    .filter((i) => i.type === 'dev-blog-boilerplate' || i.type === 'unnecessary-hyphenation')
+    .map((i) => [i.type, i.text, i.suggestion]);
+  for (const shape of shapes) {
+    const ascii = hits(shape('-')).map(([type, text, suggestion]) => [type, text.replace(/-/g, '#'), suggestion]);
+    for (const sep of ['‐', '‑', '–']) {
+      const uni = hits(shape(sep)).map(([type, text, suggestion]) => [type, text.split(sep).join('#'), suggestion]);
+      assert.deepEqual(uni, ascii, `${shape(sep)}`);
+    }
+  }
+  // Mixed separators in one compound still normalize fully.
+  const mixed = hits(`The current release works out${'‐'}of${'–'}the${'‑'}box on every operating system we support.`);
+  assert.deepEqual(mixed, [['unnecessary-hyphenation', 'works out‐of–the‑box', 'works out of the box']]);
+});
+
 test('dev-blog-boilerplate: ordinary prose stays clean', () => {
   const r = AIDetector.analyzeText(
     "The configuration file documents every default value we chose and why we chose it. The batteries included with the flashlight were already dead when we opened the sealed package at camp. It just works out to two queries after the optimizer merges identical branches."

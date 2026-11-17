@@ -470,7 +470,8 @@
         "id": "figure-dash",
         "text": "The budget looked tight, but it just works out\u2012of\u2012the\u2012box according to the spreadsheet this year.",
         "vale": false,
-        "detector": false
+        "detector": false,
+        "why": "U+2012 stays excluded on purpose: a figure dash joins digit groups, not words. If this case flips, the separator class was widened; revisit the #140 boundary."
       }
     ],
     "FormulaicOpeners": [
@@ -601,7 +602,8 @@
         "id": "figure-dash",
         "text": "The current release works out\u2012of\u2012the\u2012box on every operating system we support.",
         "vale": false,
-        "detector": false
+        "detector": false,
+        "why": "U+2012 stays excluded on purpose: a figure dash joins digit groups, not words. If this case flips, the separator class was widened; revisit the #140 boundary."
       }
     ],
     "Tier1Vocabulary": [
