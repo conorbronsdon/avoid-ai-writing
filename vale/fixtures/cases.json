@@ -45,7 +45,7 @@
       },
       {
         "id": "zero-width",
-        "text": "More​over, the team shipped the release a full week before the deadline.",
+        "text": "More\u200bover, the team shipped the release a full week before the deadline.",
         "vale": false,
         "detector": true,
         "why": "The detector removes zero-width characters before matching; Vale does not."
@@ -94,7 +94,7 @@
       },
       {
         "id": "nbsp",
-        "text": "The plan is cheaper in terms of hosting and staff time for the whole year.",
+        "text": "The plan is cheaper in\u00a0terms of hosting and staff time for the whole year.",
         "vale": false,
         "detector": true,
         "why": "JS \\s matches a no-break space; in Vale the same pattern does not match it."
@@ -459,6 +459,18 @@
         "text": "Install the package, add one line to your config file, and it runs on every platform we test.",
         "vale": false,
         "detector": false
+      },
+      {
+        "id": "unicode-hyphen",
+        "text": "Install the package, add one line to your config file, and it just works out\u2011of\u2011the\u2011box on every platform.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "figure-dash",
+        "text": "The budget looked tight, but it just works out\u2012of\u2012the\u2012box according to the spreadsheet this year.",
+        "vale": false,
+        "detector": false
       }
     ],
     "FormulaicOpeners": [
@@ -578,6 +590,18 @@
         "vale": true,
         "detector": false,
         "why": "The detector masks file paths and identifiers before matching; Vale does not."
+      },
+      {
+        "id": "unicode-hyphen",
+        "text": "The current release works out\u2011of\u2011the\u2011box on every operating system we support.",
+        "vale": true,
+        "detector": true
+      },
+      {
+        "id": "figure-dash",
+        "text": "The current release works out\u2012of\u2012the\u2012box on every operating system we support.",
+        "vale": false,
+        "detector": false
       }
     ],
     "Tier1Vocabulary": [
