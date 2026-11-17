@@ -26,6 +26,14 @@
 # without quoting either count, so a tracked copy there can only report
 # "pattern did not match". Re-add it if the profile starts quoting a number.
 
+# The promo surfaces, by name. Each resolves from --repo NAME=PATH,
+# $SSOT_REPO_<NAME>, $SSOT_REPOS_DIR/<name>, then ../<name> beside this
+# checkout (where promo-drift.yml clones them). A surface that is not checked
+# out is reported REPO NOT FOUND, never as a pass.
+repos:
+  agent-skills:
+  ai-tools-for-creators:
+
 facts:
   - name: avoid-ai-pattern-count
     type: integer
@@ -41,9 +49,11 @@ facts:
     copies:
       - file: AGENTS.md
         pattern: 'README "(\d+) pattern categories" bullet'
-      - file: ../agent-skills/README.md
+      - repo: agent-skills
+        file: README.md
         pattern: '(\d+) pattern categories'
-      - file: ../ai-tools-for-creators/README.md
+      - repo: ai-tools-for-creators
+        file: README.md
         pattern: '(\d+) pattern categories'
 
   - name: avoid-ai-replacement-table
@@ -58,5 +68,6 @@ facts:
       file: README.md
       pattern: '\*\*(\d+)-entry word replacement table'
     copies:
-      - file: ../ai-tools-for-creators/README.md
+      - repo: ai-tools-for-creators
+        file: README.md
         pattern: '(\d+)-entry replacement table'

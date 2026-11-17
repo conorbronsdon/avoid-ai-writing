@@ -17,7 +17,9 @@ import sys
 
 # Statuses ssot-check emits for a copy it managed to read and compare.
 REAL_DRIFT = {"drifted", "stale_entry"}
-UNREADABLE = {"unverified"}
+# repo_missing: a named surface repo was not checked out (ssot-check named
+# repos). Like unverified, the copy was never read: not drift, not a pass.
+UNREADABLE = {"unverified", "repo_missing"}
 
 
 def main():

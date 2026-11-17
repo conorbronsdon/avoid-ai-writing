@@ -38,8 +38,8 @@ jobs:
         with:
           persist-credentials: false
 
-      # ssot-check resolves `../<repo>/...` copies against real directories on
-      # disk, so the surfaces have to be cloned as siblings of this checkout.
+      # .ssot.yaml names the surfaces as repos; each resolves to ../<name>
+      # beside this checkout, so the surfaces are cloned as siblings.
       # Depth 1: only the current content of each file matters.
       - name: Clone the public promo surfaces
         env:
@@ -56,7 +56,7 @@ jobs:
           cd "$GITHUB_WORKSPACE/.."
           git clone --depth 1 --quiet https://github.com/conorbronsdon/ssot-check.git ssot-check
           # Use the same reviewed revision as the repository-local SSOT pilot.
-          git -C ssot-check fetch --depth 1 origin f3289c400cd591cdcb6ce4016627a442d0804ce7
+          git -C ssot-check fetch --depth 1 origin 594269d32d4951d417269deaebcd3d621a8a766e
           git -C ssot-check checkout --detach FETCH_HEAD
 
       - name: Check the promo surfaces
