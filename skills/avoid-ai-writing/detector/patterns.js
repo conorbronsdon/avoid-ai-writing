@@ -2225,14 +2225,37 @@ const AIDetector = (() => {
     return text.split(/\n\s*\n/).filter(p => p.trim().length > 0);
   }
 
-  // A Markdown definition line: optional list marker, then a bold lead term
+  // A Markdown definition entry: optional list marker, then a bold lead term
   // closed by a colon ("**Term:**" or "**Term**:") or followed by an em
-  // dash. Used only to keep glossary entries out of the sentence-length
-  // uniformity sample. The non-global copy is for test() so no lastIndex
-  // state leaks between calls.
-  const DEFINITION_LINE_SOURCE = '^[ \\t]*(?:(?:[-*+]|\\d+[.)])[ \\t]+)?(?:\\*\\*[^*\\n]+:\\*\\*|\\*\\*[^*\\n]+\\*\\*[ \\t]*[:\u2014])[^\\n]*$';
-  const DEFINITION_LINE_RE = new RegExp(DEFINITION_LINE_SOURCE, 'gm');
-  const DEFINITION_LINE_TEST_RE = new RegExp(DEFINITION_LINE_SOURCE, 'm');
+  // dash, plus any wrapped continuation lines up to a blank line, list item,
+  // bold lead, heading, or blockquote. Group 1 is the term. Used only to
+  // keep glossary entries out of the sentence-length uniformity sample.
+  const DEFINITION_ENTRY_RE = /^[ \t]*(?:(?:[-*+]|\d+[.)])[ \t]+)?\*\*([^*\n]+?):?\*\*(?:(?<=:\*\*)|[ \t]*[:—])[^\n]*(?:\n(?![ \t]*(?:$|[-*+][ \t]|\d+[.)][ \t]|\*\*|#|>))[^\n]*)*/gm;
+  // A glossary is at least this many entries with distinct terms. A label
+  // repeated as a lead ("**Note:**" on every line) is not a glossary term,
+  // and its lines stay in the sample.
+  const GLOSSARY_MIN_ENTRIES = 3;
+
+  // Text with glossary entries replaced by sentence breaks, or null when the
+  // text has no glossary.
+  function withoutGlossaryEntries(text) {
+    if (!text.includes('**')) return null;
+    const entries = [...text.matchAll(DEFINITION_ENTRY_RE)];
+    const counts = new Map();
+    for (const m of entries) {
+      const term = m[1].trim().toLowerCase();
+      counts.set(term, (counts.get(term) || 0) + 1);
+    }
+    const unique = entries.filter((m) => counts.get(m[1].trim().toLowerCase()) === 1);
+    if (unique.length < GLOSSARY_MIN_ENTRIES) return null;
+    let out = '';
+    let last = 0;
+    for (const m of unique) {
+      out += text.slice(last, m.index) + '.';
+      last = m.index + m[0].length;
+    }
+    return out + text.slice(last);
+  }
 
   function getSentences(text) {
     return text.split(/[.!?]+/).filter(s => s.trim().length > 5);
@@ -2658,11 +2681,12 @@ const AIDetector = (() => {
     // typography as the bare form. Found by the self-scan (see PROOF.md, #67).
     const SEPARATOR_DASH_RE = /^\s*(?:[-*+]|\d+[.)])\s+(?:\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^)\n]*\))(?:[ \t]*(?:\([^)\n]*\)|`[^`\n]+`))?[ \t]*—/gm;
     // The same typography in HTML source: an <li> that opens with a
-    // <strong>/<b> lead term or an <a> link, then the dash (#351). Only the
+    // <strong>/<b> lead term or an <a> link of at most five words, then the
+    // dash (#351). A longer bold span is a clause, not a term. Only the
     // first child of the item counts, so a prose dash later in a list item,
     // or any dash outside <li>, still counts. `&mdash;` entities are never
     // counted as em dashes, so they need no carve-out.
-    const SEPARATOR_DASH_HTML_RE = /^[ \t]*<li\b[^>\n]*>[ \t]*(?:<(strong|b)\b[^>\n]*>[^<\n]+<\/\1>|<a\b[^>\n]*>[^<\n]+<\/a>)(?:[ \t]*(?:\([^)\n]*\)|<code\b[^>\n]*>[^<\n]+<\/code>))?[ \t]*—/gim;
+    const SEPARATOR_DASH_HTML_RE = /^[ \t]*<li\b[^>\n]*>[ \t]*(?:<(strong|b)\b[^>\n]*>[ \t]*[^<\s]+(?:[ \t]+[^<\s]+){0,4}[ \t]*<\/\1>|<a\b[^>\n]*>[ \t]*[^<\s]+(?:[ \t]+[^<\s]+){0,4}[ \t]*<\/a>)(?:[ \t]*(?:\([^)\n]*\)|<code\b[^>\n]*>[^<\n]+<\/code>))?[ \t]*—/gim;
     function countSeparatorDashes(value) {
       return (value.match(SEPARATOR_DASH_RE) || []).length
         + (value.match(SEPARATOR_DASH_HTML_RE) || []).length
@@ -3051,14 +3075,13 @@ const AIDetector = (() => {
     }
 
     // ── 23. Sentence length uniformity ───────────────────────────
-    // Bold-lead definition lines ("**Term:** gloss", "- **Term** — gloss")
-    // are glossary typography: their lengths are parallel by convention, so
+    // Glossary entries ("**Term:** gloss", "- **Term** — gloss"; three or
+    // more distinct terms, wrapped lines included) are glossary typography: their lengths are parallel by convention, so
     // they say nothing about prose rhythm. They leave the sample here and
     // nowhere else; the five-sentence gate and the 0.25 threshold stay as
     // they are, so prose around a glossary is still measured (#351).
-    const rhythmSentences = DEFINITION_LINE_TEST_RE.test(text)
-      ? getSentences(text.replace(DEFINITION_LINE_RE, '.'))
-      : sentences;
+    const glosslessText = withoutGlossaryEntries(text);
+    const rhythmSentences = glosslessText === null ? sentences : getSentences(glosslessText);
     if (rhythmSentences.length >= 5) {
       const lengths = rhythmSentences.map(s => countWords(s));
       const avg = lengths.reduce((a, b) => a + b, 0) / lengths.length;

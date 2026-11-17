@@ -202,13 +202,17 @@ Markdown source mode, not one. HTML comments, ignore markers, and `<pre>`,
 `<code>`, `<script>`, and `<style>` elements are handled as described above.
 The em dash rate skips a list separator in either form: `- **Term** — gloss`
 in Markdown, or an `<li>` whose first child is a `<strong>`, `<b>`, or `<a>`
-lead term followed by the dash in HTML. Text copied out of a rendered page has
+lead term of at most five words, followed by the dash, in HTML. A longer
+bold span is a clause, and its dash counts. Text copied out of a rendered page has
 lost that structure, so `Term — gloss` lines count as prose dashes; score the
 Markdown or HTML source instead.
 
-Sentence-length `uniformity` leaves out Markdown bold-lead definition lines
-(`**Term:** gloss`, `- **Term** — gloss`), since glossary entries are parallel
-by convention. The five-sentence gate and threshold are unchanged.
+Sentence-length `uniformity` leaves out Markdown glossary entries, since they
+are parallel by convention. A glossary is three or more bold-lead definitions
+(`**Term:** gloss`, `- **Term** — gloss`) with distinct terms; an entry's
+wrapped lines go with it. A label repeated as a lead, such as `**Note:**` on
+every line, is prose and stays in the sample. The five-sentence gate and
+threshold are unchanged.
 
 ### Typography findings
 

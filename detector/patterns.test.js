@@ -535,6 +535,16 @@ test('#351: HTML em dashes outside the lead-term separator position still count'
   }
 });
 
+test('#351: a bold clause in an HTML <li> is not a lead term; its dash still counts', () => {
+  const intro = '<p>The cutover took one evening and two people, and the stack did not change.</p>';
+  const text = [intro, '<ul>',
+    ...Array(4).fill('<li><strong>The committee reviewed the proposal and rejected it</strong> — the chair recorded the dissent.</li>'),
+    '</ul>'].join('\n');
+  const hits = AIDetector.analyzeText(text).issues.filter((i) => i.type === 'em-dash');
+  assert.equal(hits.length, 1);
+  assert.match(hits[0].text, /^4 em dashes/);
+});
+
 test('em-dash carve-out covers numbered-list separators too', () => {
   const text = [
     '1. **Install** — run the setup script from the repo root.',
@@ -4076,7 +4086,7 @@ test('#351: glossary definition lines leave the sentence-length uniformity sampl
 test('#351: uniform prose still fires beside a glossary and without bold leads', () => {
   const sentence = 'The worker reads every queued message before it writes the result to disk.';
   const prose = Array(5).fill(sentence).join(' ');
-  const glossary = '**Token:** The unit a model reads, usually a word piece.\n**Latency:** The time before the first byte of the reply arrives.';
+  const glossary = '**Token:** The unit a model reads, usually a word piece.\n**Latency:** The time before the first byte of the reply arrives.\n**Throughput:** Requests finished per second.';
   const withGlossary = AIDetector.analyzeText(prose + '\n\n' + glossary).issues.filter((i) => i.type === 'uniformity');
   assert.deepEqual(withGlossary.map((i) => i.text), ['Sentence lengths cluster around 13 words (low variation)']);
   // The same glossary text without bold lead terms is ordinary prose and is measured.
@@ -4093,6 +4103,31 @@ test('#351: uniform prose still fires beside a glossary and without bold leads',
   const midBold = Array(5).fill('The worker reads every **queued** message before it writes the result to disk.').join('\n');
   assert.equal(AIDetector.analyzeText(midBold).issues.filter((i) => i.type === 'uniformity').length, 1,
     'mid-line bold is not a definition lead');
+});
+
+test('#351: a repeated bold label is not a glossary, and needs three distinct terms', () => {
+  const sentence = 'The worker reads every queued message before it writes the result to disk.';
+  const notes = Array(5).fill('**Note:** ' + sentence).join('\n');
+  assert.equal(AIDetector.analyzeText(notes).issues.filter((i) => i.type === 'uniformity').length, 1,
+    'five **Note:** lines are prose with a label and stay in the sample');
+  const twoTerms = ['**Token:** ' + sentence, '**Latency:** ' + sentence, sentence, sentence, sentence].join('\n');
+  assert.equal(AIDetector.analyzeText(twoTerms).issues.filter((i) => i.type === 'uniformity').length, 1,
+    'two bold leads are below the glossary minimum');
+});
+
+test('#351: a wrapped glossary entry leaves the sample whole', () => {
+  // Removing only the first physical line of a wrapped entry used to leave the
+  // continuation behind as an extra sentence beside uniform prose.
+  const p = 'Mara checked the logs and found nothing unusual in them today.';
+  const text = [
+    p, p, p, p,
+    '**Retry budget:** The number of attempts a worker makes before it gives up on a job and',
+    'moves it to the dead-letter queue for a person to inspect later.',
+    '**Lease:** How long a worker holds a job before another worker may take it.',
+    '**Backoff:** The wait between attempts, doubled after each failure.',
+  ].join('\n');
+  assert.equal(AIDetector.analyzeText(text).issues.filter((i) => i.type === 'uniformity').length, 0,
+    'four prose sentences remain, below the five-sentence gate');
 });
 
 test('uniformity: equal paragraph sizes fire, varied paragraph sizes stay clean', () => {

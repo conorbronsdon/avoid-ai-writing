@@ -8,8 +8,8 @@ All notable changes to this project are documented here.
 
 ### Fixed
 
-- The em dash rate no longer counts the separator dash in an HTML list item that opens with a `<strong>`, `<b>`, or `<a>` lead term (`<li><strong>Term</strong> — gloss</li>`). This matches the existing Markdown `- **Term** — gloss` exemption. Dashes after plain text, later in the item, or outside `<li>` still count (#351).
-- Sentence-length `uniformity` no longer measures bold-lead definition lines (`**Term:** gloss`, `- **Term** — gloss`), so a short glossary does not read as flat prose rhythm. Prose around the glossary is still measured, and the sample gate and threshold are unchanged (#351).
+- The em dash rate no longer counts the separator dash in an HTML list item that opens with a `<strong>`, `<b>`, or `<a>` lead term of at most five words (`<li><strong>Term</strong> — gloss</li>`). This matches the existing Markdown `- **Term** — gloss` exemption. Dashes after plain text, later in the item, or outside `<li>` still count (#351).
+- Sentence-length `uniformity` no longer measures glossary entries: three or more bold-lead definitions with distinct terms (`**Term:** gloss`, `- **Term** — gloss`), wrapped lines included. A short glossary no longer reads as flat prose rhythm. A label repeated on every line, such as `**Note:**`, stays in the sample, as does prose around the glossary. The sample gate and threshold are unchanged (#351).
 
 ## [3.39.0] — 2026-11-16
 
