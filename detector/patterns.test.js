@@ -459,6 +459,11 @@ test('adversarial Markdown scans stay within a bounded time', () => {
     ['indented block run', (n) => `- ${' '.repeat(n)}X\rY\n${ordinary}`, 10000],
     ['table delimiter tab run', (n) => `${ordinary}\n-|-${'\t'.repeat(n)}x`, 4000],
     ['thematic break tab run', (n) => `${ordinary}\n***${'\t'.repeat(n)}x`, 4000],
+    // U+2028/U+2029 are line terminators under the m flag and also match \s,
+    // so a line-anchored ^\s* rescanned the whole run from every line start.
+    ['U+2028 line separator run', (n) => `${'w '.repeat(10)}${'\u2028'.repeat(n)}`, 4000],
+    ['U+2029 paragraph separator run', (n) => `${'w '.repeat(10)}${'\u2029'.repeat(n)}`, 4000],
+    ['mixed U+2028 and space run', (n) => `${ordinary}${'\u2028 \u2029\t'.repeat(n / 4)}`, 4000],
   ];
   for (const [name, build, base] of attacks) {
     const { small, large } = timeScaling(build, base);
@@ -543,6 +548,42 @@ test('#351: a bold clause in an HTML <li> is not a lead term; its dash still cou
   const hits = AIDetector.analyzeText(text).issues.filter((i) => i.type === 'em-dash');
   assert.equal(hits.length, 1);
   assert.match(hits[0].text, /^4 em dashes/);
+});
+
+test('em-dash separator carve-out holds across U+2028/U+2029 line breaks and Unicode indents', () => {
+  // SEPARATOR_DASH_RE skips leading horizontal whitespace (any \s that is not
+  // a line terminator), so NBSP- and form-feed-indented items still count as
+  // separators after a U+2028/U+2029 break, exactly as they did with ^\s*.
+  const items = [
+    '- **Detect mode** — flag patterns without rewriting anything in the file.',
+    '\u00a0 - **Edit mode** — rewrite the file in place and report what changed.',
+    '\f1. [agentskills.io](https://agentskills.io) — the SKILL.md format this repo follows.',
+  ];
+  const emDash = (text) => AIDetector.analyzeText(text).issues
+    .filter((issue) => issue.type === 'em-dash')
+    .map((issue) => issue.text);
+  for (const sep of ['\n', '\u2028', '\u2029', '\u2028 \u2029\t\u2028']) {
+    const label = JSON.stringify(sep);
+    // Must not fire: every dash is in separator position.
+    assert.deepEqual(
+      emDash(`${items.join(sep)}${sep}The catalog lives in one file and a CI check keeps the README count honest.`),
+      [],
+      `${label}: separator dashes must not count`,
+    );
+    // Must fire: one prose dash after the separators still counts, alone.
+    assert.deepEqual(
+      emDash(`${items.join(sep)}${sep}The catalog lives in one file — a CI check keeps the README count honest.`),
+      ['1 em dashes in 49 words'],
+      `${label}: the prose dash must count`,
+    );
+    // Must fire: a bold lead with no list marker is not a separator, even
+    // when a U+2028 sits where the indent would be.
+    assert.deepEqual(
+      emDash(`${items.join(sep)}${sep}\u2028**Lead term** — a CI check keeps the README count honest.`),
+      ['1 em dashes in 45 words'],
+      `${label}: an unlisted bold-lead dash must count`,
+    );
+  }
 });
 
 test('em-dash carve-out covers numbered-list separators too', () => {

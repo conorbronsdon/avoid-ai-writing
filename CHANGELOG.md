@@ -10,6 +10,7 @@ All notable changes to this project are documented here.
 
 - The em dash rate no longer counts the separator dash in an HTML list item that opens with a `<strong>`, `<b>`, or `<a>` lead term of at most five words (`<li><strong>Term</strong> — gloss</li>`). This matches the existing Markdown `- **Term** — gloss` exemption. Dashes after plain text, later in the item, or outside `<li>` still count (#351).
 - Sentence-length `uniformity` no longer measures glossary entries: three or more bold-lead definitions with distinct terms (`**Term:** gloss`, `- **Term** — gloss`), wrapped lines included. A short glossary no longer reads as flat prose rhythm. A label repeated on every line, such as `**Note:**`, stays in the sample, as does prose around the glossary. The sample gate and threshold are unchanged (#351).
+- Remove a quadratic scan from the em dash separator carve-out. Its line-anchored `^\s*` also matched U+2028 and U+2029, which are line terminators in a multiline regex, so a long run of either character was rescanned from every line start: `analyzeText()` took about 40 seconds on a 99 KB input (conorbronsdon/avoid-ai-writing-mcp#15). The leading indent now stops at line terminators. Matching is unchanged; U+2028, U+2029, and mixed runs are now in the bounded-time test.
 
 ## [3.39.0] — 2026-11-16
 
