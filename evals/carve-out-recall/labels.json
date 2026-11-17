@@ -1,0 +1,675 @@
+{
+  "schema": 1,
+  "issue": 140,
+  "labels": {
+    "tic": "Authored use of the rhetorical form the rule targets.",
+    "literal": "Ordinary or literal use; flagging it is a false positive.",
+    "mention": "The phrase quoted, named, or asserted as an example; flagging it is a false positive.",
+    "ambiguous": "Needs reading to decide; counted separately."
+  },
+  "strata": {
+    "fixture": "String literals in detector/patterns.test.js and texts in vale/fixtures/cases.json; synthetic, labeled by the fixture's stated intent.",
+    "machine-output": "Recorded model responses under evals/rewrite/reports.",
+    "repo-prose": "Docs, changelog, prompts, and code comments in this repository."
+  },
+  "provenance": "Hand-labeled for #140 from tracked repository files. No model labels, no network data.",
+  "candidates": [
+    {
+      "key": "turns-out:d2eba1e9b27e",
+      "form": "turns-out",
+      "match": "Turns out",
+      "where": "CHANGELOG.md#L79",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "no-chain:70edc32d1748",
+      "form": "no-chain",
+      "match": "no fluff, no filler, no jargon",
+      "where": "CHANGELOG.md#L255",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "no-chain:cc90921bfb1b",
+      "form": "no-chain",
+      "match": "no more, no less",
+      "where": "CHANGELOG.md#L255",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "it-just-works:2ba3c006ce4f",
+      "form": "it-just-works",
+      "match": "it just works",
+      "where": "CHANGELOG.md#L255",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "turns-out:76a24f1a0c7d",
+      "form": "turns-out",
+      "match": "Turns out",
+      "where": "CHANGELOG.md#L255",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "the-punchline:dd213cbd8cc4",
+      "form": "the-punchline",
+      "match": "the punchline",
+      "where": "CHANGELOG.md#L271",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "worth-naming:87a5ee054148",
+      "form": "worth-naming",
+      "match": "worth naming",
+      "where": "CHANGELOG.md#L271",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "batteries-included:207b21eb5176",
+      "form": "batteries-included",
+      "match": "batteries included",
+      "where": "CHANGELOG.md#L271",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "it-just-works:e9ce164c62e8",
+      "form": "it-just-works",
+      "match": "it just works",
+      "where": "CHANGELOG.md#L271",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "no-chain:2c45d9ede213",
+      "form": "no-chain",
+      "match": "no labelling, no judge, no model in",
+      "where": "CHANGELOG.md#L479",
+      "stratum": "repo-prose",
+      "label": "ambiguous",
+      "note": "Lowercase three-item chain after a colon. Factual list of what the method lacks, delivered in the rhythmic triple the rule targets."
+    },
+    {
+      "key": "no-chain:d1506a9c13af",
+      "form": "no-chain",
+      "match": "no dependencies, no telemetry",
+      "where": "CHANGELOG.md#L558",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "worth-naming:f4ed672f468a",
+      "form": "worth-naming",
+      "match": "worth naming",
+      "where": "PROOF.md#L56",
+      "stratum": "repo-prose",
+      "label": "literal",
+      "note": "\"Results worth naming\": the results are then listed by name. Not the announced-insight frame."
+    },
+    {
+      "key": "no-chain:d8788f677800",
+      "form": "no-chain",
+      "match": "no labelling step, no\njudge, and no model in",
+      "where": "corpus/README.md#L12",
+      "stratum": "repo-prose",
+      "label": "literal",
+      "note": "Mid-sentence factual inventory (\"There is no labelling step, no judge, and no model\")."
+    },
+    {
+      "key": "the-punchline:c08c8b9a21c8",
+      "form": "the-punchline",
+      "match": "the punchline",
+      "where": "detector/CATEGORIES.md#L73",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "worth-naming:6fdeddc2b8b4",
+      "form": "worth-naming",
+      "match": "worth naming",
+      "where": "detector/CATEGORIES.md#L73",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "batteries-included:aa079d2fb59f",
+      "form": "batteries-included",
+      "match": "batteries included",
+      "where": "detector/CATEGORIES.md#L73",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "no-chain:ac253865b117",
+      "form": "no-chain",
+      "match": "No fluff, no filler, no jargon",
+      "where": "detector/patterns.js#L1135",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "no-chain:b9c898aedc9b",
+      "form": "no-chain",
+      "match": "no arguments, no headers, and no body",
+      "where": "detector/patterns.js#L1135",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "no-chain:bf7b86df985a",
+      "form": "no-chain",
+      "match": "no more, no less",
+      "where": "detector/patterns.js#L1135",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "did-not-chain:3ac264dc8974",
+      "form": "did-not-chain",
+      "match": "didn't ask, didn't wait",
+      "where": "detector/patterns.js#L1135",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "did-not-chain:e4fd618328d9",
+      "form": "did-not-chain",
+      "match": "did not sleep. I did not eat",
+      "where": "detector/patterns.js#L1135",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "turns-out:8ea26d1ee55b",
+      "form": "turns-out",
+      "match": "Turns out",
+      "where": "detector/patterns.js#L3114",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Code comment naming the rule; quote pairing spans the previous line, so it reads as unquoted."
+    },
+    {
+      "key": "turns-out:473a799f320d",
+      "form": "turns-out",
+      "match": "Turns out",
+      "where": "detector/patterns.test.js#L2997",
+      "stratum": "fixture",
+      "label": "tic",
+      "note": "Must-fire essayist-tic fixture: sentence-initial \"Turns out\"."
+    },
+    {
+      "key": "turns-out:e18f93837e14",
+      "form": "turns-out",
+      "match": "Turns out",
+      "where": "detector/patterns.test.js#L3011",
+      "stratum": "fixture",
+      "label": "mention",
+      "note": "Test name that mentions the phrase."
+    },
+    {
+      "key": "turns-out:65a39dd458da",
+      "form": "turns-out",
+      "match": "Turns out",
+      "where": "detector/patterns.test.js#L3013",
+      "stratum": "fixture",
+      "label": "tic",
+      "note": "Staged-discovery fixture opening with \"Turns out\"."
+    },
+    {
+      "key": "turns-out:e4849b07b9ab",
+      "form": "turns-out",
+      "match": "turns out",
+      "where": "detector/patterns.test.js#L3016",
+      "stratum": "fixture",
+      "label": "mention",
+      "note": "Expected-match string in an assertion, not prose."
+    },
+    {
+      "key": "the-punchline:ac9ad1e59659",
+      "form": "the-punchline",
+      "match": "the punchline",
+      "where": "detector/patterns.test.js#L3065",
+      "stratum": "fixture",
+      "label": "literal",
+      "note": "Must-not-fire fixture: a comedian rewrites a literal punchline."
+    },
+    {
+      "key": "worth-naming:7caf18578d23",
+      "form": "worth-naming",
+      "match": "worth naming",
+      "where": "detector/patterns.test.js#L3065",
+      "stratum": "fixture",
+      "label": "literal",
+      "note": "Must-not-fire fixture: a storm worth naming (literal naming)."
+    },
+    {
+      "key": "turns-out:2a4b4c2b9c62",
+      "form": "turns-out",
+      "match": "Turns out",
+      "where": "detector/patterns.test.js#L3089",
+      "stratum": "fixture",
+      "label": "mention",
+      "note": "Test name that mentions the phrase."
+    },
+    {
+      "key": "turns-out:18e85d4bdbc3",
+      "form": "turns-out",
+      "match": "Turns out",
+      "where": "detector/patterns.test.js#L3091",
+      "stratum": "fixture",
+      "label": "tic",
+      "note": "Must-fire fixture: sentence-initial \"Turns out\" after a full stop."
+    },
+    {
+      "key": "turns-out:2194fadcba39",
+      "form": "turns-out",
+      "match": "Turns out",
+      "where": "detector/patterns.test.js#L3095",
+      "stratum": "fixture",
+      "label": "mention",
+      "note": "Expected-match string in an assertion, not prose."
+    },
+    {
+      "key": "no-chain:611b088ed5f1",
+      "form": "no-chain",
+      "match": "No fluff, no filler, no jargon",
+      "where": "detector/patterns.test.js#L3101",
+      "stratum": "fixture",
+      "label": "tic",
+      "note": "Must-fire negation-chain fixture (three-item sentence-initial chain)."
+    },
+    {
+      "key": "no-chain:5b9fdb497a45",
+      "form": "no-chain",
+      "match": "No padding, no throat-clearing, no detours will",
+      "where": "detector/patterns.test.js#L3101",
+      "stratum": "fixture",
+      "label": "tic",
+      "note": "Must-fire negation-chain fixture (three-item sentence-initial chain)."
+    },
+    {
+      "key": "did-not-chain:72f14dbcecad",
+      "form": "did-not-chain",
+      "match": "did not ask for permission, did not wait",
+      "where": "detector/patterns.test.js#L3101",
+      "stratum": "fixture",
+      "label": "tic",
+      "note": "Must-fire comma-joined \"did not\" chain with the subject elided."
+    },
+    {
+      "key": "no-chain:77af7ab7b3fd",
+      "form": "no-chain",
+      "match": "No fluff, no filler, no jargon",
+      "where": "detector/patterns.test.js#L3105",
+      "stratum": "fixture",
+      "label": "mention",
+      "note": "Expected-match string in an assertion, not prose."
+    },
+    {
+      "key": "no-chain:87c584851853",
+      "form": "no-chain",
+      "match": "No padding, no throat-clearing, no detours",
+      "where": "detector/patterns.test.js#L3106",
+      "stratum": "fixture",
+      "label": "mention",
+      "note": "Expected-match string in an assertion, not prose."
+    },
+    {
+      "key": "no-chain:1de0d7eba82d",
+      "form": "no-chain",
+      "match": "No more, no less, no matter what",
+      "where": "detector/patterns.test.js#L3111",
+      "stratum": "fixture",
+      "label": "literal",
+      "note": "Must-not-fire fixture: idiomatic \"No more, no less, no matter what\"."
+    },
+    {
+      "key": "did-not-chain:482510f4f4e6",
+      "form": "did-not-chain",
+      "match": "did not sleep well last night. I did not eat",
+      "where": "detector/patterns.test.js#L3119",
+      "stratum": "fixture",
+      "label": "literal",
+      "note": "Must-not-fire fixture: sequential narration with a restated subject."
+    },
+    {
+      "key": "no-chain:c0e677a5c454",
+      "form": "no-chain",
+      "match": "no arguments, no headers, and no body when",
+      "where": "detector/patterns.test.js#L3127",
+      "stratum": "fixture",
+      "label": "literal",
+      "note": "Must-not-fire fixture: mid-sentence factual inventory."
+    },
+    {
+      "key": "no-chain:030a3a0ae0bc",
+      "form": "no-chain",
+      "match": "no flags, no options, and no positional parameters",
+      "where": "detector/patterns.test.js#L3127",
+      "stratum": "fixture",
+      "label": "literal",
+      "note": "Must-not-fire fixture: mid-sentence factual inventory."
+    },
+    {
+      "key": "no-chain:fa5da7f92e12",
+      "form": "no-chain",
+      "match": "No tickets, no badges will",
+      "where": "detector/patterns.test.js#L3135",
+      "stratum": "fixture",
+      "label": "literal",
+      "note": "Must-not-fire fixture: two-item chain whose last word is followed by a verb."
+    },
+    {
+      "key": "no-chain:20a7054959fd",
+      "form": "no-chain",
+      "match": "No maps, no lists were",
+      "where": "detector/patterns.test.js#L3135",
+      "stratum": "fixture",
+      "label": "literal",
+      "note": "Must-not-fire fixture: two-item chain whose last word is followed by a verb."
+    },
+    {
+      "key": "it-just-works:2a0e5ec94872",
+      "form": "it-just-works",
+      "match": "it just works",
+      "where": "detector/patterns.test.js#L3484",
+      "stratum": "fixture",
+      "label": "tic",
+      "note": "Must-fire dev-blog slogan fixture (\"it just works out of the box\")."
+    },
+    {
+      "key": "it-just-works:c98856255f26",
+      "form": "it-just-works",
+      "match": "it just works",
+      "where": "detector/patterns.test.js#L3488",
+      "stratum": "fixture",
+      "label": "mention",
+      "note": "Expected-match string in an assertion, not prose."
+    },
+    {
+      "key": "it-just-works:a702d65ce98e",
+      "form": "it-just-works",
+      "match": "it just works",
+      "where": "detector/patterns.test.js#L3492",
+      "stratum": "fixture",
+      "label": "tic",
+      "note": "Must-fire dev-blog slogan fixture (\"it just works out of the box\")."
+    },
+    {
+      "key": "it-just-works:8abe97ebfdeb",
+      "form": "it-just-works",
+      "match": "it just works",
+      "where": "detector/patterns.test.js#L3492",
+      "stratum": "fixture",
+      "label": "tic",
+      "note": "Must-fire dev-blog slogan fixture (\"it just works out of the box\")."
+    },
+    {
+      "key": "batteries-included:e7732b1437ae",
+      "form": "batteries-included",
+      "match": "batteries included",
+      "where": "detector/patterns.test.js#L3503",
+      "stratum": "fixture",
+      "label": "literal",
+      "note": "Must-not-fire fixture: literal batteries included with a flashlight."
+    },
+    {
+      "key": "it-just-works:7ba0d526718e",
+      "form": "it-just-works",
+      "match": "It just works",
+      "where": "detector/patterns.test.js#L3503",
+      "stratum": "fixture",
+      "label": "literal",
+      "note": "Must-not-fire fixture: \"It just works out to two queries\" (arithmetic idiom)."
+    },
+    {
+      "key": "no-chain:4984e7c55c12",
+      "form": "no-chain",
+      "match": "no hedging, no filler phrases, no Tier",
+      "where": "evals/rewrite/reports/automated-stack-295-296-2026-09-16/isolated-cycle2/mimo-noop-response.md#L7",
+      "stratum": "machine-output",
+      "label": "literal",
+      "note": "Model audit report listing categories it checked and found absent; an inventory, not a slogan."
+    },
+    {
+      "key": "no-chain:7b9eced11294",
+      "form": "no-chain",
+      "match": "no structural issues, no template constructions",
+      "where": "evals/rewrite/reports/automated-stack-295-296-2026-09-16/isolated-cycle2/mimo-noop-response.md#L7",
+      "stratum": "machine-output",
+      "label": "literal",
+      "note": "Model audit report listing categories it checked and found absent; an inventory, not a slogan."
+    },
+    {
+      "key": "no-chain:cb647640a4c8",
+      "form": "no-chain",
+      "match": "no hedging, no vague attribution, no filler, no P",
+      "where": "evals/rewrite/reports/automated-stack-295-296-2026-09-16/isolated-cycle4/claude-responses.json#/technical_context",
+      "stratum": "machine-output",
+      "label": "literal",
+      "note": "Model audit report listing categories it checked and found absent; an inventory, not a slogan."
+    },
+    {
+      "key": "no-chain:4545de8ce3cb",
+      "form": "no-chain",
+      "match": "no template phrases, no hedging, no structural issues, no filler",
+      "where": "evals/rewrite/reports/automated-stack-295-296-2026-09-16/isolated-cycle4/mimo-noop-response.md#L7",
+      "stratum": "machine-output",
+      "label": "literal",
+      "note": "Model audit report listing categories it checked and found absent; an inventory, not a slogan."
+    },
+    {
+      "key": "no-chain:5f843b46874b",
+      "form": "no-chain",
+      "match": "no filler, no hedging stacks, no template phrases",
+      "where": "evals/rewrite/reports/automated-stack-295-296-2026-09-16/isolated-cycle5/mimo-explicit_transform-response.md#L10",
+      "stratum": "machine-output",
+      "label": "ambiguous",
+      "note": "Model report: \"The text was clean — direct, concrete, no filler, no hedging stacks, no template phrases.\" Inventory, but with the cadence the rule targets."
+    },
+    {
+      "key": "no-chain:4849c4ebffd6",
+      "form": "no-chain",
+      "match": "no completed review, no executed tool",
+      "where": "evals/rewrite/reports/automated-stack-295-296-2026-09-16/reviews/mimo-final-metadata.json#/status",
+      "stratum": "repo-prose",
+      "label": "literal",
+      "note": "Eval status note listing missing events."
+    },
+    {
+      "key": "did-not-chain:5692f713ebd6",
+      "form": "did-not-chain",
+      "match": "did not plan for the failure mode that occurred. We did not test",
+      "where": "evals/rewrite/reports/editorial-cards-206-2026-10-15/initial-baseline-responses.json#/22/final_text",
+      "stratum": "machine-output",
+      "label": "literal",
+      "note": "Accepted repair in the ec-earned-reversal eval: two parallel sentences, each carrying a distinct fact."
+    },
+    {
+      "key": "no-chain:a68fb4c71d57",
+      "form": "no-chain",
+      "match": "no dependencies, no telemetry",
+      "where": "evals/rewrite/reports/editorial-cards-206-final-2026-10-18/prompts/gate.md#L347",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "the-punchline:66d15bbc6779",
+      "form": "the-punchline",
+      "match": "the punchline",
+      "where": "evals/rewrite/reports/editorial-cards-206-final-2026-10-18/prompts/gate.md#L963",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "the-punchline:cca91f5c45c3",
+      "form": "the-punchline",
+      "match": "the punchline",
+      "where": "evals/rewrite/reports/editorial-cards-206-final-2026-10-18/prompts/gate.md#L963",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "the-punchline:871e3d0e8883",
+      "form": "the-punchline",
+      "match": "the punchline",
+      "where": "evals/rewrite/reports/editorial-cards-206-final-2026-10-18/prompts/gate.md#L963",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "worth-naming:0c25267a292d",
+      "form": "worth-naming",
+      "match": "worth naming",
+      "where": "evals/rewrite/reports/editorial-cards-206-final-2026-10-18/prompts/gate.md#L963",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "worth-naming:50cc96d941f1",
+      "form": "worth-naming",
+      "match": "worth naming",
+      "where": "evals/rewrite/reports/editorial-cards-206-final-2026-10-18/prompts/gate.md#L963",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "turns-out:ec78eaba8322",
+      "form": "turns-out",
+      "match": "Turns out",
+      "where": "evals/rewrite/reports/editorial-cards-206-final-2026-10-18/prompts/gate.md#L963",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "no-chain:945faa8d383f",
+      "form": "no-chain",
+      "match": "No fluff, no filler, no jargon",
+      "where": "evals/rewrite/reports/editorial-cards-206-final-2026-10-18/prompts/gate.md#L968",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "no-chain:7df9d0131180",
+      "form": "no-chain",
+      "match": "no arguments, no headers, and no body",
+      "where": "evals/rewrite/reports/editorial-cards-206-final-2026-10-18/prompts/gate.md#L968",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "did-not-chain:d3da14300713",
+      "form": "did-not-chain",
+      "match": "didn't ask. It didn't wait",
+      "where": "evals/rewrite/reports/editorial-cards-206-final-2026-10-18/prompts/gate.md#L968",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "did-not-chain:c2306489e542",
+      "form": "did-not-chain",
+      "match": "did not sleep well. I did not eat",
+      "where": "evals/rewrite/reports/editorial-cards-206-final-2026-10-18/prompts/gate.md#L968",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "batteries-included:59cd545524c7",
+      "form": "batteries-included",
+      "match": "batteries included",
+      "where": "evals/rewrite/reports/editorial-cards-206-final-2026-10-18/prompts/gate.md#L974",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "batteries-included:0f68361cc245",
+      "form": "batteries-included",
+      "match": "batteries included",
+      "where": "evals/rewrite/reports/editorial-cards-206-final-2026-10-18/prompts/gate.md#L974",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "it-just-works:44e446a4ffe6",
+      "form": "it-just-works",
+      "match": "it just works",
+      "where": "evals/rewrite/reports/editorial-cards-206-final-2026-10-18/prompts/gate.md#L974",
+      "stratum": "repo-prose",
+      "label": "mention",
+      "note": "Phrase quoted or discussed as an example of the rule or its carve-out."
+    },
+    {
+      "key": "no-chain:befd2cd74626",
+      "form": "no-chain",
+      "match": "no tool-execution claim,\n  no invented edit",
+      "where": "evals/rewrite/reports/preservation-policy-204/README.md#L39",
+      "stratum": "repo-prose",
+      "label": "literal",
+      "note": "Bulleted constraint inventory in an eval README."
+    },
+    {
+      "key": "did-not-chain:b79d8d04dcd1",
+      "form": "did-not-chain",
+      "match": "did not treat it as a live instruction to me, and I did not print",
+      "where": "evals/rewrite/reports/automated-stack-295-296-2026-09-16/isolated-cycle5/claude-responses.json#/source_instruction",
+      "stratum": "machine-output",
+      "label": "literal",
+      "note": "Model report stating two actions it did not take, joined with \"and I\"; not a stacked rhythm."
+    },
+    {
+      "key": "no-chain:74c6a8e4f9e5",
+      "form": "no-chain",
+      "match": "No meetings, no slides, no status reports",
+      "where": "vale/fixtures/cases.json#/rules/NegationChain/0/text",
+      "stratum": "fixture",
+      "label": "tic",
+      "note": "Vale/detector parity fixture with id \"fire\": sentence-initial three-item chain."
+    },
+    {
+      "key": "it-just-works:09e4bd77ea68",
+      "form": "it-just-works",
+      "match": "it just works",
+      "where": "vale/fixtures/cases.json#/rules/DevBlogBoilerplate/0/text",
+      "stratum": "fixture",
+      "label": "tic",
+      "note": "Vale/detector parity fixture with id \"fire\": the slogan."
+    }
+  ]
+}
