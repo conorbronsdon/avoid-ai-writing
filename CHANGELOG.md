@@ -10,6 +10,7 @@ All notable changes to this project are documented here.
 
 - The em dash rate no longer counts the separator dash in an HTML list item that opens with a `<strong>`, `<b>`, or `<a>` lead term of at most five words (`<li><strong>Term</strong> — gloss</li>`). This matches the existing Markdown `- **Term** — gloss` exemption. Dashes after plain text, later in the item, or outside `<li>` still count (#351).
 - Sentence-length `uniformity` no longer measures glossary entries: three or more bold-lead definitions with distinct terms (`**Term:** gloss`, `- **Term** — gloss`), wrapped lines included. A short glossary no longer reads as flat prose rhythm. A label repeated on every line, such as `**Note:**`, stays in the sample, as does prose around the glossary. The sample gate and threshold are unchanged (#351).
+- The `dev-blog-boilerplate` out-of-the-box slogan and the `unnecessary-hyphenation` fix for "works out-of-the-box" now also match the phrase written with a Unicode hyphen (U+2010), non-breaking hyphen (U+2011), or en dash (U+2013) between the words; the suggestion still reads "works out of the box". An em dash, U+2015, or the U+2012 figure dash after "works out" is still read as a break, so the "works out" idiom stays clean (#140).
 
 ## [3.39.0] — 2026-11-16
 

@@ -38,7 +38,6 @@ const SUPPRESSED = {
   'worth-naming-omitted': 'It is worth naming the cost.',
   'batteries-included-omitted': 'The framework is batteries included.',
   'just-works-out-idiom': 'It just works out to two queries.',
-  'just-works-unicode-hyphen': 'And it just works out‑of‑the‑box.',
   'turns-out-sentence-initial': 'The fix, it turns out, was a typo.',
 };
 

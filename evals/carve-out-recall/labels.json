@@ -670,6 +670,51 @@
       "stratum": "fixture",
       "label": "tic",
       "note": "Vale/detector parity fixture with id \"fire\": the slogan."
+    },
+    {
+      "key": "it-just-works:854380c7a88e",
+      "form": "it-just-works",
+      "match": "it just works",
+      "where": "detector/patterns.test.js",
+      "stratum": "fixture",
+      "label": "literal",
+      "note": "Must-not-fire #140 fixture: em dash after the \"works out\" idiom marks a break, not out-of-the-box."
+    },
+    {
+      "key": "it-just-works:1217417990ea",
+      "form": "it-just-works",
+      "match": "it just works",
+      "where": "detector/patterns.test.js",
+      "stratum": "fixture",
+      "label": "literal",
+      "note": "Must-not-fire #140 fixture: U+2015 after the \"works out\" idiom marks a break, not out-of-the-box."
+    },
+    {
+      "key": "it-just-works:a534b0c29034",
+      "form": "it-just-works",
+      "match": "it just works",
+      "where": "detector/patterns.test.js",
+      "stratum": "fixture",
+      "label": "literal",
+      "note": "Must-not-fire #140 fixture: U+2012 figure dash is not accepted as a word hyphen."
+    },
+    {
+      "key": "it-just-works:e6c881b0b311",
+      "form": "it-just-works",
+      "match": "it just works",
+      "where": "detector/patterns.test.js",
+      "stratum": "fixture",
+      "label": "literal",
+      "note": "Must-not-fire #140 fixture: the \"works out to\" idiom."
+    },
+    {
+      "key": "it-just-works:798f46d13114",
+      "form": "it-just-works",
+      "match": "it just works",
+      "where": "detector/patterns.test.js",
+      "stratum": "fixture",
+      "label": "mention",
+      "note": "Must-not-fire #140 fixture: the slogan with U+2011 hyphens inside a quoted mention."
     }
   ]
 }

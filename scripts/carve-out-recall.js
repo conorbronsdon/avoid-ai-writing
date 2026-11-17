@@ -210,12 +210,6 @@ const CARVE_OUTS = [
     loose: /\bit\s+just\s+works\b/gi,
   },
   {
-    id: 'just-works-unicode-hyphen', form: 'it-just-works', type: 'dev-blog-boilerplate',
-    boundary: '"out‑of‑the‑box" with Unicode hyphens/dashes is not matched; accept U+2010–U+2015',
-    base: new RegExp(JUST_WORKS, 'gi'),
-    loose: new RegExp(derive(JUST_WORKS, '[-\\s]+of[-\\s]+the[-\\s]+box', '[-\\s\\u2010-\\u2015]+of[-\\s\\u2010-\\u2015]+the[-\\s\\u2010-\\u2015]+box', 'unicode hyphen'), 'gi'),
-  },
-  {
     id: 'turns-out-sentence-initial', form: 'turns-out', type: 'performed-insight',
     boundary: '"Turns out" must open a sentence, capitalized; allow any position',
     base: new RegExp(TURNS_OUT, 'g'),
