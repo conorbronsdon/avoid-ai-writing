@@ -1241,7 +1241,12 @@ const AIDetector = (() => {
   // Stock simplicity slogans from developer marketing. Adapted from
   // Simon Willison's LLM cliché highlighter.
   const DEV_BLOG_BOILERPLATE = [
-    /\bit\s+just\s+works\b(?!\s+out\b(?![-\s]+of[-\s]+the[-\s]+box\b))/gi,
+    // Separators inside "out of the box": ASCII hyphen or whitespace, plus the
+    // Unicode hyphens U+2010 and U+2011 and the en dash U+2013 that editors
+    // and autocorrect substitute for a hyphen (#140). The em dash and U+2015
+    // mark a break ("…works out—of the box office take…"), not a compound, and
+    // U+2012 is a figure dash for digit groups, so those stay excluded.
+    /\bit\s+just\s+works\b(?!\s+out\b(?![-\s‐‑–]+of[-\s‐‑–]+the[-\s‐‑–]+box\b))/gi,
     /\bzero[-\s]config(?:uration)?\b/gi,
     /\bsane\s+defaults\b/gi,
     /\b(?:hold|fit|fits|holds)\s+in\s+your\s+head\b/gi,
@@ -2172,8 +2177,9 @@ const AIDetector = (() => {
       suggestion: (match) => match.replace(/long-term/i, 'long term'),
     },
     {
-      pattern: /\b(?:functions?|functioned|functioning|operates?|operated|operating|runs?|ran|running|works?|worked|working)\s+out-of-the-box\b/gi,
-      suggestion: (match) => match.replace(/out-of-the-box/i, 'out of the box'),
+      // Hyphen: ASCII, U+2010, U+2011, or the en dash U+2013 (#140).
+      pattern: /\b(?:functions?|functioned|functioning|operates?|operated|operating|runs?|ran|running|works?|worked|working)\s+out[-‐‑–]of[-‐‑–]the[-‐‑–]box\b/gi,
+      suggestion: (match) => match.replace(/out[-‐‑–]of[-‐‑–]the[-‐‑–]box/i, 'out of the box'),
     },
   ];
 
