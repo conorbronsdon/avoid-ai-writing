@@ -631,7 +631,9 @@ map that keeps `SKILL.md` and the engine in sync.
 [`avoid-ai-writing-mcp`](https://github.com/conorbronsdon/avoid-ai-writing-mcp)
 wraps the published detector as a local stdio MCP server. It pins one exact
 detector version (`avoid-ai-writing-detector@3.22.1` in the current MCP
-release), so its scores can differ from the current CLI. It exposes two
+release), so its scores can differ from the current CLI. For the current
+rules, use the CLI or the GitHub Action; the MCP server picks up detector
+changes only when it publishes a new release. It exposes two
 read-only tools: `score_text` for a compact result and `audit_text` for the full
 list of findings, suggestions, statistics, and highlighted sentence regions.
 
@@ -654,6 +656,10 @@ content damage. Editorial workflows use the advisory policy:
 ```bash
 node detector/validate.js --residual-policy warn before.md after.md
 ```
+
+After `npm install avoid-ai-writing-detector`, use
+`node_modules/avoid-ai-writing-detector/detector/validate.js` in place of
+`detector/validate.js`.
 
 Mechanical errors still fail. Warnings and residual findings remain visible
 for review. A pass does not verify meaning; check facts and claims separately.
