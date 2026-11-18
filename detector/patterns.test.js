@@ -928,6 +928,10 @@ test('#107: deterministic unnecessary hyphenation subclasses fire with fixes', (
     ['The service refreshes the dashboard in real-time as new records arrive for processing.', 'in real-time', 'in real time'],
     ['The service refreshes the dashboard in real-time via the existing event stream.', 'in real-time', 'in real time'],
     ['The current release works out-of-the-box on every operating system we support.', 'works out-of-the-box', 'works out of the box'],
+    // #140: Unicode hyphens and the en dash between the words.
+    ['The current release works out\u2010of\u2010the\u2010box on every operating system we support.', 'works out\u2010of\u2010the\u2010box', 'works out of the box'],
+    ['The current release works out\u2011of\u2011the\u2011box on every operating system we support.', 'works out\u2011of\u2011the\u2011box', 'works out of the box'],
+    ['The current release works out\u2013of\u2013the\u2013box on every operating system we support.', 'works out\u2013of\u2013the\u2013box', 'works out of the box'],
     ['That shortcut creates maintenance problems over the long-term, despite its early convenience.', 'over the long-term', 'over the long term'],
     ['That shortcut creates maintenance problems over the long-term across every department.', 'over the long-term', 'over the long term'],
     ['That shortcut creates maintenance problems over the long-term through deferred upgrades.', 'over the long-term', 'over the long term'],
@@ -3584,6 +3588,63 @@ test('dev-blog-boilerplate: spaced and hyphenated out-of-the-box slogans fire', 
     const hits = r.issues.filter((i) => i.type === 'dev-blog-boilerplate').map((i) => i.text);
     assert.deepEqual(hits, ['it just works'], `${phrase} must fire with an exact issue span`);
   }
+});
+
+test('#140: out-of-the-box slogan fires with Unicode hyphens and the en dash', () => {
+  const separators = { 'U+2010': '\u2010', 'U+2011': '\u2011', 'U+2013': '\u2013' };
+  for (const [name, sep] of Object.entries(separators)) {
+    const text = `The framework claims it just works out${sep}of${sep}the${sep}box for every developer who follows the documented installation steps today.`;
+    const r = AIDetector.analyzeText(text);
+    const hits = r.issues.filter((i) => i.type === 'dev-blog-boilerplate');
+    assert.deepEqual(hits.map((i) => [i.text, i.index]), [['it just works', 21]], `${name} must fire with an exact issue span`);
+    const hyphen = r.issues.filter((i) => i.type === 'unnecessary-hyphenation');
+    assert.deepEqual(hyphen.map((i) => [i.text, i.suggestion]), [[`works out${sep}of${sep}the${sep}box`, 'works out of the box']], `${name} hyphenation suggestion`);
+  }
+});
+
+test('#140: em dash, figure dash, the works-out idiom, and quoted mentions stay clean', () => {
+  const clean = [
+    // Em dash and U+2015 mark a break after the idiom, not a compound.
+    'The budget looked tight, but it just works out\u2014of the box office take, half goes to the crew this year.',
+    'The budget looked tight, but it just works out\u2015of the box office take, half goes to the crew this year.',
+    // U+2012 is a figure dash for digit groups, not a word hyphen.
+    'The budget looked tight, but it just works out\u2012of\u2012the\u2012box according to the spreadsheet this year.',
+    // The idiom itself, with no out-of-the-box after it. A guard that was
+    // already clean on the base pattern; the three dash cases above are the
+    // ones that fail if the separator class is widened to admit them.
+    'The numbers looked tight, but it just works out to two queries after the optimizer merges identical branches.',
+    // A quoted mention of the slogan is a citation, not the tic.
+    'The style guide bans the phrase "it just works out\u2011of\u2011the\u2011box" from every release note we publish.',
+  ];
+  for (const text of clean) {
+    const r = AIDetector.analyzeText(text);
+    const hits = r.issues.filter((i) => i.type === 'dev-blog-boilerplate' || i.type === 'unnecessary-hyphenation');
+    assert.deepEqual(hits.map((i) => [i.type, i.text]), [], `must stay clean: ${text}`);
+  }
+});
+
+test('#140: Unicode hyphens give the same result as the ASCII hyphen in every out-of-the-box shape', () => {
+  // Shapes where the hyphen joins "works" and "out" are not part of the
+  // idiom exclusion for any separator; this pins that the Unicode forms
+  // behave exactly as the ASCII form does, whatever that is.
+  const shapes = [
+    (s) => `The framework claims it just works${s}out${s}of${s}the${s}box for every developer who follows the documented steps.`,
+    (s) => `The numbers looked tight, but it just works${s}out to two queries after the optimizer merges identical branches.`,
+    (s) => `The framework claims it just works out${s}of${s}the${s}box for every developer who follows the documented steps.`,
+  ];
+  const hits = (text) => AIDetector.analyzeText(text).issues
+    .filter((i) => i.type === 'dev-blog-boilerplate' || i.type === 'unnecessary-hyphenation')
+    .map((i) => [i.type, i.text, i.suggestion]);
+  for (const shape of shapes) {
+    const ascii = hits(shape('-')).map(([type, text, suggestion]) => [type, text.replace(/-/g, '#'), suggestion]);
+    for (const sep of ['‐', '‑', '–']) {
+      const uni = hits(shape(sep)).map(([type, text, suggestion]) => [type, text.split(sep).join('#'), suggestion]);
+      assert.deepEqual(uni, ascii, `${shape(sep)}`);
+    }
+  }
+  // Mixed separators in one compound still normalize fully.
+  const mixed = hits(`The current release works out${'‐'}of${'–'}the${'‑'}box on every operating system we support.`);
+  assert.deepEqual(mixed, [['unnecessary-hyphenation', 'works out‐of–the‑box', 'works out of the box']]);
 });
 
 test('dev-blog-boilerplate: ordinary prose stays clean', () => {
