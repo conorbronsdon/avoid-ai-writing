@@ -4,18 +4,20 @@
 Reads the JSON on stdin, writes markdown to stdout. Exit code decides whether
 the workflow opens an issue:
 
-    0  every surface that could be read is in sync
+    0  every surface that could be read is in sync, and at least one was
     1  at least one surface carries a stale number
-    2  this script could not read the checker's output (not JSON, no
-       `facts` list, or no copies at all), or failed itself; the workflow
-       fails the job instead of claiming drift
+    2  this script could not use the checker's output (not JSON, no
+       `facts` list, a fact or copy of the wrong shape, or no copy verified
+       in sync and none drifted), or failed itself; the workflow fails the
+       job instead of claiming drift
 
 A surface that could not be read at all (a named repo not checked out:
 repo_missing; or unreadable: unverified) is reported as NOT CHECKED and does
-*not* fail the job. So is any status this script does not recognise, so a
-new checker status can never count as in sync. That case is a
+*not* fail the job on its own. So is any status this script does not
+recognise, so a new checker status can never count as in sync. That case is a
 coverage gap, not drift, and conflating the two makes a red check meaningless.
-It is always printed, never silently dropped.
+It is always printed, never silently dropped. If no surface at all was
+verified (and none drifted), the run checked nothing and exits 2.
 """
 import json
 import sys
@@ -42,8 +44,15 @@ def main():
     drifted, unreadable, checked = [], [], 0
 
     for fact in facts:
+        if not isinstance(fact, dict):
+            print("a fact is not an object", file=sys.stderr)
+            return 2
         name = fact.get("name", "?")
-        canon = fact.get("canonical", {})
+        canon = fact.get("canonical") or {}
+        copies = fact.get("copies", [])
+        if not isinstance(canon, dict) or not isinstance(copies, list):
+            print(f"fact {name!r} has the wrong shape", file=sys.stderr)
+            return 2
         cval = canon.get("value")
 
         # A broken canonical means the README bullet moved or was reworded.
@@ -56,7 +65,10 @@ def main():
             )
             continue
 
-        for copy in fact.get("copies", []):
+        for copy in copies:
+            if not isinstance(copy, dict):
+                print(f"fact {name!r}: a copy is not an object", file=sys.stderr)
+                return 2
             status = copy.get("status")
             if status in REAL_DRIFT:
                 drifted.append(
@@ -81,10 +93,11 @@ def main():
                     note = f"unrecognised checker status {status!r}; {note}"
                 unreadable.append(f"- **{name}** — `{copy.get('file')}` ({note})")
 
-    if not (drifted or unreadable or checked):
-        # Zero copies seen means the manifest was never exercised: a broken
-        # run, never a green "0 drifted".
-        print("ssot-check output lists no copies at all", file=sys.stderr)
+    if not (drifted or checked):
+        # Nothing verified and nothing drifted (no copies, or every surface
+        # unreadable) means the manifest was never exercised: a broken run,
+        # never a green "0 drifted". A partial gap is still only listed.
+        print("ssot-check verified no copy at all", file=sys.stderr)
         return 2
 
     lines = []
