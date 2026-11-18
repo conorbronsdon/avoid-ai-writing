@@ -63,8 +63,9 @@ jobs:
         id: check
         run: |
           set -o pipefail
-          # `check` exits 1 on any problem; the report script decides what is
-          # actually actionable, so do not let the raw exit code kill the step.
+          # `check` exits 1 on drift and on unreadable copies alike, so its exit
+          # code is deliberately ignored: the report script re-reads the JSON
+          # and decides what is actionable (and exits 2 on unusable output).
           python3 ../ssot-check/ssot_check.py check --json > result.json || true
           # The report exits 0 (no drift), 1 (drift) or 2 (it could not read
           # the checker's output). Only 1 opens the drift issue; anything else
@@ -76,6 +77,8 @@ jobs:
             1) echo "drift=true" >> "$GITHUB_OUTPUT" ;;
             *) echo "::error::promo-drift-report.py exit $rc: the checker output was unreadable, not drift"
                cat report.md
+               echo "--- checker output (first 4 KB) ---"
+               head -c 4096 result.json
                exit 1 ;;
           esac
           cat report.md >> "$GITHUB_STEP_SUMMARY"

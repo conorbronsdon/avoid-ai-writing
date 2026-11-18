@@ -6,8 +6,9 @@ the workflow opens an issue:
 
     0  every surface that could be read is in sync
     1  at least one surface carries a stale number
-    2  this script could not read the checker's output, or failed itself;
-       the workflow fails the job instead of claiming drift
+    2  this script could not read the checker's output (not JSON, no
+       `facts` list, or no copies at all), or failed itself; the workflow
+       fails the job instead of claiming drift
 
 A surface that could not be read at all (a named repo not checked out:
 repo_missing; or unreadable: unverified) is reported as NOT CHECKED and does
@@ -33,9 +34,14 @@ def main():
         print(f"could not parse ssot-check output: {exc}", file=sys.stderr)
         return 2
 
+    facts = result.get("facts") if isinstance(result, dict) else None
+    if not isinstance(facts, list):
+        print("ssot-check output has no `facts` list", file=sys.stderr)
+        return 2
+
     drifted, unreadable, checked = [], [], 0
 
-    for fact in result.get("facts", []):
+    for fact in facts:
         name = fact.get("name", "?")
         canon = fact.get("canonical", {})
         cval = canon.get("value")
@@ -74,6 +80,12 @@ def main():
                 if status not in UNREADABLE:
                     note = f"unrecognised checker status {status!r}; {note}"
                 unreadable.append(f"- **{name}** — `{copy.get('file')}` ({note})")
+
+    if not (drifted or unreadable or checked):
+        # Zero copies seen means the manifest was never exercised: a broken
+        # run, never a green "0 drifted".
+        print("ssot-check output lists no copies at all", file=sys.stderr)
+        return 2
 
     lines = []
     if drifted:
