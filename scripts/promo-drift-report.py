@@ -4,20 +4,29 @@
 Reads the JSON on stdin, writes markdown to stdout. Exit code decides whether
 the workflow opens an issue:
 
-    0  every surface that could be read is in sync
+    0  every surface that could be read is in sync, and at least one was
     1  at least one surface carries a stale number
+    2  this script could not use the checker's output (not JSON, no
+       `facts` list, a fact or copy of the wrong shape, or no copy verified
+       in sync and none drifted), or failed itself; the workflow fails the
+       job instead of claiming drift
 
-A surface that could not be read at all (repo renamed, moved, or a clone that
-failed) is reported as NOT CHECKED and does *not* fail the job. That case is a
+A surface that could not be read at all (a named repo not checked out:
+repo_missing; or unreadable: unverified) is reported as NOT CHECKED and does
+*not* fail the job on its own. So is any status this script does not
+recognise, so a new checker status can never count as in sync. That case is a
 coverage gap, not drift, and conflating the two makes a red check meaningless.
-It is always printed, never silently dropped.
+It is always printed, never silently dropped. If no surface at all was
+verified (and none drifted), the run checked nothing and exits 2.
 """
 import json
 import sys
 
 # Statuses ssot-check emits for a copy it managed to read and compare.
 REAL_DRIFT = {"drifted", "stale_entry"}
-UNREADABLE = {"unverified"}
+# repo_missing: a named surface repo was not checked out (ssot-check named
+# repos). Like unverified, the copy was never read: not drift, not a pass.
+UNREADABLE = {"unverified", "repo_missing"}
 
 
 def main():
@@ -27,11 +36,23 @@ def main():
         print(f"could not parse ssot-check output: {exc}", file=sys.stderr)
         return 2
 
+    facts = result.get("facts") if isinstance(result, dict) else None
+    if not isinstance(facts, list):
+        print("ssot-check output has no `facts` list", file=sys.stderr)
+        return 2
+
     drifted, unreadable, checked = [], [], 0
 
-    for fact in result.get("facts", []):
+    for fact in facts:
+        if not isinstance(fact, dict):
+            print("a fact is not an object", file=sys.stderr)
+            return 2
         name = fact.get("name", "?")
-        canon = fact.get("canonical", {})
+        canon = fact.get("canonical") or {}
+        copies = fact.get("copies", [])
+        if not isinstance(canon, dict) or not isinstance(copies, list):
+            print(f"fact {name!r} has the wrong shape", file=sys.stderr)
+            return 2
         cval = canon.get("value")
 
         # A broken canonical means the README bullet moved or was reworded.
@@ -44,7 +65,10 @@ def main():
             )
             continue
 
-        for copy in fact.get("copies", []):
+        for copy in copies:
+            if not isinstance(copy, dict):
+                print(f"fact {name!r}: a copy is not an object", file=sys.stderr)
+                return 2
             status = copy.get("status")
             if status in REAL_DRIFT:
                 drifted.append(
@@ -54,16 +78,27 @@ def main():
                     f"**{cval}**"
                     + (f" ({copy['note']})" if copy.get("note") else "")
                 )
-            elif status in UNREADABLE:
+            elif status == "in_sync":
+                checked += 1
+            else:
+                # UNREADABLE, or a status this script does not know: never
+                # count it as verified. Name an unknown status in the note.
                 # ssot-check reports the *source* it tried, so a missing file
                 # comes back as the bare word "local". Say what that means.
                 note = copy.get("note") or ""
                 if note in ("", "local"):
                     note = ("file not present on the runner — the surface repo "
                             "was renamed, moved, or failed to clone")
+                if status not in UNREADABLE:
+                    note = f"unrecognised checker status {status!r}; {note}"
                 unreadable.append(f"- **{name}** — `{copy.get('file')}` ({note})")
-            else:
-                checked += 1
+
+    if not (drifted or checked):
+        # Nothing verified and nothing drifted (no copies, or every surface
+        # unreadable) means the manifest was never exercised: a broken run,
+        # never a green "0 drifted". A partial gap is still only listed.
+        print("ssot-check verified no copy at all", file=sys.stderr)
+        return 2
 
     lines = []
     if drifted:
@@ -95,4 +130,13 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    # Exit 1 means drift and opens an issue, and Python's own exit code for an
+    # uncaught exception is also 1. So any crash here (an unexpected JSON
+    # shape after a checker change) exits 2: a broken run, not drift.
+    try:
+        code = main()
+    except Exception:  # noqa: BLE001 - the exit code is the contract
+        import traceback
+        traceback.print_exc()
+        code = 2
+    sys.exit(code)

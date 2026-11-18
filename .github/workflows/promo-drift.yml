@@ -38,8 +38,8 @@ jobs:
         with:
           persist-credentials: false
 
-      # ssot-check resolves `../<repo>/...` copies against real directories on
-      # disk, so the surfaces have to be cloned as siblings of this checkout.
+      # .ssot.yaml names the surfaces as repos; each resolves to ../<name>
+      # beside this checkout, so the surfaces are cloned as siblings.
       # Depth 1: only the current content of each file matters.
       - name: Clone the public promo surfaces
         env:
@@ -56,21 +56,31 @@ jobs:
           cd "$GITHUB_WORKSPACE/.."
           git clone --depth 1 --quiet https://github.com/conorbronsdon/ssot-check.git ssot-check
           # Use the same reviewed revision as the repository-local SSOT pilot.
-          git -C ssot-check fetch --depth 1 origin f3289c400cd591cdcb6ce4016627a442d0804ce7
+          git -C ssot-check fetch --depth 1 origin 594269d32d4951d417269deaebcd3d621a8a766e
           git -C ssot-check checkout --detach FETCH_HEAD
 
       - name: Check the promo surfaces
         id: check
         run: |
           set -o pipefail
-          # `check` exits 1 on any problem; the report script decides what is
-          # actually actionable, so do not let the raw exit code kill the step.
+          # `check` exits 1 on drift and on unreadable copies alike, so its exit
+          # code is deliberately ignored: the report script re-reads the JSON
+          # and decides what is actionable (and exits 2 on unusable output).
           python3 ../ssot-check/ssot_check.py check --json > result.json || true
-          if ! python3 scripts/promo-drift-report.py < result.json > report.md; then
-            echo "drift=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "drift=false" >> "$GITHUB_OUTPUT"
-          fi
+          # The report exits 0 (no drift), 1 (drift) or 2 (it could not read
+          # the checker's output). Only 1 opens the drift issue; anything else
+          # is a broken run and fails the job instead of claiming drift.
+          rc=0
+          python3 scripts/promo-drift-report.py < result.json > report.md || rc=$?
+          case "$rc" in
+            0) echo "drift=false" >> "$GITHUB_OUTPUT" ;;
+            1) echo "drift=true" >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::promo-drift-report.py exit $rc: the checker output was unreadable, not drift"
+               cat report.md
+               echo "--- checker output (first 4 KB) ---"
+               head -c 4096 result.json
+               exit 1 ;;
+          esac
           cat report.md >> "$GITHUB_STEP_SUMMARY"
           cat report.md
 
