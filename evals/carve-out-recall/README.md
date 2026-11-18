@@ -90,10 +90,21 @@ Where the added hits came from:
 | `worth naming` stays judgment-only | Keep | 2 literal uses (PROOF.md and a fixture), no tic. |
 | `batteries included` stays judgment-only | Keep | 1 literal use, no tic. |
 | `it just works out` exclusion | Keep | 1 FP prevented ("works out to two queries"). |
-| Unicode hyphens in `out‑of‑the‑box` | Candidate for a narrow deterministic branch in its own PR | 0 occurrences of either kind. Confirmed gap: `analyzeText()` reports the slogan with ASCII hyphens but not with U+2010, U+2011, or U+2013. The change only touches separators inside a phrase that already matches, so the FP risk is small. It still needs a must-fire and a must-not-fire fixture. |
+| Unicode hyphens in `out‑of‑the‑box` | Done: the detector accepts U+2010, U+2011, and U+2013 (see the follow-up note below) | 0 occurrences of either kind. Confirmed gap: `analyzeText()` reported the slogan with ASCII hyphens but not with U+2010, U+2011, or U+2013. The change only touches separators inside a phrase that already matches, so the FP risk is small. |
 | `Turns out` sentence-initial only | Keep | 4 hits, all mentions, no tic. |
 | Quote masking | Keep | 4 quoted mentions of active rules kept clean, 0 tics suppressed. It also keeps quoted mentions of the omitted forms clean if those forms are ever added. |
 | Span includes a following verb (`No trains, no buses, no ferries run`) | No decision; not measurable here | No baseline hit in the corpus ends in a one-word item followed by a verb. This is span accuracy, not recall. |
+
+### Follow-up: Unicode hyphens
+
+The `just-works-unicode-hyphen` row above was measured at the base revision.
+The detector now accepts U+2010, U+2011, and the en dash U+2013 between the
+words of "out of the box", in both `dev-blog-boilerplate` and the
+`unnecessary-hyphenation` fix. The em dash, U+2015, and the U+2012 figure dash
+stay excluded: after "works out" they mark a break, not a compound. With no
+boundary left to loosen, the script no longer derives that variant. The
+fixtures added with the change are labeled in `labels.json`, so a rerun on a
+later revision reports more candidates than the 73 above.
 
 ## Limitations
 

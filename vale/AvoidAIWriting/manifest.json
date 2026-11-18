@@ -3,7 +3,7 @@
   "source": {
     "path": "detector/patterns.js",
     "export": "PATTERN_TABLES",
-    "sha256": "f9a7a964c0879bb17e8cf2833050e43e9f54f8e397168b62c2be6e07b870fa26"
+    "sha256": "8dc70698cfd232c1188e9990f6396d7a6d14b444c7e71ad717b9fb162c080a2c"
   },
   "counts": {
     "verified": 33,
