@@ -68,6 +68,13 @@ try {
   assert(!fencedFocus.trace.assembled_module_ids.some(id => id.includes('example')));
   assert.deepEqual(partition(fencedReference).map(m => m.id),
     ['catalog-intro', 'formatting', 'other-rule', 'context-profiles', 'voice-profiles']);
+  // One to three leading spaces still start a heading; four make indented code.
+  const indented = partition('## What to remove or fix\n\n### Alpha\nKeep alpha.\n\n ### Beta\nKeep beta.\n\n' +
+    '   ### Gamma\nKeep gamma.\n\n    ### Indented code\n\n  ## Context profiles\nProfiles.\n');
+  assert.deepEqual(indented.map(m => m.id), ['catalog-intro', 'alpha', 'beta', 'gamma', 'context-profiles']);
+  assert.deepEqual(indented.map(m => m.heading).slice(1), ['Alpha', 'Beta', 'Gamma', 'Context profiles']);
+  assert.equal(indented.find(m => m.id === 'alpha').text, '### Alpha\nKeep alpha.\n\n');
+  assert(indented.find(m => m.id === 'gamma').text.includes('    ### Indented code\n'));
 
   const full = assemble(pack, { mode: 'full' });
   const focused = assemble(pack, { mode: 'focused', modules: ['copula-avoidance'] });
