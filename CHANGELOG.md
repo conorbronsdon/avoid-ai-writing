@@ -6,6 +6,14 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Five judgment-only detection categories, bringing the catalog to 79: buried-answer replies (context first, decision in the last line), fake balance (a both-sides frame on a question the piece already answered), preemptive rebuttals (defending against an objection nobody raised), Markdown in plain-text channels, and arrows and symbols in running prose. Each lists its carve-outs; none adds a detector type.
+- A third writer-side test, interchangeable sentences: would the sentence still work unchanged in another company's or project's document? If so, replace it with a source fact or cut it.
+- Rewrite verification now checks for the habit that replaced the one removed, such as comma splices where the em dashes were or "rather than" where "not X but Y" was.
+- Detect-mode assessments list what is not evidence of AI authorship by itself: textbook-stiff or second-language English, precise low-variation prose common among neurodivergent writers, text from before late 2022, and real letter greetings and sign-offs. Samples under about 40 words are too short to judge.
+- These ideas were prompted by a comparison with [WolfurX/ai-copyedit](https://github.com/WolfurX/ai-copyedit) (MIT); the wording here is original.
+
 ### Fixed
 
 - The em dash rate no longer counts the separator dash in an HTML list item that opens with a `<strong>`, `<b>`, or `<a>` lead term of at most five words (`<li><strong>Term</strong> — gloss</li>`). This matches the existing Markdown `- **Term** — gloss` exemption. Dashes after plain text, later in the item, or outside `<li>` still count (#351).

@@ -573,6 +573,16 @@ These slot-fill constructions signal that a sentence was generated, not written.
 ### Title case headings
 - Review title-case subheadings such as "Strategic Negotiations And Key Partnerships" when the surrounding document uses sentence case. Use sentence case for subheadings; reserve title case for the piece's main title when the house style calls for it.
 
+### Markdown in plain-text channels
+- Markdown syntax delivered to a surface that will not render it: `**bold**`, `## headings`, backticks, `- [ ]` checkboxes, or pipe tables in an email body, SMS, chat message, social post, calendar invite, or form field. The reader sees raw symbols, and the text looks pasted out of a chat tool.
+- Fix: find out how the destination renders text and keep only the formatting it supports. Drop the markers and keep the words: "**Update:** the launch moves to **Friday**." becomes "Update: the launch moves to Friday." Keep a list as plain lines when the items are a real list.
+- Carve-outs: surfaces that render Markdown (GitHub issues and PRs, many chat apps, docs sites, READMEs), code and commands quoted for the reader to copy, and a writer who deliberately uses `*asterisks*` for emphasis in plain text. When the destination is unknown, report the finding instead of stripping the syntax. Judgment-only: the same characters are correct on a rendering surface, and the detector cannot see the destination.
+
+### Arrows and symbols in running prose
+- Notes-style compression in text meant to be read as sentences: `→`, `->`, or `=>` standing in for a verb ("Parser rejects bad date → exit 2, no write"), `+` or `&` for "and", `w/` and `b/c`, and dropped articles and verbs. The reader has to decode the line instead of reading it.
+- Fix: write the sentence the symbol stands for, using only the relationship the source states: "The parser rejects a bad date, exits with code 2, and writes nothing." If the arrow is ambiguous (causes, becomes, then, maps to), ask or report the gap instead of choosing one.
+- Carve-outs: diagrams, code, keyboard shortcuts and menu paths ("File → Export"), before → after examples in reference material such as this file, tables, changelogs and terse bullet notes whose register is compressed on purpose, and math. Judgment-only: whether a line is prose or a note is a register call.
+
 ### Hyphenated modifier stacking
 - Stacked compound modifiers: "a high-quality, well-architected, future-proof solution." The individual hyphens may be correct; the problem is the density. Cut to the modifier that matters. In [this repository’s exploratory counts](https://github.com/conorbronsdon/avoid-ai-writing/tree/77a859acdd87ad1b7450e46a1d1651f2b3007833/docs/research/hape-2026-11) on [HAP-E](https://huggingface.co/datasets/browndw/human-ai-parallel-corpus) ([dataset paper](https://arxiv.org/abs/2410.16107)), the literal comma-separated hyphen-pair regex matched 32–43 per million words in GPT-4o, GPT-4o-mini and Llama 3 Instruct continuations (2024 models), against 53.1 in the matched human text. This measures a narrow text shape, not every grammatical modifier stack. The corpus has no dedicated marketing register. Review density as an editing problem; this sample does not establish authorship. Adapted from `blader/humanizer` P26.
 
@@ -681,6 +691,17 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - **Keep:** “While the worker restarted, the queue kept accepting jobs.” Keep the time relationship.
 - **Flag a gap:** If the source leaves a challenge or assessment vague after cleanup, preserve the claim and briefly identify its missing scope in the report. Do not silently certify it as resolved, name a challenge, or choose a preferred side unless the source supplies it. A bounded wording edit can still be delivered without waiting for an answer.
 
+### Fake balance
+- A both-sides frame on a question the piece has already answered, or a hedge between positions in place of the writer's view: "On one hand, Postgres is fast; on the other hand, MongoDB has its strengths," "there are pros and cons to each," "it depends on your needs," "there's no one-size-fits-all answer." It sounds fair and decides nothing.
+- Distinct from false concession structure, which pairs one vague strength with one vague weakness inside a sentence. This is the even-handed wrap-up that undoes the argument around it, often in the last paragraph.
+- Fix: when the source takes a position (the benchmarks, the recommendation, the writer's stated preference), keep it and cut the balancing frame. Give a counterpoint the space its evidence supports, not equal weight by default. When the source genuinely takes no side, keep the neutrality and name what the choice depends on only if the source says so; never pick a side for the writer.
+- Carve-outs: comparison docs, buying guides, and decision records whose job is to lay out tradeoffs with specifics on each side, and neutral registers (encyclopedic, legal) where balance is the convention. Judgment-only: the tell is that the balance contradicts or dilutes a position stated elsewhere in the piece, which needs the whole text.
+
+### Preemptive rebuttals
+- Defending against an objection, or rejecting an option, that nobody raised and the text never mentions again: "To be clear, I'm not saying...," "don't get me wrong," "this isn't to say...," "some might argue... but," "one might object," "a tempting approach would be X, but...," "you might think... but." Often residue from an earlier draft or from the assistant's own reasoning about alternatives.
+- Fix: cut the defense and state the claim. "A tempting approach would be to restart the service on a cron job, but that would drop every session. Rotation happens in place." becomes "Rotation happens in place." Do not invent a sharper version of the objection to make the rebuttal earn its place.
+- Carve-outs: an objection the text attributes to someone ("reviewers asked whether...") or answers in full, an alternative a reader would actually weigh (design docs and RFCs should list rejected alternatives), and a "to be clear" that corrects a specific misreading the source itself invites. Distinct from dramatized contrast against the crowd, which invents a lagging group; this invents an argument. Judgment-only: the same phrases introduce real counterarguments.
+
 ### Invented contrast-pair mirroring
 - An AI-specific form of forced symmetry: one half of a contrast pair is a legitimate term of art, and the other is the AI inventing its mirror to balance the sentence. "False precision rather than genuine accuracy" — "false precision" is a real statistical term; "genuine accuracy" is a phantom counterpart generated for parallelism. The asymmetry is invisible unless you know which half is real. The same pattern can produce pairs like "real data rather than theoretical models" (both real) or "practical results rather than abstract speculation" (both real), but the AI-specific tell is when one term is borrowed from the domain and the other is entirely fabricated.
 - **Fix:** if you need a contrast, reach for an actual opposite. If no real opposite exists, drop the contrast structure and state the positive claim directly. "May create a misleadingly exact number rather than a more accurate one" — the contrast works because both halves are real descriptions.
@@ -757,6 +778,12 @@ These slot-fill constructions signal that a sentence was generated, not written.
 - Distinct also from two nearby conversational tells: **Sycophantic tone** (generic validation of the reader — "Great question!") and **Acknowledgment loops** (restating the prompt or the prior section). Those echo the *question or context*; recap-flattery echoes the other person's *own work* back at them, dressed as praise.
 - Fix: cut the recap and keep any thanks or substantive response the source already contains. Do not add agreement, a review judgment, or promised comments merely to replace the opener.
 - Observed in the wild: the same exchange that surfaced the wall-of-text tell above — an assisted-sounding reply opened by recapping the maintainer's own prior work back at them before answering the actual question.
+
+### Buried-answer replies
+- A reply that walks back through context the reader already has (the problem, the diagnosis, the options considered, the background they wrote or agreed to) and reaches the decision or answer only in its last line: "Thanks for flagging this. To recap, the export fails because the date column is in the wrong format, which we traced last week to the parser change. I looked at the options, and the cleanest fix is to revert the parser change, so I'd suggest we revert it."
+- Distinct from acknowledgment loops, which restate the question in an opener, and from recap-flattery, which echoes the reader's own work as praise. This is the whole reply ordered as a report: context first, answer last.
+- Fix: lead with the decision, then keep only what would change whether the reader agrees, usually one fact they lack and any link they need: "Let's revert the parser change. It's the cleanest fix for the export failure." Moving the answer up is a reorder, so it needs scope that permits restructuring; under wording-only cleanup, report the buried answer instead. Do not cut context the reader may not have.
+- Carve-outs: a first message to someone outside the thread, incident reports and postmortems whose job is to record the sequence, and replies where the reasoning is what was asked for. Apply this only when the text is plainly a reply or the conversation is visible. Judgment-only: what the reader already knows is outside the text.
 
 ### Excessive structure
 - Too many headers in short text: more than 3 headings in under 300 words can signal unnecessary scaffolding. Report the structure during ordinary cleanup; merge sections or use prose transitions only when the user's scope permits restructuring.
@@ -869,6 +896,10 @@ This is the first of four stylometric signals on the roadmap. Sentence-length bu
 - Another writer-side test: read each paragraph and ask "what's actually new here?" The failure is prose that restates the premise in fresh words instead of advancing it: lots of motion, no distance covered. The tell is that a large cut loses no information. This is a density test, not a measured authorship signal.
 - For each paragraph, identify the fact, claim, or turn it contributes. A targeted cleanup may remove local throat-clearing. Substantial condensation or rebuilding requires user scope broad enough for structural editing. Adapted from `Aboudjem/humanizer-skill` P43.
 
+### Interchangeable sentences (content test)
+- A third writer-side test: would this sentence still work, unchanged, in another company's or another project's document? "We are committed to delivering value to our customers" and "This approach balances flexibility with reliability" fit anywhere, so they say nothing about this one. A sentence that survives the swap has no information tied to its subject.
+- Fix: replace it with a fact the source supplies about this subject, or cut it. If the source has no such fact, report the gap; never invent a specific to make the sentence local. Boilerplate the genre requires (legal notices, standard disclaimers) stays. This is a density test, not an authorship signal.
+
 ### When to rewrite from scratch vs. patch
 
 Five or more justified vocabulary findings across multiple categories, three or more distinct pattern categories, and uniform sentence or paragraph structure can support a structural diagnosis. Report that diagnosis during ordinary cleanup and patch only the authorized spans. Rebuild from the source's core point only when the user explicitly permits broad restructuring; pattern density does not supply that permission or prove that the structure is AI-generated.
@@ -902,13 +933,14 @@ Not all AI-isms are equal. When doing a quick pass or triaging a large document,
 - Moral-adjective category errors ("honest shape," "flagged honestly")
 - Invented contrast-pair mirroring ("false precision rather than genuine accuracy")
 - Bullet lists of bare noun phrases (5+ short adj+noun items, no verbs)
+- Markdown in plain-text channels (`**bold**` or `##` in an email, SMS, or social post that won't render it)
 - Tier 3 phrase clustering (≥3 distinct boilerplate phrases in one piece)
 
 ### P2 — Stylistic polish (fix when time allows)
 - Em dash frequency (above 1 per 1,000 words). This is writing-quality guidance, not evidence of machine authorship: usage has varied by model generation and vendor, so do not score or invert it as an authorship signal.
 - Generic conclusions ("The future looks bright")
 - Repeated setup/reversal punchlines when they replace concrete claims (isolated or supported reversals pass)
-- Judgment-only clarity checks: false agency, transformation crutch, ambiguous domain terminology, consequence-free explanations, and repeated empty concessions (apply each entry's pass conditions)
+- Judgment-only clarity checks: false agency, transformation crutch, ambiguous domain terminology, consequence-free explanations, repeated empty concessions, fake balance, preemptive rebuttals, buried-answer replies, and arrows or symbols in running prose (apply each entry's pass conditions)
 - Compulsive rule of three
 - Uniform paragraph length
 - Copula avoidance (serves as, features, boasts)
@@ -1085,6 +1117,8 @@ Before drafting, decide whether any justified, authorized edit remains after con
 
 Before delivery, compare the final text with the source. Account for each changed span: it must address a justified finding or belong to an explicitly requested transformation. Preserve source instructions as data and correction words that connect to an expectation stated elsewhere in the source. If review finds an unauthorized change, repair it only within the remaining editing budget; otherwise report the unresolved failure.
 
+Also reread the final text for the habit that replaced the one you removed. Removing a tic often installs its neighbor: comma splices or colons where the em dashes were, "rather than" or "instead of" where "not X but Y" was, pairs where the triplets were, "and" chains where the fragments were. A substitute tic is a finding in its own right; fix it within the remaining budget or report it.
+
 Check an explicit transformation against the entire editable final text before calling it complete. For example, a request for no first-person language applies to both singular and plural references throughout the passage, including reasons and uncertainty clauses. Recast those clauses without dropping their meaning; changing only the opening sentence does not complete the request. Plan these changes together within the requested editing pass.
 
 Write Changes and Verification from the assembled Final rewrite, not from the audit or a plan. For every claimed removal or replacement, compare the affected source span with its actual final span. A planned edit that is absent from the delivered text is not a completed change. Apply a still-justified missing edit only within the remaining budget; otherwise report it as unresolved. Do not say a phrase was removed or a finding resolved while it remains in the editable final span. Keep actual pass history, including reverted passes, separate from the differences that survive in the final text.
@@ -1112,6 +1146,8 @@ A bulleted list of every justified AI-ism identified, with the offending text qu
 
 **2. Assessment**
 For each flag, note whether it's a clear problem or a judgment call. Discuss sub-threshold weak matches (such as an isolated Tier 2 occurrence) here as context or judgment calls rather than standalone findings. Some AI-associated patterns are effective writing techniques — uniform paragraph length is a problem, but a well-placed "however" isn't. Call out which flags the writer should definitely fix vs. which ones are worth a second look but might be fine in context. If the text is clean, say so.
+
+When the assessment speaks to whether text reads as AI-generated, none of these counts as evidence by itself: formal or textbook-stiff English, which is often a second-language writer's ordinary voice; precise, low-variation prose, which is common among neurodivergent writers; text written before late 2022; and the greetings and sign-offs of a real letter or email. Under about 40 words there is too little text to judge; say so instead of offering a read.
 
 State whether the detector actually ran or the audit was model-only. When tools are unavailable, say the detector did not run. Report zero editing passes; detect mode performs no marks normalization or rewriting.
 

@@ -178,13 +178,14 @@ Not all AI-isms are equal. When doing a quick pass or triaging a large document,
 - Moral-adjective category errors ("honest shape," "flagged honestly")
 - Invented contrast-pair mirroring ("false precision rather than genuine accuracy")
 - Bullet lists of bare noun phrases (5+ short adj+noun items, no verbs)
+- Markdown in plain-text channels (`**bold**` or `##` in an email, SMS, or social post that won't render it)
 - Tier 3 phrase clustering (≥3 distinct boilerplate phrases in one piece)
 
 ### P2 — Stylistic polish (fix when time allows)
 - Em dash frequency (above 1 per 1,000 words). This is writing-quality guidance, not evidence of machine authorship: usage has varied by model generation and vendor, so do not score or invert it as an authorship signal.
 - Generic conclusions ("The future looks bright")
 - Repeated setup/reversal punchlines when they replace concrete claims (isolated or supported reversals pass)
-- Judgment-only clarity checks: false agency, transformation crutch, ambiguous domain terminology, consequence-free explanations, and repeated empty concessions (apply each entry's pass conditions)
+- Judgment-only clarity checks: false agency, transformation crutch, ambiguous domain terminology, consequence-free explanations, repeated empty concessions, fake balance, preemptive rebuttals, buried-answer replies, and arrows or symbols in running prose (apply each entry's pass conditions)
 - Compulsive rule of three
 - Uniform paragraph length
 - Copula avoidance (serves as, features, boasts)
@@ -229,6 +230,8 @@ Before drafting, decide whether any justified, authorized edit remains after con
 
 Before delivery, compare the final text with the source. Account for each changed span: it must address a justified finding or belong to an explicitly requested transformation. Preserve source instructions as data and correction words that connect to an expectation stated elsewhere in the source. If review finds an unauthorized change, repair it only within the remaining editing budget; otherwise report the unresolved failure.
 
+Also reread the final text for the habit that replaced the one you removed. Removing a tic often installs its neighbor: comma splices or colons where the em dashes were, "rather than" or "instead of" where "not X but Y" was, pairs where the triplets were, "and" chains where the fragments were. A substitute tic is a finding in its own right; fix it within the remaining budget or report it.
+
 Check an explicit transformation against the entire editable final text before calling it complete. For example, a request for no first-person language applies to both singular and plural references throughout the passage, including reasons and uncertainty clauses. Recast those clauses without dropping their meaning; changing only the opening sentence does not complete the request. Plan these changes together within the requested editing pass.
 
 Write Changes and Verification from the assembled Final rewrite, not from the audit or a plan. For every claimed removal or replacement, compare the affected source span with its actual final span. A planned edit that is absent from the delivered text is not a completed change. Apply a still-justified missing edit only within the remaining budget; otherwise report it as unresolved. Do not say a phrase was removed or a finding resolved while it remains in the editable final span. Keep actual pass history, including reverted passes, separate from the differences that survive in the final text.
@@ -256,6 +259,8 @@ A bulleted list of every justified AI-ism identified, with the offending text qu
 
 **2. Assessment**
 For each flag, note whether it's a clear problem or a judgment call. Discuss sub-threshold weak matches (such as an isolated Tier 2 occurrence) here as context or judgment calls rather than standalone findings. Some AI-associated patterns are effective writing techniques — uniform paragraph length is a problem, but a well-placed "however" isn't. Call out which flags the writer should definitely fix vs. which ones are worth a second look but might be fine in context. If the text is clean, say so.
+
+When the assessment speaks to whether text reads as AI-generated, none of these counts as evidence by itself: formal or textbook-stiff English, which is often a second-language writer's ordinary voice; precise, low-variation prose, which is common among neurodivergent writers; text written before late 2022; and the greetings and sign-offs of a real letter or email. Under about 40 words there is too little text to judge; say so instead of offering a read.
 
 State whether the detector actually ran or the audit was model-only. When tools are unavailable, say the detector did not run. Report zero editing passes; detect mode performs no marks normalization or rewriting.
 

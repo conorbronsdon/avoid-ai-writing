@@ -140,10 +140,15 @@ mistake their absence for a coverage gap:
 - Same-opener sentence runs *(whether the anaphora is earned is the whole judgment; pronoun-opener runs are ordinary narration)*
 - Stranded auxiliary contrast *(a single instance is legitimate style; only density across a piece distinguishes voice from tic)*
 - Colon into a triple *(three-item lists are often simply true, especially in technical writing — weigh by genre, not per hit)*
+- Buried-answer replies *(what the reader already knows lives outside the text; postmortems and first messages to new readers are carve-outs)*
+- Fake balance *(the tell is balance that dilutes a position stated elsewhere in the piece; comparison docs and neutral registers are carve-outs)*
+- Preemptive rebuttals *(the same phrases introduce real, attributed counterarguments and rejected alternatives in design docs)*
+- Markdown in plain-text channels *(the syntax is correct on a rendering surface, and the detector cannot see the destination)*
+- Arrows and symbols in running prose *(menu paths, diagrams, before → after examples, and terse notes use arrows correctly; prose versus notes is a register call)*
 - When to rewrite from scratch vs. patch
 - Severity tiers (P0 / P1 / P2) *(the engine has a fourth severity, `low` (P3), with no counterpart in the writing rules, and its labels can differ from the skill's tier for the same rule; see the severity table in [`README.md`](./README.md#severity-and-p-tiers))*
 - Self-reference escape hatch *(the engine applies the quoted-material half: blockquote lines and double-quoted spans are masked before scoring, see [`README.md`](./README.md). Single-quoted spans and text marked as illustrative stay judgment-only)*
-- Paragraph-reshuffle immunity (structure test) and Treadmill effect / low information density (content test) *(writer-side tests, not text patterns; out of scope for the detector)*
+- Paragraph-reshuffle immunity (structure test), Treadmill effect / low information density (content test), and Interchangeable sentences (content test) *(writer-side tests, not text patterns; out of scope for the detector)*
 - Output format
 
 > **Partial:** the skill's six context profiles map to the engine's broader
