@@ -37,7 +37,8 @@ function headingsOutsideFences(text) {
     } else if (marker && !(marker[1][0] === '`' && marker[2].includes('`'))) {
       fence = { char: marker[1][0], length: marker[1].length };
     } else {
-      const heading = line.match(/^(#{2,3}) (.+)$/);
+      // Up to three leading spaces still make an ATX heading in Markdown.
+      const heading = line.match(/^ {0,3}(#{2,3}) (.+)$/);
       if (heading) headings.push({ index: offset, level: heading[1].length, title: heading[2] });
     }
     offset += line.length + 1;
@@ -54,7 +55,7 @@ function partition(reference) {
   const starts = [0, ...headings.filter(h => h.level === 3 && h.index < end).map(h => h.index), end];
   const modules = [];
   const add = (text, kind, id) => {
-    const heading = text.split('\n', 1)[0].replace(/^#+ /, '');
+    const heading = text.split('\n', 1)[0].replace(/^ {0,3}#+ /, '');
     modules.push({ id: id || slug(heading), heading, kind, text });
   };
   for (let i = 0; i < starts.length - 1; i++) {
