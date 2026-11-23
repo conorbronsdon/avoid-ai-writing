@@ -222,6 +222,41 @@ test('CRLF and LF forms of the same document compare clean', () => {
   assert.equal(r.ok, true, formatResult(r));
 });
 
+// ── A leading UTF-8 BOM must not bypass the frontmatter check ─────
+//
+// fs.readFileSync(path, 'utf8') keeps a leading U+FEFF, so `^---` never
+// matched and a frontmatter rewrite returned ok:true.
+
+const bom = (s) => '﻿' + s;
+
+test('BOM frontmatter touched -> error', () => {
+  const before = bom('---\ntitle: one\n---\n\nBody.\n');
+  const after = bom('---\ntitle: two\n---\n\nBody.\n');
+  const r = validate(before, after, { skipResidual: true });
+  assert.equal(r.ok, false, formatResult(r));
+  assert.ok(codes(r).includes('frontmatter-modified'), formatResult(r));
+});
+
+test('BOM frontmatter removed -> error', () => {
+  const before = bom('---\ntitle: one\n---\n\nBody.\n');
+  const after = bom('Body.\n');
+  const r = validate(before, after, { skipResidual: true });
+  assert.ok(codes(r).includes('frontmatter-modified'), formatResult(r));
+});
+
+test('BOM before an opening fence: code edited -> error', () => {
+  const before = bom('```js\nrun(1);\n```\n');
+  const after = bom('```js\nrun(2);\n```\n');
+  const r = validate(before, after, { skipResidual: true });
+  assert.ok(codes(r).includes('code-block-modified'), formatResult(r));
+});
+
+test('BOM and no-BOM forms of the same document compare clean', () => {
+  const doc = '---\ntitle: one\n---\n\n# Heading\n\nBody.\n';
+  const r = validate(bom(doc), doc, { skipResidual: true });
+  assert.equal(r.ok, true, formatResult(r));
+});
+
 test('lone CR changed to LF inside fenced code -> error', () => {
   const before = '```text\nline one\rline two\n```';
   const after = '```text\nline one\nline two\n```';

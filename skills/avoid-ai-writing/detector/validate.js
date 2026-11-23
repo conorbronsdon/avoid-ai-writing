@@ -375,8 +375,10 @@ const AIDetectorValidate = (() => {
     // extraction sees one line-ending shape. A rewrite that only re-terminates
     // CRLF lines is not a preservation failure, but a lone carriage return can
     // be meaningful code content and must remain visible to exact comparisons.
-    original = original.replace(/\r\n/g, '\n');
-    rewritten = rewritten.replace(/\r\n/g, '\n');
+    // A leading UTF-8 BOM (kept by readFileSync(path, 'utf8')) is dropped for
+    // the same reason: it hid frontmatter from the `^---` anchor.
+    original = original.replace(/\r\n/g, '\n').replace(/^﻿/, '');
+    rewritten = rewritten.replace(/\r\n/g, '\n').replace(/^﻿/, '');
 
     // ── Fenced code: exact, in order. Code is never the skill's business. ──
     const origFenced = fenceBlockTexts(original);
