@@ -23,3 +23,11 @@ facts:
         pattern: 'dependencies to install; Node (\d+)\+ only\.'
       - file: detector/README.md
         pattern: 'It runs identically in Node \(`>=(\d+)`\)'
+  - name: skill-description-opening
+    type: string
+    canonical:
+      file: SKILL.md
+      pattern: 'description: (.+) \("AI-isms"\)'
+    copies:
+      - file: README.md
+        pattern: 'description: (.+)'
