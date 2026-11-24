@@ -38,4 +38,4 @@ facts:
       pattern: 'description: (.+) \("AI-isms"\)'
     copies:
       - file: README.md
-        pattern: 'description: (.+)'
+        pattern: '---\ndescription: (.+)\n---\n\n\$ARGUMENTS'

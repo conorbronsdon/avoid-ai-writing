@@ -55,11 +55,25 @@ try {
   // The generator derives the description from exactly one frontmatter line;
   // a missing or duplicated line must fail generation, not ship a wrong rule.
   const regenerate = () => execFileSync('bash', [path.join(fixture, 'scripts/sync-cursor-rules.sh')], { stdio: 'pipe' });
+  // Match the generator's own diagnostic, so an unrelated crash cannot pass.
+  const failsWith = re => err => re.test(String(err.stderr));
   fs.writeFileSync(skillPath, mutated.replace(/^description: .*$/m, 'description: one\ndescription: two'));
-  assert.throws(regenerate, 'A duplicated description line must fail generation');
+  assert.throws(regenerate, failsWith(/expected exactly one description: line/), 'A duplicated description line must fail generation');
   fs.writeFileSync(skillPath, mutated.replace(/^description: .*$/m, 'name: avoid-ai-writing'));
-  assert.throws(regenerate, 'A missing description line must fail generation');
+  assert.throws(regenerate, failsWith(/expected exactly one description: line/), 'A missing description line must fail generation');
+  // The value is read as raw text, so a quoted, block or wrapped YAML scalar
+  // must fail generation instead of shipping its quotes or losing a line.
+  const plainOnly = failsWith(/single-line plain YAML scalar/);
+  for (const [label, spelling] of [
+    ['single-quoted', "description: 'Quoted value'"],
+    ['double-quoted', 'description: "Quoted value"'],
+    ['block', 'description: >-\n  Folded value'],
+    ['wrapped', 'description: First half\n  second half'],
+  ]) {
+    fs.writeFileSync(skillPath, mutated.replace(/^description: .*$/m, spelling));
+    assert.throws(regenerate, plainOnly, `A ${label} description must fail generation`);
+  }
 } finally {
   fs.rmSync(fixture, { recursive: true, force: true });
 }
-console.log('Cursor description parity: committed rule and sentinel regeneration track SKILL.md; missing or duplicate descriptions fail generation');
+console.log('Cursor description parity: committed rule and sentinel regeneration track SKILL.md; missing, duplicate, quoted, block or wrapped descriptions fail generation');
