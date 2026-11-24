@@ -56,7 +56,7 @@ jobs:
           cd "$GITHUB_WORKSPACE/.."
           git clone --depth 1 --quiet https://github.com/conorbronsdon/ssot-check.git ssot-check
           # Use the same reviewed revision as the repository-local SSOT pilot.
-          git -C ssot-check fetch --depth 1 origin 594269d32d4951d417269deaebcd3d621a8a766e
+          git -C ssot-check fetch --depth 1 origin f779e946969917fa9a5e9fca2f3c600c083c9c08
           git -C ssot-check checkout --detach FETCH_HEAD
 
       - name: Check the promo surfaces
