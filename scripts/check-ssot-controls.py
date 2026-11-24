@@ -30,8 +30,27 @@ def main():
             raise AssertionError(f"{command}: expected {expected}, got {result.returncode}\n{result.stdout}\n{result.stderr}")
         return result.stdout
 
+    def ambiguous(at):
+        """Locators whose pattern matched more than once.
+
+        The checker uses the first match and only notes the rest in --json: a
+        copy's note is not counted in the summary and not shown in the text
+        report, so a second matching line elsewhere in a file could silently
+        take over a locator. Treat any such note as a failure."""
+        report = json.loads(run(at, "check", 0, "--json"))
+        found = []
+        for fact in report["facts"]:
+            for side in [fact.get("canonical") or {}, *fact.get("copies", [])]:
+                if "matched" in str(side.get("warning", "")):
+                    found.append((fact["name"], side.get("file"), side["warning"]))
+        return found
+
     run(root)
+    unclear = ambiguous(root)
+    if unclear:
+        raise AssertionError(f"Locators must match exactly once; anchor these patterns: {unclear}")
     tested = 0
+    duplicated = 0
     with tempfile.TemporaryDirectory(prefix="ssot-controls-") as directory:
         scratch = Path(directory)
         (scratch / manifest_name).write_text(manifest_text, encoding="utf-8")
@@ -42,6 +61,25 @@ def main():
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes((root / relative).read_bytes())
         run(scratch)
+        # Must-fire complement: a second match of any pattern locator is caught.
+        for fact in manifest["facts"]:
+            for locator in [fact["canonical"], *fact["copies"]]:
+                if "pattern" not in locator:
+                    continue
+                target = scratch / locator["file"]
+                original = target.read_text(encoding="utf-8")
+                # No re.MULTILINE: the checker compiles patterns without flags.
+                match = re.search(locator["pattern"], original)
+                if match is None:
+                    raise AssertionError(f"Unmatched locator: {locator}")
+                target.write_text(original + "\n" + match.group(0) + "\n", encoding="utf-8")
+                # Match on fact and file: two facts can share a file and a line.
+                if (fact["name"], locator["file"]) not in {(n, f) for n, f, _ in ambiguous(scratch)}:
+                    raise AssertionError(f"A duplicated match was not reported as ambiguous: {locator}")
+                target.write_text(original, encoding="utf-8")
+                duplicated += 1
+        if ambiguous(scratch):
+            raise AssertionError("Restoring the duplicated files did not clear the ambiguity")
         for fact in manifest["facts"]:
             for locator in fact["copies"]:
                 target = scratch / locator["file"]
@@ -107,7 +145,7 @@ facts:
                 or "::warning file=CHANGELOG.md" in warning
                 or "::warning file=history/" in warning):
             raise AssertionError(f"Expected only the unregistered current copy warning: {warning}")
-    print(f"SSOT controls passed: {tested} real copy locators; drift, restore, missing copy/manifest, invalid manifest, exclusion, advisory discovery.")
+    print(f"SSOT controls passed: {tested} real copy locators, {duplicated} unique-match locators; drift, restore, missing copy/manifest, invalid manifest, exclusion, ambiguity, advisory discovery.")
 
 
 if __name__ == "__main__":
