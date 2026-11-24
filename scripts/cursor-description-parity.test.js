@@ -52,7 +52,14 @@ try {
     expectedCursorDescription(skillPath),
     'Regenerating after a SKILL.md description edit must update the Cursor rule description',
   );
+  // The generator derives the description from exactly one frontmatter line;
+  // a missing or duplicated line must fail generation, not ship a wrong rule.
+  const regenerate = () => execFileSync('bash', [path.join(fixture, 'scripts/sync-cursor-rules.sh')], { stdio: 'pipe' });
+  fs.writeFileSync(skillPath, mutated.replace(/^description: .*$/m, 'description: one\ndescription: two'));
+  assert.throws(regenerate, 'A duplicated description line must fail generation');
+  fs.writeFileSync(skillPath, mutated.replace(/^description: .*$/m, 'name: avoid-ai-writing'));
+  assert.throws(regenerate, 'A missing description line must fail generation');
 } finally {
   fs.rmSync(fixture, { recursive: true, force: true });
 }
-console.log('Cursor description parity: committed rule and sentinel regeneration track SKILL.md');
+console.log('Cursor description parity: committed rule and sentinel regeneration track SKILL.md; missing or duplicate descriptions fail generation');
