@@ -34,6 +34,7 @@ const SUITES = [
   'scripts/rewrite-eval-opencode.test.js',
   'scripts/fp-measure-cli.test.js',
   'scripts/check-detect-audit.test.js',
+  'scripts/cursor-description-parity.test.js',
   'scripts/carve-out-recall.test.js',
 ];
 
