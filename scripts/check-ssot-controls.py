@@ -68,11 +68,13 @@ def main():
                     continue
                 target = scratch / locator["file"]
                 original = target.read_text(encoding="utf-8")
+                # No re.MULTILINE: the checker compiles patterns without flags.
                 match = re.search(locator["pattern"], original)
                 if match is None:
                     raise AssertionError(f"Unmatched locator: {locator}")
                 target.write_text(original + "\n" + match.group(0) + "\n", encoding="utf-8")
-                if not any(f == locator["file"] for _, f, _ in ambiguous(scratch)):
+                # Match on fact and file: two facts can share a file and a line.
+                if (fact["name"], locator["file"]) not in {(n, f) for n, f, _ in ambiguous(scratch)}:
                     raise AssertionError(f"A duplicated match was not reported as ambiguous: {locator}")
                 target.write_text(original, encoding="utf-8")
                 duplicated += 1
