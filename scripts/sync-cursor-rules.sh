@@ -58,6 +58,15 @@ if len(version_lines) != 1:
     sys.exit("sync-cursor-rules: expected exactly one version: line in frontmatter")
 version = version_lines[0].split(":", 1)[1].strip()
 
+# The description is derived from the same frontmatter, not copied into this
+# template (#452): a hard-coded copy here drifted from SKILL.md silently,
+# because the sync check diffs the generated file against this script's own
+# output. Only the Cursor-specific sentences below are template text.
+description_lines = [l for l in fm.splitlines() if l.startswith("description:")]
+if len(description_lines) != 1:
+    sys.exit("sync-cursor-rules: expected exactly one description: line in frontmatter")
+description = description_lines[0].split(":", 1)[1].strip()
+
 # ── Portability rewrites (see header comment) ────────────────────────
 body = replace_once(
     body,
@@ -105,7 +114,7 @@ body = replace_once(
 )
 
 cursor_fm = f"""---
-description: Audit and rewrite content to remove AI writing patterns ("AI-isms"). Activate whenever editing prose-heavy files (Markdown, documentation, blog posts, READMEs, release notes, emails). Cursor port of the avoid-ai-writing skill v{version}. See https://github.com/conorbronsdon/avoid-ai-writing.
+description: {description} Activate whenever editing prose-heavy files (Markdown, documentation, blog posts, READMEs, release notes, emails). Cursor port of the avoid-ai-writing skill v{version}. See https://github.com/conorbronsdon/avoid-ai-writing.
 globs: ["**/*.md", "**/*.mdx", "**/*.txt", "**/*.rst", "**/*.adoc"]
 alwaysApply: false
 ---
