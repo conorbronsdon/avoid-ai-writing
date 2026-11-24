@@ -574,7 +574,9 @@ test('#351: on a single HTML line, dashes outside the lead-term position still c
     + '<li><strong>The committee reviewed the proposal and rejected it</strong> — the chair recorded the dissent.</li>'.repeat(4)
     + '</ul>';
   const proseThenList = '<p>We moved — slowly — to the new host — twice.</p><ul><li><strong>Postgres</strong> — store</li></ul>';
-  for (const [name, text, expected] of [['plain-text lead', plainLead, 4], ['later dash', laterDash, 2], ['bold clause', clause, 4], ['prose before list', proseThenList, 3]]) {
+  // An <li> quoted mid-sentence (inline code about markup) is not a list item.
+  const quotedMarkup = 'Write each item as `<li><strong>Term</strong> — gloss</li>` and keep it short — we did — twice.';
+  for (const [name, text, expected] of [['plain-text lead', plainLead, 4], ['later dash', laterDash, 2], ['bold clause', clause, 4], ['prose before list', proseThenList, 3], ['quoted markup', quotedMarkup, 3]]) {
     const hits = AIDetector.analyzeText(text).issues.filter((i) => i.type === 'em-dash');
     assert.equal(hits.length, 1, `${name}: prose dashes must still fire`);
     assert.match(hits[0].text, new RegExp(`^${expected} em dash`), name);
