@@ -11,6 +11,14 @@ ignore_paths:
   - ".ssot-tool/**"
   - "evals/**" # Frozen evaluation prompts and historical reports are not current compatibility claims.
 facts:
+  - name: skill-description
+    type: string
+    canonical:
+      file: SKILL.md
+      pattern: 'description: (.+)'
+    copies:
+      - file: cursor-rules/avoid-ai-writing.mdc
+        pattern: 'description: (.+) Activate whenever editing prose-heavy files'
   - name: minimum-node-major
     type: integer
     canonical:
@@ -23,3 +31,11 @@ facts:
         pattern: 'dependencies to install; Node (\d+)\+ only\.'
       - file: detector/README.md
         pattern: 'It runs identically in Node \(`>=(\d+)`\)'
+  - name: skill-description-opening
+    type: string
+    canonical:
+      file: SKILL.md
+      pattern: 'description: (.+) \("AI-isms"\)'
+    copies:
+      - file: README.md
+        pattern: '---\ndescription: (.+)\n---\n\n\$ARGUMENTS'

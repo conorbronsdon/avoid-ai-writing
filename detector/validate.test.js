@@ -227,7 +227,7 @@ test('CRLF and LF forms of the same document compare clean', () => {
 // fs.readFileSync(path, 'utf8') keeps a leading U+FEFF, so `^---` never
 // matched and a frontmatter rewrite returned ok:true.
 
-const bom = (s) => '﻿' + s;
+const bom = (s) => '\uFEFF' + s;
 
 test('BOM frontmatter touched -> error', () => {
   const before = bom('---\ntitle: one\n---\n\nBody.\n');

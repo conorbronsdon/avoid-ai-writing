@@ -377,8 +377,8 @@ const AIDetectorValidate = (() => {
     // be meaningful code content and must remain visible to exact comparisons.
     // A leading UTF-8 BOM (kept by readFileSync(path, 'utf8')) is dropped for
     // the same reason: it hid frontmatter from the `^---` anchor.
-    original = original.replace(/\r\n/g, '\n').replace(/^﻿/, '');
-    rewritten = rewritten.replace(/\r\n/g, '\n').replace(/^﻿/, '');
+    original = original.replace(/\r\n/g, '\n').replace(/^\uFEFF/, '');
+    rewritten = rewritten.replace(/\r\n/g, '\n').replace(/^\uFEFF/, '');
 
     // ── Fenced code: exact, in order. Code is never the skill's business. ──
     const origFenced = fenceBlockTexts(original);

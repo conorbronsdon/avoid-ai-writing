@@ -209,7 +209,7 @@ curl -o .cursor/rules/avoid-ai-writing.mdc \
   https://raw.githubusercontent.com/conorbronsdon/avoid-ai-writing/main/cursor-rules/avoid-ai-writing.mdc
 ```
 
-See [`cursor-rules/README.md`](./cursor-rules/README.md) for activation globs and trigger phrases. Functionally identical to the Claude Code skill — same tier vocabulary, same context profiles, same modes.
+See [`cursor-rules/README.md`](./cursor-rules/README.md) for activation globs and trigger phrases. The port has the same rules, tier vocabulary, context profiles, and modes as the Claude Code skill, but ships without its scripts: the detector does not run, so audits are model-only, and the preservation validator, `--style` checker, and quote normalizer become manual steps.
 
 ### Hermes
 
