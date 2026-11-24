@@ -6,6 +6,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [3.39.1] — 2026-11-24
+
 ### Fixed
 
 - The Cursor rule's frontmatter description is now derived from SKILL.md at generation time instead of being hard-coded in `scripts/sync-cursor-rules.sh`, where it had drifted to a shortened copy of the canonical description. The generated rule carries the full SKILL.md description with the Cursor-specific sentences appended, and the description is registered as an SSOT fact so the parity is checked in CI (#452).
