@@ -2698,9 +2698,15 @@ const AIDetector = (() => {
     // or any dash outside <li>, still counts. `&mdash;` entities are never
     // counted as em dashes, so they need no carve-out.
     const SEPARATOR_DASH_HTML_RE = /^[ \t]*<li\b[^>\n]*>[ \t]*(?:<(strong|b)\b[^>\n]*>[ \t]*[^<\s]+(?:[ \t]+[^<\s]+){0,4}[ \t]*<\/\1>|<a\b[^>\n]*>[ \t]*[^<\s]+(?:[ \t]+[^<\s]+){0,4}[ \t]*<\/a>)(?:[ \t]*(?:\([^)\n]*\)|<code\b[^>\n]*>[^<\n]+<\/code>))?[ \t]*—/gim;
+    // Minified or single-line HTML puts several <li> items on one line, and
+    // the regex above is line-anchored. Starting each <li> on its own line
+    // first gives every item the same check; each scan then ends at the next
+    // item, so it stays linear. This copy is used only for the count.
+    const LI_OPEN_RE = /<li\b/gi;
     function countSeparatorDashes(value) {
+      const html = /<li\b/i.test(value) ? value.replace(LI_OPEN_RE, '\n$&') : value;
       return (value.match(SEPARATOR_DASH_RE) || []).length
-        + (value.match(SEPARATOR_DASH_HTML_RE) || []).length
+        + (html.match(SEPARATOR_DASH_HTML_RE) || []).length
         + countVersionHeadingDashes(value);
     }
 

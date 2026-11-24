@@ -202,7 +202,8 @@ Markdown source mode, not one. HTML comments, ignore markers, and `<pre>`,
 `<code>`, `<script>`, and `<style>` elements are handled as described above.
 The em dash rate skips a list separator in either form: `- **Term** — gloss`
 in Markdown, or an `<li>` whose first child is a `<strong>`, `<b>`, or `<a>`
-lead term of at most five words, followed by the dash, in HTML. A longer
+lead term of at most five words, followed by the dash, in HTML. Minified
+HTML with several `<li>` items on one line gets the same check. A longer
 bold span is a clause, and its dash counts. Text copied out of a rendered page has
 lost that structure, so `Term — gloss` lines count as prose dashes; score the
 Markdown or HTML source instead.
