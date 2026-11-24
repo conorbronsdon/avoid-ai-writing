@@ -464,6 +464,10 @@ test('adversarial Markdown scans stay within a bounded time', () => {
     ['U+2028 line separator run', (n) => `${'w '.repeat(10)}${'\u2028'.repeat(n)}`, 4000],
     ['U+2029 paragraph separator run', (n) => `${'w '.repeat(10)}${'\u2029'.repeat(n)}`, 4000],
     ['mixed U+2028 and space run', (n) => `${ordinary}${'\u2028 \u2029\t'.repeat(n / 4)}`, 4000],
+    // Each <li> starts its own line before the HTML separator count, so an
+    // unclosed tag or parenthetical can't be rescanned from every item.
+    ['unclosed same-line <li> run', (n) => `${ordinary} ${'<li '.repeat(n)}`, 4000],
+    ['same-line <li> parenthetical run', (n) => `${ordinary} ${'<li><b>x</b> ('.repeat(n)}`, 2000],
   ];
   for (const [name, build, base] of attacks) {
     const { small, large } = timeScaling(build, base);
@@ -537,6 +541,45 @@ test('#351: HTML em dashes outside the lead-term separator position still count'
     const hits = AIDetector.analyzeText(text).issues.filter((i) => i.type === 'em-dash');
     assert.equal(hits.length, 1, `${name}: prose dashes must still fire`);
     assert.match(hits[0].text, new RegExp(`^${expected} em dashes`), name);
+  }
+});
+
+test('#351: HTML <li> separators on one line (minified HTML) are skipped too', () => {
+  const items = [
+    ['Postgres', 'primary store for orders and invoices'],
+    ['Redis', 'cache for session tokens'],
+    ['Kafka', 'event bus between services'],
+    ['S3', 'long-term storage for exports'],
+    ['Nginx', 'reverse proxy in front of the API'],
+  ];
+  const intro = '<p>The cutover took one evening and two people, and the stack did not change.</p>';
+  const strong = intro + '<ul>' + items.map(([t, d]) => `<li><strong>${t}</strong> — ${d}</li>`).join('') + '</ul>';
+  const link = intro + '<ul>' + items.map(([t, d]) => `<LI><a href="/docs/${t}">${t}</a> — ${d}</LI>`).join(' ') + '</ul>';
+  for (const [name, text] of [['strong', strong], ['uppercase link', link]]) {
+    assert.ok(!text.includes('\n'), `${name}: fixture must be a single line`);
+    for (const sourceMode of ['plain', 'rendered-markdown']) {
+      const hits = AIDetector.analyzeText(text, { sourceMode }).issues.filter((i) => i.type === 'em-dash');
+      assert.equal(hits.length, 0, `${name} (${sourceMode}): same-line HTML separator dashes should not count`);
+    }
+  }
+});
+
+test('#351: on a single HTML line, dashes outside the lead-term position still count', () => {
+  const intro = '<p>The cutover took one evening and two people, and the stack did not change.</p>';
+  const plainLead = intro + '<ul><li>Postgres — primary store</li><li>Redis — cache</li>'
+    + '<li>Kafka — event bus</li><li>S3 — exports</li></ul>';
+  const laterDash = intro + '<ul><li><strong>Postgres</strong> — the store — and the oldest box</li>'
+    + '<li><strong>Redis</strong> — the cache — and the newest box</li></ul>';
+  const clause = intro + '<ul>'
+    + '<li><strong>The committee reviewed the proposal and rejected it</strong> — the chair recorded the dissent.</li>'.repeat(4)
+    + '</ul>';
+  const proseThenList = '<p>We moved — slowly — to the new host — twice.</p><ul><li><strong>Postgres</strong> — store</li></ul>';
+  // An <li> quoted mid-sentence (inline code about markup) is not a list item.
+  const quotedMarkup = 'Write each item as `<li><strong>Term</strong> — gloss</li>` and keep it short — we did — twice.';
+  for (const [name, text, expected] of [['plain-text lead', plainLead, 4], ['later dash', laterDash, 2], ['bold clause', clause, 4], ['prose before list', proseThenList, 3], ['quoted markup', quotedMarkup, 3]]) {
+    const hits = AIDetector.analyzeText(text).issues.filter((i) => i.type === 'em-dash');
+    assert.equal(hits.length, 1, `${name}: prose dashes must still fire`);
+    assert.match(hits[0].text, new RegExp(`^${expected} em dash`), name);
   }
 });
 

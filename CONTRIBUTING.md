@@ -198,7 +198,7 @@ To reproduce CI, check out the checker revision pinned in
 `.github/workflows/ssot.yml` into a sibling `ssot-check` directory, then run:
 
 ```bash
-python3 ../ssot-check/ssot_check.py check --manifest .ssot-local.yaml
+python3 ../ssot-check/ssot_check.py check --strict --manifest .ssot-local.yaml
 python3 ../ssot-check/ssot_check.py discover --manifest .ssot-local.yaml --untracked-only --github-annotations
 python3 scripts/check-ssot-controls.py ../ssot-check/ssot_check.py
 ```
