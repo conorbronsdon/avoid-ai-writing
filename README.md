@@ -760,6 +760,7 @@ Community-maintained adaptations are linked here for discovery. Their authors ow
 
 - **[avoid-ai-writing-multilingual](https://github.com/jurigis/avoid-ai-writing-multilingual)** by [Jürgen Kraus](https://github.com/jurigis) — German (`SKILL-DE.md`), French (`SKILL-FR.md`), Italian (`SKILL-IT.md`), Romanian (`SKILL-RO.md`), and Swedish (`SKILL-SV.md`) adaptations, grounded in native-language research rather than translated from English.
 - **[evitar-escrita-ia](https://github.com/mariorabeloneto/evitar-escrita-ia)** by [Mário Rabelo Neto](https://github.com/mariorabeloneto) — European Portuguese adaptation with dialect and formal-register guidance. Its vocabulary tables are editorial hypotheses, not corpus measurements.
+- **[avoid-ai-writing-ru](https://github.com/mkapyrin/avoid-ai-writing-ru)** by [mkapyrin](https://github.com/mkapyrin) — Russian (ru-RU) adaptation with lexical tiers rebuilt from Russian AI output, rules for bureaucratic style and English calques, and a dash rule that keeps grammatical dashes. Its vocabulary tables come from one maintainer's editing practice, and its held-out evaluations have not yet passed their pre-registered decision rule; see its `LIMITATIONS.md`.
 
 Built an adaptation? See the [language adaptation guidance](CONTRIBUTING.md#language-adaptations), then open an issue with the language, dialect, maintainer, evidence, limitations, and link. We can link independent versions without taking over their maintenance.
 
