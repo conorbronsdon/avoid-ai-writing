@@ -69,6 +69,8 @@ try {
     ['double-quoted', 'description: "Quoted value"'],
     ['block', 'description: >-\n  Folded value'],
     ['wrapped', 'description: First half\n  second half'],
+    ['wrapped after a blank line', 'description: First half\n\n  second half'],
+    ['inline-commented', 'description: Value # note'],
   ]) {
     fs.writeFileSync(skillPath, mutated.replace(/^description: .*$/m, spelling));
     assert.throws(regenerate, plainOnly, `A ${label} description must fail generation`);
@@ -76,4 +78,4 @@ try {
 } finally {
   fs.rmSync(fixture, { recursive: true, force: true });
 }
-console.log('Cursor description parity: committed rule and sentinel regeneration track SKILL.md; missing, duplicate, quoted, block or wrapped descriptions fail generation');
+console.log('Cursor description parity: committed rule and sentinel regeneration track SKILL.md; missing, duplicate, quoted, block, wrapped or commented descriptions fail generation');

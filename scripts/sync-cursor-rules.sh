@@ -69,9 +69,12 @@ description = description_lines[0].split(":", 1)[1].strip()
 # The value is read as raw text, not decoded YAML, so refuse any spelling the
 # raw read would get wrong: a quoted or block scalar would be pasted with its
 # quotes or indicator, and a wrapped plain scalar would lose its continuation.
+# An inline " #" comment would swallow the appended text, and a continuation
+# may follow blank lines, so look at the first non-blank line after it.
 fm_lines = fm.splitlines()
-next_line = fm_lines[fm_lines.index(description_lines[0]) + 1]
-if not description or description[0] in "'\"|>" or next_line.startswith((" ", "\t")):
+following = [l for l in fm_lines[fm_lines.index(description_lines[0]) + 1:] if l.strip()]
+continued = bool(following) and following[0].startswith((" ", "\t"))
+if not description or description[0] in "'\"|>" or " #" in description or continued:
     sys.exit("sync-cursor-rules: the description must be a single-line plain YAML scalar")
 
 # ── Portability rewrites (see header comment) ────────────────────────
