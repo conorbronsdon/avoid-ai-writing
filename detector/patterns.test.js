@@ -576,7 +576,7 @@ test('#351: on a single HTML line, dashes outside the lead-term position still c
   const proseThenList = '<p>We moved — slowly — to the new host — twice.</p><ul><li><strong>Postgres</strong> — store</li></ul>';
   // An <li> quoted mid-sentence (inline code about markup) is not a list item.
   const quotedMarkup = 'Write each item as `<li><strong>Term</strong> — gloss</li>` and keep it short — we did — twice.';
-  for (const [name, text, expected] of [['plain-text lead', plainLead, 4], ['later dash', laterDash, 2], ['bold clause', clause, 4], ['prose before list', proseThenList, 3], ['quoted markup', quotedMarkup, 3]]) {
+  for (const [name, text, expected] of [['plain-text lead', plainLead, 4], ['later dash', laterDash, 2], ['bold clause', clause, 4], ['prose before list', proseThenList, 3], ['quoted markup', quotedMarkup, 2]]) {
     const hits = AIDetector.analyzeText(text).issues.filter((i) => i.type === 'em-dash');
     assert.equal(hits.length, 1, `${name}: prose dashes must still fire`);
     assert.match(hits[0].text, new RegExp(`^${expected} em dash`), name);
@@ -591,6 +591,91 @@ test('#351: a bold clause in an HTML <li> is not a lead term; its dash still cou
   const hits = AIDetector.analyzeText(text).issues.filter((i) => i.type === 'em-dash');
   assert.equal(hits.length, 1);
   assert.match(hits[0].text, /^4 em dashes/);
+});
+
+test('em-dash rate skips dashes inside inline code and fenced code', () => {
+  const intro = 'Run the command below from the repo root to check the account.';
+  const cases = [
+    ['inline --', `${intro} Use \`kubectl exec -n a b -- aws sts get-caller-identity\` here.`],
+    ['inline em dash', `${intro} The parser accepts \`a — b\` as one token.`],
+    ['backtick fence', `${intro}\n\n\`\`\`sh\nkubectl exec -n a b -- aws sts get-caller-identity\necho "a — b"\n\`\`\``],
+    ['tilde fence', `${intro}\n\n~~~\ngit checkout -- README.md\n~~~`],
+  ];
+  for (const [name, text] of cases) {
+    for (const sourceMode of ['plain', 'rendered-markdown']) {
+      const hits = AIDetector.analyzeText(text, { sourceMode }).issues.filter((i) => i.type === 'em-dash');
+      assert.equal(hits.length, 0, `${name} (${sourceMode}): dashes in code must not count`);
+    }
+  }
+});
+
+test('em-dash rate still counts prose dashes next to code', () => {
+  const text = [
+    'He paused -- then ran `git checkout -- README.md` and waited — the build passed.',
+    '',
+    '```',
+    '- **Flag** — a sample list item quoted in a fence',
+    '```',
+  ].join('\n');
+  for (const sourceMode of ['plain', 'rendered-markdown']) {
+    const hits = AIDetector.analyzeText(text, { sourceMode }).issues.filter((i) => i.type === 'em-dash');
+    assert.equal(hits.length, 1, `${sourceMode}: prose dashes must still fire`);
+    assert.match(hits[0].text, /^2 em dashes/, `${sourceMode}: a separator inside a fence must not cancel a prose dash`);
+  }
+  const separator = [
+    '- **Force** (`--force`) — overwrite the existing file.',
+    '- **Quiet** `-q` — print nothing on success.',
+    'The flags combine, and the order does not matter.',
+  ].join('\n');
+  assert.equal(AIDetector.analyzeText(separator).issues.filter((i) => i.type === 'em-dash').length, 0,
+    'separator dashes after a code span stay carved out');
+});
+
+test('em-dash rate: a backtick line with a backtick in its info string is not a fence', () => {
+  // CommonMark 4.5: the info string of a backtick fence cannot contain a
+  // backtick, so this line is inline code, not an opener that never closes.
+  const text = [
+    '```npm install``` is the first step.',
+    '',
+    'The build took an hour — the cache was cold — and the tests failed — twice.',
+  ].join('\n');
+  for (const sourceMode of ['plain', 'rendered-markdown']) {
+    const hits = AIDetector.analyzeText(text, { sourceMode }).issues.filter((i) => i.type === 'em-dash');
+    assert.equal(hits.length, 1, `${sourceMode}: prose dashes after the line must count`);
+    assert.match(hits[0].text, /^3 em dashes/, sourceMode);
+  }
+});
+
+test('a backtick line that is not a fence leaves the hashtag count after it visible', () => {
+  const text = [
+    '```npm install``` is the first step.',
+    '',
+    'We shipped the release this week.',
+    '',
+    '#AI #Crypto #Blockchain #DePIN #Mining #Web3 #Solana #Infrastructure #Innovation #Technology',
+  ].join('\n');
+  const types = new Set(AIDetector.analyzeText(text).issues.map((i) => i.type));
+  assert.ok(types.has('hashtag-stuff'), 'hashtags after the line must still count');
+});
+
+test('em-dash rate checks the -- boundaries against the unmasked text', () => {
+  const count = (text) => AIDetector.analyzeText(text).issues.filter((i) => i.type === 'em-dash');
+  const intro = 'The firewall rules changed last week after the audit.';
+  assert.equal(count(`${intro} Ports \`8000\`--\`8080\` are open on the staging host.`).length, 0,
+    'a -- joined to code spans is a range, not a spaced dash');
+  const spaced = count(`${intro} Ports \`8000\` -- \`8080\` are open on the staging host.`);
+  assert.equal(spaced.length, 1, 'a spaced -- between code spans is prose');
+  assert.match(spaced[0].text, /^1 em dashes/);
+});
+
+test('em-dash rate: an unclosed fence masks to the end of the text', () => {
+  const prose = 'The build took an hour on the new runner — the cache was cold again.';
+  const text = `Run the setup step first.\n\n\`\`\`\nmake setup\n\n${prose}`;
+  for (const sourceMode of ['plain', 'rendered-markdown']) {
+    const emDash = (t) => AIDetector.analyzeText(t, { sourceMode }).issues.filter((i) => i.type === 'em-dash');
+    assert.equal(emDash(prose).length, 1, `${sourceMode}: the prose alone fires`);
+    assert.equal(emDash(text).length, 0, `${sourceMode}: an unclosed fence runs to the end of the text`);
+  }
 });
 
 test('em-dash separator carve-out holds across U+2028/U+2029 line breaks and Unicode indents', () => {

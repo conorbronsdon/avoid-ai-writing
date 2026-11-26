@@ -6,6 +6,11 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- The em dash rate no longer counts dashes inside inline code spans or fenced code blocks, in both source modes. A shell command such as `kubectl exec pod -- aws sts get-caller-identity` or `git checkout -- README.md` used its `--` argument separator as a prose em dash, so one quoted command was enough to raise the finding. Dashes in the surrounding prose still count, as does a spaced `--` between two code spans; a `--` joined to them, as in `8000`--`8080`, does not.
+- A line that opens with three backticks and has another backtick later on it, such as ```` ```npm install``` is the first step ````, is no longer read as a fence that never closes. CommonMark does not allow a backtick in a backtick fence's info string. The old reading hid the rest of the document from the hashtag count, the title-case heading check, and the hyphenation copyedit.
+
 ## [3.39.1] — 2026-11-24
 
 ### Fixed

@@ -1286,6 +1286,9 @@ const AIDetector = (() => {
     while ((m = re.exec(text)) !== null) {
       const marker = m[1];
       if (!open) {
+        // A backtick fence's info string cannot contain a backtick
+        // (CommonMark 4.5), so "```npm install``` is ..." is inline code.
+        if (marker[0] === '`' && m[2].includes('`')) continue;
         open = { char: marker[0], len: marker.length, start: m.index };
       } else if (
         marker[0] === open.char &&
@@ -2702,8 +2705,9 @@ const AIDetector = (() => {
     // the regex above is line-anchored. Starting each <li> that directly
     // follows a closing `>` (`<ul><li>`, `</li> <li>`) on its own line gives
     // every item the same check; each scan then ends at the next item, so it
-    // stays linear. An `<li>` quoted mid-sentence, as in inline code, is not
-    // split off, so its dash still counts. This copy is used only for the count.
+    // stays linear. An `<li>` quoted mid-sentence is not split off, so its dash
+    // still counts; inline code is masked before the count, so an `<li>` quoted
+    // there adds no dash at all. This copy is used only for the count.
     const LI_AFTER_TAG_RE = /(>[ \t]*)(<li\b)/gi;
     function countSeparatorDashes(value) {
       const html = /<li\b/i.test(value) ? value.replace(LI_AFTER_TAG_RE, '$1\n$2') : value;
@@ -3080,8 +3084,15 @@ const AIDetector = (() => {
     // "**Bold lead** — full sentence" outside a list is itself an AI tell
     // and still counts, as does a mid-sentence "**bold** — like this"
     // splice. Em dash only — the `--` substitute is never carved out.
-    const rawEmDashCount = (text.match(/—|(?<=\s)--(?=\s|$)|(?<=^|\s)--(?=\s)/gm) || []).length;
-    const separatorDashCount = countSeparatorDashes(text);
+    // Dashes inside fenced and inline code do not count (see maskCode): a
+    // `--` in a shell command such as `git checkout -- file` is an argument
+    // separator, and a dash inside a quoted sample is not the author's
+    // punctuation. The `--` boundaries are read from the original text, since
+    // masked code turns into spaces and would make `8000`--`8080` look spaced.
+    const emDashText = maskCode(text);
+    const rawEmDashCount = [...text.matchAll(/—|(?<=\s)--(?=\s|$)|(?<=^|\s)--(?=\s)/gm)]
+      .filter((m) => emDashText[m.index] !== ' ').length;
+    const separatorDashCount = countSeparatorDashes(emDashText);
     const emDashCount = rawEmDashCount - separatorDashCount;
     const emDashRate = emDashCount / (wordCount / 1000);
     if (emDashRate > 1) {

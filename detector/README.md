@@ -206,7 +206,9 @@ lead term of at most five words, followed by the dash, in HTML. Minified
 HTML with several `<li>` items on one line gets the same check. A longer
 bold span is a clause, and its dash counts. Text copied out of a rendered page has
 lost that structure, so `Term — gloss` lines count as prose dashes; score the
-Markdown or HTML source instead.
+Markdown or HTML source instead. Dashes inside fenced blocks and inline code
+spans on a single line do not count; indented code blocks are not masked, and a fence that never
+closes runs to the end of the text.
 
 Sentence-length `uniformity` leaves out Markdown glossary entries, since they
 are parallel by convention. A glossary is three or more bold-lead definitions
